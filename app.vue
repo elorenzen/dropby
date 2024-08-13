@@ -1,15 +1,5 @@
-<template>
-  <div>
-    <!-- <NuxtRouteAnnouncer />
-    <NuxtWelcome /> -->
-    <AppAlert>
-      This is an auto-imported component.
-    </AppAlert>
-    <NuxtPage />
-  </div>
-</template>
-
-<script>
+<script setup>
+const user = useSupabaseUser()
 /*
 Here, we're going to need to do a few things.
 
@@ -26,3 +16,10 @@ If so, get user role.
 
 */
 </script>
+
+<template>
+    <div class="container" style="padding: 50px 0 100px 0">
+    <Account v-if="user" />
+    <Auth v-else />
+  </div>
+</template>
