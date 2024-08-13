@@ -121,11 +121,10 @@ const merchantUser = {
     availableToContact: Boolean
 }
 ```
-### REMAINING
-
-⚠️ TO-DO: // '/vendors' collection document object
-⚠️ TO-DO: // '/vendorUsers' collection document object
-⚠️ TO-DO: // '/scheduledEvents' + '/pastEvents' collections document object
-⚠️ TO-DO: // '/internalUsers' collections document object
+### REMAINING ⚠️
+    -'/vendors' collection document object
+    -'/vendorUsers' collection document object
+    -'/scheduledEvents' + '/pastEvents' collections document object
+    -'/internalUsers' collections document object
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
