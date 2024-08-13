@@ -101,7 +101,6 @@ const merchant = {
         // Google will return comprehensive address data for each address field(ZIP, county, etc.)
         // This data is returned and set as array, as seen below.
 
-    formatted_address: String,
     bookedEvents: Array,
         // Populated by event IDs from '/scheduledEvents'
 
@@ -125,10 +124,53 @@ const merchantUser = {
     availableToContact: Boolean
 }
 ```
-### REMAINING ⚠️
-    -'/vendors' collection document object
-    -'/vendorUsers' collection document object
-    -'/scheduledEvents' + '/pastEvents' collections document object
-    -'/internalUsers' collections document object
+## '/vendors' collection document object
+```
+const vendor = {
+    id: v4(),
+    vendorName: String,
+    vendorContactIds: Array,
+    bookedEvents: Array,
+    avgMerchantRating: Number,
+    merchantComments: Map
+}
+```
+## '/vendorUsers' collection document object
+```
+const vendorUser = {
+    id: v4(),
+    associatedVendorId: String,
+    isAdmin: Boolean,
+    userType: String,
+    firstName: String,
+    lastName: String,
+    phone: String,
+    email: String,
+}
+```
+## 'Event' document object
+```
+const event = {
+    id: v4(),
+    associatedVendorId: String,
+    associatedMerchantId: String,
+    estStart: Number, <-- JS timestamp
+    estEnd: Number, <-- JS timestamp
+    menuLink: String,
+    menuList: Array,
+    address_components: Array
+}
+```
+## '/internalUsers' collection document object
+```
+const user = {
+    id: v4(),
+    firstName: String,
+    lastName: String,
+    phone: String,
+    email: String,
+}
+```
+
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
