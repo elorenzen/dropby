@@ -72,6 +72,10 @@ yarn preview
 bun run preview
 ```
 
+## Resources
+    - https://nuxt.com/docs/getting-started/introduction
+    - https://vuejs.org/guide/introduction.html
+
 # Roadmap
 ## firebase Setup
     - Storage
