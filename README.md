@@ -77,7 +77,7 @@ bun run preview
     - https://vuejs.org/guide/introduction.html
 
 # Roadmap
-## firebase Setup
+## Supabase Setup
     - Storage
     - Db Setup
     - Hosting
