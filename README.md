@@ -72,12 +72,12 @@ yarn preview
 bun run preview
 ```
 
-## Roadmap
-# firebase Setup
+# Roadmap
+## firebase Setup
     - Storage
     - Db Setup
     - Hosting
-# Develop Db Schema
+## Develop Db Schema
 ```
 // '/merchants' collection document object
 const merchant = {
