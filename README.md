@@ -75,6 +75,9 @@ bun run preview
 ## Resources
     - https://nuxt.com/docs/getting-started/introduction
     - https://vuejs.org/guide/introduction.html
+    - https://nuxt.com/modules/stripe-next
+    - https://supabase.com/docs/guides/getting-started/tutorials/with-nuxt-3#set-up-auth-component
+    - https://supabase.nuxtjs.org/authentication
 
 # Roadmap
 ## Supabase Setup
