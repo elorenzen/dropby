@@ -1,4 +1,6 @@
 <script setup>
+import { v4 } from 'uuid';
+
 const name = ref('')
 const website = ref('')
 const ig = ref('')
@@ -7,7 +9,7 @@ const primaryEmail = ref('')
 
 const addMerchant = async () => {
     const merchantObj = {
-        id: '', // v4(),
+        id: v4(),
         created: new Date(),
         name: name.value,
         formattedAddress: '',
