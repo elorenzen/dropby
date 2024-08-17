@@ -6,6 +6,11 @@ const links = [
     label: 'New Merchant',
     icon: 'i-heroicons-user',
     to: '/merchantSignup'
+  },
+  {
+    label: 'New Merchant User',
+    icon: 'i-heroicons-user',
+    to: '/newMerchantUser'
   }]
 ]
 </script>
