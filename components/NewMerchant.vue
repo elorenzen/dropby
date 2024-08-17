@@ -1,11 +1,23 @@
 <script setup>
 import { v4 } from 'uuid';
 
+const config = useRuntimeConfig()
+
 const name = ref('')
 const website = ref('')
 const ig = ref('')
 const primaryPhone = ref('')
 const primaryEmail = ref('')
+
+const getAddrs = (e) => {
+    setTimeout(async () => {
+        const url = 'https://api.geoapify.com/v1/geocode/autocomplete?text='
+        const encoded = encodeURI(e.target.value);
+        const apiParamStr = `&apiKey=${config.public.autocomplete}`
+        const res = await $fetch(`${url}${encoded}${apiParamStr}`, { method: 'GET'})
+        console.log('res: ', res)
+    }, 4500)
+} 
 
 const addMerchant = async () => {
     const merchantObj = {
@@ -45,7 +57,7 @@ const addMerchant = async () => {
         <UInput v-model="primaryEmail" placeholder="Primary Contact Email" />
     </div>
     <div class="m-2">
-        <UInput placeholder="Merchant Address" />
+        <UInput placeholder="Merchant Address" @input="getAddrs($event)" />
     </div>
     
     <div class="m-2">(optional) - component for listing top nearby vendors, and allow user to select "preferences"</div>
