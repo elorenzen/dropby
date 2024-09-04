@@ -1,81 +1,39 @@
 <template>
-    <v-table
-      height="300px"
-      fixed-header
-    >
-      <thead>
-        <tr>
-          <th class="text-left">
-            Name
-          </th>
-          <th class="text-left">
-            Calories
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="item in desserts"
-          :key="item.name"
-        >
-          <td>{{ item.name }}</td>
-          <td>{{ item.calories }}</td>
-        </tr>
-      </tbody>
-    </v-table>
+    <v-data-table :headers="headers" :items="merchants">
+        <template v-slot:top>
+            <v-toolbar flat>
+                <v-toolbar-title>Merchants</v-toolbar-title>
+            </v-toolbar>
+        </template>
+        <template v-slot:item.actions="{ item }">
+            <v-btn>
+                <NuxtLink :to="`/merchants/${item.id}`">View</NuxtLink>
+            </v-btn>
+        </template>
+    </v-data-table>
   </template>
 
-<script>
-export default {
-    setup () {
-        
+<script setup>
+const supabase = useSupabaseClient()
+const headers = ref([
+    { title: 'Merchant Name', key: 'merchant_name' },
+    { title: 'Website URL', key: 'website' },
+    { title: 'Instagram', key: 'instagram' },
+    { title: 'Phone Number', key: 'phone' },
+    { title: 'Email', key: 'email' },
+    { title: 'Avg. Vendor Rating', key: 'average_vendor_rating' },
+    { title: '', key: 'actions'}
+])
+const merchants = ref([])
 
-        return {
-            desserts: [
-          {
-            name: 'Frozen Yogurt',
-            calories: 159,
-          },
-          {
-            name: 'Ice cream sandwich',
-            calories: 237,
-          },
-          {
-            name: 'Eclair',
-            calories: 262,
-          },
-          {
-            name: 'Cupcake',
-            calories: 305,
-          },
-          {
-            name: 'Gingerbread',
-            calories: 356,
-          },
-          {
-            name: 'Jelly bean',
-            calories: 375,
-          },
-          {
-            name: 'Lollipop',
-            calories: 392,
-          },
-          {
-            name: 'Honeycomb',
-            calories: 408,
-          },
-          {
-            name: 'Donut',
-            calories: 452,
-          },
-          {
-            name: 'KitKat',
-            calories: 518,
-          },
-        ],
-        }
-    }
+async function getMerchants() {
+  const { data } = await supabase.from('merchants').select()
+  merchants.value = data
 }
+
+onMounted(() => {
+  getMerchants()
+})
 </script>
 
 <style lang="scss" scoped>
