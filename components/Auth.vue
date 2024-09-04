@@ -23,16 +23,18 @@ const handleLogin = async () => {
     <div class="col-6 form-widget">
       <h1 class="header">Supabase + Nuxt 3</h1>
       <p class="description">Sign in via magic link with your email below</p>
-      <div>
-        <input class="inputField" type="email" placeholder="Your email" v-model="email" />
+      <div class="m-2">
+        <UInput v-model="email" type="email" placeholder="Your email" />
       </div>
-      <div>
-        <input
-          type="submit"
-          class="button block"
-          :value="loading ? 'Loading' : 'Send magic link'"
-          :disabled="loading"
-        />
+      <div class="flex justify-center px-2">
+        <div class="m-2">
+          <UButton
+            type="submit"
+            :value="loading ? 'Loading' : 'Send magic link'"
+            :disabled="loading">
+            {{ loading ? 'Loading' : 'Send magic link' }}
+          </UButton>
+        </div>
       </div>
     </div>
   </form>
