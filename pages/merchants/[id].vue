@@ -14,8 +14,8 @@
         .from('merchants')
         .select()
         .eq('id', route.params.id)
-    console.log(data)
-    console.log(error)
+        
+    if (error) console.log(error)
     merchant.value = data
   }
 
