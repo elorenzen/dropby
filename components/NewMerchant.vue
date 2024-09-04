@@ -1,13 +1,58 @@
 <script setup>
 import { v4 } from 'uuid';
-
+const user = useSupabaseUser()
+const supabase = useSupabaseClient()
 const config = useRuntimeConfig()
 
-const name = ref('')
+// MERCHANT DATA
+const merchantName = ref('')
 const website = ref('')
 const ig = ref('')
 const primaryPhone = ref('')
 const primaryEmail = ref('')
+
+// NEW MERCHANT USER DATA
+const isAdmin = ref(true)
+const firstName = ref('')
+const lastName = ref('')
+const phone = ref(user ? user.value.phone : '')
+const email = ref(user ? user.value.email : '')
+const type = ref('merchant')
+const availableToContact = ref(true)
+
+const addMerchant = async () => {
+    const userId = v4()
+    const merchantId = v4()
+
+    const userObj = {
+        id: userId,
+        created_at: new Date(),
+        associated_merchant_id: merchantId,
+        is_admin: isAdmin.value,
+        first_name: firstName.value,
+        last_name: lastName.value,
+        phone: phone.value,
+        email: email.value,
+        type: type.value,
+        available_to_contact: availableToContact.value
+    }
+    
+    const merchantObj = {
+        id: merchantId,
+        created_at: new Date(),
+        merchant_name: merchantName.value,
+        website: website.value,
+        instagram: ig.value,
+        phone: primaryPhone.value,
+        email: primaryEmail.value,
+        average_vendor_rating: null,
+    }
+
+    const { error: userErr } = await supabase.from('users').insert(userObj)
+    console.log('userErr: ', userErr)
+    const { error: merchErr } = await supabase.from('merchants').insert(merchantObj)
+    console.log('err: ', merchErr)
+}
 
 const getAddrs = (e) => {
     setTimeout(async () => {
@@ -18,31 +63,25 @@ const getAddrs = (e) => {
         console.log('res: ', res)
     }, 4500)
 } 
-
-const addMerchant = async () => {
-    const merchantObj = {
-        id: v4(),
-        created: new Date(),
-        name: name.value,
-        formattedAddress: '',
-        address_components: [],
-        associatedIds: [],
-        website: website.value,
-        ig: ig.value,
-        primaryPhone: primaryPhone.value,
-        primaryEmail: primaryEmail.value,
-        bookedEvents: [],
-        avgVendorRating: null,
-        vendorComments: [],
-    }
-    console.log('merchant object: ', merchantObj)
-}
 </script>
 
 <template>
   <form class="form-widget" @submit.prevent="addMerchant">
     <div class="m-2">
-        <UInput v-model="name" placeholder="Merchant Name (e.g. 'McDonald's')" />
+        <UInput v-model="firstName" placeholder="First Name" />
+    </div>
+    <div class="m-2">
+        <UInput v-model="lastName" placeholder="Last Name" />
+    </div>
+    <div class="m-2">
+        <UInput v-model="phone" placeholder="Phone Number" />
+    </div>
+    <div class="m-2">
+        <UInput v-model="email" placeholder="Email Address" />
+    </div>
+    -------------
+    <div class="m-2">
+        <UInput v-model="merchantName" placeholder="Merchant Name (e.g. 'McDonald's')" />
     </div>
     <div class="m-2">
         <UInput v-model="website" placeholder="Website URL" />
@@ -56,9 +95,9 @@ const addMerchant = async () => {
     <div class="m-2">
         <UInput v-model="primaryEmail" placeholder="Primary Contact Email" />
     </div>
-    <div class="m-2">
+    <!-- <div class="m-2">
         <UInput placeholder="Merchant Address" @input="getAddrs($event)" />
-    </div>
+    </div> -->
     
     <div class="m-2">(optional) - component for listing top nearby vendors, and allow user to select "preferences"</div>
     <div class="m-2">availability component gather</div>
