@@ -1,26 +1,31 @@
 <script setup>
 import { v4 } from 'uuid';
+const user = useSupabaseUser()
+const supabase = useSupabaseClient()
 
-const isAdmin = ref(false)
+const isAdmin = ref(true)
 const firstName = ref('')
 const lastName = ref('')
-const phone = ref('')
-const email = ref('')
+const phone = ref(user ? user.value.phone : '')
+const email = ref(user ? user.value.email : '')
+const type = ref('merchant')
 const availableToContact = ref(true)
 
 const addUser = async () => {
     const userObj = {
         id: v4(),
-        created: new Date(),
-        associatedMerchantId: '', // will be populated by 'merchantId' route param
-        isAdmin: isAdmin.value,
-        firstName: firstName.value,
-        lastName: lastName.value,
+        created_at: new Date(),
+        is_admin: isAdmin.value,
+        first_name: firstName.value,
+        last_name: lastName.value,
         phone: phone.value,
         email: email.value,
-        availableToContact: availableToContact.value
+        type: type.value,
+        available_to_contact: availableToContact.value
     }
     console.log('merchant object: ', userObj)
+    const { error } = await supabase.from('users').insert(userObj)
+    console.log('error: ', error)
 }
 </script>
 
