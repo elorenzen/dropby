@@ -31,7 +31,9 @@ const signOut = async () => {
 
 <template>
     <v-toolbar color="orange-darken-4">
-      <v-toolbar-title>DropBy</v-toolbar-title>
+      <v-toolbar-title>
+        <NuxtLink to="/">DropBy</NuxtLink>
+      </v-toolbar-title>
 
       <v-spacer></v-spacer>
       <v-text-field
@@ -60,7 +62,15 @@ const signOut = async () => {
         class="mx-1"
         color="black"
         variant="outlined">
-        Login/Register
+        Login
+      </v-btn>
+
+      <v-btn
+        v-if="!user"
+        class="mx-1"
+        color="black"
+        variant="outlined">
+        <NuxtLink to="/signup">Sign Up</NuxtLink>
       </v-btn>
 
       <span v-if="user">{{ user.email }}</span>
