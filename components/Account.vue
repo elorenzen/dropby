@@ -39,6 +39,7 @@ async function updateProfile() {
     const { error } = await supabase.from('profiles').upsert(updates, {
       returning: 'minimal', // Don't return the value after inserting
     })
+
     if (error) throw error
   } catch (error) {
     alert(error.message)
@@ -52,7 +53,6 @@ async function signOut() {
     loading.value = true
     const { error } = await supabase.auth.signOut()
     if (error) throw error
-    user.value = null
   } catch (error) {
     alert(error.message)
   } finally {
@@ -63,12 +63,13 @@ async function signOut() {
 
 <template>
   <form class="form-widget" @submit.prevent="updateProfile">
+    <Avatar v-model:path="avatar_path" @upload="updateProfile" />
     <div>
       <label for="email">Email</label>
       <input id="email" type="text" :value="user.email" disabled />
     </div>
     <div>
-      <label for="username">Username</label>
+      <label for="username">Name</label>
       <input id="username" type="text" v-model="username" />
     </div>
     <div>
