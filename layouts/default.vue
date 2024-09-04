@@ -2,7 +2,9 @@
   <div>
       <UContainer class="m-4">
           <AppHeader />
-          <slot />
+          <v-container>
+            <slot />
+          </v-container>
           <!-- <AppFooter /> -->
       </UContainer>
   </div>
