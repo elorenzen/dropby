@@ -16,8 +16,6 @@ const password = ref('')
 const type = ref('merchant')
 const availableToContact = ref(true)
 
-const checkAuthBtn = ref(false)
-
 // MERCHANT DATA
 const merchantName = ref('')
 const website = ref('')
@@ -35,7 +33,7 @@ const addAuthUser = async () => {
 
     if (!error) {
         snackbar.value = true
-        checkAuthBtn.value = true
+        snacktext.value = "New user registered! Confirm registration by clicking the link sent to your email before continuing."
     }
 }
 
@@ -92,6 +90,25 @@ const addMerchant = async () => {
         console.log('userErr: ', userErr)
         const { error: merchErr } = await supabase.from('merchants').insert(merchantObj)
         console.log('err: ', merchErr)
+        if (!merchErr && !userErr) {
+            snackbar.value = true
+            snacktext.value = 'New merchant created!'
+
+            // reset fields
+            firstName.value = ''
+            lastName.value = ''
+            phone.value = ''
+            email.value = ''
+            password.value = ''
+
+            merchantName.value = ''
+            website.value = ''
+            ig.value = ''
+            merchantPhone.value = ''
+            merchantEmail.value = ''
+
+            await navigateTo(`/merchants/${merchantId}`)
+        }
     }
 }
 
@@ -179,7 +196,7 @@ const getAddrs = (e) => {
       v-model="snackbar"
       timeout="6000"
     >
-      {{ text }}
+      {{ snacktext }}
 
       <template v-slot:actions>
         <v-btn
