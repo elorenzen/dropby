@@ -134,9 +134,6 @@ const getAddrs = (e) => {
         <v-row>
             <v-btn @click="addAuthUser" block>Add User</v-btn>
         </v-row>
-        <v-row v-if="checkAuthBtn">
-            <v-btn @click="checkAuthStateChg"></v-btn>
-        </v-row>
 
         <v-divider class="mb-4"></v-divider>
 
