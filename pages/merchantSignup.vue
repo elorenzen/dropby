@@ -4,7 +4,7 @@ const user = useSupabaseUser()
 
 <template>
   <div class="flex justify-center p-2">
-      <h1 class="text-4xl">New Merchant</h1>
+      <h2 class="text-4xl">New Merchant</h2>
   </div>
   <div class="container">
     <NewMerchant />
