@@ -127,7 +127,7 @@ const getAddrs = (e) => {
                 ></v-text-field>
             </v-col>
             <v-col cols="12">
-                <v-text-field density="compact" outlined v-model="password" placeholder="Password"
+                <v-text-field density="compact" outlined v-model="password" placeholder="Password" type="password"
                 ></v-text-field>
             </v-col>
         </v-row>

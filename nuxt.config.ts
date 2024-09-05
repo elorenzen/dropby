@@ -3,14 +3,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
   modules: [
-    "@nuxt/ui", 
-    "@nuxtjs/tailwindcss", 
+    "@nuxt/ui",
+    "@nuxtjs/tailwindcss",
     "@nuxtjs/supabase",
-    "vuetify-nuxt-module"
+    "vuetify-nuxt-module",
+    "@nuxt/scripts"
   ],
   runtimeConfig: {
     public: {
-      autocomplete: process.env.GEO_KEY
+      autocomplete: process.env.GEO_KEY,
+      gMapKey: process.env.GMAPS_API_KEY
     }
   },
   supabase: {

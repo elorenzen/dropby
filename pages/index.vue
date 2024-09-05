@@ -10,6 +10,7 @@
         <!-- <Account v-if="user" />
         <Auth v-else /> -->
         <MerchantList />
+        <MapView />
     </div>
     </div>
   </template>
