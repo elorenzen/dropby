@@ -6,8 +6,8 @@ const supabase = useSupabaseClient()
 const isAdmin = ref(true)
 const firstName = ref('')
 const lastName = ref('')
-const phone = ref(user ? user.value.phone : '')
-const email = ref(user ? user.value.email : '')
+const phone = ref('')
+const email = ref('')
 const type = ref('merchant')
 const availableToContact = ref(true)
 
@@ -30,21 +30,29 @@ const addUser = async () => {
 </script>
 
 <template>
-  <form class="form-widget" @submit.prevent="addUser">
-    <div class="m-2">
-        <UInput v-model="firstName" placeholder="First Name" />
-    </div>
-    <div class="m-2">
-        <UInput v-model="lastName" placeholder="Last Name" />
-    </div>
-    <div class="m-2">
-        <UInput v-model="phone" placeholder="Phone Number" />
-    </div>
-    <div class="m-2">
-        <UInput v-model="email" placeholder="Email Address" />
-    </div>
-    <div class="flex justify-center px-2">
-        <div class="m-2"><UButton @click="addUser">Add User</UButton></div>
-    </div>
-  </form>
+  <v-container class="flex justify-center p-2">
+      <form class="form-widget" @submit.prevent="addUser">
+          <v-row dense>
+              <v-col cols="12">
+                  <v-text-field density="compact" outlined v-model="firstName" placeholder="First Name"
+                  ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                  <v-text-field density="compact" outlined v-model="lastName" placeholder="Last Name"
+                  ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                  <v-text-field density="compact" outlined v-model="phone" placeholder="Phone Number"
+                  ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                  <v-text-field density="compact" outlined v-model="email" placeholder="Email"
+                  ></v-text-field>
+              </v-col>
+          </v-row>
+              <v-btn
+                  @click="addUser"
+              >Add User</v-btn>
+      </form>
+  </v-container>
 </template>
