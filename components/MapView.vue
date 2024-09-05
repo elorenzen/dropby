@@ -5,6 +5,8 @@ const isLoaded = ref(false)
 const center = ref()
 const maps = ref()
 
+const config = useRuntimeConfig()
+
 const query = ref({
   lat:  -37.7995487,
   lng: 144.9867841,
@@ -46,7 +48,7 @@ function handleReady({ map }) {
       ref="maps"
       :center="query"
       :markers="markers"
-      api-key="AIzaSyAOEIQ_xOdLx2dNwnFMzyJoswwvPCTcGzU"
+      :api-key="config.public.gMapKey"
       class="group"
       above-the-fold
       @ready="handleReady"
