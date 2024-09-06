@@ -1,9 +1,8 @@
 <template>
-    <span>Merchant ID: {{ $route.params.id }}</span>
-    {{ merchant }}
+    <MerchantCard :merchant="merchant[0]" />
   </template>
   
-  <script setup>
+<script setup>
   const route = useRoute()
   const supabase = useSupabaseClient()
   console.log(route.params) // { id: '123' }
@@ -22,7 +21,7 @@
   onMounted(() => {
     getMerchant()
   })
-  </script>
+</script>
 
 <style lang="scss" scoped>
 
