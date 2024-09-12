@@ -9,7 +9,7 @@ const user = useSupabaseUser()
     <v-row class="flex justify-center p-2">
         <v-btn
             class="mx-1"
-            color="orange-darken-4"
+            color="#e28413"
             variant="outlined">
             <NuxtLink to="/merchantSignup">
                 Merchant
@@ -17,7 +17,7 @@ const user = useSupabaseUser()
         </v-btn>
         <v-btn
             class="mx-1"
-            color="orange-darken-4"
+            color="#e28413"
             variant="outlined">
             <NuxtLink to="/vendorSignup">
                 Vendor

@@ -30,7 +30,7 @@ const signOut = async () => {
 </script>
 
 <template>
-    <v-toolbar color="orange-darken-4">
+    <v-toolbar color="#e28413">
       <v-toolbar-title>
         <NuxtLink to="/">DropBy</NuxtLink>
       </v-toolbar-title>
@@ -60,7 +60,7 @@ const signOut = async () => {
         @click="fireAuth"
         :disabled="email == '' || password == ''"
         class="mx-1"
-        color="black"
+        color="#000022"
         variant="outlined">
         Login
       </v-btn>
@@ -68,7 +68,7 @@ const signOut = async () => {
       <v-btn
         v-if="!user"
         class="mx-1"
-        color="black"
+        color="#000022"
         variant="outlined">
         <NuxtLink to="/signup">Sign Up</NuxtLink>
       </v-btn>
@@ -78,7 +78,7 @@ const signOut = async () => {
         v-if="user"
         @click="signOut"
         class="mx-1"
-        color="black"
+        color="#000022"
         variant="outlined">
         Sign Out
       </v-btn>

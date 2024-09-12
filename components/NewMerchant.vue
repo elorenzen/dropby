@@ -207,7 +207,7 @@ const getAddrs = (e) => {
 
       <template v-slot:actions>
         <v-btn
-          color="black"
+          color="#000022"
           variant="text"
           @click="snackbar = false"
         >
