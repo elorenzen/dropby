@@ -1,8 +1,8 @@
 <template>
+    <MerchantCard v-if="merchant && merchant.length > 0" :merchant="merchant[0]" />
     <!-- 
-      SEE WHY COMMENTED OUT BELOW 
-      <MerchantCard v-if="merchant && merchant.length > 0" :merchant="merchant[0]" /> -->
-      <MerchantCard v-if="merchant && merchant != ''" :merchant="merchant" />
+      SEE WHY COMMENTED OUT BELOW -->
+      <!-- <MerchantCard v-if="merchant && merchant != ''" :merchant="merchant" /> -->
   </template>
   
 <script setup>
@@ -22,7 +22,6 @@
     merchant.value = data
 
     // TESTING OBJ HERE TO PASS AS PROP WITHOUT INCURRING COSTS FROM API CALL
-  
     // merchant.value = { 
     //   average_vendor_rating: null,
     //   created_at: "2024-09-05T16:16:37.245+00:00",
