@@ -29,6 +29,13 @@ const addAuthUser = async () => {
     const { data, error } = await supabase.auth.signUp({
       email: email.value,
       password: password.value,
+      options: {
+        data: {
+            first_name: firstName.value,
+            last_name: lastName.value,
+            user_type: type.value
+        }
+      }
     })
     console.log('data: ', data)
     console.log('error: ', error)
