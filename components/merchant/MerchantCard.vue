@@ -12,14 +12,17 @@
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </v-toolbar>
-
     <v-row>
       <v-col cols="4">
         <!-- WILL BE REPLACED WITH /Avatar.vue -->
+        <!-- <form class="form-widget" @submit.prevent="updateAvatar">
+          <Avatar v-model:path="avatar_path" @upload="updateAvatar" />
+        </form> -->
         <v-img
           height="250"
           src="https://cdn.vuetifyjs.com/images/cards/cooking.png"
         ></v-img>
+
       </v-col>
       
       <v-col cols="8">
@@ -137,10 +140,47 @@ const loading = ref(true)
 const props = defineProps(['merchant']);
 const merchant = ref(props.merchant)
 console.log('merchant: ', merchant)
+const supabase = useSupabaseClient()
 
+const avatar_path = ref('')
+
+loading.value = true
+
+const { data, error } = await supabase
+  .from('merchants')
+  .select(`id, avatar_url`)
+  .eq('id', merchant.value.id)
+  .single()
+
+if (data) {
+  console.log('merchant data: ', data)
+  avatar_path.value = data.avatar_url
+} else console.log(error)
+
+loading.value = false
+
+async function updateAvatar() {
+  try {
+    loading.value = true
+
+    const updates = {
+      avatar_url: avatar_path.value,
+      updated_at: new Date(),
+    }
+
+    const { error } = await supabase
+      .from('merchants')
+      .update(updates)
+      .eq('id', merchant.value.id)
+
+    if (error) throw error
+  } catch (error) {
+    alert(error.message)
+  } finally {
+    loading.value = false
+  }
+}
 loading.value = false
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

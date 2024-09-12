@@ -12,7 +12,7 @@ const files = ref()
 
 const downloadImage = async () => {
   try {
-    const { data, error } = await supabase.storage.from('avatars').download(path.value)
+    const { data, error } = await supabase.storage.from('merchant_avatars').download(path.value)
     if (error) throw error
     src.value = URL.createObjectURL(data)
   } catch (error) {
@@ -34,9 +34,9 @@ const uploadAvatar = async (evt) => {
     const fileName = `${Math.random()}.${fileExt}`
     const filePath = `${fileName}`
 
-    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
+    const { error: uploadError } = await supabase.storage.from('merchant_avatars').upload(filePath, file)
 
-    if (uploadError) throw uploadError
+    if (uploadError) console.error(uploadError)
 
     emit('update:path', filePath)
     emit('upload')
@@ -68,17 +68,11 @@ watch(path, () => {
     <div v-else class="avatar no-image" :style="{ height: size, width: size }" />
 
     <div style="width: 10em; position: relative;">
-      <label class="button primary block" for="single">
-        {{ uploading ? 'Uploading ...' : 'Upload' }}
-      </label>
-      <input
-        style="position: absolute; visibility: hidden;"
-        type="file"
-        id="single"
-        accept="image/*"
+      <v-file-input
+        :label="uploading ? 'Uploading ...' : 'Upload'"
         @change="uploadAvatar"
         :disabled="uploading"
-      />
+      ></v-file-input>
     </div>
   </div>
 </template>
