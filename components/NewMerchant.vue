@@ -5,6 +5,7 @@ const supabase = useSupabaseClient()
 const config = useRuntimeConfig()
 
 const snackbar = ref(false)
+const snacktext = ref('')
 
 // NEW MERCHANT USER DATA
 const isAdmin = ref(true)
