@@ -18,6 +18,7 @@ const availableToContact = ref(true)
 
 // MERCHANT DATA
 const merchantName = ref('')
+const merchantDesc = ref('')
 const website = ref('')
 const ig = ref('')
 const merchantPhone = ref('')
@@ -79,6 +80,7 @@ const addMerchant = async () => {
             id: merchantId,
             created_at: new Date(),
             merchant_name: merchantName.value,
+            merchant_description: merchantDesc.value,
             website: website.value,
             instagram: ig.value,
             phone: merchantPhone.value,
@@ -102,6 +104,7 @@ const addMerchant = async () => {
             password.value = ''
 
             merchantName.value = ''
+            merchantDesc.value = ''
             website.value = ''
             ig.value = ''
             merchantPhone.value = ''
@@ -159,6 +162,10 @@ const getAddrs = (e) => {
             <v-col cols="12">
                 <v-text-field density="compact" :disabled="!user" outlined v-model="merchantName" placeholder="Merchant Name (e.g. 'McDonald's')"
                 ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+                <v-textarea density="compact" :disabled="!user" outlined v-model="merchantDesc" placeholder="Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')"
+                ></v-textarea>
             </v-col>
             <v-col cols="6">
                 <v-text-field density="compact" :disabled="!user" outlined v-model="website" placeholder="Website URL"
