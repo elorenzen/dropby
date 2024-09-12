@@ -52,7 +52,8 @@ async function signOut() {
   try {
     loading.value = true
     const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    if (error) console.log(error)
+    await navigateTo('/')
   } catch (error) {
     alert(error.message)
   } finally {
