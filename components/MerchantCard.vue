@@ -4,7 +4,8 @@
       class="mx-auto my-12"
       max-width="800"
     >
-      <template slot="progress">
+      {{ merchant }}
+      <!-- <template slot="progress">
         <v-progress-linear
           color="deep-purple"
           height="10"
@@ -71,22 +72,17 @@
         >
           Reserve
         </v-btn>
-      </v-card-actions>
+      </v-card-actions> -->
     </v-card>
 </template>
 
 <script setup>
-const props = defineProps({
-  merchant: {
-    type: Object,
-    required: true,
-  },
-});
-const { merchant } = props
+const loading = ref(true)
+const props = defineProps(['merchant']);
+const merchant = ref(props.merchant)
 console.log('merchant: ', merchant)
 
-const loading = ref(false)
-
+loading.value = false
 </script>
 
 <style lang="scss" scoped>

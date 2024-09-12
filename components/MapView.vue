@@ -54,7 +54,7 @@ function handleReady({ map }) {
       @ready="handleReady"
     />
   </div>
-  <div class="text-center">
+  <!-- <div class="text-center">
     <UAlert v-if="!isLoaded" class="mb-5" size="sm" color="blue" variant="soft" title="Static Image: Hover to load interactive" description="Hovering the map will trigger the Google Maps script to load and init the map." />
     <UAlert v-if="isLoaded" class="mb-5" size="sm" color="blue" variant="soft" title="Interactive Map">
       <template #description>
@@ -67,6 +67,6 @@ function handleReady({ map }) {
     <UButton v-if="markers.length" @click="removeMarkers" type="button" color="gray" variant="ghost" class="">
       Remove Markers
     </UButton>
-  </div>
+  </div> -->
 </div>
 </template>
