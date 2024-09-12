@@ -4,7 +4,63 @@
       class="mx-auto my-12"
       max-width="800"
     >
-      {{ merchant }}
+    <v-toolbar color="#e28413" density="compact">
+      <v-toolbar-title>{{ merchant.merchant_name }}</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+      <v-btn icon>
+        <v-icon>mdi-cog</v-icon>
+      </v-btn>
+    </v-toolbar>
+
+    <v-row>
+      <v-col cols="4">
+        <!-- WILL BE REPLACED WITH /Avatar.vue -->
+        <v-img
+          height="250"
+          src="https://cdn.vuetifyjs.com/images/cards/cooking.png"
+        ></v-img>
+      </v-col>
+      
+      <v-col cols="8">
+        <v-row class="mt-2">
+          {{ merchant.merchant_description }}
+        </v-row>
+
+        <v-divider class="my-2" />
+
+        <v-row>
+          <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2" readonly>
+            <template v-slot:prepend><v-icon></v-icon></template>
+            <NuxtLink>{{ merchant.formatted_address ? merchant.formatted_address : 'No address on file' }}</NuxtLink>
+          </v-btn>
+        </v-row>
+        <v-row>
+          <v-btn prepend-icon="mdi-phone" variant="plain" readonly>
+            <template v-slot:prepend><v-icon></v-icon></template>
+            <NuxtLink>{{ merchant.phone }}</NuxtLink>
+          </v-btn>
+        </v-row>
+        <v-row>
+          <v-btn prepend-icon="mdi-web" variant="plain">
+            <template v-slot:prepend><v-icon></v-icon></template>
+            <NuxtLink :to="merchant.website" target="_blank">Website</NuxtLink>
+          </v-btn>
+        </v-row>
+        <v-row>
+          <v-btn prepend-icon="mdi-instagram" variant="plain">
+            <template v-slot:prepend><v-icon></v-icon></template>
+            <NuxtLink :to="merchant.instagram" target="_blank">Instagram</NuxtLink>
+          </v-btn>
+        </v-row>
+        <v-row>
+          <v-btn prepend-icon="mdi-email" variant="plain">
+            <template v-slot:prepend><v-icon></v-icon></template>
+            <NuxtLink :to="`mailto:${merchant.email}`" target="_blank">Email</NuxtLink>
+          </v-btn>
+        </v-row>
+      </v-col>
+    </v-row>
       <!-- <template slot="progress">
         <v-progress-linear
           color="deep-purple"
