@@ -7,6 +7,6 @@ const user = useSupabaseUser()
       <h2 class="text-4xl">New Vendor</h2>
   </div>
   <div class="container">
-    <NewVendor />
+    <VendorNewVendor />
   </div>
 </template>
