@@ -1,4 +1,9 @@
 <script setup>
+// THIS FILE MAY BE DELETED IN THE FUTURE.
+//      Disregard for now...
+//      All functionality below exists in
+//      '/components/NewMerchant.vue'
+
 import { v4 } from 'uuid';
 const user = useSupabaseUser()
 const supabase = useSupabaseClient()
