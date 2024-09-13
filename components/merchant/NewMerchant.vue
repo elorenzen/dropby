@@ -98,7 +98,7 @@ const addMerchant = async () => {
             merchantPhone.value = ''
             merchantEmail.value = ''
 
-            await navigateTo(`/merchants/${merchantId}`)
+            navigateTo(`/merchants/${merchantId}`)
         }
     }
 }

@@ -80,7 +80,7 @@ const signOut = async () => {
         class="mx-1"
         color="#000022"
         variant="outlined">
-        Sign Out
+        <NuxtLink to="/">Sign Out</NuxtLink>
       </v-btn>
     </v-toolbar>
 </template>
