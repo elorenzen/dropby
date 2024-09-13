@@ -8,8 +8,8 @@ const maps = ref()
 const config = useRuntimeConfig()
 
 const query = ref({
-  lat:  -37.7995487,
-  lng: 144.9867841,
+  lat:  33.957330,
+  lng: -118.441432,
 })
 
 const markers = ref([])
@@ -42,7 +42,6 @@ function handleReady({ map }) {
 </script>
 
 <template>
-<div class="not-prose">
   <div class="flex items-center justify-center p-5">
     <ScriptGoogleMaps
       ref="maps"
@@ -68,5 +67,4 @@ function handleReady({ map }) {
       Remove Markers
     </UButton>
   </div> -->
-</div>
 </template>

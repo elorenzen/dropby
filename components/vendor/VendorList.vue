@@ -1,8 +1,8 @@
 <template>
-    <v-data-table :headers="headers" :items="merchants">
+    <v-data-table :headers="headers" :items="vendors">
         <template v-slot:item.actions="{ item }">
             <v-btn icon variant="plain">
-                <NuxtLink :to="`/merchants/${item.id}`">
+                <NuxtLink :to="`/vendors/${item.id}`">
                     <v-icon>mdi-eye</v-icon>
                 </NuxtLink>
             </v-btn>
@@ -13,23 +13,23 @@
 <script setup>
 const supabase = useSupabaseClient()
 const headers = ref([
-    { title: 'Name', key: 'merchant_name' },
+    { title: 'Name', key: 'vendor_name' },
     { title: 'Website URL', key: 'website' },
     { title: 'Instagram', key: 'instagram' },
     { title: 'Phone Number', key: 'phone' },
     { title: 'Email', key: 'email' },
-    { title: 'Avg. Vendor Rating', key: 'average_vendor_rating' },
+    { title: 'Avg. Merchant Rating', key: 'average_merchant_rating' },
     { title: '', key: 'actions'}
 ])
-const merchants = ref([])
+const vendors = ref([])
 
-async function getMerchants() {
-  const { data } = await supabase.from('merchants').select()
-  merchants.value = data
+async function getVendors() {
+  const { data } = await supabase.from('vendors').select()
+  vendors.value = data
 }
 
 onMounted(() => {
-  getMerchants()
+  getVendors()
 })
 </script>
 
