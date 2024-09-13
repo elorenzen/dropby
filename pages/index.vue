@@ -21,10 +21,12 @@ const user = useSupabaseUser()
         <div class="flex justify-center p-2">
             <h3 class="text-2xl">Welcome to DropBy!</h3>
         </div>
-        <!-- <Account v-if="user" />
-        <Auth v-else /> -->
-        <MerchantList v-if="user" />
-        <MapView />
+        <v-row class="flex justify-center">
+          <MapView />
+        </v-row>
+        <v-row class="flex justify-center">
+          <MainList />
+        </v-row>
     </div>
-    </div>
-  </template>
+  </div>
+</template>
