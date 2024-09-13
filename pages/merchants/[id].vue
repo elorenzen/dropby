@@ -8,7 +8,6 @@
 <script setup>
   const route = useRoute()
   const supabase = useSupabaseClient()
-  console.log(route.params) // { id: '123' }
   const merchant = ref('')
 
   async function getMerchant() {
@@ -17,7 +16,6 @@
         .select()
         .eq('id', route.params.id)
       
-    if (data) console.log('data: ', data)
     if (error) console.log(error)
     merchant.value = data
 

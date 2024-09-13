@@ -139,7 +139,6 @@
 const loading = ref(true)
 const props = defineProps(['merchant']);
 const merchant = ref(props.merchant)
-console.log('merchant: ', merchant)
 const supabase = useSupabaseClient()
 
 const avatar_path = ref('')
@@ -153,7 +152,6 @@ const { data, error } = await supabase
   .single()
 
 if (data) {
-  console.log('merchant data: ', data)
   avatar_path.value = data.avatar_url
 } else console.log(error)
 

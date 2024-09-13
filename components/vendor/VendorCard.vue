@@ -80,7 +80,6 @@
 const loading = ref(true)
 const props = defineProps(['vendor']);
 const vendor = ref(props.vendor)
-console.log('vendor: ', vendor)
 
 loading.value = false
 </script>

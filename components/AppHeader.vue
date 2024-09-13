@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-console.log(user.value)
 
 const loading = ref(false)
 const email = ref('')
@@ -18,13 +17,11 @@ const fireAuth = async () => {
       password: password.value,
     })
   } else if (!error && data) {
-    console.log('data: ', data)
     const { data: userData, error: userErr } = await supabase
       .from('users')
       .select()
       .eq('id', data.user.id)
 
-    console.log('userData: ', userData)
     if (userData && userData.length > 0) {
       navigateTo(
         userData[0].associated_merchant_id ?

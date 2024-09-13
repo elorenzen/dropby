@@ -28,7 +28,6 @@ const addUser = async () => {
         type: type.value,
         available_to_contact: availableToContact.value
     }
-    console.log('merchant object: ', userObj)
     const { error } = await supabase.from('users').insert(userObj)
     console.log('error: ', error)
 }

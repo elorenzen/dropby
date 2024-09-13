@@ -37,7 +37,6 @@ const addAuthUser = async () => {
         }
       }
     })
-    console.log('data: ', data)
     console.log('error: ', error)
 
     if (!error) {
@@ -109,7 +108,6 @@ const getAddrs = (e) => {
         const encoded = encodeURI(e.target.value);
         const apiParamStr = `&apiKey=${config.public.autocomplete}`
         const res = await $fetch(`${url}${encoded}${apiParamStr}`, { method: 'GET'})
-        console.log('res: ', res)
     }, 4500)
 } 
 </script>
