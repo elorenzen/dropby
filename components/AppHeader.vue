@@ -13,10 +13,25 @@ const fireAuth = async () => {
     password: password.value,
   })
   if (error) {
-    const { data, error } = await supabase.auth.signUp({
+    await supabase.auth.signUp({
       email: email.value,
       password: password.value,
     })
+  } else if (!error && data) {
+    console.log('data: ', data)
+    const { data: userData, error: userErr } = await supabase
+      .from('users')
+      .select()
+      .eq('id', data.user.id)
+
+    console.log('userData: ', userData)
+    if (userData && userData.length > 0) {
+      navigateTo(
+        userData[0].associated_merchant_id ?
+        `/merchants/${userData[0].associated_merchant_id}` :
+        `/vendors/${userData[0].associated_vendor_id}`   
+      )
+    }
   }
 
 }
