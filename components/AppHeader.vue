@@ -5,6 +5,12 @@ const user = useSupabaseUser()
 const loading = ref(false)
 const email = ref('')
 const password = ref('')
+const items = ref(
+  [
+    { title: 'Click Me' },
+    { title: 'Click Me' },
+  ]
+)
 
 const fireAuth = async () => {
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -77,13 +83,36 @@ const signOut = async () => {
         Login
       </v-btn>
 
-      <v-btn
-        v-if="!user"
-        class="mx-1"
-        color="#000022"
-        variant="outlined">
-        <NuxtLink to="/signup">Sign Up</NuxtLink>
-      </v-btn>
+      <v-menu location="bottom">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-if="!user"
+            class="mx-1"
+            color="#000022"
+            variant="outlined"
+            v-bind="props"
+          >
+            Sign Up
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item>
+            <v-list-item-title>
+              <NuxtLink to="/merchantSignup">
+                As Merchant
+              </NuxtLink>
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-title>
+              <NuxtLink to="/vendorSignup">
+                As Vendor
+              </NuxtLink>
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
       <span v-if="user">{{ user.email }}</span>
       <v-btn
