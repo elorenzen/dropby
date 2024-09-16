@@ -7,6 +7,9 @@ const config = useRuntimeConfig()
 const snackbar = ref(false)
 const snacktext = ref('')
 
+const newUserLoading = ref(false)
+const newMerchantLoading = ref(false)
+
 // NEW MERCHANT USER DATA
 const isAdmin = ref(true)
 const firstName = ref('')
@@ -138,7 +141,7 @@ const getAddrs = (e) => {
             </v-col>
         </v-row>
         <v-row>
-            <v-btn @click="addAuthUser" block>Add User</v-btn>
+            <v-btn @click="addAuthUser" block :loading="newUserLoading">Add User</v-btn>
         </v-row>
 
         <v-divider class="mb-4"></v-divider>
@@ -182,6 +185,7 @@ const getAddrs = (e) => {
                 small
                 block
                 :disabled="!user"
+                :loading="newMerchantLoading"
             >Add Merchant</v-btn>
         </v-row>
     </form>

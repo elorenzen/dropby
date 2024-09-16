@@ -13,6 +13,7 @@ const items = ref(
 )
 
 const fireAuth = async () => {
+  loading.value = true
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.value,
     password: password.value,
@@ -36,7 +37,7 @@ const fireAuth = async () => {
       )
     }
   }
-
+  loading.value = false
 }
 
 const signOut = async () => {
@@ -77,6 +78,7 @@ const signOut = async () => {
         v-if="!user"
         @click="fireAuth"
         :disabled="email == '' || password == ''"
+        :loading="loading"
         class="mx-1"
         color="#000022"
         variant="outlined">
@@ -118,6 +120,7 @@ const signOut = async () => {
       <v-btn
         v-if="user"
         @click="signOut"
+        :loading="loading"
         class="mx-1"
         color="#000022"
         variant="outlined">

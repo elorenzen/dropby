@@ -7,6 +7,9 @@ const config = useRuntimeConfig()
 const snackbar = ref(false)
 const snacktext = ref('')
 
+const newUserLoading = ref(false)
+const newVendorLoading = ref(false)
+
 // NEW VENDOR USER DATA
 const isAdmin = ref(true)
 const firstName = ref('')
@@ -26,6 +29,7 @@ const vendorPhone = ref('')
 const vendorEmail = ref('')
 
 const addAuthUser = async () => {
+    newUserLoading.value = true
     const { data, error } = await supabase.auth.signUp({
       email: email.value,
       password: password.value,
@@ -43,9 +47,11 @@ const addAuthUser = async () => {
         snackbar.value = true
         snacktext.value = "New user registered! Confirm registration by clicking the link sent to your email before continuing."
     }
+    newUserLoading.value = false
 }
 
 const addVendor = async () => {
+    newMerchant.value = true
     if (user) {
         const authUserId = user.value.id
         const vendorId = v4()
@@ -100,6 +106,7 @@ const addVendor = async () => {
             navigateTo(`/merchants/${vendorId}`)
         }
     }
+    newMerchant.value = false
 }
 
 const getAddrs = (e) => {
