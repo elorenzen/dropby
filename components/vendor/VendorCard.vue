@@ -1,89 +1,118 @@
 <template>
-    <v-card
-      :loading="loading"
-      class="mx-auto my-12"
-      max-width="800"
-    >
-      {{ vendor }}
-      <!-- <template slot="progress">
-        <v-progress-linear
-          color="deep-purple"
-          height="10"
-          indeterminate
-        ></v-progress-linear>
-      </template>
-  
+  <v-card
+    :loading="loading"
+    class="mx-auto my-12"
+    max-width="800"
+  >
+  <v-toolbar color="#e28413" density="compact">
+    <v-toolbar-title>{{ vendor.vendor_name }}</v-toolbar-title>
+
+    <v-spacer></v-spacer>
+    <v-btn icon>
+      <v-icon>mdi-cog</v-icon>
+    </v-btn>
+  </v-toolbar>
+  <v-row>
+    <v-col cols="4">
+      <!-- WILL BE REPLACED WITH /Avatar.vue -->
+      <!-- <form class="form-widget" @submit.prevent="updateAvatar">
+        <Avatar v-model:path="avatar_path" @upload="updateAvatar" />
+      </form> -->
       <v-img
         height="250"
         src="https://cdn.vuetifyjs.com/images/cards/cooking.png"
       ></v-img>
-      <v-card-title>{{ vendor.vendor_name }}</v-card-title>
-  
-      <v-card-text>
-        <v-row
-          class="mx-0 align-middle"
-        >
-          <v-rating
-            :value="4.5"
-            color="amber"
-            dense
-            half-increments
-            readonly
-            size="14"
-          ></v-rating>
-  
-          <div class="grey--text ms-4">
-            4.5 (413)
-          </div>
-        </v-row>
-  
-        <div class="my-4 text-subtitle-1">
-          $ • Italian, Cafe
-        </div>
-  
-        <div>Small plates, salads & sandwiches - an intimate setting with 12 indoor seats plus patio seating.</div>
-      </v-card-text>
-  
-      <v-divider class="mx-4"></v-divider>
-  
-      <v-card-title>Tonight's availability</v-card-title>
-  
-      <v-card-text>
-        <v-chip-group
-          v-model="selection"
-          active-class="deep-purple accent-4 white--text"
-          column
-        >
-          <v-chip>5:30PM</v-chip>
-  
-          <v-chip>7:30PM</v-chip>
-  
-          <v-chip>8:00PM</v-chip>
-  
-          <v-chip>9:00PM</v-chip>
-        </v-chip-group>
-      </v-card-text>
-  
-      <v-card-actions>
-        <v-btn
-          color="deep-purple lighten-2"
-          text
-          @click="reserve"
-        >
-          Reserve
+
+    </v-col>
+    
+    <v-col cols="8">
+      <v-row class="mt-2">
+        {{ vendor.vendor_description }}
+      </v-row>
+
+      <v-divider class="my-2" />
+
+      <v-row>
+        <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2" readonly>
+          <template v-slot:prepend><v-icon></v-icon></template>
+          <NuxtLink>{{ vendor.formatted_address ? vendor.formatted_address : 'No address on file' }}</NuxtLink>
         </v-btn>
-      </v-card-actions> -->
-    </v-card>
+      </v-row>
+      <v-row>
+        <v-btn prepend-icon="mdi-phone" variant="plain" readonly>
+          <template v-slot:prepend><v-icon></v-icon></template>
+          <NuxtLink>{{ vendor.phone }}</NuxtLink>
+        </v-btn>
+      </v-row>
+      <v-row>
+        <v-btn prepend-icon="mdi-web" variant="plain">
+          <template v-slot:prepend><v-icon></v-icon></template>
+          <NuxtLink :to="vendor.website" target="_blank">Website</NuxtLink>
+        </v-btn>
+      </v-row>
+      <v-row>
+        <v-btn prepend-icon="mdi-instagram" variant="plain">
+          <template v-slot:prepend><v-icon></v-icon></template>
+          <NuxtLink :to="vendor.instagram" target="_blank">Instagram</NuxtLink>
+        </v-btn>
+      </v-row>
+      <v-row>
+        <v-btn prepend-icon="mdi-email" variant="plain">
+          <template v-slot:prepend><v-icon></v-icon></template>
+          <NuxtLink :to="`mailto:${vendor.email}`" target="_blank">Email</NuxtLink>
+        </v-btn>
+      </v-row>
+    </v-col>
+  </v-row>
+  </v-card>
 </template>
 
 <script setup>
+
 const loading = ref(true)
 const props = defineProps(['vendor']);
 const vendor = ref(props.vendor)
+const supabase = useSupabaseClient()
 
+const avatar_path = ref('')
+
+loading.value = true
+
+const { data, error } = await supabase
+.from('vendors')
+.select(`id, avatar_url`)
+.eq('id', vendor.value.id)
+.single()
+
+if (data) {
+avatar_path.value = data.avatar_url
+} else console.log(error)
+
+loading.value = false
+
+
+async function updateAvatar() {
+  try {
+    loading.value = true
+
+    const updates = {
+      avatar_url: avatar_path.value,
+      updated_at: new Date(),
+    }
+
+    const { error } = await supabase
+      .from('vendors')
+      .update(updates)
+      .eq('id', vendor.value.id)
+
+    if (error) throw error
+  } catch (error) {
+    alert(error.message)
+  } finally {
+    loading.value = false
+  }
+}
 loading.value = false
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>
