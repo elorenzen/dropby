@@ -5,12 +5,6 @@ const user = useSupabaseUser()
 const loading = ref(false)
 const email = ref('')
 const password = ref('')
-const items = ref(
-  [
-    { title: 'Click Me' },
-    { title: 'Click Me' },
-  ]
-)
 
 const fireAuth = async () => {
   loading.value = true
@@ -41,7 +35,9 @@ const fireAuth = async () => {
 }
 
 const signOut = async () => {
+  console.log('signing out')
   const { error } = await supabase.auth.signOut()
+  console.log('error: ', error)
   email.value = ''
   password.value = ''
 }
