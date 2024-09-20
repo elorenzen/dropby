@@ -1,5 +1,5 @@
 <template>
-    <VendorCard v-if="vendor && vendor != ''" :vendor="vendor" />
+    <VendorCard v-if="vendor && vendor.length > 0" :vendor="vendor[0]" />
 </template>
   
 <script setup>
