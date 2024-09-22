@@ -37,6 +37,10 @@ const uploadAvatar = async (evt) => {
     const { error: uploadError } = await supabase.storage.from('merchant_avatars').upload(filePath, file)
 
     if (uploadError) console.error(uploadError)
+    else {
+      const { data } = supabase.storage.from('merchant_avatars').getPublicUrl(filePath)
+      emit('upload', data.publicUrl)
+    }
 
     emit('update:path', filePath)
     emit('upload')
