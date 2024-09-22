@@ -1,5 +1,6 @@
 <script setup>
-const props = defineProps(['path'])
+const props = defineProps(['path', 'bucketType'])
+const bucket = ref(props.bucketType)
 const { path } = toRefs(props)
 
 const emit = defineEmits(['update:path', 'upload'])
@@ -12,7 +13,7 @@ const files = ref()
 
 const downloadImage = async () => {
   try {
-    const { data, error } = await supabase.storage.from('merchant_avatars').download(path.value)
+    const { data, error } = await supabase.storage.from(`${bucket.value}_avatars`).download(path.value)
     if (error) throw error
     src.value = URL.createObjectURL(data)
   } catch (error) {
@@ -34,11 +35,11 @@ const uploadAvatar = async (evt) => {
     const fileName = `${Math.random()}.${fileExt}`
     const filePath = `${fileName}`
 
-    const { error: uploadError } = await supabase.storage.from('merchant_avatars').upload(filePath, file)
+    const { error: uploadError } = await supabase.storage.from(`${bucket.value}_avatars`).upload(filePath, file)
 
     if (uploadError) console.error(uploadError)
     else {
-      const { data } = supabase.storage.from('merchant_avatars').getPublicUrl(filePath)
+      const { data } = supabase.storage.from(`${bucket.value}_avatars`).getPublicUrl(filePath)
       emit('upload', data.publicUrl)
     }
 

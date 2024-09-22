@@ -14,16 +14,13 @@
   </v-toolbar>
   <v-row>
     <v-col cols="4">
-      <!-- WILL BE REPLACED WITH /Avatar.vue -->
-      <!-- <form class="form-widget" @submit.prevent="updateAvatar">
-        <Avatar v-model:path="avatar_path" @upload="updateAvatar" />
-      </form> -->
       <v-img
+        v-if="vendor.avatar_url"
         height="250"
-        src="https://cdn.vuetifyjs.com/images/cards/cooking.png"
+        :src="vendor.avatar_url"
       ></v-img>
-
-    </v-col>
+      <Avatar v-else v-model:path="avatar_path" @upload="updateAvatar" bucketType="vendor" />
+      </v-col>
     
     <v-col cols="8">
       <v-row class="mt-2">
@@ -91,25 +88,27 @@ avatar_path.value = data.avatar_url
 loading.value = false
 
 
-async function updateAvatar() {
-  try {
-    loading.value = true
+async function updateAvatar(e) {
+  if (e) {
+    try {
+      loading.value = true
 
-    const updates = {
-      avatar_url: avatar_path.value,
-      updated_at: new Date(),
+      const updates = {
+        avatar_url: e,
+        updated_at: new Date(),
+      }
+
+      const { error } = await supabase
+        .from('vendors')
+        .update(updates)
+        .eq('id', vendor.value.id)
+
+      if (error) throw error
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      loading.value = false
     }
-
-    const { error } = await supabase
-      .from('vendors')
-      .update(updates)
-      .eq('id', vendor.value.id)
-
-    if (error) throw error
-  } catch (error) {
-    alert(error.message)
-  } finally {
-    loading.value = false
   }
 }
 loading.value = false

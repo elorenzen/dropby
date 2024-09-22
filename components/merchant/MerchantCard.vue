@@ -19,7 +19,7 @@
           height="250"
           :src="merchant.avatar_url"
         ></v-img>
-        <Avatar v-else v-model:path="avatar_path" @upload="updateAvatar" />
+        <Avatar v-else v-model:path="avatar_path" @upload="updateAvatar" bucketType="merchant" />
       </v-col>
       
       <v-col cols="8">
