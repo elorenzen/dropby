@@ -1,18 +1,4 @@
 <script setup>
-/**
- * COLOR PALETTE
- * Orange(primary): #e28413
- * Dark(secondary): #000022
- * White(accent): #fbf5f3
- */
-
-const user = useSupabaseUser()
-
-// const { data } = await supabase
-//   .from('profiles')
-//   .select(`username, website, avatar_url`)
-//   .eq('id', user.value.id)
-//   .single()
 </script>
 
 <template>
