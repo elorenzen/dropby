@@ -1,6 +1,5 @@
 <template>
     <div>
-        
         <v-card>
             <v-toolbar color="#e28413" density="compact">
                 <v-toolbar-title>Menu Items</v-toolbar-title>
@@ -10,12 +9,22 @@
                     No items found.
                 </v-row>
                 <v-row v-else>
-                    {{ menuItems }}
+                    <v-data-table :headers="headers" :items="menuItems">
+                        <template v-slot:item.actions="{ item }">
+                            <v-btn icon variant="plain">
+                                <v-icon>mdi-pencil</v-icon>
+                            </v-btn>
+                            <v-btn @click="promptDeletion(item)" icon variant="plain">
+                                <v-icon>mdi-delete</v-icon>
+                            </v-btn>
+                        </template>
+                    </v-data-table>
                 </v-row>
                 <v-btn @click="addDialog = true" block>Add Menu Item</v-btn>
             </v-container>
-            
         </v-card>
+
+        <!-- ADD ITEM -->
         <v-dialog v-model="addDialog" width="40%">
             <v-card>
                 <v-toolbar color="#e28413" density="compact">
@@ -63,13 +72,66 @@
                 <v-row class="pa-2">
                     <v-btn @click="addItem" block :loading="loading">Add Menu Item</v-btn>
                 </v-row>
-                    <template v-slot:actions>
-                    <v-btn
-                        class="ms-auto"
-                        text="Ok"
-                        @click="addDialog = false"
-                    ></v-btn>
-                    </template>
+            </v-card>
+        </v-dialog>
+
+        <!-- EDIT ITEM -->
+        <!-- <v-dialog v-model="editDialog" width="40%">
+            <v-card>
+                <v-toolbar color="#e28413" density="compact">
+                    <v-toolbar-title>New Menu Item</v-toolbar-title>
+                </v-toolbar>
+                <v-row dense class="pa-2">
+                    <v-col cols="8">
+                        <v-text-field
+                            density="compact"
+                            outlined
+                            v-model="name"
+                            label="Name"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="4">
+                        <v-combobox
+                            density="compact"
+                            outlined
+                            v-model="type"
+                            label="Item Type"
+                            :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
+                        ></v-combobox>
+                    </v-col>
+                    <v-col cols="12">
+                        <v-textarea density="compact" outlined v-model="description" label="Description"
+                        ></v-textarea>
+                    </v-col>
+                    <v-divider class="my-2" />
+                    <v-col cols="6">
+                        <v-text-field
+                            density="compact"
+                            outlined
+                            v-model="price"
+                            label="Price (optional)"
+                            prepend-inner-icon="mdi-currency-usd"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="6" class="pl-2">
+                        <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
+                    </v-col>
+                </v-row>
+                <v-row class="pa-2">
+                    <v-btn @click="addItem" block :loading="loading">Add Menu Item</v-btn>
+                </v-row>
+            </v-card>
+        </v-dialog> -->
+
+        <v-dialog v-model="deleteDialog" width="20%">
+            <v-card>
+                <v-toolbar color="warning" density="compact">
+                    <v-toolbar-title>Delete Menu Item</v-toolbar-title>
+                </v-toolbar>
+                <v-row class="pa-2">
+                    {{ itemToDelete }}
+                    <v-btn @click="confirmDelete" :loading="loading">Delete Item</v-btn>
+                </v-row>
             </v-card>
         </v-dialog>
         <v-snackbar
@@ -88,15 +150,6 @@
             </v-btn>
           </template>
         </v-snackbar>
-        <!-- <v-data-table :headers="headers" :items="vendors">
-            <template v-slot:item.actions="{ item }">
-                <v-btn icon variant="plain">
-                    <NuxtLink :to="`/vendors/${item.id}`">
-                        <v-icon>mdi-eye</v-icon>
-                    </NuxtLink>
-                </v-btn>
-            </template>
-        </v-data-table> -->
     </div>
 </template>
 
@@ -106,6 +159,14 @@
     const snackbar = ref(false)
     const snacktext = ref('')
 
+    const headers = ref([
+        { title: 'Name', key: 'name' },
+        { title: 'Description', key: 'description' },
+        { title: 'Type', key: 'type' },
+        { title: 'Price ($)', key: 'price' },
+        { title: '', key: 'actions'}
+    ])
+
     const props = defineProps(['vendor']);
     const vendor = ref(props.vendor)
     const supabase = useSupabaseClient()
@@ -113,6 +174,9 @@
     const isAdmin = ref(false)
     const addDialog = ref(false)
     const menuItems = ref(null)
+
+    const itemToDelete = ref(null)
+    const deleteDialog = ref(false)
 
     // MENU ITEM DATA
     const name = ref('')
@@ -139,7 +203,6 @@
           .select()
           .eq('id', sessionUser.value.id)
         const foundUser = data[0]
-        console.log(foundUser)
         if (
           foundUser &&
           foundUser.is_admin &&
@@ -182,6 +245,25 @@
                 menuItems.value = await getMenuItems(vendor.value.id)
                 addDialog.value = false
             }
+        }
+    }
+
+    const promptDeletion = (item) => {
+        itemToDelete.value = item
+        deleteDialog.value = true
+    }
+    const confirmDelete = async () => {
+        const { error } = await supabase
+            .from('menu_items')
+            .delete()
+            .eq('id', itemToDelete.value.id)
+        if (!error) {
+            snackbar.value = true
+            snacktext.value = 'Menu item deleted.'
+
+            menuItems.value = await getMenuItems(vendor.value.id)
+            deleteDialog.value = false
+            itemToDelete.value = null
         }
     }
 </script>
