@@ -1,5 +1,8 @@
 <template>
-    <VendorCard v-if="vendor && vendor.length > 0" :vendor="vendor[0]" />
+  <div v-if="vendor && vendor.length > 0">
+    <VendorCard :vendor="vendor[0]" />
+    <VendorMenu :vendor="vendor[0]" />
+  </div>
 </template>
   
 <script setup>
