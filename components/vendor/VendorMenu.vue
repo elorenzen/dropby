@@ -10,7 +10,7 @@
                 </v-row>
                 <v-row v-else>
                     <v-data-table :headers="headers" :items="menuItems">
-                        <template v-slot:item.actions="{ item }">
+                        <template v-if="isAdmin" v-slot:item.actions="{ item }">
                             <v-btn icon variant="plain">
                                 <v-icon>mdi-pencil</v-icon>
                             </v-btn>
