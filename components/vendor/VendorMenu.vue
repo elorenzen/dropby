@@ -3,6 +3,10 @@
         <v-card>
             <v-toolbar color="#e28413" density="compact">
                 <v-toolbar-title>Menu Items</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn icon @click="addDialog = true">
+                    <v-icon>mdi-plus</v-icon>
+                </v-btn>
             </v-toolbar>
             <v-container>
                 <v-row v-if="!menuItems || menuItems.length == 0" >
@@ -20,7 +24,6 @@
                         </template>
                     </v-data-table>
                 </v-row>
-                <v-btn @click="addDialog = true" block>Add Menu Item</v-btn>
             </v-container>
         </v-card>
 
@@ -69,9 +72,14 @@
                     imageUrl = file input
                     -->
                 </v-row>
-                <v-row class="pa-2">
-                    <v-btn @click="addItem" block :loading="loading">Add Menu Item</v-btn>
-                </v-row>
+                <v-card-actions class="flex justify-center pa-2">
+                    <v-btn
+                        @click="addItem"
+                        color="#000022"
+                        variant="outlined"
+                        :loading="loading"
+                    >Add Menu Item</v-btn>
+                </v-card-actions>
             </v-card>
         </v-dialog>
 
