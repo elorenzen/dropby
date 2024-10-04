@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     "@nuxtjs/tailwindcss",
     "@nuxtjs/supabase",
     "vuetify-nuxt-module",
-    "@nuxt/scripts"
+    "@nuxt/scripts",
+    '@samk-dev/nuxt-vcalendar'
   ],
   runtimeConfig: {
     public: {

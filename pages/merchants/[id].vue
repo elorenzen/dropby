@@ -1,9 +1,9 @@
 <template>
-    <MerchantCard v-if="merchant && merchant.length > 0" :merchant="merchant[0]" />
-    <!-- 
-      SEE WHY COMMENTED OUT BELOW -->
-      <!-- <MerchantCard v-if="merchant && merchant != ''" :merchant="merchant" /> -->
-  </template>
+  <div v-if="merchant && merchant.length > 0">
+    <MerchantCard :merchant="merchant[0]" />
+    <Calendar :merchant="merchant[0]" />
+  </div>
+</template>
   
 <script setup>
   const route = useRoute()

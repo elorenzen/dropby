@@ -21,5 +21,8 @@
     "vue": "latest",
     "vuetify-google-autocomplete": "^2.1.2",
     "vuetify-nuxt-module": "^0.18.2"
+  },
+  "devDependencies": {
+    "@samk-dev/nuxt-vcalendar": "^1.0.4"
   }
 }
