@@ -12,9 +12,23 @@
                 <v-row v-if="!menuItems || menuItems.length == 0" >
                     No items found.
                 </v-row>
-                <v-row v-else>
-                    <v-data-table :headers="headers" :items="menuItems">
-                        <template v-if="isAdmin" v-slot:item.actions="{ item }">
+                <v-list v-else lines="three">
+                    <v-list-item
+                        v-for="item in menuItems"
+                        :key="item.id"
+                        :subtitle="item.description"
+                        :title="item.name"
+                    >
+                        <template v-slot:prepend>
+                        <v-avatar v-if="item.image_url" color="grey-lighten-1">
+                            <v-img :src="item.image_url"></v-img>
+                        </v-avatar>
+                        <MenuImage v-else v-model:path="image_path" @upload="updateImage" :menuId="item.id" />
+                        <!-- type -->
+                        <!-- price -->
+                        </template>
+
+                        <template v-if="isAdmin" v-slot:append>
                             <v-btn @click="openEditDialog(item)" icon variant="plain">
                                 <v-icon>mdi-pencil</v-icon>
                             </v-btn>
@@ -22,8 +36,9 @@
                                 <v-icon>mdi-delete</v-icon>
                             </v-btn>
                         </template>
-                    </v-data-table>
-                </v-row>
+                        <v-divider inset></v-divider>
+                    </v-list-item>
+                </v-list>
             </v-container>
         </v-card>
 
@@ -163,17 +178,10 @@
 
 <script setup>
     import { v4 } from 'uuid'
+import MenuImage from './MenuImage.vue';
     const loading = ref(true)
     const snackbar = ref(false)
     const snacktext = ref('')
-
-    const headers = ref([
-        { title: 'Name', key: 'name' },
-        { title: 'Description', key: 'description' },
-        { title: 'Type', key: 'type' },
-        { title: 'Price ($)', key: 'price' },
-        { title: '', key: 'actions'}
-    ])
 
     const props = defineProps(['vendor']);
     const vendor = ref(props.vendor)
@@ -182,6 +190,7 @@
     const isAdmin = ref(false)
     const addDialog = ref(false)
     const menuItems = ref(null)
+    const image_path = ref('')
 
     const editId = ref('')
     const editVendorId = ref('')
@@ -326,6 +335,30 @@
             menuItems.value = await getMenuItems(vendor.value.id)
             deleteDialog.value = false
             itemToDelete.value = null
+        }
+    }
+    async function updateImage(e) {
+        if (e) {
+            try {
+                loading.value = true
+
+                const updates = {
+                    image_url: e.path,
+                    updated_at: new Date(),
+                }
+
+                const { error } = await supabase
+                    .from('menu_items')
+                    .update(updates)
+                    .eq('id', e.id)
+
+                if (error) throw error
+            } catch (error) {
+                alert(error.message)
+            } finally {
+                menuItems.value = await getMenuItems(vendor.value.id)
+                loading.value = false
+            }
         }
     }
 </script>
