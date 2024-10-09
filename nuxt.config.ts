@@ -7,7 +7,8 @@ export default defineNuxtConfig({
     "@nuxtjs/supabase",
     "vuetify-nuxt-module",
     "@nuxt/scripts",
-    '@samk-dev/nuxt-vcalendar'
+    '@samk-dev/nuxt-vcalendar',
+    "@pinia/nuxt"
   ],
   runtimeConfig: {
     public: {

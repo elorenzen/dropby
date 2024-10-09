@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient()
-const user = useSupabaseUser()
+const store = useUserStore()
+const user = store.user
+console.log('store user getter? ', store.user)
 
 const loading = ref(false)
 const email = ref('')
@@ -112,7 +114,7 @@ const signOut = async () => {
         </v-list>
       </v-menu>
 
-      <span v-if="user">{{ user.email }}</span>
+      <span v-if="user">{{ user.first_name }} {{ user.last_name }}</span>
       <v-btn
         v-if="user"
         @click="signOut"

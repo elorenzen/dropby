@@ -15,8 +15,10 @@
     "@nuxt/ui": "^2.18.4",
     "@nuxtjs/supabase": "^1.3.5",
     "@nuxtjs/tailwindcss": "^6.12.1",
+    "@pinia/nuxt": "^0.5.5",
     "firebase": "^10.12.5",
     "nuxt": "^3.12.4",
+    "pinia": "^2.2.4",
     "uuid": "^10.0.0",
     "vue": "latest",
     "vuetify-google-autocomplete": "^2.1.2",
@@ -24,5 +26,8 @@
   },
   "devDependencies": {
     "@samk-dev/nuxt-vcalendar": "^1.0.4"
+  },
+  "overrides": {
+    "vue": "latest"
   }
 }
