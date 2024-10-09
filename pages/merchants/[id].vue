@@ -1,11 +1,17 @@
 <template>
-  <div v-if="merchant && merchant.length > 0">
-    <MerchantCard :merchant="merchant[0]" />
-    <Calendar :merchant="merchant[0]" />
-  </div>
+  <v-row v-if="merchant && merchant.length > 0">
+    <v-col cols="8">
+      <MerchantCard :merchant="merchant[0]" />
+    </v-col>
+    <v-col>
+    <EventList :merchant="merchant[0]" />
+  </v-col>
+  </v-row>
 </template>
   
 <script setup>
+import EventList from '~/components/merchant/EventList.vue';
+
   const route = useRoute()
   const supabase = useSupabaseClient()
   const merchant = ref('')
