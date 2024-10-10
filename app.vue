@@ -9,6 +9,11 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+
+const { data: eventData } = await supabase.from('events').select()
+const eventStore = useEventStore()
+await eventStore.setAllEvents(eventData)
+
 const userStore = useUserStore()
 if (user.value) {
   const { data } = await supabase
