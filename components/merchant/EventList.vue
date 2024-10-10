@@ -24,6 +24,48 @@
         >Add Event</v-btn>
     </v-row>
     <v-divider class="my-2" />
+    <DataTable
+        v-model:selection="selectedEvt"
+        :value="events"
+        selectionMode="single"
+        :metaKeySelection="metaKey"
+        dataKey="id"
+        @row-select="selectRow"
+    >
+        <Column field="start" header="Start">
+            <template #body="slotProps">
+                {{ new Date(slotProps.data.start).toLocaleString() }}
+            </template>
+        </Column>
+        <Column field="end" header="End">
+            <template #body="slotProps">
+                {{ new Date(slotProps.data.end).toLocaleString() }}
+            </template></Column>
+        <Column field="status" header="Status">
+            <template #body="slotProps">
+                <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
+            </template>
+        </Column>
+    </DataTable>
+    <div class="card flex justify-center">
+        <Dialog v-model:visible="openEditDialog" modal header="Edit Event" :style="{ width: '25rem' }">
+            <div class="flex items-center gap-4 mb-4">
+                <label for="evt_start">Event Start</label>
+                <DatePicker v-model="selectedEvt.start" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" dateFormat="dd/mm/yy" />
+            </div>
+            <div class="flex items-center gap-4 mb-8">
+                <label for="evt_end">Event End</label>
+                <DatePicker v-model="selectedEvt.end" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
+            </div>
+            <div class="flex justify-end gap-2">
+                <Button type="button" label="Cancel" severity="secondary" @click="openEditDialog = false"></Button>
+                <Button type="button" label="Save" @click="saveEdits"></Button>
+            </div>
+            <div class="flex justify-end mt-2">
+                <Button type="button" label="Delete" severity="danger" @click="deleteEvent"></Button>
+            </div>
+        </Dialog>
+    </div>
     <v-snackbar
       v-model="snackbar"
       timeout="6000"
@@ -48,13 +90,18 @@ const supabase = useSupabaseClient()
 const userStore = useUserStore()
 const user = userStore.user
 
-// const eventStore = useEventStore()
-// await eventStore.getEventsById(user.id, user.type)
-// merchant = user.associated_merchant_id
-// vendor = user.associated_vendor_id
-// 'type' ('merchant' or 'vendor') = user.type
-const addDialog = ref(false)
 const loading = ref(false)
+const events = ref()
+const selectedEvt = ref()
+const openEditDialog = ref(false)
+
+const statuses = ref([
+    { label: 'Open', value: 'open' }, // blue?
+    { label: 'Request Pending', value: 'pending' }, // yellow
+    { label: 'Booked', value: 'booked' }, // green
+    { label: 'Closed', value: 'closed' }, // grey
+    { label: 'Unfulfilled', value: 'unfulfilled'} //
+]);
 
 const snackbar = ref(false)
 const snacktext = ref('')
@@ -69,7 +116,13 @@ onMounted(async () => {
             .from('events')
             .select()
             .eq(user.type, user[`associated_${user.type}_id`])
+
+            // .match({
+            //     [user.type]: user[`associated_${user.type}_id`],
+            //     status: eventsFilter.value
+            // })
         console.log('evt data: ', data)
+        events.value = data
     }
 })
 
@@ -90,18 +143,68 @@ const addEvent = async () => {
             merchant_comment: null
         }
         const { error } = await supabase.from('events').insert(evtObj)
-        if (!error) {
-            snacktext.value = 'Event created!'
-            snackbar.value = true
-
-            // reset fields
-            evtStart.value = ''
-            evtEnd.value = ''
-
-            // TODO: add event getter here to reset list
-        }
+        if (!error) await resetFields('created')
     }
 }
+const selectRow = (event: any) => {
+    selectedEvt.value = event.data
+    openEditDialog.value = true
+}
+const saveEdits = async () => {
+    const updates = {
+        updated_at: new Date(),
+        start: selectedEvt.value.start,
+        end: selectedEvt.value.end
+    }
+    const { error } = await supabase
+        .from('events')
+        .update(updates)
+        .eq('id', selectedEvt.value.id)
+
+    if (!error) await resetFields('edited')
+}
+const deleteEvent = async () => {
+    const { error } = await supabase
+        .from('events').delete().eq('id', selectedEvt.value.id)
+
+    if (!error) await resetFields('deleted')
+}
+const resetFields = async (action: any) => {
+    const { data } = await supabase
+            .from('events')
+            .select()
+            .eq(user.type, user[`associated_${user.type}_id`])
+        events.value = data
+
+        snacktext.value = `Event ${action}!`
+        snackbar.value = true
+        selectedEvt.value = null
+        openEditDialog.value = false
+
+        evtStart.value = ''
+        evtEnd.value = ''
+}
+const getStatusLabel = (status: any) => {
+    switch (status) {
+        case 'open':
+            return 'secondary';
+
+        case 'pending':
+            return 'warn';
+
+        case 'booked':
+            return 'success';
+
+        case 'unfulfilled':
+            return 'danger';
+        
+        case 'closed':
+            return 'secondary';
+
+        default:
+            return null;
+    }
+};
 </script>
 
 <style scoped>
