@@ -175,7 +175,7 @@ const resetFields = async (action: any) => {
     const { data } = await supabase
             .from('events')
             .select()
-            .eq('merchant', merchantId.value)
+            .eq(acctType.value, acctId.value)
         events.value = data
 
         snacktext.value = `Event ${action}!`
