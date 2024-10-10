@@ -10,8 +10,7 @@
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const userStore = useUserStore()
-
-if (user.value.id) {
+if (user.value) {
   const { data } = await supabase
       .from('users')
       .select()

@@ -1,30 +1,11 @@
 <template>
-    <v-card
-      v-if="!isAdmin"
-      :loading="loading"
-      class="mx-auto my-12"
-      max-width="800"
-    >
-      <v-toolbar color="#e28413" density="compact">
-        <v-toolbar-title>{{ merchant.merchant_name }}</v-toolbar-title>
-      </v-toolbar>
-      <v-row>
-        <v-col cols="4">
-          <v-img
-            v-if="merchant.avatar_url"
-            height="250"
-            :src="merchant.avatar_url"
-          ></v-img>
-          <Avatar v-else v-model:path="avatar_path" @upload="updateAvatar" bucketType="merchant" />
-        </v-col>
-        
-        <v-col cols="8">
-          <v-row class="mt-2">
-            {{ merchant.merchant_description }}
-          </v-row>
-
-          <v-divider class="my-2" />
-
+    <Card v-if="!isAdmin" style="overflow: hidden">
+        <template #header>
+            <img alt="user header" :src="merchant.avatar_url" />
+        </template>
+        <template #title>{{ merchant.merchant_name }}</template>
+        <template #subtitle>{{ merchant.merchant_description }}</template>
+        <template #content>
           <v-row>
             <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2" readonly>
               <template v-slot:prepend><v-icon></v-icon></template>
@@ -55,9 +36,14 @@
               <NuxtLink :to="`mailto:${merchant.email}`" target="_blank">Email</NuxtLink>
             </v-btn>
           </v-row>
-        </v-col>
-      </v-row>
-    </v-card>
+        </template>
+        <template #footer>
+            <div class="flex gap-4 mt-1">
+                <Button label="Cancel" severity="secondary" outlined class="w-full" />
+                <Button label="Save" class="w-full" />
+            </div>
+        </template>
+    </Card>
     <v-card
       v-else
       :loading="loading"
