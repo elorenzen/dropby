@@ -1,133 +1,107 @@
 <template>
-    <v-card>
-        <v-toolbar color="#e28413" density="compact">
-            <v-toolbar-title>Events</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon @click="addDialog = true">
-                <v-icon>mdi-plus</v-icon>
-            </v-btn>
-        </v-toolbar>
-        <!-- <v-container>
-            <v-row v-if="!events || events.length == 0" >
-                No items found.
-            </v-row>
-            <v-list v-else lines="three">
-                <v-list-item v-for="event in events" :key="event.id">
-                    {{ event }}
-                </v-list-item>
-            </v-list>
-        </v-container> -->
-    </v-card>
-    <v-dialog v-model="addDialog">
-        <v-card>
-          <v-toolbar color="#e28413" density="compact">
-              <v-toolbar-title>Create Event</v-toolbar-title>
-          </v-toolbar>
-          <v-row dense class="pa-2">
-              {{ merchant }}
-            <!-- <v-col cols="8">
-                  <v-text-field
-                      density="compact"
-                      outlined
-                      v-model="name"
-                      label="Name"
-                  ></v-text-field>
-              </v-col>
-              <v-col cols="4">
-                  <v-combobox
-                      density="compact"
-                      outlined
-                      v-model="type"
-                      label="Item Type"
-                      :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
-                  ></v-combobox>
-              </v-col>
-              <v-col cols="12">
-                  <v-textarea density="compact" outlined v-model="description" label="Description"
-                  ></v-textarea>
-              </v-col>
-              <v-divider class="my-2" />
-              <v-col cols="6">
-                  <v-text-field
-                      density="compact"
-                      outlined
-                      v-model="price"
-                      label="Price (optional)"
-                      prepend-inner-icon="mdi-currency-usd"
-                  ></v-text-field>
-              </v-col>
-              <v-col cols="6" class="pl-2">
-                  <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
-              </v-col> -->
-          </v-row>
-          <v-card-actions class="flex justify-center pa-2">
-              <v-btn
-                  @click="addEvent"
-                  color="#000022"
-                  variant="outlined"
-                  :loading="loading"
-              >Add Event</v-btn>
-          </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <v-row dense class="flex justify-center pa-2"><h3>Events</h3></v-row>
+    <v-row dense class="mt-2 p-2">
+        <v-col cols="6">
+            <FloatLabel>
+                <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
+                <label for="evt_start">Event Start</label>
+            </FloatLabel>
+        </v-col>
+        <v-col cols="6">
+        <FloatLabel>
+            <DatePicker v-model="evtEnd" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
+            <label for="evt_end">Event End</label>
+        </FloatLabel>
+        </v-col>
+    </v-row>
+    <v-row dense class="flex justify-end pa-2">
+        <v-btn
+            @click="addEvent"
+            color="#e28413"
+            variant="outlined"
+            :disabled="evtStart == '' || evtEnd == ''"
+            :loading="loading"
+        >Add Event</v-btn>
+    </v-row>
+    <v-divider class="my-2" />
+    <v-snackbar
+      v-model="snackbar"
+      timeout="6000"
+    >
+      {{ snacktext }}
+
+      <template v-slot:actions>
+        <v-btn
+          color="#000022"
+          variant="text"
+          @click="snackbar = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { v4 } from 'uuid';
-const props = defineProps(['merchant']);
-const user = useSupabaseUser()
-const merchant = ref(props.merchant)
 const supabase = useSupabaseClient()
+const userStore = useUserStore()
+const user = userStore.user
+
+// const eventStore = useEventStore()
+// await eventStore.getEventsById(user.id, user.type)
+// merchant = user.associated_merchant_id
+// vendor = user.associated_vendor_id
+// 'type' ('merchant' or 'vendor') = user.type
 const addDialog = ref(false)
 const loading = ref(false)
+
+const snackbar = ref(false)
+const snacktext = ref('')
 
 // EVENT DATA
 const evtStart = ref('')
 const evtEnd = ref('')
 
+onMounted(async () => {
+    if (user) {
+        const { data } = await supabase
+            .from('events')
+            .select()
+            .eq(user.type, user[`associated_${user.type}_id`])
+        console.log('evt data: ', data)
+    }
+})
+
 const addEvent = async () => {
     if (user) {
         const evtObj = {
             id: v4(),
-            merchant: merchant.value.id,
+            created_at: new Date(),
+            merchant: user.associated_merchant_id,
             vendor: null,
             start: evtStart.value,
             end: evtEnd.value,
             location: '',
             status: 'open',
-            vendorRtg: null,
-            merchantRtg: null,
-            vendorComment: null,
-            merchantComment: null
+            vendor_rating: null,
+            merchant_rating: null,
+            vendor_comment: null,
+            merchant_comment: null
         }
+        const { error } = await supabase.from('events').insert(evtObj)
+        if (!error) {
+            snacktext.value = 'Event created!'
+            snackbar.value = true
 
-        // const { error: userErr } = await supabase.from('users').insert(userObj)
-        // console.log('userErr: ', userErr)
-        // const { error: merchErr } = await supabase.from('merchants').insert(merchantObj)
-        // console.log('err: ', merchErr)
-        // if (!merchErr && !userErr) {
-        //     snackbar.value = true
-        //     snacktext.value = 'New merchant created!'
+            // reset fields
+            evtStart.value = ''
+            evtEnd.value = ''
 
-        //     // reset fields
-        //     firstName.value = ''
-        //     lastName.value = ''
-        //     phone.value = ''
-        //     email.value = ''
-        //     password.value = ''
-
-        //     merchantName.value = ''
-        //     merchantDesc.value = ''
-        //     website.value = ''
-        //     ig.value = ''
-        //     merchantPhone.value = ''
-        //     merchantEmail.value = ''
-
-        //     navigateTo(`/merchants/${merchantId}`)
-        // }
+            // TODO: add event getter here to reset list
+        }
     }
 }
-
 </script>
 
 <style scoped>

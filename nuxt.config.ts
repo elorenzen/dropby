@@ -1,3 +1,5 @@
+import Aura from '@primevue/themes/aura';
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
@@ -8,7 +10,8 @@ export default defineNuxtConfig({
     "vuetify-nuxt-module",
     "@nuxt/scripts",
     '@samk-dev/nuxt-vcalendar',
-    "@pinia/nuxt"
+    "@pinia/nuxt",
+    "@primevue/nuxt-module"
   ],
   runtimeConfig: {
     public: {
@@ -21,5 +24,15 @@ export default defineNuxtConfig({
     key: process.env.SUPABASE_KEY,
     serviceKey: process.env.SUPABASE_SERVICE,
     redirect: false // set to 'true', EVENTUALLY
+  },
+  primevue: {
+    components: {
+        include: ['DatePicker']
+    },
+    options: {
+      theme: {
+          preset: Aura
+      }
+    }
   }
 })
