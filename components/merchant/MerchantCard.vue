@@ -37,42 +37,26 @@
             </v-btn>
           </v-row>
         </template>
-        <template #footer>
+        <!-- <template #footer>
             <div class="flex gap-4 mt-1">
                 <Button label="Cancel" severity="secondary" outlined class="w-full" />
                 <Button label="Save" class="w-full" />
             </div>
-        </template>
+        </template> -->
     </Card>
-    <v-card
-      v-else
-      :loading="loading"
-      class="mx-auto my-12"
-      max-width="800"
-    >
-      <v-toolbar color="#e28413" density="compact">
-        <v-toolbar-title>
-          <v-text-field density="compact" outlined v-model="merchant.merchant_name" placeholder="Merchant Name (e.g. 'McDonald's')"
-          ></v-text-field>
-        </v-toolbar-title>
-      </v-toolbar>
-      <v-row>
-        <v-col cols="4">
-          <v-img
-            v-if="merchant.avatar_url"
-            height="250"
-            :src="merchant.avatar_url"
-          ></v-img>
-          <Avatar v-else v-model:path="avatar_path" @upload="updateAvatar" bucketType="merchant" />
-        </v-col>
-        
-        <v-col cols="8">
-          <v-row class="mt-2">
-            <v-textarea density="compact" outlined v-model="merchant.merchant_description" placeholder="Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')"
-              ></v-textarea>
-          </v-row>
 
-          <v-divider class="my-2" />
+    <Card v-else style="overflow: hidden">
+        <template #header>
+            <img alt="user header" :src="merchant.avatar_url" />
+        </template>
+        <template #title>
+          <v-text-field density="compact" outlined v-model="merchant.merchant_name" placeholder="Merchant Name (e.g. 'McDonald's')"></v-text-field>
+        </template>
+        <template #subtitle>
+          <v-textarea density="compact" outlined v-model="merchant.merchant_description" placeholder="Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')"
+              ></v-textarea>
+        </template>
+        <template #content>
 
           <!-- <v-row>
             <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2" readonly>
@@ -116,9 +100,14 @@
               placeholder="Contact Email"
             ></v-text-field>
           </v-row>
-        </v-col>
-      </v-row>
-    </v-card>
+        </template>
+        <!-- <template #footer>
+            <div class="flex gap-4 mt-1">
+                <Button label="Cancel" severity="secondary" outlined class="w-full" />
+                <Button label="Save" class="w-full" />
+            </div>
+        </template> -->
+    </Card>
 </template>
 
 <script setup>

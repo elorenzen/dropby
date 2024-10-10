@@ -28,7 +28,6 @@
         v-model:selection="selectedEvt"
         :value="events"
         selectionMode="single"
-        :metaKeySelection="metaKey"
         dataKey="id"
         @row-select="selectRow"
     >
@@ -89,6 +88,9 @@ import { v4 } from 'uuid';
 const supabase = useSupabaseClient()
 const userStore = useUserStore()
 const user = userStore.user
+const props = defineProps(['acctId', 'acctType']);
+const acctType = ref(props.acctType)
+const acctId = ref(props.acctId)
 
 const loading = ref(false)
 const events = ref()
@@ -116,12 +118,12 @@ onMounted(async () => {
             .from('events')
             .select()
             .eq(user.type, user[`associated_${user.type}_id`])
-
-            // .match({
-            //     [user.type]: user[`associated_${user.type}_id`],
-            //     status: eventsFilter.value
-            // })
-        console.log('evt data: ', data)
+        events.value = data
+    } else {
+        const { data } = await supabase
+            .from('events')
+            .select()
+            .eq(acctType.value, acctId.value)
         events.value = data
     }
 })
@@ -173,7 +175,7 @@ const resetFields = async (action: any) => {
     const { data } = await supabase
             .from('events')
             .select()
-            .eq(user.type, user[`associated_${user.type}_id`])
+            .eq('merchant', merchantId.value)
         events.value = data
 
         snacktext.value = `Event ${action}!`

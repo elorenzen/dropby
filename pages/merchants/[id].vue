@@ -4,13 +4,13 @@
       <MerchantCard :merchant="merchant[0]" />
     </v-col>
     <v-col>
-    <EventList :merchant="merchant[0]" />
-  </v-col>
+      <EventList :acctId="merchant[0].id" :acctType="'merchant'" />
+    </v-col>
   </v-row>
 </template>
   
 <script setup>
-import EventList from '~/components/merchant/EventList.vue';
+  import EventList from '~/components/EventList.vue';
 
   const route = useRoute()
   const supabase = useSupabaseClient()

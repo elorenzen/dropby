@@ -1,11 +1,17 @@
 <template>
-  <div v-if="vendor && vendor.length > 0">
-    <VendorCard :vendor="vendor[0]" />
-    <VendorMenu :vendor="vendor[0]" />
-  </div>
+   <v-row v-if="vendor && vendor.length > 0">
+    <v-col cols="6">
+      <VendorCard :vendor="vendor[0]" />
+    </v-col>
+    <v-col>
+      <EventList :acctId="vendor[0].id" :acctType="'vendor'" />
+    </v-col>
+  </v-row>
 </template>
   
 <script setup>
+  import EventList from '~/components/EventList.vue';
+
   const route = useRoute()
   const supabase = useSupabaseClient()
   const vendor = ref('')
