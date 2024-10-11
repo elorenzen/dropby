@@ -9,7 +9,8 @@ export const useEventStore = defineStore('event', {
     getEventsByMerchantId: (state) => {
         return (id) => state.allEvents.filter((event) => event.merchant === id)
     },
-    getAllEvents: (state) => state.allEvents
+    getAllEvents: (state) => state.allEvents,
+    getAllOpenEvents: (state) => state.allEvents.filter(e => e.status == 'open')
   },
   actions: {
     async setAllEvents(events: []) {

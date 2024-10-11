@@ -63,7 +63,7 @@
 
     const eventStore = useEventStore()
     await eventStore.setAllEvents(eventData)
-    const events = eventStore.getAllEvents
+    const events = eventStore.getAllOpenEvents
 
     const merchantStore = useMerchantStore()
     const merchants = merchantStore.getAllMerchants
