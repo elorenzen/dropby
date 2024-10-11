@@ -55,6 +55,15 @@
         <!-- ADD ITEM -->
         <Dialog v-model:visible="addDialog" modal header="Add Item" :style="{ width: '25rem' }">
             <v-row dense class="pa-2">
+                <v-col>
+                    <v-file-input
+                        :label="uploading ? 'Uploading ...' : 'Upload Menu Item Image'"
+                        @change="updateImage"
+                        :disabled="uploading"
+                    ></v-file-input>
+                </v-col>
+            </v-row>
+            <v-row dense class="pa-2">
                 <v-col cols="8">
                     <v-text-field
                         density="compact"
@@ -99,7 +108,7 @@
         <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '25rem' }">
             <v-row dense class="pa-2">
                 <v-col cols="4">
-                    <Avatar :image="editImageUrl" class="mr-2" size="xlarge" />
+                    <Avatar :image="imageUrl" class="mr-2" size="xlarge" />
                 </v-col>
                 <v-col>
                     <v-file-input
@@ -114,7 +123,7 @@
                     <v-text-field
                         density="compact"
                         outlined
-                        v-model="editName"
+                        v-model="name"
                         label="Name"
                     ></v-text-field>
                 </v-col>
@@ -122,13 +131,13 @@
                     <v-combobox
                         density="compact"
                         outlined
-                        v-model="editType"
+                        v-model="type"
                         label="Item Type"
                         :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
                     ></v-combobox>
                 </v-col>
                 <v-col cols="12">
-                    <v-textarea density="compact" outlined v-model="editDescription" label="Description"
+                    <v-textarea density="compact" outlined v-model="description" label="Description"
                     ></v-textarea>
                 </v-col>
                 <v-divider class="my-2" />
@@ -136,13 +145,13 @@
                     <v-text-field
                         density="compact"
                         outlined
-                        v-model="editPrice"
+                        v-model="price"
                         label="Price (optional)"
                         prepend-inner-icon="mdi-currency-usd"
                     ></v-text-field>
                 </v-col>
                 <v-col cols="6" class="pl-2">
-                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="editSpecial"></v-switch>
+                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
                 </v-col>
             </v-row>
             <v-row class="pa-2">
@@ -183,6 +192,7 @@
 <script setup>
     import { v4 } from 'uuid'
     const loading = ref(false)
+    const uploading = ref(false)
     const snackbar = ref(false)
     const snacktext = ref('')
 
@@ -198,14 +208,8 @@
     const menuItems = ref(null)
 
     const itemToEdit = ref('')
-    const editImageUrl = ref('')
     const editId = ref('')
     const editVendorId = ref('')
-    const editName = ref('')
-    const editDescription = ref('')
-    const editType = ref('')
-    const editPrice = ref(0)
-    const editSpecial = ref(false)
     const editDialog = ref(false)
 
     const itemToDelete = ref(null)
@@ -291,13 +295,7 @@
                 snackbar.value = true
                 snacktext.value = 'Menu item added!'
 
-                // reset fields
-                name.value = ''
-                description.value = ''
-                type.value = ''
-                imageUrl.value = ''
-                price.value = 0
-                special.value = false
+                resetFields()
 
                 menuItems.value = await getMenuItems(vendor.value.id)
                 addDialog.value = false
@@ -306,25 +304,25 @@
     }
     const openEditDialog = (item) => {
         itemToEdit.value = item
-        editImageUrl.value = item.image_url
+        imageUrl.value = item.image_url
         editId.value = item.id
         editVendorId.value = item.vendor_id
-        editName.value = item.name
-        editDescription.value = item.description
-        editType.value = item.type
-        editPrice.value = item.price
-        editSpecial.value = item.special
+        name.value = item.name
+        description.value = item.description
+        type.value = item.type
+        price.value = item.price
+        special.value = item.special
         editDialog.value = true
     }
     const submitEdits = async () => {
         const itemObj = {
             updated_at: new Date(),
-            name: editName.value,
-            description: editDescription.value,
-            price: editPrice.value,
-            type: editType.value, // 'appetizer', 'entree', etc.,
-            image_url: editImageUrl.value,
-            special: editSpecial.value // default: FALSE, set to TRUE if item is seasonal/limited edition
+            name: name.value,
+            description: description.value,
+            price: price.value,
+            type: type.value, // 'appetizer', 'entree', etc.,
+            image_url: imageUrl.value,
+            special: special.value // default: FALSE, set to TRUE if item is seasonal/limited edition
         }
 
         const { error } = await supabase
@@ -340,12 +338,12 @@
             // reset fields
             editId.value = ''
             editVendorId.value = ''
-            editName.value = ''
-            editDescription.value = ''
-            editType.value = ''
-            editImageUrl.value = ''
-            editPrice.value = 0
-            editSpecial.value = false
+            name.value = ''
+            description.value = ''
+            type.value = ''
+            imageUrl.value = ''
+            price.value = 0
+            special.value = false
 
             editDialog.value = false
         }
@@ -382,14 +380,26 @@
             if (uploadError) console.error(uploadError)
             else {
                 const { data, error } = supabase.storage.from('menu_images').getPublicUrl(filePath)
-                if (data) editImageUrl.value = data.publicUrl
+                if (data) imageUrl.value = data.publicUrl
                 else console.error(error)
             }
         }
-        console.log('edit image url: ', editImageUrl.value)
+        console.log('edit image url: ', imageUrl.value)
         //         menuItems.value = await getMenuItems(vendor.value.id)
         //         loading.value = false
     }
+    const resetFields = () => {
+        name.value = ''
+        description.value = ''
+        type.value = ''
+        imageUrl.value = ''
+        price.value = 0
+        special.value = false
+    }
+    watch(editDialog, (newVal) => {
+        if (!newVal) resetFields()
+    })
+    
 </script>
 
 <style scoped>
