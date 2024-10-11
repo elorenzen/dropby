@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient()
 const store = useUserStore()
-const user = store.user
+const storeUser = store.user
+const user = useSupabaseUser()
 console.log('store user getter? ', store.user)
 
 const loading = ref(false)
@@ -14,16 +15,14 @@ const fireAuth = async () => {
     email: email.value,
     password: password.value,
   })
-  if (error) {
-    await supabase.auth.signUp({
-      email: email.value,
-      password: password.value,
-    })
-  } else if (!error && data) {
-    const { data: userData, error: userErr } = await supabase
+
+  if (error) console.log(error) 
+  else if (!error && data) {
+    const { data: userData } = await supabase
       .from('users')
       .select()
       .eq('id', data.user.id)
+    await store.fetchUser(userData && userData.length > 0 ? userData[0] : '')
 
     if (userData && userData.length > 0) {
       navigateTo(
@@ -114,7 +113,7 @@ const signOut = async () => {
         </v-list>
       </v-menu>
 
-      <span v-if="user">{{ user.first_name }} {{ user.last_name }}</span>
+      <span v-if="user && storeUser">{{ storeUser.first_name }} {{ storeUser.last_name }}</span>
       <v-btn
         v-if="user"
         @click="signOut"
