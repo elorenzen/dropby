@@ -159,17 +159,8 @@
             </v-row>
         </Dialog>
 
-        <v-dialog v-model="deleteDialog" width="20%">
-            <v-card>
-                <v-toolbar color="warning" density="compact">
-                    <v-toolbar-title>Delete Menu Item</v-toolbar-title>
-                </v-toolbar>
-                <v-row class="pa-2">
-                    {{ itemToDelete }}
-                    <v-btn @click="confirmDelete" :loading="loading">Delete Item</v-btn>
-                </v-row>
-            </v-card>
-        </v-dialog>
+        <DeleteDialog v-if="deleteDialog" :itemType="'menu item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+
         <v-snackbar
           v-model="snackbar"
           timeout="6000"
@@ -366,6 +357,11 @@
             deleteDialog.value = false
             itemToDelete.value = null
         }
+    }
+    const cancelDelete = () => {
+        console.log('delete canceled!')
+        deleteDialog.value = false
+        itemToDelete.value = null
     }
     const updateImage = async (e) => {
         const file = e.target.files[0]
