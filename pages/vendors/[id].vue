@@ -4,10 +4,14 @@
       <VendorCard :vendor="vendor[0]" />
     </v-col>
     <v-col>
-      <EventList :acctId="vendor[0].id" :acctType="'vendor'" />
+      <VendorMenu :vendor="vendor[0]" />
     </v-col>
+
+    <v-divider class="my-2"></v-divider>
+
     <v-row class="mt-4">
-      <AllEvents :vendor="vendor[0].id" />
+      <v-col><EventList :acctId="vendor[0].id" :acctType="'vendor'" /></v-col>
+      <v-col><AllEvents :vendor="vendor[0].id" /></v-col>
     </v-row>
   </v-row>
 </template>
