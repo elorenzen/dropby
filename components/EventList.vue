@@ -1,6 +1,6 @@
 <template>
     <v-row dense class="flex justify-center pa-2"><h3>Events</h3></v-row>
-    <v-row dense class="mt-2 p-2">
+    <v-row v-if="user && user.type == 'merchant' && user.is_admin" dense class="mt-2 p-2">
         <v-col cols="6">
             <FloatLabel>
                 <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
@@ -14,7 +14,7 @@
         </FloatLabel>
         </v-col>
     </v-row>
-    <v-row dense class="flex justify-end pa-2">
+    <v-row v-if="user && user.type == 'merchant' && user.is_admin" dense class="flex justify-end pa-2">
         <v-btn
             @click="addEvent"
             color="#e28413"
