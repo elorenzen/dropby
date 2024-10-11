@@ -1,6 +1,6 @@
 <template>
-    <v-row dense class="flex justify-center pa-2"><h3>Events</h3></v-row>
-    <v-row v-if="user && user.type == 'merchant' && user.is_admin" dense class="mt-2 p-2">
+    <v-row dense class="flex justify-center pa-2 text-xl"><h3>{{ acctType.charAt(0).toUpperCase() + acctType.slice(1) }} Events</h3></v-row>
+    <v-row v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" dense class="mt-2 p-2">
         <v-col cols="6">
             <FloatLabel>
                 <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
@@ -14,7 +14,7 @@
         </FloatLabel>
         </v-col>
     </v-row>
-    <v-row v-if="user && user.type == 'merchant' && user.is_admin" dense class="flex justify-end pa-2">
+    <v-row v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" dense class="flex justify-end pa-2">
         <v-btn
             @click="addEvent"
             color="#e28413"
@@ -23,7 +23,7 @@
             :loading="loading"
         >Add Event</v-btn>
     </v-row>
-    <v-divider class="my-2" />
+    <v-divider v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" class="my-2" />
     <DataTable
         v-model:selection="selectedEvt"
         :value="events"
@@ -99,6 +99,11 @@
                 </template>
             </DataView>
         </Dialog>
+
+        <Dialog v-model:visible="openViewDialog" modal header="Event Information" :style="{ width: '25rem' }">
+            <MerchantCard :merchant="selectedEvt.merchant" />
+            <div>{{ new Date(selectedEvt.start).toLocaleString() }} - {{ new Date(selectedEvt.end).toLocaleString() }}</div>
+        </Dialog>
     </div>
     <v-snackbar
       v-model="snackbar"
@@ -132,6 +137,7 @@ const events = ref()
 const selectedEvt = ref()
 const openEditDialog = ref(false)
 const openRequestDialog = ref(false)
+const openViewDialog = ref(false)
 
 const requestedVendors = ref([])
 
@@ -154,19 +160,11 @@ const evtStart = ref('')
 const evtEnd = ref('')
 
 onMounted(async () => {
-    if (user) {
-        const { data } = await supabase
-            .from('events')
-            .select()
-            .eq(user.type, user[`associated_${user.type}_id`])
-        events.value = data
-    } else {
-        const { data } = await supabase
-            .from('events')
-            .select()
-            .eq(acctType.value, acctId.value)
-        events.value = data
-    }
+    const { data } = await supabase
+        .from('events')
+        .select()
+        .eq(acctType.value, acctId.value)
+    events.value = data
 })
 
 const addEvent = async () => {
@@ -191,13 +189,18 @@ const addEvent = async () => {
 }
 const selectRow = (event: any) => {
     selectedEvt.value = event.data
-    if (selectedEvt.value.status == 'pending') {
-        selectedEvt.value.pending_requests.forEach(id => {
-            const found = vendors.find(vendor => vendor.id === id)
-            requestedVendors.value.push(found)
-        })
-        openRequestDialog.value = true
-    } else openEditDialog.value = true
+    console.log('user: ', user.is_admin)
+
+    if (user && user.is_admin && user.type == 'merchant') {
+        // 'pending' dialog is request dialog for admin merchants
+        if (selectedEvt.value.status == 'pending') {
+            selectedEvt.value.pending_requests.forEach(id => {
+                const found = vendors.find(vendor => vendor.id === id)
+                requestedVendors.value.push(found)
+            })
+            openRequestDialog.value = true
+        } else openEditDialog.value = true
+    } else openViewDialog.value = true
 }
 const saveEdits = async () => {
     const updates = {

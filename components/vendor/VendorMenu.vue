@@ -1,18 +1,57 @@
 <template>
     <div>
-        <v-card>
-            <v-toolbar color="#e28413" density="compact">
-                <v-toolbar-title>Menu Items</v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-btn icon @click="addDialog = true">
-                    <v-icon>mdi-plus</v-icon>
-                </v-btn>
-            </v-toolbar>
-            <v-container>
+                <v-row dense class="flex justify-center pa-2 text-xl"><h3>Menu Items</h3></v-row>
                 <v-row v-if="!menuItems || menuItems.length == 0" >
                     No items found.
                 </v-row>
-                <v-list v-else lines="three">
+                <DataView v-else :value="menuItems" :sortOrder="sortOrder" :sortField="sortField">
+                    <template #header>
+                        <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+                            <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+                                <Select v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Sort By Price" @change="onSortChange($event)" />
+                            </div>
+                            <div class="flex flex-col md:items-end gap-8">
+                                <span class="text-xl font-semibold">
+                                    <v-btn size="xs" icon variant="plain" color="green" @click="addDialog = true">
+                                      <v-icon>mdi-plus</v-icon>
+                                    </v-btn>
+                                </span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template #list="slotProps">
+                        <div class="flex flex-col">
+                            <div v-for="(item, index) in slotProps.items" :key="index">
+                                <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
+                                    <div class="md:w-40 relative">
+                                        <img class="block xl:block mx-auto rounded w-full" :src="item.image_url" :alt="item.name" />
+                                    </div>
+                                    <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+                                        <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+                                            <div>
+                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.type }}</span>
+                                                <div class="text-lg font-medium mt-2">{{ item.name }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col md:items-end gap-8">
+                                            <span class="text-xl font-semibold">${{ item.price }}</span>
+                                            <div class="flex flex-row-reverse md:flex-row gap-2">
+                                                <v-btn size="xs" @click="promptDeletion(item)" color="red" icon variant="plain">
+                                                    <v-icon>mdi-delete</v-icon>
+                                                </v-btn>
+                                                <v-btn size="xs" @click="openEditDialog(item)" icon variant="plain">
+                                                    <v-icon>mdi-pencil</v-icon>
+                                                </v-btn>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </DataView>
+                <!-- <v-list v-else lines="three">
                     <v-list-item
                         v-for="item in menuItems"
                         :key="item.id"
@@ -24,8 +63,6 @@
                             <v-img :src="item.image_url"></v-img>
                         </v-avatar>
                         <MenuImage v-else v-model:path="image_path" @upload="updateImage" :menuId="item.id" />
-                        <!-- type -->
-                        <!-- price -->
                         </template>
 
                         <template v-if="isAdmin" v-slot:append>
@@ -38,9 +75,7 @@
                         </template>
                         <v-divider inset></v-divider>
                     </v-list-item>
-                </v-list>
-            </v-container>
-        </v-card>
+                </v-list> -->
 
         <!-- ADD ITEM -->
         <v-dialog v-model="addDialog" width="40%">
@@ -212,6 +247,29 @@ import MenuImage from './MenuImage.vue';
     const imageUrl = ref('')
     const price = ref(0)
     const special = ref(false)
+
+    const sortKey = ref();
+    const sortOrder = ref();
+    const sortField = ref();
+    const sortOptions = ref([
+        {label: 'Price High to Low', value: '!price'},
+        {label: 'Price Low to High', value: 'price'},
+    ]);
+    const onSortChange = (event) => {
+        const value = event.value.value;
+        const sortValue = event.value;
+
+        if (value.indexOf('!') === 0) {
+            sortOrder.value = -1;
+            sortField.value = value.substring(1, value.length);
+            sortKey.value = sortValue;
+        }
+        else {
+            sortOrder.value = 1;
+            sortField.value = value;
+            sortKey.value = sortValue;
+        }
+    };
 
     const getMenuItems = async (vId) => {
         const { data } = await supabase

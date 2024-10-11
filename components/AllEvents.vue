@@ -1,5 +1,6 @@
 <template>
     <div>
+        <v-row dense class="flex justify-center pa-2 text-xl"><h3>All Events</h3></v-row>
         <DataTable
             v-model:selection="selectedEvt"
             :value="events"
