@@ -64,6 +64,41 @@
                 <Button type="button" label="Delete" severity="danger" @click="deleteEvent"></Button>
             </div>
         </Dialog>
+
+        <Dialog v-model:visible="openRequestDialog" modal header="Event Requests" :style="{ width: '50rem' }">
+            <DataView :value="requestedVendors">
+                <template #list="slotProps">
+                    <div class="flex flex-col">
+                        <div v-for="(item, index) in slotProps.items" :key="index">
+                            <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
+                                <div class="md:w-40 relative">
+                                    <img class="block xl:block mx-auto rounded w-full" :src="item.avatar_url" :alt="item.vendor_name" />
+                                </div>
+                                <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+                                    <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+                                        <div>
+                                            <div class="text-lg font-medium mt-2">{{ item.vendor_name }}</div>
+                                            <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.vendor_description }}</span>
+                                        </div>
+                                        <!-- <div class="bg-surface-100 p-1" style="border-radius: 30px">
+                                            <div class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2" style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                                                <span class="text-surface-900 font-medium text-sm">{{ item.rating }}</span>
+                                                <i class="pi pi-star-fill text-yellow-500"></i>
+                                            </div>
+                                        </div> -->
+                                    </div>
+                                    <div class="flex flex-col md:items-end gap-8">
+                                        <div class="flex flex-row-reverse md:flex-row gap-2">
+                                            <Button label="Approve" @click="approveRequest(item.id)" class="flex-auto md:flex-initial whitespace-nowrap"></Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </DataView>
+        </Dialog>
     </div>
     <v-snackbar
       v-model="snackbar"
@@ -96,6 +131,12 @@ const loading = ref(false)
 const events = ref()
 const selectedEvt = ref()
 const openEditDialog = ref(false)
+const openRequestDialog = ref(false)
+
+const requestedVendors = ref([])
+
+const vendorStore = useVendorStore()
+const vendors = vendorStore.getAllVendors
 
 const statuses = ref([
     { label: 'Open', value: 'open' }, // blue?
@@ -150,7 +191,13 @@ const addEvent = async () => {
 }
 const selectRow = (event: any) => {
     selectedEvt.value = event.data
-    openEditDialog.value = true
+    if (selectedEvt.value.status == 'pending') {
+        selectedEvt.value.pending_requests.forEach(id => {
+            const found = vendors.find(vendor => vendor.id === id)
+            requestedVendors.value.push(found)
+        })
+        openRequestDialog.value = true
+    } else openEditDialog.value = true
 }
 const saveEdits = async () => {
     const updates = {
@@ -207,6 +254,25 @@ const getStatusLabel = (status: any) => {
             return null;
     }
 };
+const approveRequest = async (id: any) => {
+    const updates = {
+        updated_at: new Date(),
+        status: 'booked',
+        vendor: id
+    }
+    console.log('updates ', updates)
+    const { error } = await supabase
+        .from('events')
+        .update(updates)
+        .eq('id', selectedEvt.value.id)
+    
+    if (!error) {
+        openRequestDialog.value = false
+        selectedEvt.value = ''
+        snacktext.value = 'Event approved!'
+        snackbar.value = true
+    }
+}
 </script>
 
 <style scoped>
