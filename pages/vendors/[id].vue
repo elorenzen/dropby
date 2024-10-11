@@ -6,6 +6,9 @@
     <v-col>
       <EventList :acctId="vendor[0].id" :acctType="'vendor'" />
     </v-col>
+    <v-row>
+      <AllEvents :vendor="vendor[0].id" />
+    </v-row>
   </v-row>
 </template>
   

@@ -8,7 +8,8 @@ export const useEventStore = defineStore('event', {
   getters: {
     getEventsByMerchantId: (state) => {
         return (id) => state.allEvents.filter((event) => event.merchant === id)
-    }
+    },
+    getAllEvents: (state) => state.allEvents
   },
   actions: {
     async setAllEvents(events: []) {

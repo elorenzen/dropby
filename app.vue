@@ -9,12 +9,16 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-
-const { data: eventData } = await supabase.from('events').select()
-const eventStore = useEventStore()
-await eventStore.setAllEvents(eventData)
-
 const userStore = useUserStore()
+
+const merchantStore = useMerchantStore()
+const { data: merchantData } = await supabase.from('merchants').select()
+await merchantStore.setAllMerchants(merchantData)
+
+const vendorStore = useVendorStore()
+const { data: vendorData } = await supabase.from('vendors').select()
+await vendorStore.setAllVendors(vendorData)
+
 if (user.value) {
   const { data } = await supabase
       .from('users')
