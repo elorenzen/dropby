@@ -1,185 +1,154 @@
 <template>
     <div>
-                <v-row dense class="flex justify-center pa-2 text-xl"><h3>Menu Items</h3></v-row>
-                <v-row v-if="!menuItems || menuItems.length == 0" >
-                    No items found.
-                </v-row>
-                <DataView v-else :value="menuItems" :sortOrder="sortOrder" :sortField="sortField">
-                    <template #header>
-                        <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
-                            <div class="flex flex-row md:flex-col justify-between items-start gap-2">
-                                <Select v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Sort By Price" @change="onSortChange($event)" />
-                            </div>
-                            <div class="flex flex-col md:items-end gap-8">
-                                <span class="text-xl font-semibold">
-                                    <v-btn size="xs" icon variant="plain" color="green" @click="addDialog = true">
-                                      <v-icon>mdi-plus</v-icon>
-                                    </v-btn>
-                                </span>
-                            </div>
-                        </div>
-                    </template>
+        <v-row dense class="flex justify-center pa-2 text-xl"><h3>Menu Items</h3></v-row>
+        <v-row v-if="!menuItems || menuItems.length == 0" >
+            No items found.
+        </v-row>
+        <DataView v-else :value="menuItems" :sortOrder="sortOrder" :sortField="sortField">
+            <template #header>
+                <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+                    <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+                        <Select v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Sort By Price" @change="onSortChange($event)" />
+                    </div>
+                    <div class="flex flex-col md:items-end gap-8" v-if="storeUser && storeUser.type == 'vendor' && storeUser.is_admin">
+                        <span class="text-xl font-semibold">
+                            <v-btn size="xs" icon variant="plain" color="green" @click="addDialog = true">
+                              <v-icon>mdi-plus</v-icon>
+                            </v-btn>
+                        </span>
+                    </div>
+                </div>
+            </template>
 
-                    <template #list="slotProps">
-                        <div class="flex flex-col">
-                            <div v-for="(item, index) in slotProps.items" :key="index">
-                                <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
-                                    <div class="md:w-40 relative">
-                                        <img class="block xl:block mx-auto rounded w-full" :src="item.image_url" :alt="item.name" />
+            <template #list="slotProps">
+                <div class="flex flex-col">
+                    <div v-for="(item, index) in slotProps.items" :key="index">
+                        <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
+                            <div class="md:w-40 relative">
+                                <img class="block xl:block mx-auto rounded w-full" :src="item.image_url" :alt="item.name" />
+                            </div>
+                            <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+                                <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+                                    <div>
+                                        <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.type }}</span>
+                                        <div class="text-lg font-medium mt-2">{{ item.name }}</div>
                                     </div>
-                                    <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
-                                        <div class="flex flex-row md:flex-col justify-between items-start gap-2">
-                                            <div>
-                                                <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.type }}</span>
-                                                <div class="text-lg font-medium mt-2">{{ item.name }}</div>
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-col md:items-end gap-8">
-                                            <span class="text-xl font-semibold">${{ item.price }}</span>
-                                            <div class="flex flex-row-reverse md:flex-row gap-2">
-                                                <v-btn size="xs" @click="promptDeletion(item)" color="red" icon variant="plain">
-                                                    <v-icon>mdi-delete</v-icon>
-                                                </v-btn>
-                                                <v-btn size="xs" @click="openEditDialog(item)" icon variant="plain">
-                                                    <v-icon>mdi-pencil</v-icon>
-                                                </v-btn>
-                                            </div>
-                                        </div>
+                                </div>
+                                <div class="flex flex-col md:items-end gap-8">
+                                    <span class="text-xl font-semibold">${{ item.price }}</span>
+                                    <div class="flex flex-row-reverse md:flex-row gap-2" v-if="storeUser && storeUser.type == 'vendor' && storeUser.is_admin">
+                                        <v-btn size="xs" @click="promptDeletion(item)" color="red" icon variant="plain">
+                                            <v-icon>mdi-delete</v-icon>
+                                        </v-btn>
+                                        <v-btn size="xs" @click="openEditDialog(item)" icon variant="plain">
+                                            <v-icon>mdi-pencil</v-icon>
+                                        </v-btn>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </template>
-                </DataView>
-                <!-- <v-list v-else lines="three">
-                    <v-list-item
-                        v-for="item in menuItems"
-                        :key="item.id"
-                        :subtitle="item.description"
-                        :title="item.name"
-                    >
-                        <template v-slot:prepend>
-                        <v-avatar v-if="item.image_url" color="grey-lighten-1">
-                            <v-img :src="item.image_url"></v-img>
-                        </v-avatar>
-                        <MenuImage v-else v-model:path="image_path" @upload="updateImage" :menuId="item.id" />
-                        </template>
-
-                        <template v-if="isAdmin" v-slot:append>
-                            <v-btn @click="openEditDialog(item)" icon variant="plain">
-                                <v-icon>mdi-pencil</v-icon>
-                            </v-btn>
-                            <v-btn @click="promptDeletion(item)" icon variant="plain">
-                                <v-icon>mdi-delete</v-icon>
-                            </v-btn>
-                        </template>
-                        <v-divider inset></v-divider>
-                    </v-list-item>
-                </v-list> -->
+                    </div>
+                </div>
+            </template>
+        </DataView>
 
         <!-- ADD ITEM -->
-        <v-dialog v-model="addDialog" width="40%">
-            <v-card>
-                <v-toolbar color="#e28413" density="compact">
-                    <v-toolbar-title>New Menu Item</v-toolbar-title>
-                </v-toolbar>
-                <v-row dense class="pa-2">
-                    <v-col cols="8">
-                        <v-text-field
-                            density="compact"
-                            outlined
-                            v-model="name"
-                            label="Name"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="4">
-                        <v-combobox
-                            density="compact"
-                            outlined
-                            v-model="type"
-                            label="Item Type"
-                            :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
-                        ></v-combobox>
-                    </v-col>
-                    <v-col cols="12">
-                        <v-textarea density="compact" outlined v-model="description" label="Description"
-                        ></v-textarea>
-                    </v-col>
-                    <v-divider class="my-2" />
-                    <v-col cols="6">
-                        <v-text-field
-                            density="compact"
-                            outlined
-                            v-model="price"
-                            label="Price (optional)"
-                            prepend-inner-icon="mdi-currency-usd"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="6" class="pl-2">
-                        <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
-                    </v-col>
-                    <!--
-                    imageUrl = file input
-                    -->
-                </v-row>
-                <v-card-actions class="flex justify-center pa-2">
-                    <v-btn
-                        @click="addItem"
-                        color="#000022"
-                        variant="outlined"
-                        :loading="loading"
-                    >Add Menu Item</v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
+        <Dialog v-model:visible="addDialog" modal header="Add Item" :style="{ width: '25rem' }">
+            <v-row dense class="pa-2">
+                <v-col cols="8">
+                    <v-text-field
+                        density="compact"
+                        outlined
+                        v-model="name"
+                        label="Name"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="4">
+                    <v-combobox
+                        density="compact"
+                        outlined
+                        v-model="type"
+                        label="Item Type"
+                        :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
+                    ></v-combobox>
+                </v-col>
+                <v-col cols="12">
+                    <v-textarea density="compact" outlined v-model="description" label="Description"
+                    ></v-textarea>
+                </v-col>
+                <v-divider class="my-2" />
+                <v-col cols="6">
+                    <v-text-field
+                        density="compact"
+                        outlined
+                        v-model="price"
+                        label="Price (optional)"
+                        prepend-inner-icon="mdi-currency-usd"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="6" class="pl-2">
+                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
+                </v-col>
+            </v-row>
+            <v-row class="pa-2">
+                <v-btn @click="addItem" block :loading="loading">Add Menu Item</v-btn>
+            </v-row>
+        </Dialog>
 
         <!-- EDIT ITEM -->
-        <v-dialog v-model="editDialog" width="40%">
-            <v-card>
-                <v-toolbar color="#e28413" density="compact">
-                    <v-toolbar-title>Edit Menu Item</v-toolbar-title>
-                </v-toolbar>
-                <v-row dense class="pa-2">
-                    <v-col cols="8">
-                        <v-text-field
-                            density="compact"
-                            outlined
-                            v-model="editName"
-                            label="Name"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="4">
-                        <v-combobox
-                            density="compact"
-                            outlined
-                            v-model="editType"
-                            label="Item Type"
-                            :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
-                        ></v-combobox>
-                    </v-col>
-                    <v-col cols="12">
-                        <v-textarea density="compact" outlined v-model="editDescription" label="Description"
-                        ></v-textarea>
-                    </v-col>
-                    <v-divider class="my-2" />
-                    <v-col cols="6">
-                        <v-text-field
-                            density="compact"
-                            outlined
-                            v-model="editPrice"
-                            label="Price (optional)"
-                            prepend-inner-icon="mdi-currency-usd"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="6" class="pl-2">
-                        <v-switch density="compact" label="Seasonal/Limited Edition" v-model="editSpecial"></v-switch>
-                    </v-col>
-                </v-row>
-                <v-row class="pa-2">
-                    <v-btn @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
-                </v-row>
-            </v-card>
-        </v-dialog>
+        <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '25rem' }">
+            <v-row dense class="pa-2">
+                <v-col cols="4">
+                    <Avatar :image="editImageUrl" class="mr-2" size="xlarge" />
+                </v-col>
+                <v-col>
+                    <v-file-input
+                        :label="uploading ? 'Uploading ...' : 'Upload New Image'"
+                        @change="updateImage"
+                        :disabled="uploading"
+                    ></v-file-input>
+                </v-col>
+            </v-row>
+            <v-row dense class="pa-2">
+                <v-col cols="8">
+                    <v-text-field
+                        density="compact"
+                        outlined
+                        v-model="editName"
+                        label="Name"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="4">
+                    <v-combobox
+                        density="compact"
+                        outlined
+                        v-model="editType"
+                        label="Item Type"
+                        :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
+                    ></v-combobox>
+                </v-col>
+                <v-col cols="12">
+                    <v-textarea density="compact" outlined v-model="editDescription" label="Description"
+                    ></v-textarea>
+                </v-col>
+                <v-divider class="my-2" />
+                <v-col cols="6">
+                    <v-text-field
+                        density="compact"
+                        outlined
+                        v-model="editPrice"
+                        label="Price (optional)"
+                        prepend-inner-icon="mdi-currency-usd"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="6" class="pl-2">
+                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="editSpecial"></v-switch>
+                </v-col>
+            </v-row>
+            <v-row class="pa-2">
+                <v-btn @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
+            </v-row>
+        </Dialog>
 
         <v-dialog v-model="deleteDialog" width="20%">
             <v-card>
@@ -213,10 +182,12 @@
 
 <script setup>
     import { v4 } from 'uuid'
-import MenuImage from './MenuImage.vue';
-    const loading = ref(true)
+    const loading = ref(false)
     const snackbar = ref(false)
     const snacktext = ref('')
+
+    const store = useUserStore()
+    const storeUser = store.user
 
     const props = defineProps(['vendor']);
     const vendor = ref(props.vendor)
@@ -225,14 +196,14 @@ import MenuImage from './MenuImage.vue';
     const isAdmin = ref(false)
     const addDialog = ref(false)
     const menuItems = ref(null)
-    const image_path = ref('')
 
+    const itemToEdit = ref('')
+    const editImageUrl = ref('')
     const editId = ref('')
     const editVendorId = ref('')
     const editName = ref('')
     const editDescription = ref('')
     const editType = ref('')
-    // const editImageUrl = ref('')
     const editPrice = ref(0)
     const editSpecial = ref(false)
     const editDialog = ref(false)
@@ -255,6 +226,7 @@ import MenuImage from './MenuImage.vue';
         {label: 'Price High to Low', value: '!price'},
         {label: 'Price Low to High', value: 'price'},
     ]);
+
     const onSortChange = (event) => {
         const value = event.value.value;
         const sortValue = event.value;
@@ -333,6 +305,8 @@ import MenuImage from './MenuImage.vue';
         }
     }
     const openEditDialog = (item) => {
+        itemToEdit.value = item
+        editImageUrl.value = item.image_url
         editId.value = item.id
         editVendorId.value = item.vendor_id
         editName.value = item.name
@@ -349,7 +323,7 @@ import MenuImage from './MenuImage.vue';
             description: editDescription.value,
             price: editPrice.value,
             type: editType.value, // 'appetizer', 'entree', etc.,
-            // image_url: imageUrl.value,
+            image_url: editImageUrl.value,
             special: editSpecial.value // default: FALSE, set to TRUE if item is seasonal/limited edition
         }
 
@@ -369,7 +343,7 @@ import MenuImage from './MenuImage.vue';
             editName.value = ''
             editDescription.value = ''
             editType.value = ''
-            // editImageUrl.value = ''
+            editImageUrl.value = ''
             editPrice.value = 0
             editSpecial.value = false
 
@@ -395,29 +369,26 @@ import MenuImage from './MenuImage.vue';
             itemToDelete.value = null
         }
     }
-    async function updateImage(e) {
-        if (e) {
-            try {
-                loading.value = true
+    const updateImage = async (e) => {
+        const file = e.target.files[0]
 
-                const updates = {
-                    image_url: e.path,
-                    updated_at: new Date(),
-                }
+        if (file) {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${v4()}.${fileExt}`
+            const filePath = `${fileName}`
 
-                const { error } = await supabase
-                    .from('menu_items')
-                    .update(updates)
-                    .eq('id', e.id)
+            const { error: uploadError } = await supabase.storage.from('menu_images').upload(filePath, file)
 
-                if (error) throw error
-            } catch (error) {
-                alert(error.message)
-            } finally {
-                menuItems.value = await getMenuItems(vendor.value.id)
-                loading.value = false
+            if (uploadError) console.error(uploadError)
+            else {
+                const { data, error } = supabase.storage.from('menu_images').getPublicUrl(filePath)
+                if (data) editImageUrl.value = data.publicUrl
+                else console.error(error)
             }
         }
+        console.log('edit image url: ', editImageUrl.value)
+        //         menuItems.value = await getMenuItems(vendor.value.id)
+        //         loading.value = false
     }
 </script>
 
