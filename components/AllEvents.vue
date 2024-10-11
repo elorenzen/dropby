@@ -67,7 +67,6 @@
 
     const merchantStore = useMerchantStore()
     const merchants = merchantStore.getAllMerchants
-    console.log('merchants: ', merchantStore.getAllMerchants)
 
     const selectedEvt = ref()
     const selectedMerchant = ref()

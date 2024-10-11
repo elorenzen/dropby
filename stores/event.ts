@@ -16,11 +16,5 @@ export const useEventStore = defineStore('event', {
     async setAllEvents(events: []) {
         this.allEvents = events
     },
-    async getEventsById(id: any, type: any) {
-        console.log("'getEventsById' id: ", id)
-        console.log("'getEventsById' type: ", type)
-    //   console.log('userParam: ', userParam)
-    //   if (userParam) this.user = userParam
-    }
   }
 })

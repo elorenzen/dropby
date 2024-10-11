@@ -260,7 +260,6 @@ const approveRequest = async (id: any) => {
         status: 'booked',
         vendor: id
     }
-    console.log('updates ', updates)
     const { error } = await supabase
         .from('events')
         .update(updates)

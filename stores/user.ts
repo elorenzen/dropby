@@ -7,7 +7,6 @@ export const useUserStore = defineStore('user', {
   }),
   actions: {
     async fetchUser(userParam: any) {
-      console.log('userParam: ', userParam)
       if (userParam) this.user = userParam
     }
   }
