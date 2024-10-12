@@ -61,7 +61,7 @@
                 <Button type="button" label="Save" @click="saveEdits"></Button>
             </div>
             <div class="flex justify-end mt-2">
-                <Button type="button" label="Delete" severity="danger" @click="deleteEvent"></Button>
+                <Button type="button" label="Delete" severity="danger" @click="promptDeletion"></Button>
             </div>
         </Dialog>
 
@@ -104,6 +104,8 @@
             <MerchantCard :merchant="selectedEvt.merchant" />
             <div>{{ new Date(selectedEvt.start).toLocaleString() }} - {{ new Date(selectedEvt.end).toLocaleString() }}</div>
         </Dialog>
+
+        <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
     </div>
     <v-snackbar
       v-model="snackbar"
@@ -138,6 +140,8 @@ const selectedEvt = ref()
 const openEditDialog = ref(false)
 const openRequestDialog = ref(false)
 const openViewDialog = ref(false)
+
+const deleteDialog = ref(false)
 
 const requestedVendors = ref([])
 
@@ -215,12 +219,15 @@ const saveEdits = async () => {
 
     if (!error) await resetFields('edited')
 }
-const deleteEvent = async () => {
+const promptDeletion = () => { deleteDialog.value = true }
+const confirmDelete = async () => {
     const { error } = await supabase
         .from('events').delete().eq('id', selectedEvt.value.id)
 
     if (!error) await resetFields('deleted')
+    deleteDialog.value = false
 }
+const cancelDelete = () => { deleteDialog.value = false }
 const resetFields = async (action: any) => {
     const { data } = await supabase
             .from('events')
