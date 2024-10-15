@@ -28,8 +28,8 @@ if (user.value) {
 }
 // console.log('user: ', user.user)
         // Get necessary script for Map initializtion (google maps API key required!!)
-        if (process.server) {
-            const runtimeConfig = useRuntimeConfig();
-            useHead({ script: [{ src: `https://maps.googleapis.com/maps/api/js?key=${runtimeConfig.public.gMapKey}&v=weekly`, defer: true }] });
-        }
+        // if (process.server) {
+        //     const runtimeConfig = useRuntimeConfig();
+        //     useHead({ script: [{ src: `https://maps.googleapis.com/maps/api/js?key=${runtimeConfig.public.gMapKey}&v=weekly`, defer: true }] });
+        // }
 </script>
