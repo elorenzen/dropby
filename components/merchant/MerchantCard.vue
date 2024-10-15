@@ -92,9 +92,9 @@
 
           <div v-else>
             <v-row>
-              <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2" readonly>
+              <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2">
                 <template v-slot:prepend><v-icon></v-icon></template>
-                <NuxtLink>{{ merchant.formatted_address ? merchant.formatted_address : 'No address on file' }}</NuxtLink>
+                <NuxtLink :to="merchant.address_url" target="_blank">{{ merchant.formatted_address ? merchant.formatted_address : 'No address on file' }}</NuxtLink>
               </v-btn>
             </v-row>
             <v-row>
@@ -163,6 +163,7 @@ const addressFocus = ref(false)
 const addressComponents = ref()
 const coordinates = ref()
 const formattedAddress = ref()
+const addressUrl = ref()
 
 onMounted(async () => {
   await sdkInit()
@@ -189,7 +190,6 @@ const sdkInit = async () => {
     )
     autocomplete.addListener('place_changed', () => {
       const placeResponse = autocomplete.getPlace()
-      console.log('placeResponse: ', placeResponse)
       const lat = placeResponse.geometry.location.lat()
       const lng = placeResponse.geometry.location.lng()
 
@@ -200,6 +200,7 @@ const sdkInit = async () => {
       formattedAddress.value = placeResponse
         ? placeResponse.formatted_address
         : ''
+      addressUrl.value = placeResponse ? placeResponse.url : ''
     })
   })
 }
@@ -212,6 +213,7 @@ const saveEdits = async () => {
     address_components: addressComponents ? addressComponents.value : merchant.value.address_components,
     coordinates: coordinates ? coordinates.value : merchant.value.coordinates,
     formatted_address: formattedAddress ? formattedAddress.value : merchant.value.address_components,
+    address_url: addressUrl ? addressUrl.value : merchant.value.address_url,
     phone: merchant.value.phone,
     website: merchant.value.website,
     instagram: merchant.value.instagram,
