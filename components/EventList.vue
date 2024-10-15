@@ -148,6 +148,9 @@ const requestedVendors = ref([])
 const vendorStore = useVendorStore()
 const vendors = vendorStore.getAllVendors
 
+const merchantStore = useMerchantStore()
+const merchants = merchantStore.getAllMerchants
+
 const statuses = ref([
     { label: 'Open', value: 'open' }, // blue?
     { label: 'Request Pending', value: 'pending' }, // yellow
@@ -173,6 +176,7 @@ onMounted(async () => {
 
 const addEvent = async () => {
     if (user) {
+        const merchantData = merchants.find((i: any) => i.id == user.associated_merchant_id)
         const evtObj = {
             id: v4(),
             created_at: new Date(),
@@ -180,7 +184,9 @@ const addEvent = async () => {
             vendor: null,
             start: evtStart.value,
             end: evtEnd.value,
-            location: '',
+            location_coordinates: merchantData.coordinates,
+            location_address: merchantData.formatted_address,
+            location_url: merchantData.address_url,
             status: 'open',
             vendor_rating: null,
             merchant_rating: null,
