@@ -11,7 +11,8 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     '@samk-dev/nuxt-vcalendar',
     "@pinia/nuxt",
-    "@primevue/nuxt-module"
+    "@primevue/nuxt-module",
+    "haversine"
   ],
   runtimeConfig: {
     public: {

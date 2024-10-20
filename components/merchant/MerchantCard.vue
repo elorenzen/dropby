@@ -96,6 +96,7 @@
                 <template v-slot:prepend><v-icon></v-icon></template>
                 <NuxtLink :to="merchant.address_url" target="_blank">{{ merchant.formatted_address ? merchant.formatted_address : 'No address on file' }}</NuxtLink>
               </v-btn>
+              <span v-if="merchantDist > 0"><Badge :value="`${merchantDist.toFixed(2)} mi.`"></Badge></span>
             </v-row>
             <v-row>
               <v-btn prepend-icon="mdi-phone" variant="plain" readonly>
@@ -145,6 +146,7 @@
 </template>
 
 <script setup lang="ts">
+import haversine from 'haversine'
 const supabase = useSupabaseClient()
 import { Loader } from '@googlemaps/js-api-loader'
 
@@ -165,9 +167,50 @@ const coordinates = ref()
 const formattedAddress = ref()
 const addressUrl = ref()
 
+const lat = ref(0)
+const lng = ref(0)
+
+const merchantDist = ref(0)
+
 onMounted(async () => {
+  try {
+    const locRes = await getLocationFromUser();
+    lat.value = locRes.latitude
+    lng.value = locRes.longitude
+  } catch (error) {
+    alert('user denied us');
+    //code if user denies location service;
+  }
   await sdkInit()
+  getCoords()
 })
+
+const getLocationFromUser = () => {
+  return new Promise((resolve, reject) => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        resolve(position.coords);
+      }, reject);
+    } else {
+      reject('Geolocation not supported');
+    }
+  });
+}
+
+const getCoords = () => {
+  const originCoords = {
+    latitude: lat.value,
+    longitude: lng.value
+  }
+
+  const dbMerchantCoords = JSON.parse(merchant.value.coordinates)
+  const merchantCoords = {
+    latitude: dbMerchantCoords.lat,
+    longitude: dbMerchantCoords.lng
+  }
+
+  merchantDist.value = haversine(originCoords, merchantCoords, {unit: 'mile'})
+}
 
 const sdkInit = async () => {
   //initialize google sdk
