@@ -13,6 +13,11 @@
                     {{ getMerchantName(slotProps.data.merchant) }}
                 </template>
             </Column>
+            <Column field="location_address" header="Location">
+                <template #body="slotProps">
+                    {{ slotProps.data.location_address }}
+                </template>
+            </Column>
             <Column field="start" header="Start">
                 <template #body="slotProps">
                     {{ new Date(slotProps.data.start).toLocaleString() }}
