@@ -25,7 +25,7 @@ const fireAuth = async () => {
     await store.fetchUser(userData && userData.length > 0 ? userData[0] : '')
 
     if (userData && userData.length > 0) {
-      navigateTo(
+      await navigateTo(
         userData[0].associated_merchant_id ?
         `/merchants/${userData[0].associated_merchant_id}` :
         `/vendors/${userData[0].associated_vendor_id}`   
