@@ -2,7 +2,18 @@
   <div>
     <Card style="overflow: hidden">
         <template #header>
-            <img alt="user header" :src="merchant.avatar_url" />
+          <v-row dense class="pa-2">
+              <v-col cols="6">
+                <img :src="imageUrl" />
+              </v-col>
+              <v-col>
+                  <v-file-input
+                      :label="uploading ? 'Uploading ...' : 'Upload New Image'"
+                      @change="updateImage"
+                      :disabled="uploading"
+                  ></v-file-input>
+              </v-col>
+          </v-row>  
         </template>
         <template #title>
           <v-row v-if="storeUser && storeUser.is_admin && storeUser.type == 'merchant'">
@@ -146,6 +157,7 @@
 </template>
 
 <script setup lang="ts">
+import { v4 } from 'uuid'
 import haversine from 'haversine'
 const supabase = useSupabaseClient()
 import { Loader } from '@googlemaps/js-api-loader'
@@ -159,6 +171,8 @@ const editDialog = ref(false)
 const snackbar = ref(false)
 const snacktext = ref('')
 
+const imageUrl = ref(props.merchant.avatar_url ? props.merchant.avatar_url : '')
+
 const streetRef = ref()
 const addressFocus = ref(false)
 
@@ -167,6 +181,7 @@ const coordinates = ref()
 const formattedAddress = ref()
 const addressUrl = ref()
 
+const uploading = ref(false)
 const lat = ref(0)
 const lng = ref(0)
 
@@ -269,6 +284,43 @@ const saveEdits = async () => {
       snacktext.value = 'Information Updated!'
       snackbar.value = true
   }
+}
+
+const updateImage = async (e) => {
+    uploading.value = true
+    const file = e.target.files[0]
+
+    if (file) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${v4()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage.from('merchant_avatars').upload(filePath, file)
+
+        if (uploadError) console.error(uploadError)
+        else {
+            const { data } = supabase.storage.from('merchant_avatars').getPublicUrl(filePath)
+            if (data) {
+              imageUrl.value = data.publicUrl
+
+              const updates = {
+                updated_at: new Date(),
+                avatar_url: imageUrl.value,
+              }
+
+              const { error } = await supabase
+                .from('merchants')
+                .update(updates)
+                .eq('id', merchant.value.id)
+              
+              if (!error) {
+                snacktext.value = 'Merchant Avatar Updated!'
+                snackbar.value = true
+              }
+            }
+        }
+    }
+    uploading.value = false
 }
 </script>
 

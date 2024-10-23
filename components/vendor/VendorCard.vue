@@ -1,7 +1,19 @@
 <template>
+  <div>
   <Card v-if="storeUser && storeUser.is_admin && storeUser.type == 'vendor'" style="overflow: hidden">
       <template #header>
-          <img alt="user header" :src="vendor.avatar_url" />
+        <v-row dense class="pa-2">
+            <v-col cols="6">
+              <img :src="imageUrl" />
+            </v-col>
+            <v-col>
+                <v-file-input
+                    :label="uploading ? 'Uploading ...' : 'Upload New Image'"
+                    @change="updateImage"
+                    :disabled="uploading"
+                ></v-file-input>
+            </v-col>
+        </v-row>  
       </template>
       <template #title>
         <v-text-field density="compact" outlined v-model="vendor.vendor_name" placeholder="Vendor Name (e.g. 'McDonald's')"></v-text-field>
@@ -11,7 +23,6 @@
             ></v-textarea>
       </template>
       <template #content>
-
         <!-- <v-row>
           <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2" readonly>
             <template v-slot:prepend><v-icon></v-icon></template>
@@ -107,13 +118,74 @@
           </div>
       </template> -->
   </Card>
+
+  <v-snackbar
+    v-model="snackbar"
+    timeout="6000"
+  >
+    {{ snacktext }}
+
+    <template v-slot:actions>
+      <v-btn
+        color="#000022"
+        variant="text"
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
+  </div>
 </template>
 
 <script setup>
+import { v4 } from 'uuid'
 const props = defineProps(['vendor']);
 const vendor = ref(props.vendor)
 const store = useUserStore()
+const supabase = useSupabaseClient()
 const storeUser = store.user
+const uploading = ref(false)
+
+const imageUrl = ref(props.vendor.avatar_url ? props.vendor.avatar_url : '')
+
+const snackbar = ref(false)
+const snacktext = ref('')
+
+const updateImage = async (e) => {
+    uploading.value = true
+    const file = e.target.files[0]
+
+    if (file) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${v4()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage.from('vendor_avatars').upload(filePath, file)
+
+        if (uploadError) console.error(uploadError)
+        else {
+            const { data } = supabase.storage.from('vendor_avatars').getPublicUrl(filePath)
+            if (data) {
+              imageUrl.value = data.publicUrl
+
+              const { error } = await supabase
+                .from('vendors')
+                .update({
+                    updated_at: new Date(),
+                    avatar_url: imageUrl.value,
+                })
+                .eq('id', vendor.value.id)
+              
+              if (!error) {
+                snacktext.value = 'Vendor Avatar Updated!'
+                snackbar.value = true
+              }
+            }
+        }
+    }
+    uploading.value = false
+}
 </script>
 
 <style lang="scss" scoped></style>
