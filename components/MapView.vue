@@ -27,19 +27,16 @@ const markers = ref([])
 
 
 onMounted(async () => {
-  console.log('merchants: ', merchants)
   if (merchants.length > 0) {
     setMerchantMarkers()
     const merchantCoords = merchants.map(merchant => JSON.parse(merchant.coordinates))
     center.value = setCenter(merchantCoords)
   } else {
-    try {
       const locRes = await getLocationFromUser();
-      center.value = { lat: locRes.latitude, lng: locRes.longitude }
-    } catch (error) {
-      center.value = { lat: 34.0549, lng: 118.2426}
-      // Use Los Angeles coordinates as fallback
-    }
+      center.value = {
+        lat: locRes ? locRes.latitude : 34.0549, // Use DTLA lat. as fallback
+        lng: locRes ? locRes.longitude : 118.2426 // Use DTLA lng. as fallback
+      }
   }
 })
 
