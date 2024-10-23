@@ -2,7 +2,7 @@
   <div class="flex items-center justify-center p-5">
     <ScriptGoogleMaps
       ref="maps"
-      :center="{ lat: lat, lng: lng }"
+      :center="center"
       :markers="markers"
       :api-key="config.public.gMapKey"
       class="group"
@@ -14,31 +14,33 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const isLoaded = ref(false)
-const center = ref()
 const maps = ref()
 
 const config = useRuntimeConfig()
 
-const lat = ref(0)
-const lng = ref(0)
+const center = ref()
 
 const merchantStore = useMerchantStore()
 const merchants = merchantStore.getAllMerchants
 
 const markers = ref([])
 
+
 onMounted(async () => {
-  try {
-    const locRes = await getLocationFromUser();
-    lat.value = locRes.latitude
-    lng.value = locRes.longitude
-  } catch (error) {
-    // Use Los Angeles coordinates as fallback
-    lat.value = 34.0549
-    lng.value = 118.2426
+  console.log('merchants: ', merchants)
+  if (merchants.length > 0) {
+    setMerchantMarkers()
+    const merchantCoords = merchants.map(merchant => JSON.parse(merchant.coordinates))
+    center.value = setCenter(merchantCoords)
+  } else {
+    try {
+      const locRes = await getLocationFromUser();
+      center.value = { lat: locRes.latitude, lng: locRes.longitude }
+    } catch (error) {
+      center.value = { lat: 34.0549, lng: 118.2426}
+      // Use Los Angeles coordinates as fallback
+    }
   }
-  setMerchantMarkers()
 })
 
 const getLocationFromUser = () => {
@@ -53,13 +55,6 @@ const getLocationFromUser = () => {
   });
 }
 
-function handleReady({ map }) {
-  center.value = map.value.getCenter()
-  map.value.addListener('center_changed', () => {
-    center.value = map.value.getCenter()
-  })
-  isLoaded.value = true
-}
 
 const setMerchantMarkers = () => {
   merchants.forEach(merchant => {
@@ -67,5 +62,20 @@ const setMerchantMarkers = () => {
     const marker = { id: merchant.id, position: coords }
     markers.value.push(marker)
   })
+}
+
+const setCenter = (markers: any) => {
+  let lat = 0;
+  let lng = 0;
+    
+  for(let i = 0; i < markers.length; ++i) {
+      lat += markers[i].lat;
+      lng += markers[i].lng;
+  }
+
+  lat /= markers.length;
+  lng /= markers.length;
+
+  return { lat: lat, lng: lng }
 }
 </script>
