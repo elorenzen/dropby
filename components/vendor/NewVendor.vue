@@ -20,7 +20,10 @@ const password = ref('')
 const type = ref('vendor')
 const availableToContact = ref(true)
 
+const uploading = ref(false)
+
 // VENDOR DATA
+const imageUrl = ref('')
 const vendorName = ref('')
 const vendorDesc = ref('')
 const website = ref('')
@@ -73,6 +76,25 @@ const addAuthUser = async () => {
     newUserLoading.value = false
 }
 
+const updateImage = async (e) => {
+    uploading.value = true
+    const file = e.target.files[0]
+
+    if (file) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${v4()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage.from('vendor_avatars').upload(filePath, file)
+
+        if (!uploadError) {
+            const { data } = supabase.storage.from('vendor_avatars').getPublicUrl(filePath)
+            if (data) imageUrl.value = data.publicUrl
+        }
+    }
+    uploading.value = false
+}
+
 const addVendor = async () => {
     // if (user) {
         const authUserId = user.value.id
@@ -100,7 +122,8 @@ const addVendor = async () => {
             instagram: ig.value,
             phone: vendorPhone.value,
             email: vendorEmail.value,
-            cuisine: cuisine.value
+            cuisine: cuisine.value,
+            avatar_url: imageUrl.value
         }
 
         //const { error: userErr } = await supabase.from('users').insert(userObj)
@@ -170,6 +193,18 @@ const getAddrs = (e) => {
                 <v-btn @click="addAuthUser" block>Add User</v-btn>
             </v-row> -->
 
+            <v-row dense class="pa-2">
+                <v-col v-if="imageUrl !== ''">
+                    <img :src="imageUrl" />
+                </v-col>
+                <v-col>
+                    <v-file-input
+                        :label="uploading ? 'Uploading ...' : 'Upload New Image'"
+                        @change="updateImage"
+                        :disabled="uploading"
+                    ></v-file-input>
+                </v-col>
+            </v-row>  
             <v-divider class="mb-4"></v-divider>
 
             <v-row>

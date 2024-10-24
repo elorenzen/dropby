@@ -14,7 +14,7 @@
       <Column field="formatted_address" header="Address">
           <template #body="slotProps">
               {{ slotProps.data.formatted_address }}
-              <Badge :value="getDistance(slotProps.data.coordinates)"></Badge>
+              <Badge v-if="slotProps.data.coordinates" :value="getDistance(slotProps.data.coordinates)"></Badge>
           </template>
       </Column>
       <Column field="rating" header="Rating">

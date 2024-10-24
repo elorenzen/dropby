@@ -20,7 +20,10 @@ const password = ref('')
 const type = ref('merchant')
 const availableToContact = ref(true)
 
+const uploading = ref(false)
+
 // MERCHANT DATA
+const imageUrl = ref('')
 const merchantName = ref('')
 const merchantDesc = ref('')
 const website = ref('')
@@ -48,26 +51,45 @@ const addAuthUser = async () => {
     }
 }
 
-const addMerchant = async () => {
-    if (user) {
-        const authUserId = user.value.id
-        const merchantId = v4()
+const updateImage = async (e) => {
+    uploading.value = true
+    const file = e.target.files[0]
 
-        const userObj = {
-            id: authUserId,
-            created_at: new Date(),
-            associated_merchant_id: merchantId,
-            is_admin: isAdmin.value,
-            first_name: firstName.value,
-            last_name: lastName.value,
-            phone: phone.value,
-            email: email.value,
-            type: type.value,
-            available_to_contact: availableToContact.value
+    if (file) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${v4()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage.from('merchant_avatars').upload(filePath, file)
+
+        if (!uploadError) {
+            const { data } = supabase.storage.from('merchant_avatars').getPublicUrl(filePath)
+            if (data) imageUrl.value = data.publicUrl
         }
+    }
+    uploading.value = false
+}
+
+const addMerchant = async () => {
+    // if (user) {
+    //     const authUserId = user.value.id
+    //     const merchantId = v4()
+
+    //     const userObj = {
+    //         id: authUserId,
+    //         created_at: new Date(),
+    //         associated_merchant_id: merchantId,
+    //         is_admin: isAdmin.value,
+    //         first_name: firstName.value,
+    //         last_name: lastName.value,
+    //         phone: phone.value,
+    //         email: email.value,
+    //         type: type.value,
+    //         available_to_contact: availableToContact.value
+    //     }
 
         const merchantObj = {
-            id: merchantId,
+            id: v4(),
             created_at: new Date(),
             merchant_name: merchantName.value,
             merchant_description: merchantDesc.value,
@@ -76,13 +98,14 @@ const addMerchant = async () => {
             phone: merchantPhone.value,
             email: merchantEmail.value,
             average_vendor_rating: null,
+            avatar_url: imageUrl.value
         }
 
-        const { error: userErr } = await supabase.from('users').insert(userObj)
-        console.log('userErr: ', userErr)
+        // const { error: userErr } = await supabase.from('users').insert(userObj)
+        // console.log('userErr: ', userErr)
         const { error: merchErr } = await supabase.from('merchants').insert(merchantObj)
         console.log('err: ', merchErr)
-        if (!merchErr && !userErr) {
+        if (!merchErr) {
             snackbar.value = true
             snacktext.value = 'New merchant created!'
 
@@ -100,9 +123,9 @@ const addMerchant = async () => {
             merchantPhone.value = ''
             merchantEmail.value = ''
 
-            navigateTo(`/merchants/${merchantId}`)
+            // navigateTo(`/merchants/${merchantId}`)
         }
-    }
+    // }
 }
 
 const getAddrs = (e) => {
@@ -117,7 +140,7 @@ const getAddrs = (e) => {
 
 <template>
     <form class="form-widget" @submit.prevent="addMerchant" style="max-width: 50%;">
-        <h4 class="mb-2">Primary User Information</h4>
+        <!-- <h4 class="mb-2">Primary User Information</h4>
         <v-row dense>
             <v-col cols="4">
                 <v-text-field density="compact" outlined v-model="firstName" placeholder="First Name"
@@ -142,7 +165,19 @@ const getAddrs = (e) => {
         </v-row>
         <v-row>
             <v-btn @click="addAuthUser" block :loading="newUserLoading">Add User</v-btn>
-        </v-row>
+        </v-row> -->
+        <v-row dense class="pa-2">
+            <v-col v-if="imageUrl !== ''">
+                <img :src="imageUrl" />
+            </v-col>
+            <v-col>
+                <v-file-input
+                    :label="uploading ? 'Uploading ...' : 'Upload New Image'"
+                    @change="updateImage"
+                    :disabled="uploading"
+                ></v-file-input>
+            </v-col>
+        </v-row>  
 
         <v-divider class="mb-4"></v-divider>
 
