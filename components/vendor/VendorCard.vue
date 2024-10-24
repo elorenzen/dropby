@@ -16,7 +16,15 @@
         </v-row>  
       </template>
       <template #title>
-        <v-text-field density="compact" outlined v-model="vendor.vendor_name" placeholder="Vendor Name (e.g. 'McDonald's')"></v-text-field>
+        <v-row>
+          <v-col cols="7">
+            <v-text-field density="compact" outlined v-model="vendor.vendor_name" placeholder="Vendor Name (e.g. 'McDonald's')"></v-text-field>
+          </v-col>
+          <v-col cols="5">
+              <MultiSelect v-model="vendor.cuisine" display="chip" :options="cuisines" filter placeholder="Select Cuisine(s)"
+              :maxSelectedLabels="3" class="w-full md:w-80" />
+          </v-col>
+        </v-row>
       </template>
       <template #subtitle>
         <v-textarea density="compact" outlined v-model="vendor.vendor_description" placeholder="Vendor Desciption (e.g. 'Fast food restaurant selling burgers & fries.')"
@@ -151,6 +159,29 @@ const imageUrl = ref(props.vendor.avatar_url ? props.vendor.avatar_url : '')
 
 const snackbar = ref(false)
 const snacktext = ref('')
+
+const cuisines = ref([
+    'Alcohol',
+    'American',
+    'Asian fusion',
+    'Bakery',
+    'Breaksfast',
+    'Coffee',
+    'Comfort food',
+    'Dessert',
+    'Healthy food',
+    'Ice cream',
+    'Italian',
+    'Latin',
+    'mediterranean',
+    'Mexican',
+    'Pizza',
+    'Sandwich',
+    'Seafood',
+    'Snacks',
+    'Tacos',
+    'Vegan'
+])
 
 const updateImage = async (e) => {
     uploading.value = true
