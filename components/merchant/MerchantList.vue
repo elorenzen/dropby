@@ -17,6 +17,11 @@
               <Badge :value="getDistance(slotProps.data.coordinates)"></Badge>
           </template>
       </Column>
+      <Column field="rating" header="Rating">
+          <template #body="slotProps">
+            <Rating v-model="slotProps.data.average_vendor_rating" />
+          </template>
+      </Column>
       <Column field="socials" header="">
           <template #body="slotProps">
             <!-- 
