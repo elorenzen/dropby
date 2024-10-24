@@ -27,6 +27,29 @@ const website = ref('')
 const ig = ref('')
 const vendorPhone = ref('')
 const vendorEmail = ref('')
+const cuisine = ref([])
+const cuisines = ref([
+    'Alcohol',
+    'American',
+    'Asian fusion',
+    'Bakery',
+    'Breaksfast',
+    'Coffee',
+    'Comfort food',
+    'Dessert',
+    'Healthy food',
+    'Ice cream',
+    'Italian',
+    'Latin',
+    'mediterranean',
+    'Mexican',
+    'Pizza',
+    'Sandwich',
+    'Seafood',
+    'Snacks',
+    'Tacos',
+    'Vegan'
+])
 
 const addAuthUser = async () => {
     newUserLoading.value = true
@@ -51,26 +74,25 @@ const addAuthUser = async () => {
 }
 
 const addVendor = async () => {
-    newMerchant.value = true
-    if (user) {
+    // if (user) {
         const authUserId = user.value.id
-        const vendorId = v4()
+        // const vendorId = v4()
 
-        const userObj = {
-            id: authUserId,
-            created_at: new Date(),
-            associated_vendor_id: vendorId,
-            is_admin: isAdmin.value,
-            first_name: firstName.value,
-            last_name: lastName.value,
-            phone: phone.value,
-            email: email.value,
-            type: type.value,
-            available_to_contact: availableToContact.value
-        }
+        // const userObj = {
+        //     id: authUserId,
+        //     created_at: new Date(),
+        //     associated_vendor_id: vendorId,
+        //     is_admin: isAdmin.value,
+        //     first_name: firstName.value,
+        //     last_name: lastName.value,
+        //     phone: phone.value,
+        //     email: email.value,
+        //     type: type.value,
+        //     available_to_contact: availableToContact.value
+        // }
 
         const vendorObj = {
-            id: vendorId,
+            id: v4(),
             created_at: new Date(),
             vendor_name: vendorName.value,
             vendor_description: vendorDesc.value,
@@ -78,16 +100,16 @@ const addVendor = async () => {
             instagram: ig.value,
             phone: vendorPhone.value,
             email: vendorEmail.value,
-            average_merchant_rating: null,
+            cuisine: cuisine.value
         }
 
-        const { error: userErr } = await supabase.from('users').insert(userObj)
-        console.log('userErr: ', userErr)
+        //const { error: userErr } = await supabase.from('users').insert(userObj)
+        //console.log('userErr: ', userErr)
         const { error: vendorErr } = await supabase.from('vendors').insert(vendorObj)
         console.log('err: ', vendorErr)
-        if (!vendorErr && !userErr) {
+        if (!vendorErr) {
             snackbar.value = true
-            snacktext.value = 'New merchant created!'
+            snacktext.value = 'New vendor created!'
 
             // reset fields
             firstName.value = ''
@@ -102,11 +124,11 @@ const addVendor = async () => {
             ig.value = ''
             vendorPhone.value = ''
             vendorEmail.value = ''
+            cuisine.value = []
 
-            navigateTo(`/merchants/${vendorId}`)
+            //navigateTo(`/merchants/${vendorId}`)
         }
-    }
-    newMerchant.value = false
+    // }
 }
 
 const getAddrs = (e) => {
@@ -122,7 +144,7 @@ const getAddrs = (e) => {
 <template>
     <v-container class="flex justify-center p-2">
         <form class="form-widget" @submit.prevent="addVendor">
-            <v-row dense>
+            <!-- <v-row dense>
                 <v-col cols="6">
                     <v-text-field density="compact" outlined v-model="firstName" placeholder="First Name"
                     ></v-text-field>
@@ -146,14 +168,18 @@ const getAddrs = (e) => {
             </v-row>
             <v-row>
                 <v-btn @click="addAuthUser" block>Add User</v-btn>
-            </v-row>
+            </v-row> -->
 
             <v-divider class="mb-4"></v-divider>
 
             <v-row>
-                <v-col cols="12">
+                <v-col cols="7">
                     <v-text-field density="compact" :disabled="!user" outlined v-model="vendorName" placeholder="Vendor Name (e.g. 'Tegridy Burger')"
                     ></v-text-field>
+                </v-col>
+                <v-col cols="5">
+                    <MultiSelect v-model="cuisine" display="chip" :options="cuisines" filter placeholder="Select Cuisine(s)"
+                    :maxSelectedLabels="3" class="w-full md:w-80" />
                 </v-col>
                 <v-col cols="12">
                     <v-textarea density="compact" :disabled="!user" outlined v-model="vendorDesc" placeholder="Vendor Desciption (e.g. 'Food truck from South Park, CO. We sell our very own Tegridy Burger®.')"
