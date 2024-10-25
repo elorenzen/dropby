@@ -1,12 +1,9 @@
 <template>
   <DataTable
-      v-model:selection="selectedEvt"
-      :value="merchants"
-      selectionMode="single"
-      dataKey="id"
-      @row-select="selectRow"
+      :value="allMerchants"
+      sortField="average_vendor_rating" :sort-order="-1"
   >
-      <Column field="merchant_name" header="Name">
+      <Column field="merchant_name" header="Name" sortable>
           <template #body="slotProps">
               {{ slotProps.data.merchant_name }}
           </template>
@@ -17,7 +14,7 @@
               <Badge v-if="slotProps.data.coordinates" :value="getDistance(slotProps.data.coordinates)"></Badge>
           </template>
       </Column>
-      <Column field="rating" header="Rating">
+      <Column field="average_vendor_rating" header="Rating" :sortable="true">
           <template #body="slotProps">
             <Rating v-model="slotProps.data.average_vendor_rating" />
           </template>
@@ -63,6 +60,13 @@ onMounted(async () => {
   const locRes = await getLocationFromUser();
   lat.value = locRes ? locRes.latitude : 34.0549 // Use DTLA lat. as fallback
   lng.value =  locRes ? locRes.longitude : 118.2426 // Use DTLA lng. as fallback
+})
+
+const allMerchants = computed(() => {
+  let allMerchants = merchants
+
+
+  return allMerchants.sort((a, b) => a.merchant_name.localeCompare(b.merchant_name))
 })
 
 const getDistance = (coordinates: any) => {

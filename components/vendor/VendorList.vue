@@ -1,19 +1,21 @@
 <template>
   <DataTable
-      v-model:selection="selectedEvt"
       :value="vendors"
-      selectionMode="single"
-      dataKey="id"
-      @row-select="selectRow"
+      sortField="average_merchant_rating" :sort-order="-1"
   >
-      <Column field="vendor_name" header="Name">
+      <Column field="vendor_name" header="Name" sortable>
           <template #body="slotProps">
               {{ slotProps.data.vendor_name }}
           </template>
       </Column>
       <Column field="cuisine" header="Cuisine">
           <template #body="slotProps">
-              {{ slotProps.data.cuisine }}
+            <Badge class="mx-1" v-for="(i, index) in slotProps.data.cuisine" :key="`${i}-${index}`">{{ i }}</Badge>
+          </template>
+      </Column>
+      <Column field="average_merchant_rating" header="Rating" :sortable="true">
+          <template #body="slotProps">
+            <Rating v-model="slotProps.data.average_merchant_rating" />
           </template>
       </Column>
       <Column field="socials" header="">
