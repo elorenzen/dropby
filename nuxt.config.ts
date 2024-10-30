@@ -35,5 +35,6 @@ export default defineNuxtConfig({
           preset: Aura
       }
     }
-  }
+  },
+  css: ['primeicons/primeicons.css']
 })

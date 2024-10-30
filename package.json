@@ -23,13 +23,15 @@
     "haversine": "^1.1.1",
     "nuxt": "^3.12.4",
     "pinia": "^2.2.4",
+    "primeicons": "^7.0.0",
     "uuid": "^10.0.0",
     "vue": "latest",
     "vuetify-google-autocomplete": "^2.1.2",
     "vuetify-nuxt-module": "^0.18.2"
   },
   "devDependencies": {
-    "@samk-dev/nuxt-vcalendar": "^1.0.4"
+    "@samk-dev/nuxt-vcalendar": "^1.0.4",
+    "nuxt-scheduler": "^0.1.9"
   },
   "overrides": {
     "vue": "latest"
