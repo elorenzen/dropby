@@ -53,10 +53,11 @@
         </DataView>
 
         <!-- ADD ITEM -->
-        <Dialog v-model:visible="addDialog" modal header="Add Item" :style="{ width: '25rem' }">
+        <Dialog v-model:visible="addDialog" modal header="New Menu Item" :style="{ width: '35rem' }">
             <v-row dense class="pa-2">
                 <v-col>
                     <v-file-input
+                        variant="outlined"
                         :label="uploading ? 'Uploading ...' : 'Upload Menu Item Image'"
                         @change="updateImage"
                         :disabled="uploading"
@@ -64,36 +65,27 @@
                 </v-col>
             </v-row>
             <v-row dense class="pa-2">
-                <v-col cols="8">
-                    <v-text-field
-                        density="compact"
-                        outlined
-                        v-model="name"
-                        label="Name"
-                    ></v-text-field>
+                <v-col cols="6">
+                    <FloatLabel variant="on">
+                        <InputText id="item_name" v-model="name" />
+                        <label for="item_name">Item Name</label>
+                    </FloatLabel>
                 </v-col>
-                <v-col cols="4">
-                    <v-combobox
-                        density="compact"
-                        outlined
-                        v-model="type"
-                        label="Item Type"
-                        :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
-                    ></v-combobox>
+                <v-col cols="6">
+                    <Select v-model="type" :options="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></Select>
                 </v-col>
                 <v-col cols="12">
-                    <v-textarea density="compact" outlined v-model="description" label="Description"
-                    ></v-textarea>
+                    <FloatLabel variant="on">
+                        <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
+                        <label for="desc">Description</label>
+                    </FloatLabel>
                 </v-col>
                 <v-divider class="my-2" />
                 <v-col cols="6">
-                    <v-text-field
-                        density="compact"
-                        outlined
-                        v-model="price"
-                        label="Price (optional)"
-                        prepend-inner-icon="mdi-currency-usd"
-                    ></v-text-field>
+                    <FloatLabel variant="on">
+                        <InputNumber v-model="price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
+                        <label for="item_price">Price</label>
+                    </FloatLabel>
                 </v-col>
                 <v-col cols="6" class="pl-2">
                     <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
@@ -105,13 +97,14 @@
         </Dialog>
 
         <!-- EDIT ITEM -->
-        <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '25rem' }">
+        <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '35rem' }">
             <v-row dense class="pa-2">
                 <v-col cols="4">
                     <Avatar :image="imageUrl" class="mr-2" size="xlarge" />
                 </v-col>
                 <v-col>
                     <v-file-input
+                        variant="outlined"
                         :label="uploading ? 'Uploading ...' : 'Upload New Image'"
                         @change="updateImage"
                         :disabled="uploading"
@@ -119,36 +112,27 @@
                 </v-col>
             </v-row>
             <v-row dense class="pa-2">
-                <v-col cols="8">
-                    <v-text-field
-                        density="compact"
-                        outlined
-                        v-model="name"
-                        label="Name"
-                    ></v-text-field>
+                <v-col cols="6">
+                    <FloatLabel variant="on">
+                        <InputText id="item_name" v-model="name" />
+                        <label for="item_name">Item Name</label>
+                    </FloatLabel>
                 </v-col>
-                <v-col cols="4">
-                    <v-combobox
-                        density="compact"
-                        outlined
-                        v-model="type"
-                        label="Item Type"
-                        :items="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']"
-                    ></v-combobox>
+                <v-col cols="6">
+                    <Select v-model="type" :options="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></Select>
                 </v-col>
                 <v-col cols="12">
-                    <v-textarea density="compact" outlined v-model="description" label="Description"
-                    ></v-textarea>
+                    <FloatLabel variant="on">
+                        <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
+                        <label for="desc">Description</label>
+                    </FloatLabel>
                 </v-col>
                 <v-divider class="my-2" />
                 <v-col cols="6">
-                    <v-text-field
-                        density="compact"
-                        outlined
-                        v-model="price"
-                        label="Price (optional)"
-                        prepend-inner-icon="mdi-currency-usd"
-                    ></v-text-field>
+                    <FloatLabel variant="on">
+                        <InputNumber v-model="price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
+                        <label for="item_price">Price</label>
+                    </FloatLabel>
                 </v-col>
                 <v-col cols="6" class="pl-2">
                     <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>

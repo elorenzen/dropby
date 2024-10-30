@@ -18,7 +18,10 @@
       <template #title>
         <v-row>
           <v-col cols="7">
-            <v-text-field density="compact" outlined v-model="vendor.vendor_name" placeholder="Vendor Name (e.g. 'McDonald's')"></v-text-field>
+              <FloatLabel variant="on">
+                  <InputText id="item_name" v-model="vendor.vendor_name" />
+                  <label for="item_name">Vendor Name</label>
+              </FloatLabel>
           </v-col>
           <v-col cols="5">
               <MultiSelect v-model="vendor.cuisine" display="chip" :options="cuisines" filter placeholder="Select Cuisine(s)"
@@ -27,25 +30,16 @@
         </v-row>
       </template>
       <template #subtitle>
-        <v-textarea density="compact" outlined v-model="vendor.vendor_description" placeholder="Vendor Desciption (e.g. 'Fast food restaurant selling burgers & fries.')"
-            ></v-textarea>
+        <FloatLabel variant="on">
+            <Textarea id="desc" v-model="vendor.vendor_description" rows="5" cols="50" style="resize: none" />
+            <label for="desc">Description</label>
+        </FloatLabel>
       </template>
       <template #content>
-        <!-- <v-row>
-          <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2" readonly>
-            <template v-slot:prepend><v-icon></v-icon></template>
-            <NuxtLink>{{ vendor.formatted_address ? vendor.formatted_address : 'No address on file' }}</NuxtLink>
-          </v-btn>
-        </v-row> -->
-        <v-row>
-          <v-text-field
-            prepend-icon="mdi-phone"
-            density="compact"
-            outlined
-            v-model="vendor.phone"
-            placeholder="Contact Phone"
-          ></v-text-field>
-        </v-row>
+        <FloatLabel variant="on">
+            <InputMask id="on_label" v-model="vendor.phone" mask="(999) 999-9999" />
+            <label for="on_label">Contact Phone</label>
+        </FloatLabel>
         <v-row>
           <v-text-field
             prepend-icon="mdi-web"
