@@ -9,7 +9,11 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+
+// === DISPATCH STORE ACTIONS ===
 const userStore = useUserStore()
+const { data: userData } = await supabase.from('users').select()
+await userStore.setAllUsers(userData)
 
 const merchantStore = useMerchantStore()
 const { data: merchantData } = await supabase.from('merchants').select()
