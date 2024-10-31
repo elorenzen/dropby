@@ -10,7 +10,7 @@
                     outlined
                     severity="secondary"
                     icon="pi pi-plus-circle"
-                    @click="addDialog = true"
+                    @click="openAddDialog"
                 />
             </div>
         </div>
@@ -44,7 +44,7 @@
         </DataTable>
 
         <!-- ADD USER -->
-        <Dialog v-model:visible="addDialog" modal header="New User" :style="{ width: '35rem' }">
+        <Dialog v-model:visible="openDialog" modal :header="`${headerTitle} User`" :style="{ width: '35rem' }">
             <v-row dense class="ma-2">
                 <v-col cols="6">
                     <FloatLabel variant="on">
@@ -78,46 +78,8 @@
                 </v-col>
             </v-row>
             <v-row class="pa-2">
-                <v-btn @click="addUser" block :loading="loading">Add User</v-btn>
-            </v-row>
-        </Dialog>
-
-        <!-- EDIT ITEM -->
-        <Dialog v-model:visible="editDialog" modal header="Edit User" :style="{ width: '35rem' }">
-            <v-row dense class="ma-2">
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputText id="first_name" v-model="first" />
-                        <label for="first_name">First Name</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputText id="last_name" v-model="last" />
-                        <label for="last_name">Last Name</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputText id="email" v-model="email" />
-                        <label for="email">Email</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" />
-                        <label for="phone">Phone</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6">
-                    <v-switch density="compact" label="Administrative Access" v-model="isAdmin"></v-switch>
-                </v-col>
-                <v-col cols="6">
-                    <v-switch density="compact" label="Available to Contact" v-model="availableToContact"></v-switch>
-                </v-col>
-            </v-row>
-            <v-row class="pa-2">
-                <v-btn @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
+                <v-btn v-if="headerTitle == 'Add'" @click="addUser" block :loading="loading">Add User</v-btn>
+                <v-btn v-if="headerTitle == 'Edit'" @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
             </v-row>
         </Dialog>
 
@@ -153,14 +115,14 @@ const store = useUserStore()
 const user = store.getUser
 const associatedUsers = ref()
 
-const addDialog = ref(false)
+const openDialog = ref(false)
+const headerTitle = ref('')
 const loading = ref(false)
 const snackbar = ref(false)
 const snacktext = ref('')
 
 const userToDelete = ref(null)
 const deleteDialog = ref(false)
-const editDialog = ref(false)
 const editId = ref('')
 
 // USER DATA 
@@ -206,10 +168,14 @@ const addUser = async () => {
         resetFields()
 
         associatedUsers.value = await getAssociatedUsers(idParam, user.type)
-        addDialog.value = false
+        openDialog.value = false
     }
 }
-const openEditDialog = (user) => {
+const openAddDialog = () => {
+    headerTitle.value = 'Add'
+    openDialog.value = true
+}
+const openEditDialog = (user: any) => {
     editId.value = user.id
     first.value = user.first_name
     last.value = user.last_name
@@ -218,7 +184,8 @@ const openEditDialog = (user) => {
     email.value = user.email
     phone.value = user.phone
 
-    editDialog.value = true
+    headerTitle.value = 'Edit'
+    openDialog.value = true
 }
 const submitEdits = async () => {
     const userObj = {
@@ -243,7 +210,7 @@ const submitEdits = async () => {
         resetFields()
         associatedUsers.value = await getAssociatedUsers(idParam, user.type)
 
-        editDialog.value = false
+        openDialog.value = false
     }
 }
 const resetFields = () => {
@@ -278,5 +245,8 @@ const cancelDelete = () => {
     deleteDialog.value = false
     userToDelete.value = null
 }
+watch(openDialog, (newVal) => {
+    if (!newVal) resetFields()
+})
 
 </script>
