@@ -35,8 +35,9 @@
                     {{ slotProps.data.phone }}
                 </template>
             </Column>
-            <Column field="actions" header="Actions">
+            <Column field="actions" header="Actions" class="flex flex-col md:flex-row justify-between md:items-center">
                 <template #body="{ data }">
+                    <Button outlined severity="contrast" type="button" icon="pi pi-user-edit" @click="openEditDialog(data)"></Button>
                     <Button outlined severity="danger" type="button" icon="pi pi-trash" @click="promptDeletion(data)"></Button>
                 </template>
             </Column>
@@ -81,6 +82,45 @@
             </v-row>
         </Dialog>
 
+        <!-- EDIT ITEM -->
+        <Dialog v-model:visible="editDialog" modal header="Edit User" :style="{ width: '35rem' }">
+            <v-row dense class="ma-2">
+                <v-col cols="6">
+                    <FloatLabel variant="on">
+                        <InputText id="first_name" v-model="first" />
+                        <label for="first_name">First Name</label>
+                    </FloatLabel>
+                </v-col>
+                <v-col cols="6">
+                    <FloatLabel variant="on">
+                        <InputText id="last_name" v-model="last" />
+                        <label for="last_name">Last Name</label>
+                    </FloatLabel>
+                </v-col>
+                <v-col cols="6">
+                    <FloatLabel variant="on">
+                        <InputText id="email" v-model="email" />
+                        <label for="email">Email</label>
+                    </FloatLabel>
+                </v-col>
+                <v-col cols="6">
+                    <FloatLabel variant="on">
+                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" />
+                        <label for="phone">Phone</label>
+                    </FloatLabel>
+                </v-col>
+                <v-col cols="6">
+                    <v-switch density="compact" label="Administrative Access" v-model="isAdmin"></v-switch>
+                </v-col>
+                <v-col cols="6">
+                    <v-switch density="compact" label="Available to Contact" v-model="availableToContact"></v-switch>
+                </v-col>
+            </v-row>
+            <v-row class="pa-2">
+                <v-btn @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
+            </v-row>
+        </Dialog>
+
         <DeleteDialog v-if="deleteDialog" :itemType="'user'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
 
         <v-snackbar
@@ -120,6 +160,8 @@ const snacktext = ref('')
 
 const userToDelete = ref(null)
 const deleteDialog = ref(false)
+const editDialog = ref(false)
+const editId = ref('')
 
 // USER DATA 
 const first = ref('')
@@ -167,7 +209,45 @@ const addUser = async () => {
         addDialog.value = false
     }
 }
+const openEditDialog = (user) => {
+    editId.value = user.id
+    first.value = user.first_name
+    last.value = user.last_name
+    isAdmin.value = user.is_admin
+    availableToContact.value = user.available_to_contact
+    email.value = user.email
+    phone.value = user.phone
+
+    editDialog.value = true
+}
+const submitEdits = async () => {
+    const userObj = {
+        updated_at: new Date(),
+        first_name: first.value,
+        last_name: last.value,
+        is_admin: isAdmin.value,
+        available_to_contact: availableToContact.value,
+        email: email.value,
+        phone: phone.value
+    }
+
+    const { error } = await supabase
+        .from('users')
+        .update(userObj)
+        .eq('id', editId.value)
+
+    if (!error) {
+        snackbar.value = true
+        snacktext.value = 'Menu item edited!'
+
+        resetFields()
+        associatedUsers.value = await getAssociatedUsers(idParam, user.type)
+
+        editDialog.value = false
+    }
+}
 const resetFields = () => {
+    editId.value = ''
     first.value = ''
     last.value = ''
     isAdmin.value = false
