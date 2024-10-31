@@ -103,7 +103,7 @@ const supabase = useSupabaseClient()
 
 const store = useUserStore()
 const user = store.getUser
-const allUsers = store.getAllUsers
+const associatedUsers = ref()
 
 const addDialog = ref(false)
 const loading = ref(false)
@@ -118,9 +118,18 @@ const availableToContact = ref(true)
 const email = ref('')
 const phone = ref('')
 
-const associatedUsers = computed(() => {
-    return allUsers.filter((u: any) => u[`associated_${user.type}_id`] == idParam)
+onMounted(async () => {
+    associatedUsers.value = await getAssociatedUsers(idParam, user.type)
 })
+
+const getAssociatedUsers = async (id, type) => {
+        const { data } = await supabase
+          .from('users')
+          .select()
+          .eq(`associated_${type}_id`, id)
+
+        return data ? data : null
+    }
 
 const addUser = async () => {
     const userObj = {
@@ -140,9 +149,10 @@ const addUser = async () => {
     if (!error) {
         snackbar.value = true
         snacktext.value = 'New user added!'
+
         resetFields()
-        const { data: userData } = await supabase.from('users').select()
-        await store.setAllUsers(userData)
+
+        associatedUsers.value = await getAssociatedUsers(idParam, user.type)
         addDialog.value = false
     }
 }
