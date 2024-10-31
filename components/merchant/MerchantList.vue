@@ -53,8 +53,8 @@ import haversine from 'haversine'
 const merchantStore = useMerchantStore()
 const merchants = merchantStore.getAllMerchants
 
-const lat = ref(0)
-const lng = ref(0)
+const lat = ref(34.0549) // Use DTLA lat. as fallback
+const lng = ref(118.2426) // Use DTLA lat. as fallback
 
 onMounted(async () => {
   const locRes = await getLocationFromUser();
@@ -64,8 +64,6 @@ onMounted(async () => {
 
 const allMerchants = computed(() => {
   let allMerchants = merchants
-
-
   return allMerchants.sort((a, b) => a.merchant_name.localeCompare(b.merchant_name))
 })
 
@@ -75,6 +73,8 @@ const getDistance = (coordinates: any) => {
     latitude: coordsParam.lat,
     longitude: coordsParam.lng
   }
+
+  // Use 'haversine' package to calculate distance from user location to each merchant location.
   const merchantDist = haversine(
     { latitude: lat.value, longitude: lng.value },
     merchantCoords,

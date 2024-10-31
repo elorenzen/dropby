@@ -3,6 +3,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     const user = useSupabaseUser()
     const userStore = useUserStore()
 
+    // if user exists and is signed in, set user data in store
     if (user.value) {
         const { data } = await supabase
             .from('users')
@@ -16,6 +17,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (
         user.value &&
         storeUser &&
+        // Restrict users from accessing other vendors, merchants
         (to.params.id == storeUser[`associated_${storeUser.type}_id`])
     ) {
         return

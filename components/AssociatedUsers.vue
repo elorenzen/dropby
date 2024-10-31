@@ -113,25 +113,24 @@ const supabase = useSupabaseClient()
 
 const store = useUserStore()
 const user = store.getUser
+
 const associatedUsers = ref()
-
-const openDialog = ref(false)
-const headerTitle = ref('')
-const loading = ref(false)
-const snackbar = ref(false)
-const snacktext = ref('')
-
-const userToDelete = ref(null)
-const deleteDialog = ref(false)
-const editId = ref('')
+const openDialog      = ref(false)
+const headerTitle     = ref('')
+const loading         = ref(false)
+const snackbar        = ref(false)
+const snacktext       = ref('')
+const userToDelete    = ref(null)
+const deleteDialog    = ref(false)
+const editId          = ref('')
 
 // USER DATA 
-const first = ref('')
-const last = ref('')
-const isAdmin = ref(false)
+const first              = ref('')
+const last               = ref('')
+const isAdmin            = ref(false)
 const availableToContact = ref(true)
-const email = ref('')
-const phone = ref('')
+const email              = ref('')
+const phone              = ref('')
 
 onMounted(async () => {
     associatedUsers.value = await getAssociatedUsers(idParam, user.type)

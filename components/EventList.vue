@@ -127,44 +127,34 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
-const supabase = useSupabaseClient()
-const userStore = useUserStore()
-const user = userStore.user
-const props = defineProps(['acctId', 'acctType']);
+const props    = defineProps(['acctId', 'acctType']);
 const acctType = ref(props.acctType)
-const acctId = ref(props.acctId)
+const acctId   = ref(props.acctId)
 
-const loading = ref(false)
-const events = ref()
-const selectedEvt = ref()
-const openEditDialog = ref(false)
-const openRequestDialog = ref(false)
-const openViewDialog = ref(false)
+const supabase = useSupabaseClient()
 
-const deleteDialog = ref(false)
-
-const requestedVendors = ref([])
-
-const vendorStore = useVendorStore()
-const vendors = vendorStore.getAllVendors
-
+const userStore     = useUserStore()
+const vendorStore   = useVendorStore()
 const merchantStore = useMerchantStore()
+
+const user      = userStore.user
+const vendors   = vendorStore.getAllVendors
 const merchants = merchantStore.getAllMerchants
 
-const statuses = ref([
-    { label: 'Open', value: 'open' }, // blue?
-    { label: 'Request Pending', value: 'pending' }, // yellow
-    { label: 'Booked', value: 'booked' }, // green
-    { label: 'Closed', value: 'closed' }, // grey
-    { label: 'Unfulfilled', value: 'unfulfilled'} //
-]);
-
-const snackbar = ref(false)
-const snacktext = ref('')
+const loading           = ref(false)
+const requestedVendors  = ref([])
+const events            = ref()
+const selectedEvt       = ref()
+const openEditDialog    = ref(false)
+const openRequestDialog = ref(false)
+const openViewDialog    = ref(false)
+const deleteDialog      = ref(false)
+const snackbar          = ref(false)
+const snacktext         = ref('')
 
 // EVENT DATA
 const evtStart = ref('')
-const evtEnd = ref('')
+const evtEnd   = ref('')
 
 onMounted(async () => {
     const { data } = await supabase
