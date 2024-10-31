@@ -35,9 +35,14 @@
                     {{ slotProps.data.phone }}
                 </template>
             </Column>
+            <Column field="actions" header="Actions">
+                <template #body="{ data }">
+                    <Button outlined severity="danger" type="button" icon="pi pi-trash" @click="promptDeletion(data)"></Button>
+                </template>
+            </Column>
         </DataTable>
 
-        <!-- ADD ITEM -->
+        <!-- ADD USER -->
         <Dialog v-model:visible="addDialog" modal header="New User" :style="{ width: '35rem' }">
             <v-row dense class="ma-2">
                 <v-col cols="6">
@@ -75,6 +80,9 @@
                 <v-btn @click="addUser" block :loading="loading">Add User</v-btn>
             </v-row>
         </Dialog>
+
+        <DeleteDialog v-if="deleteDialog" :itemType="'user'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+
         <v-snackbar
           v-model="snackbar"
           timeout="6000"
@@ -110,6 +118,9 @@ const loading = ref(false)
 const snackbar = ref(false)
 const snacktext = ref('')
 
+const userToDelete = ref(null)
+const deleteDialog = ref(false)
+
 // USER DATA 
 const first = ref('')
 const last = ref('')
@@ -122,14 +133,14 @@ onMounted(async () => {
     associatedUsers.value = await getAssociatedUsers(idParam, user.type)
 })
 
-const getAssociatedUsers = async (id, type) => {
-        const { data } = await supabase
-          .from('users')
-          .select()
-          .eq(`associated_${type}_id`, id)
+const getAssociatedUsers = async (id: any, type: any) => {
+    const { data } = await supabase
+      .from('users')
+      .select()
+      .eq(`associated_${type}_id`, id)
 
-        return data ? data : null
-    }
+    return data ? data : null
+}
 
 const addUser = async () => {
     const userObj = {
@@ -163,6 +174,29 @@ const resetFields = () => {
     availableToContact.value = true
     email.value = ''
     phone.value = ''
+}
+const promptDeletion = (item: any) => {
+    userToDelete.value = item
+    deleteDialog.value = true
+}
+const confirmDelete = async () => {
+    const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userToDelete.value.id)
+    if (!error) {
+        snackbar.value = true
+        snacktext.value = 'User deleted.'
+
+        associatedUsers.value = await getAssociatedUsers(idParam, user.type)
+        deleteDialog.value = false
+        userToDelete.value = null
+    }
+}
+const cancelDelete = () => {
+    console.log('delete canceled!')
+    deleteDialog.value = false
+    userToDelete.value = null
 }
 
 </script>
