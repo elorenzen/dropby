@@ -28,7 +28,7 @@
               <Button v-if="!user" outlined severity="secondary" type="button" @click="toggleRegisterMenu" aria-haspopup="true" aria-controls="register_menu">Sign Up</Button>
               <Menu ref="registerMenu" id="register_menu" :model="registerItems" :popup="true" />
 
-              <Button v-if="user" outlined severity="secondary" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
+              <Button v-if="user" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
               <Menu ref="accountMenu" id="account_menu" :model="accountItems" :popup="true" />
               <!-- <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" /> -->
           </div>
