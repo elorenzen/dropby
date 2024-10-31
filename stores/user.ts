@@ -16,6 +16,6 @@ export const useUserStore = defineStore('user', {
     },
     async setAllUsers(users: []) {
       this.users = users
-  },
+    },
   }
 })
