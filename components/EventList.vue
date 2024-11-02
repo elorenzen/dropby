@@ -176,6 +176,8 @@ onMounted(async () => {
         .select()
         .eq(acctType.value, acctId.value)
     events.value = data
+    const merchantData = merchants.find((i: any) => i.id == user.associated_merchant_id)
+    notes.value = merchantData.notes
 })
 
 const addEvent = async () => {
@@ -196,7 +198,7 @@ const addEvent = async () => {
             merchant_rating: null,
             vendor_comment: null,
             merchant_comment: null,
-            notes: notes.value
+            notes: notes.value !== '' ? notes.value : merchantData.notes
         }
         const { error } = await supabase.from('events').insert(evtObj)
         if (!error) await resetFields('created')
