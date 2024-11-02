@@ -13,6 +13,9 @@
             <label for="evt_end">Event End</label>
         </FloatLabel>
         </v-col>
+        <v-col>
+            <v-textarea density="compact" outlined v-model="notes" placeholder="Notes for Vendor"></v-textarea>
+          </v-col>
     </v-row>
     <v-row v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" dense class="flex justify-end pa-2">
         <v-btn
@@ -165,6 +168,7 @@ const snacktext = ref('')
 // EVENT DATA
 const evtStart = ref('')
 const evtEnd = ref('')
+const notes = ref('')
 
 onMounted(async () => {
     const { data } = await supabase
@@ -191,7 +195,8 @@ const addEvent = async () => {
             vendor_rating: null,
             merchant_rating: null,
             vendor_comment: null,
-            merchant_comment: null
+            merchant_comment: null,
+            notes: notes.value
         }
         const { error } = await supabase.from('events').insert(evtObj)
         if (!error) await resetFields('created')
