@@ -72,5 +72,3 @@ yarn preview
 bun run preview
 ```
 
-testing commits
-
