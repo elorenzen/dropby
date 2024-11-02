@@ -48,6 +48,11 @@
                 <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
             </template>
         </Column>
+        <Column field="status" header="Notes">
+            <template #body="slotProps">
+                {{ slotProps.data.notes }}
+            </template>
+        </Column>
     </DataTable>
     <div class="card flex justify-center">
         <Dialog v-model:visible="openEditDialog" modal header="Edit Event" :style="{ width: '25rem' }">
