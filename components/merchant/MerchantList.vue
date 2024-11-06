@@ -1,5 +1,6 @@
 <template>
   <DataTable
+      v-if="allMerchants && allMerchants.length > 0"
       :value="allMerchants"
       sortField="average_vendor_rating" :sort-order="-1"
   >
