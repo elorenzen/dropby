@@ -13,6 +13,9 @@
             <label for="evt_end">Event End</label>
         </FloatLabel>
         </v-col>
+        <v-col>
+            <v-textarea density="compact" outlined v-model="notes" placeholder="Notes for Vendor"></v-textarea>
+          </v-col>
     </v-row>
     <v-row v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" dense class="flex justify-end pa-2">
         <v-btn
@@ -43,6 +46,11 @@
         <Column field="status" header="Status">
             <template #body="slotProps">
                 <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
+            </template>
+        </Column>
+        <Column field="status" header="Notes">
+            <template #body="slotProps">
+                {{ slotProps.data.notes }}
             </template>
         </Column>
     </DataTable>
@@ -154,7 +162,8 @@ const snacktext         = ref('')
 
 // EVENT DATA
 const evtStart = ref('')
-const evtEnd   = ref('')
+const evtEnd = ref('')
+const notes = ref('')
 
 onMounted(async () => {
     const { data } = await supabase
@@ -162,6 +171,8 @@ onMounted(async () => {
         .select()
         .eq(acctType.value, acctId.value)
     events.value = data
+    const merchantData = merchants.find((i: any) => i.id == user.associated_merchant_id)
+    notes.value = merchantData.notes
 })
 
 const addEvent = async () => {
@@ -181,7 +192,8 @@ const addEvent = async () => {
             vendor_rating: null,
             merchant_rating: null,
             vendor_comment: null,
-            merchant_comment: null
+            merchant_comment: null,
+            notes: notes.value !== '' ? notes.value : merchantData.notes
         }
         const { error } = await supabase.from('events').insert(evtObj)
         if (!error) await resetFields('created')
