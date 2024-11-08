@@ -24,6 +24,7 @@
     "nuxt": "^3.12.4",
     "pinia": "^2.2.4",
     "primeicons": "^7.0.0",
+    "resend": "^4.0.1-alpha.0",
     "uuid": "^10.0.0",
     "vue": "latest",
     "vuetify-google-autocomplete": "^2.1.2",
