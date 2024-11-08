@@ -11,7 +11,7 @@
                   fill="var(--p-text-color)"
               />
           </svg>
-          <NuxtLink to="/" class="ml-2">BiteBoard</NuxtLink>
+          <NuxtLink to="/" class="ml-2">DropBy</NuxtLink>
       </template>
       <template #end>
           <div class="flex items-center gap-2">
@@ -52,6 +52,13 @@ const accountMenu = ref();
 const accountItems = ref([
     {
         items: [
+            {
+                label: 'Messages',
+                icon: 'pi pi-inbox',
+                command: () => {
+                  router.push(`/messages/${storeUser.associated_merchant_id ? storeUser.associated_merchant_id : storeUser.associated_vendor_id}`)
+                }
+            },
             {
                 label: 'Settings',
                 icon: 'pi pi-cog',
@@ -110,14 +117,17 @@ const fireAuth = async () => {
       .from('users')
       .select()
       .eq('id', data.user.id)
-    await store.fetchUser(userData && userData.length > 0 ? userData[0] : '')
+    const foundUser = userData ? userData[0] : null
+    await store.fetchUser(foundUser)
 
-    if (userData && userData.length > 0) {
+    if (foundUser && foundUser.type !== 'admin') {
       await navigateTo(
-        userData[0].associated_merchant_id ?
-        `/merchants/${userData[0].associated_merchant_id}` :
-        `/vendors/${userData[0].associated_vendor_id}`   
+        foundUser.associated_merchant_id ?
+        `/merchants/${foundUser.associated_merchant_id}` :
+        `/vendors/${foundUser.associated_vendor_id}`   
       )
+    } else if (foundUser && foundUser.type === 'admin') {
+      await navigateTo('/admin')
     }
   }
   loading.value = false
