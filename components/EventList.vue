@@ -278,18 +278,25 @@ const approveRequest = async (id: any) => {
         status: 'booked',
         vendor: id
     }
-    const { error } = await supabase
+    const { error: dbErr } = await supabase
         .from('events')
         .update(updates)
         .eq('id', selectedEvt.value.id)
-    
-    if (!error) {
+
+    const { error: emailErr } = await useFetch(
+        `/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+
+    if (!dbErr && !emailErr) {
         openRequestDialog.value = false
         selectedEvt.value = ''
         snacktext.value = 'Event approved!'
         snackbar.value = true
     }
 }
+watch(openRequestDialog, (newVal) => {
+    if (!newVal) requestedVendors.value = []
+    else console.log(requestedVendors.value)
+})
 </script>
 
 <style scoped>
