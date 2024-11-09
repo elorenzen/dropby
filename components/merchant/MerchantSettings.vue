@@ -102,6 +102,22 @@
                               <label for="notes">Directions/Notes for Vendors</label>
                           </FloatLabel>
                         </div>
+
+                        <!-- PREFERRED VENDOR(S) -->
+                        <div class="col-span-full">
+                            <FloatLabel variant="on">
+                                <MultiSelect
+                                    id="cuisine"
+                                    v-model="merchant.preferred_vendors"
+                                    display="chip"
+                                    optionLabel="vendor_name"
+                                    :options="vendors"
+                                    filter
+                                    :maxSelectedLabels="3"
+                                />
+                                <label for="cuisine">Preferred Vendor(s)</label>
+                            </FloatLabel>
+                        </div>
                     </div>
                   </Fluid>
                   <div class="flex justify-end gap-2 ma-4">
@@ -132,6 +148,8 @@ import { v4 } from 'uuid';
 import { Loader } from '@googlemaps/js-api-loader'
 const props = defineProps(['id'])
 const merchantStore = useMerchantStore()
+const vendorStore = useVendorStore()
+const vendors = vendorStore.getAllVendors
 
 const idParam    = ref(props.id)
 const merchant   = ref(await merchantStore.getMerchantById(idParam.value))
@@ -202,6 +220,7 @@ const saveEdits = async () => {
     website: merchant.value.website,
     instagram: merchant.value.instagram,
     email: merchant.value.email,
+    preferred_vendors: merchant.value.preferred_vendors
   }
 
   const { error } = await supabase.from('merchants').update(updates).eq('id', merchant.value.id)
