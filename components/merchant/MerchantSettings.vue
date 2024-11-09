@@ -2,129 +2,170 @@
     <div>
       <Card style="overflow: hidden">
           <template #content>
-            <v-row>
-                <v-col cols="3">
-                  <img :src="imageUrl" alt="Image" class="w-full rounded" />
-                  <FileUpload
-                    class="mt-2"
-                    mode="basic"
-                    accept="image/*"
-                    :maxFileSize="1000000"
-                    @upload="updateImage($event)"
-                    :auto="true"
-                    chooseLabel="Upload New Image"
-                  />
-                </v-col>
-                <v-col cols="9">
-                  <Fluid>
-                    <span class="font-bold my-4 block">Merchant Information</span>
-                    <div class="grid grid-cols-2 gap-4">
-                        <!-- NAME -->
-                        <div>
-                          <FloatLabel variant="on">
-                              <InputText id="name" v-model="merchant.merchant_name" :fluid="true" />
-                              <label for="name">Name</label>
-                          </FloatLabel>
-                        </div>
+              <Tabs value="0">
+                <TabList>
+                    <Tab value="0">General Information</Tab>
+                    <Tab value="1">Business Hours</Tab>
+                    <Tab value="2">Header III</Tab>
+                </TabList>
+                <TabPanels>
+                    <!-- GENERAL INFORMATION SETTINGS -->
+                    <TabPanel value="0">
+                      <v-row>
+                        <v-col cols="3">
+                          <img :src="imageUrl" alt="Image" class="w-full rounded" />
+                          <FileUpload
+                            class="mt-2"
+                            mode="basic"
+                            accept="image/*"
+                            :maxFileSize="1000000"
+                            @upload="updateImage($event)"
+                            :auto="true"
+                            chooseLabel="Upload New Image"
+                          />
+                        </v-col>
+                        <v-col cols="9">
+                          <Fluid>
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- NAME -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                      <InputText id="name" v-model="merchant.merchant_name" :fluid="true" />
+                                      <label for="name">Name</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- ADDRESS -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <div class="p-iconfield">
-                              <span class="p-inputicon pi pi-map-marker"></span>
-                              <input
-                                class="p-inputtext p-component p-filled"
-                                id="address"
-                                ref="streetRef"
-                                :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
-                              />
-                            </div>
-                            <label for="phone">Location Address</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- ADDRESS -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <div class="p-iconfield">
+                                      <span class="p-inputicon pi pi-map-marker"></span>
+                                      <input
+                                        class="p-inputtext p-component p-filled"
+                                        id="address"
+                                        ref="streetRef"
+                                        :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
+                                      />
+                                    </div>
+                                    <label for="phone">Location Address</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- DESCRIPTION -->
-                        <div class="col-span-full">
-                          <FloatLabel variant="on">
-                              <Textarea id="desc" v-model="merchant.merchant_description" rows="5" />
-                              <label for="desc">Description</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- DESCRIPTION -->
+                                <div class="col-span-full">
+                                  <FloatLabel variant="on">
+                                      <Textarea id="desc" v-model="merchant.merchant_description" rows="5" />
+                                      <label for="desc">Description</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- PHONE -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-phone" />
-                                <InputText id="phone" v-model="merchant.phone" placeholder="Phone" />
-                            </IconField>
-                            <label for="phone">Phone</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- PHONE -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-phone" />
+                                        <InputText id="phone" v-model="merchant.phone" placeholder="Phone" />
+                                    </IconField>
+                                    <label for="phone">Phone</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- WEBSITE -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-link" />
-                                <InputText id="website" v-model="merchant.website" placeholder="Website" />
-                            </IconField>
-                            <label for="website">Website</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- WEBSITE -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-link" />
+                                        <InputText id="website" v-model="merchant.website" placeholder="Website" />
+                                    </IconField>
+                                    <label for="website">Website</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- INSTAGRAM -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-instagram" />
-                                <InputText id="ig" v-model="merchant.instagram" placeholder="Instagram" />
-                            </IconField>
-                            <label for="ig">Instagram</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- INSTAGRAM -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-instagram" />
+                                        <InputText id="ig" v-model="merchant.instagram" placeholder="Instagram" />
+                                    </IconField>
+                                    <label for="ig">Instagram</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- EMAIL -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-envelope" />
-                                <InputText id="email" v-model="merchant.email" placeholder="Email" />
-                            </IconField>
-                            <label for="email">Email</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- EMAIL -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-envelope" />
+                                        <InputText id="email" v-model="merchant.email" placeholder="Email" />
+                                    </IconField>
+                                    <label for="email">Email</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- VENDOR NOTES -->
-                        <div class="col-span-full">
-                          <FloatLabel variant="on">
-                              <Textarea id="notes" v-model="merchant.notes" rows="5" />
-                              <label for="notes">Directions/Notes for Vendors</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- VENDOR NOTES -->
+                                <div class="col-span-full">
+                                  <FloatLabel variant="on">
+                                      <Textarea id="notes" v-model="merchant.notes" rows="5" />
+                                      <label for="notes">Directions/Notes for Vendors</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- PREFERRED VENDOR(S) -->
-                        <div class="col-span-full">
-                            <FloatLabel variant="on">
-                                <MultiSelect
-                                    id="cuisine"
-                                    v-model="merchant.preferred_vendors"
-                                    display="chip"
-                                    optionLabel="vendor_name"
-                                    :options="vendors"
-                                    filter
-                                    :maxSelectedLabels="3"
-                                />
-                                <label for="cuisine">Preferred Vendor(s)</label>
-                            </FloatLabel>
-                        </div>
-                    </div>
-                  </Fluid>
-                  <div class="flex justify-end gap-2 ma-4">
-                      <Button type="button" label="Save Edits" @click="saveEdits"></Button>
-                  </div>
-                </v-col>
-            </v-row>  
+                                <!-- PREFERRED VENDOR(S) -->
+                                <div class="col-span-full">
+                                    <FloatLabel variant="on">
+                                        <MultiSelect
+                                            id="cuisine"
+                                            v-model="merchant.preferred_vendors"
+                                            display="chip"
+                                            optionLabel="vendor_name"
+                                            :options="vendors"
+                                            filter
+                                            :maxSelectedLabels="3"
+                                        />
+                                        <label for="cuisine">Preferred Vendor(s)</label>
+                                    </FloatLabel>
+                                </div>
+                                </div>
+                              </Fluid>
+                            </v-col>
+                          </v-row>
+                        </TabPanel>
+
+                        <!-- BUSINESS HOURS SETTINGS -->
+                        <TabPanel value="1">
+                            <Fluid v-for="(day, index) in businessHours" :key="index">
+                              <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                  {{ day.name }}
+                                </div>
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <DatePicker :id="`open-${index}`" v-model="day.open" hour-format="12" timeOnly fluid @blur="setFormattedOpen($event, index)" />
+                                    <Label :for="`open-${index}`">{{ day.name }} Open</Label>
+                                  </FloatLabel>
+                                </div>
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <DatePicker :id="`close-${index}`" v-model="day.close" hour-format="12" timeOnly fluid @blur="setFormattedClose($event, index)" />
+                                    <Label :for="`close-${index}`">{{ day.name }} Close</Label>
+                                  </FloatLabel>
+                                </div>
+                              </div>
+                              <Divider />
+                            </Fluid>
+                        </TabPanel>
+                        <TabPanel value="2">
+                            <p class="m-0">
+                                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa
+                                qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus.
+                            </p>
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
+                <div class="flex justify-end gap-2 ma-4">
+                    <Button type="button" label="Save Edits" @click="saveEdits"></Button>
+                </div>
           </template>
       </Card>
 
@@ -167,6 +208,9 @@ const coordinates       = ref()
 const formattedAddress  = ref()
 const addressUrl        = ref()
 
+const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
+businessHours.value = businessHours.value.map((day: any) => JSON.parse(day));
+
 onMounted(async () => {
     await sdkInit()
 })
@@ -207,6 +251,13 @@ const sdkInit = async () => {
   })
 }
 
+const setFormattedOpen = (e: any, i: any) => {
+  businessHours.value[i].open = e.value
+}
+const setFormattedClose = (e: any, i: any) => {
+  businessHours.value[i].close = e.value
+}
+
 const saveEdits = async () => {
   const updates = {
     updated_at: new Date(),
@@ -220,7 +271,8 @@ const saveEdits = async () => {
     website: merchant.value.website,
     instagram: merchant.value.instagram,
     email: merchant.value.email,
-    preferred_vendors: merchant.value.preferred_vendors
+    preferred_vendors: merchant.value.preferred_vendors,
+    business_hours: businessHours.value
   }
 
   const { error } = await supabase.from('merchants').update(updates).eq('id', merchant.value.id)
