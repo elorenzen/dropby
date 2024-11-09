@@ -35,7 +35,8 @@ export default defineEventHandler(async (event) => {
       const data = await resend.emails.send({
         from: 'DropBy Support <onboarding@resend.dev>',
         to: [
-            merchant.email,
+            'eric.lorenzen@gmail.com'
+            // merchant.email,
             // vendor.email - TO BE DEVELOPED  
         ],
         subject: 'Event Booked!',
