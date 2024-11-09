@@ -1,83 +1,44 @@
 <template>
   <div>
     <Card style="overflow: hidden">
-        <template #header>
-          <v-row dense class="pa-2">
-              <v-col cols="6">
-                <img :src="imageUrl" />
-              </v-col>
-          </v-row>  
-        </template>
-        <template #title>
-          <v-row>{{ merchant.merchant_name }}</v-row>
-        </template>
-
-        <template #subtitle>
-          <v-row>
-            {{ merchant.merchant_description }}
-          </v-row>
-        </template>
         <template #content>
           <v-row>
-            <v-col cols="4">Merchant Address: </v-col>
-            <v-col>
-              <div>
-                <div>
-                  <div
-                    :style="addressFocus ? 'border: 1px solid #5f819d;' : ''"
-                    class="v-input__slot"
+              <v-col cols="3">
+                <img :src="imageUrl" alt="Image" class="w-full rounded" />
+              </v-col>
+                <v-col cols="9">
+                  <Fluid>
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- NAME -->
+                        <div class="font-bold mt-4 block">
+                          {{ merchant.merchant_name }}
+                        </div>
+                        <div class="mt-2">
+                            <NuxtLink class="mx-1" :to="merchant.website" target="_blank">
+                              <Button severity="secondary" icon="pi pi-link" rounded text />
+                            </NuxtLink>
+                            <NuxtLink class="mx-1" :to="merchant.instagram" target="_blank">
+                              <Button severity="secondary" icon="pi pi-instagram" rounded text />
+                            </NuxtLink>
+                            <NuxtLink class="mx-1" :to="`mailto:${merchant.email}`" target="_blank">
+                              <Button severity="secondary" icon="pi pi-envelope" rounded text />
+                            </NuxtLink>
+                        </div>
 
-                  >
-                    <div>
-                      <input
-                        @focus="addressFocus = !addressFocus"
-                        id="input-783"
-                        ref="streetRef"
-                        :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
-                      />
-                    </div>
-                  </div>
-                  <div class="v-text-field__details">
-                    <div class="v-messages theme--dark">
-                      <div class="v-messages__wrapper"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </v-col>
-          </v-row>
+                        <!-- ADDRESS -->
+                        <div class="col-span-full">
+                          <NuxtLink :to="merchant.address_url" target="_blank">{{ merchant.formatted_address ? merchant.formatted_address : 'No address on file' }}</NuxtLink>
+                          <span class="mx-2" v-if="merchantDist > 0"><Badge :value="`${merchantDist.toFixed(2)} mi.`"></Badge></span>
+                        </div>
 
-            <v-row>
-              <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2">
-                <template v-slot:prepend><v-icon></v-icon></template>
-                <NuxtLink :to="merchant.address_url" target="_blank">{{ merchant.formatted_address ? merchant.formatted_address : 'No address on file' }}</NuxtLink>
-              </v-btn>
-              <span v-if="merchantDist > 0"><Badge :value="`${merchantDist.toFixed(2)} mi.`"></Badge></span>
-            </v-row>
-            <v-row>
-              <v-btn prepend-icon="mdi-phone" variant="plain" readonly>
-                <template v-slot:prepend><v-icon></v-icon></template>
-                <NuxtLink>{{ merchant.phone }}</NuxtLink>
-              </v-btn>
-            </v-row>
-            <v-row>
-              <v-btn prepend-icon="mdi-web" variant="plain">
-                <template v-slot:prepend><v-icon></v-icon></template>
-                <NuxtLink :to="merchant.website" target="_blank">Website</NuxtLink>
-              </v-btn>
-            </v-row>
-            <v-row>
-              <v-btn prepend-icon="mdi-instagram" variant="plain">
-                <template v-slot:prepend><v-icon></v-icon></template>
-                <NuxtLink :to="merchant.instagram" target="_blank">Instagram</NuxtLink>
-              </v-btn>
-            </v-row>
-            <v-row>
-              <v-btn prepend-icon="mdi-email" variant="plain">
-                <template v-slot:prepend><v-icon></v-icon></template>
-                <NuxtLink :to="`mailto:${merchant.email}`" target="_blank">Email</NuxtLink>
-              </v-btn>
-            </v-row>
+                        <!-- DESCRIPTION -->
+                        <div class="col-span-full">
+                          {{ merchant.merchant_description }}
+                        </div>
+                    </div>
+                  </Fluid>
+                </v-col>
+            </v-row> 
         </template>
     </Card>
 

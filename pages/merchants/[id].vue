@@ -1,6 +1,6 @@
 <template>
   <v-row v-if="merchant && merchant.length > 0">
-    <v-col cols="6">
+    <v-col cols="12">
       <MerchantCard :merchant="merchant[0]" />
     </v-col>
     <v-col>

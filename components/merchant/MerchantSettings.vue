@@ -3,8 +3,8 @@
       <Card style="overflow: hidden">
           <template #content>
             <v-row>
-                <v-col cols="4">
-                  <img :src="imageUrl" alt="Image" class="w-full rounded" style="height: 60%;" />
+                <v-col cols="3">
+                  <img :src="imageUrl" alt="Image" class="w-full rounded" />
                   <FileUpload
                     class="mt-2"
                     mode="basic"
@@ -15,7 +15,7 @@
                     chooseLabel="Upload New Image"
                   />
                 </v-col>
-                <v-col cols="8">
+                <v-col cols="9">
                   <Fluid>
                     <span class="font-bold my-4 block">Merchant Information</span>
                     <div class="grid grid-cols-2 gap-4">
