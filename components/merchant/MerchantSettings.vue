@@ -1,94 +1,114 @@
 <template>
     <div>
       <Card style="overflow: hidden">
-          <template #header>
-            <v-row dense class="pa-2">
-                <v-col cols="6">
-                  <img :src="imageUrl" />
+          <template #content>
+            <v-row>
+                <v-col cols="4">
+                  <img :src="imageUrl" alt="Image" class="w-full rounded" style="height: 60%;" />
+                  <FileUpload
+                    class="mt-2"
+                    mode="basic"
+                    accept="image/*"
+                    :maxFileSize="1000000"
+                    @upload="updateImage($event)"
+                    :auto="true"
+                    chooseLabel="Upload New Image"
+                  />
                 </v-col>
-                <v-col>
-                    <v-file-input
-                        :label="uploading ? 'Uploading ...' : 'Upload New Image'"
-                        @change="updateImage"
-                        :disabled="uploading"
-                    ></v-file-input>
+                <v-col cols="8">
+                  <Fluid>
+                    <span class="font-bold my-4 block">Merchant Information</span>
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- NAME -->
+                        <div>
+                          <FloatLabel variant="on">
+                              <InputText id="name" v-model="merchant.merchant_name" :fluid="true" />
+                              <label for="name">Name</label>
+                          </FloatLabel>
+                        </div>
+
+                        <!-- ADDRESS -->
+                        <div>
+                          <FloatLabel variant="on">
+                            <div class="p-iconfield">
+                              <span class="p-inputicon pi pi-map-marker"></span>
+                              <input
+                                class="p-inputtext p-component p-filled"
+                                id="address"
+                                ref="streetRef"
+                                :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
+                              />
+                            </div>
+                            <label for="phone">Location Address</label>
+                          </FloatLabel>
+                        </div>
+
+                        <!-- DESCRIPTION -->
+                        <div class="col-span-full">
+                          <FloatLabel variant="on">
+                              <Textarea id="desc" v-model="merchant.merchant_description" rows="5" />
+                              <label for="desc">Description</label>
+                          </FloatLabel>
+                        </div>
+
+                        <!-- PHONE -->
+                        <div>
+                          <FloatLabel variant="on">
+                            <IconField>
+                                <InputIcon class="pi pi-phone" />
+                                <InputText id="phone" v-model="merchant.phone" placeholder="Phone" />
+                            </IconField>
+                            <label for="phone">Phone</label>
+                          </FloatLabel>
+                        </div>
+
+                        <!-- WEBSITE -->
+                        <div>
+                          <FloatLabel variant="on">
+                            <IconField>
+                                <InputIcon class="pi pi-link" />
+                                <InputText id="website" v-model="merchant.website" placeholder="Website" />
+                            </IconField>
+                            <label for="website">Website</label>
+                          </FloatLabel>
+                        </div>
+
+                        <!-- INSTAGRAM -->
+                        <div>
+                          <FloatLabel variant="on">
+                            <IconField>
+                                <InputIcon class="pi pi-instagram" />
+                                <InputText id="ig" v-model="merchant.instagram" placeholder="Instagram" />
+                            </IconField>
+                            <label for="ig">Instagram</label>
+                          </FloatLabel>
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div>
+                          <FloatLabel variant="on">
+                            <IconField>
+                                <InputIcon class="pi pi-envelope" />
+                                <InputText id="email" v-model="merchant.email" placeholder="Email" />
+                            </IconField>
+                            <label for="email">Email</label>
+                          </FloatLabel>
+                        </div>
+
+                        <!-- VENDOR NOTES -->
+                        <div class="col-span-full">
+                          <FloatLabel variant="on">
+                              <Textarea id="notes" v-model="merchant.notes" rows="5" />
+                              <label for="notes">Directions/Notes for Vendors</label>
+                          </FloatLabel>
+                        </div>
+                    </div>
+                  </Fluid>
+                  <div class="flex justify-end gap-2 ma-4">
+                      <Button type="button" label="Save Edits" @click="saveEdits"></Button>
+                  </div>
                 </v-col>
             </v-row>  
-          </template>
-          <template #content>
-            <v-row dense class="pa-2">
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputText id="name" v-model="merchant.merchant_name" />
-                        <label for="name">Name</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col>
-                  <FloatLabel variant="on">
-                    <div class="p-iconfield">
-                      <span class="p-inputicon pi pi-map-marker"></span>
-                      <input
-                        class="p-inputtext p-component p-filled"
-                        id="address"
-                        ref="streetRef"
-                        :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
-                      />
-                    </div>
-                    <label for="phone">Location Address</label>
-                  </FloatLabel>
-                </v-col>
-            </v-row>
-
-            <v-row>
-                <v-col cols="12">
-                    <FloatLabel variant="on">
-                        <Textarea id="desc" v-model="merchant.merchant_description" rows="5" cols="50" style="resize: none" />
-                        <label for="desc">Description</label>
-                    </FloatLabel>
-                </v-col>
-            </v-row>
-
-            <v-row dense class="pa-2">
-              <v-col cols="6" class="my-2">
-                <FloatLabel variant="on">
-                  <IconField>
-                      <InputIcon class="pi pi-phone" />
-                      <InputText id="phone" v-model="merchant.phone" placeholder="Phone" />
-                  </IconField>
-                  <label for="phone">Phone</label>
-                </FloatLabel>
-              </v-col>
-              <v-col cols="6" class="my-2">
-                <FloatLabel variant="on">
-                  <IconField>
-                      <InputIcon class="pi pi-link" />
-                      <InputText id="website" v-model="merchant.website" placeholder="Website" />
-                  </IconField>
-                  <label for="website">Website</label>
-                </FloatLabel>
-              </v-col>
-              <v-col cols="6" class="my-2">
-                <FloatLabel variant="on">
-                  <IconField>
-                      <InputIcon class="pi pi-instagram" />
-                      <InputText id="ig" v-model="merchant.instagram" placeholder="Instagram" />
-                  </IconField>
-                  <label for="ig">Instagram</label>
-                </FloatLabel>
-              </v-col>
-              <v-col cols="6" class="my-2">
-                <FloatLabel variant="on">
-                  <IconField>
-                      <InputIcon class="pi pi-envelope" />
-                      <InputText id="email" v-model="merchant.email" placeholder="Email" />
-                  </IconField>
-                  <label for="email">Email</label>
-                </FloatLabel>
-              </v-col>
-            </v-row>
-            <div class="flex justify-end gap-2">
-                <Button type="button" label="Save" @click="saveEdits"></Button>
-            </div>
           </template>
       </Card>
 
@@ -108,6 +128,7 @@
 
 <script setup lang="ts">
 const supabase = useSupabaseClient()
+import { v4 } from 'uuid';
 import { Loader } from '@googlemaps/js-api-loader'
 const props = defineProps(['id'])
 const merchantStore = useMerchantStore()
@@ -193,7 +214,7 @@ const saveEdits = async () => {
 
 const updateImage = async (e) => {
     uploading.value = true
-    const file = e.target.files[0]
+    const file = e.files[0]
 
     if (file) {
         const fileExt = file.name.split('.').pop()
