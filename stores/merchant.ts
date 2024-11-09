@@ -11,5 +11,8 @@ export const useMerchantStore = defineStore('merchant', {
     async setAllMerchants(merchants: []) {
         this.allMerchants = merchants
     },
+    async getMerchantById(id: any) {
+      return this.allMerchants.find(merchant => merchant.id === id)
+    }
   }
 })

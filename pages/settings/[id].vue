@@ -1,6 +1,7 @@
 <template>
     <div>
-        SETTINGS HERE!
+        <MerchantSettings v-if="type === 'merchant'" :id="route.params.id" />
+        <!-- <VendorSettings v-else-if="type === 'vendor'" /> -->
         <AssociatedUsers :id="route.params.id" />
     </div>
 </template>
@@ -10,7 +11,8 @@ definePageMeta({
     middleware: ['auth']
 })
 const route = useRoute()
-const id = route.params.id
+const userStore = useUserStore()
+const type = userStore.user.type
 </script>
 
 <style scoped>

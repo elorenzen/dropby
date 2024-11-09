@@ -6,26 +6,14 @@
               <v-col cols="6">
                 <img :src="imageUrl" />
               </v-col>
-              <v-col>
-                  <v-file-input
-                      :label="uploading ? 'Uploading ...' : 'Upload New Image'"
-                      @change="updateImage"
-                      :disabled="uploading"
-                  ></v-file-input>
-              </v-col>
           </v-row>  
         </template>
         <template #title>
-          <v-row v-if="storeUser && storeUser.is_admin && storeUser.type == 'merchant'">
-            <v-text-field density="compact" outlined v-model="merchant.merchant_name" placeholder="Merchant Name (e.g. 'McDonald's')"></v-text-field>
-          </v-row>
+          <v-row>{{ merchant.merchant_name }}</v-row>
         </template>
 
         <template #subtitle>
-          <v-row v-if="storeUser && storeUser.is_admin && storeUser.type == 'merchant'">
-            <v-textarea density="compact" outlined v-model="merchant.merchant_description" placeholder="Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')"></v-textarea>
-          </v-row>
-          <v-row v-else>
+          <v-row>
             {{ merchant.merchant_description }}
           </v-row>
         </template>
@@ -58,50 +46,7 @@
               </div>
             </v-col>
           </v-row>
-          <div v-if="storeUser && storeUser.is_admin && storeUser.type == 'merchant'">
-            <v-row>
-              <v-text-field
-                prepend-icon="mdi-phone"
-                density="compact"
-                outlined
-                v-model="merchant.phone"
-                placeholder="Contact Phone"
-              ></v-text-field>
-            </v-row>
-            <v-row>
-              <v-text-field
-                prepend-icon="mdi-web"
-                density="compact"
-                outlined
-                v-model="merchant.website"
-                placeholder="Website URL"
-              ></v-text-field>
-            </v-row>
-            <v-row>
-              <v-text-field
-                prepend-icon="mdi-instagram"
-                density="compact"
-                outlined
-                v-model="merchant.instagram"
-                placeholder="Instagram Link (optional)"
-              ></v-text-field>
-            </v-row>
-            <v-row>
-              <v-text-field
-                prepend-icon="mdi-email"
-                density="compact"
-                outlined
-                v-model="merchant.email"
-                placeholder="Contact Email"
-              ></v-text-field>
-            </v-row>
-            <div class="flex justify-end gap-2">
-                <Button type="button" label="Cancel" severity="secondary" @click="editDialog = false"></Button>
-                <Button type="button" label="Save" @click="saveEdits"></Button>
-            </div>
-          </div>
 
-          <div v-else>
             <v-row>
               <v-btn prepend-icon="mdi-map-marker" variant="plain" class="mt-2">
                 <template v-slot:prepend><v-icon></v-icon></template>
@@ -133,7 +78,6 @@
                 <NuxtLink :to="`mailto:${merchant.email}`" target="_blank">Email</NuxtLink>
               </v-btn>
             </v-row>
-          </div>
         </template>
     </Card>
 
@@ -157,17 +101,12 @@
 </template>
 
 <script setup lang="ts">
-import { v4 } from 'uuid'
 import haversine from 'haversine'
-const supabase = useSupabaseClient()
 import { Loader } from '@googlemaps/js-api-loader'
 
 const props = defineProps(['merchant']);
 const merchant = ref(props.merchant)
-const store = useUserStore()
-const storeUser = store.user
 
-const editDialog = ref(false)
 const snackbar = ref(false)
 const snacktext = ref('')
 
@@ -181,7 +120,6 @@ const coordinates = ref()
 const formattedAddress = ref()
 const addressUrl = ref()
 
-const uploading = ref(false)
 const lat = ref(0)
 const lng = ref(0)
 
@@ -261,66 +199,6 @@ const sdkInit = async () => {
       addressUrl.value = placeResponse ? placeResponse.url : ''
     })
   })
-}
-
-const saveEdits = async () => {
-  const updates = {
-    updated_at: new Date(),
-    merchant_name: merchant.value.merchant_name,
-    merchant_description: merchant.value.merchant_description,
-    address_components: addressComponents ? addressComponents.value : merchant.value.address_components,
-    coordinates: coordinates ? coordinates.value : merchant.value.coordinates,
-    formatted_address: formattedAddress ? formattedAddress.value : merchant.value.address_components,
-    address_url: addressUrl ? addressUrl.value : merchant.value.address_url,
-    phone: merchant.value.phone,
-    website: merchant.value.website,
-    instagram: merchant.value.instagram,
-    email: merchant.value.email,
-  }
-
-  const { error } = await supabase.from('merchants').update(updates).eq('id', merchant.value.id)
-  if (!error) {
-      editDialog.value = false
-      snacktext.value = 'Information Updated!'
-      snackbar.value = true
-  }
-}
-
-const updateImage = async (e) => {
-    uploading.value = true
-    const file = e.target.files[0]
-
-    if (file) {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${v4()}.${fileExt}`
-        const filePath = `${fileName}`
-
-        const { error: uploadError } = await supabase.storage.from('merchant_avatars').upload(filePath, file)
-
-        if (uploadError) console.error(uploadError)
-        else {
-            const { data } = supabase.storage.from('merchant_avatars').getPublicUrl(filePath)
-            if (data) {
-              imageUrl.value = data.publicUrl
-
-              const updates = {
-                updated_at: new Date(),
-                avatar_url: imageUrl.value,
-              }
-
-              const { error } = await supabase
-                .from('merchants')
-                .update(updates)
-                .eq('id', merchant.value.id)
-              
-              if (!error) {
-                snacktext.value = 'Merchant Avatar Updated!'
-                snackbar.value = true
-              }
-            }
-        }
-    }
-    uploading.value = false
 }
 </script>
 
