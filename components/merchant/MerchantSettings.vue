@@ -15,85 +15,78 @@
                 </v-col>
             </v-row>  
           </template>
-          <template #title>
-            <v-row>
-              <v-text-field density="compact" outlined v-model="merchant.merchant_name" placeholder="Merchant Name (e.g. 'McDonald's')"></v-text-field>
-            </v-row>
-          </template>
-  
-          <template #subtitle>
-            <v-row>
-              <v-textarea density="compact" outlined v-model="merchant.merchant_description" placeholder="Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')"></v-textarea>
-            </v-row>
-          </template>
           <template #content>
-            <v-row>
-              <v-col cols="4">Merchant Address: </v-col>
-              <v-col>
-                <div>
-                  <div>
-                    <div
-                      :style="addressFocus ? 'border: 1px solid #5f819d;' : ''"
-                      class="v-input__slot"
-  
-                    >
-                      <div>
-                        <input
-                          @focus="addressFocus = !addressFocus"
-                          id="input-783"
-                          ref="streetRef"
-                          :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
-                        />
-                      </div>
+            <v-row dense class="pa-2">
+                <v-col cols="6">
+                    <FloatLabel variant="on">
+                        <InputText id="name" v-model="merchant.merchant_name" />
+                        <label for="name">Name</label>
+                    </FloatLabel>
+                </v-col>
+                <v-col>
+                  <FloatLabel variant="on">
+                    <div class="p-iconfield">
+                      <span class="p-inputicon pi pi-map-marker"></span>
+                      <input
+                        class="p-inputtext p-component p-filled"
+                        id="address"
+                        ref="streetRef"
+                        :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
+                      />
                     </div>
-                    <div class="v-text-field__details">
-                      <div class="v-messages theme--dark">
-                        <div class="v-messages__wrapper"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </v-col>
+                    <label for="phone">Location Address</label>
+                  </FloatLabel>
+                </v-col>
             </v-row>
 
             <v-row>
-              <v-text-field
-                prepend-icon="mdi-phone"
-                density="compact"
-                outlined
-                v-model="merchant.phone"
-                placeholder="Contact Phone"
-              ></v-text-field>
+                <v-col cols="12">
+                    <FloatLabel variant="on">
+                        <Textarea id="desc" v-model="merchant.merchant_description" rows="5" cols="50" style="resize: none" />
+                        <label for="desc">Description</label>
+                    </FloatLabel>
+                </v-col>
             </v-row>
-            <v-row>
-              <v-text-field
-                prepend-icon="mdi-web"
-                density="compact"
-                outlined
-                v-model="merchant.website"
-                placeholder="Website URL"
-              ></v-text-field>
-            </v-row>
-            <v-row>
-              <v-text-field
-                prepend-icon="mdi-instagram"
-                density="compact"
-                outlined
-                v-model="merchant.instagram"
-                placeholder="Instagram Link (optional)"
-              ></v-text-field>
-            </v-row>
-            <v-row>
-              <v-text-field
-                prepend-icon="mdi-email"
-                density="compact"
-                outlined
-                v-model="merchant.email"
-                placeholder="Contact Email"
-              ></v-text-field>
+
+            <v-row dense class="pa-2">
+              <v-col cols="6" class="my-2">
+                <FloatLabel variant="on">
+                  <IconField>
+                      <InputIcon class="pi pi-phone" />
+                      <InputText id="phone" v-model="merchant.phone" placeholder="Phone" />
+                  </IconField>
+                  <label for="phone">Phone</label>
+                </FloatLabel>
+              </v-col>
+              <v-col cols="6" class="my-2">
+                <FloatLabel variant="on">
+                  <IconField>
+                      <InputIcon class="pi pi-link" />
+                      <InputText id="website" v-model="merchant.website" placeholder="Website" />
+                  </IconField>
+                  <label for="website">Website</label>
+                </FloatLabel>
+              </v-col>
+              <v-col cols="6" class="my-2">
+                <FloatLabel variant="on">
+                  <IconField>
+                      <InputIcon class="pi pi-instagram" />
+                      <InputText id="ig" v-model="merchant.instagram" placeholder="Instagram" />
+                  </IconField>
+                  <label for="ig">Instagram</label>
+                </FloatLabel>
+              </v-col>
+              <v-col cols="6" class="my-2">
+                <FloatLabel variant="on">
+                  <IconField>
+                      <InputIcon class="pi pi-envelope" />
+                      <InputText id="email" v-model="merchant.email" placeholder="Email" />
+                  </IconField>
+                  <label for="email">Email</label>
+                </FloatLabel>
+              </v-col>
             </v-row>
             <div class="flex justify-end gap-2">
-                <Button type="button" label="Cancel" severity="secondary" @click="editDialog = false"></Button>
                 <Button type="button" label="Save" @click="saveEdits"></Button>
             </div>
           </template>
@@ -120,15 +113,13 @@ const props = defineProps(['id'])
 const merchantStore = useMerchantStore()
 
 const idParam    = ref(props.id)
-console.log('idParam: ', idParam)
-const merchant   = await merchantStore.getMerchantById(idParam.value)
-console.log('merchant: ', merchant)
+const merchant   = ref(await merchantStore.getMerchantById(idParam.value))
 const editDialog = ref(false)
 const snackbar   = ref(false)
 const snacktext  = ref('')
 const uploading  = ref(false)
 
-const imageUrl     = ref(merchant.avatar_url ? merchant.avatar_url : '')
+const imageUrl     = ref(merchant.value.avatar_url ? merchant.value.avatar_url : '')
 const streetRef    = ref()
 const addressFocus = ref(false)
 
