@@ -36,6 +36,13 @@
                           {{ merchant.merchant_description }}
                         </div>
                     </div>
+                    <div class="col-span-full">
+                      <DataTable size="small" :value="businessHours">
+                          <Column field="name" header=""></Column>
+                          <Column field="open" header="Open"></Column>
+                          <Column field="close" header="Close"></Column>
+                      </DataTable>
+                    </div>
                   </Fluid>
                 </v-col>
             </v-row> 
@@ -67,6 +74,9 @@ import { Loader } from '@googlemaps/js-api-loader'
 
 const props = defineProps(['merchant']);
 const merchant = ref(props.merchant)
+
+const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
+businessHours.value = businessHours.value.map((day: any) => JSON.parse(day));
 
 const snackbar = ref(false)
 const snacktext = ref('')

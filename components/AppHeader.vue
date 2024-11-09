@@ -53,6 +53,13 @@ const accountItems = ref([
     {
         items: [
             {
+                label: 'Profile',
+                icon: 'pi pi-home',
+                command: () => {
+                  router.push(`/${storeUser.type}s/${storeUser.associated_merchant_id ? storeUser.associated_merchant_id : storeUser.associated_vendor_id}`)
+                }
+            },
+            {
                 label: 'Messages',
                 icon: 'pi pi-inbox',
                 command: () => {
