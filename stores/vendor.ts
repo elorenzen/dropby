@@ -11,5 +11,8 @@ export const useVendorStore = defineStore('vendor', {
     async setAllVendors(vendors: []) {
         this.allVendors = vendors
     },
+    async getVendorById(id: any) {
+      return this.allVendors.find(vendor => vendor.id === id)
+    }
   }
 })

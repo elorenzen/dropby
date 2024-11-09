@@ -1,7 +1,8 @@
 <template>
     <div>
         <MerchantSettings v-if="type === 'merchant'" :id="route.params.id" />
-        <!-- <VendorSettings v-else-if="type === 'vendor'" /> -->
+        <VendorSettings v-else-if="type === 'vendor'" :id="route.params.id" />
+        <Divider />
         <AssociatedUsers :id="route.params.id" />
     </div>
 </template>
