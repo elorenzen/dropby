@@ -1,12 +1,13 @@
 <template>
-  <v-row v-if="merchant && merchant.length > 0">
-    <v-col cols="12">
+  <div v-if="merchant && merchant.length > 0">
+    <div>
       <MerchantCard :merchant="merchant[0]" />
-    </v-col>
-    <v-col>
+    </div>
+    <Divider />
+    <div>
       <EventList :acctId="merchant[0].id" :acctType="'merchant'" />
-    </v-col>
-  </v-row>
+    </div>
+  </div>
 </template>
   
 <script setup>

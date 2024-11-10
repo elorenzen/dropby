@@ -1,32 +1,19 @@
 <template>
-    <v-row dense class="flex justify-center pa-2 text-xl"><h3>{{ acctType.charAt(0).toUpperCase() + acctType.slice(1) }} Events</h3></v-row>
-    <v-row v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" dense class="mt-2 p-2">
-        <v-col cols="6">
-            <FloatLabel>
-                <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
-                <label for="evt_start">Event Start</label>
-            </FloatLabel>
-        </v-col>
-        <v-col cols="6">
-        <FloatLabel>
-            <DatePicker v-model="evtEnd" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
-            <label for="evt_end">Event End</label>
-        </FloatLabel>
-        </v-col>
-        <v-col>
-            <v-textarea density="compact" outlined v-model="notes" placeholder="Notes for Vendor"></v-textarea>
-          </v-col>
-    </v-row>
-    <v-row v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" dense class="flex justify-end pa-2">
-        <v-btn
-            @click="addEvent"
-            color="#e28413"
-            variant="outlined"
-            :disabled="evtStart == '' || evtEnd == ''"
-            :loading="loading"
-        >Add Event</v-btn>
-    </v-row>
-    <v-divider v-if="user && user.type == 'merchant' && acctType == 'merchant' && user.is_admin" class="my-2" />
+    <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6 ma-2">
+        <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+            {{ acctType.charAt(0).toUpperCase() + acctType.slice(1) }} Events
+        </div>
+        <div class="flex flex-col md:items-end gap-8">
+            <Button
+                v-if="user"
+                outlined
+                severity="secondary"
+                icon="pi pi-plus-circle"
+                @click="openAddDialog = true"
+            />
+        </div>
+    </div>
+    
     <DataTable
         v-model:selection="selectedEvt"
         :value="events"
@@ -113,6 +100,38 @@
             <div>{{ new Date(selectedEvt.start).toLocaleString() }} - {{ new Date(selectedEvt.end).toLocaleString() }}</div>
         </Dialog>
 
+        <Dialog v-model:visible="openAddDialog" modal header="Add Event" :style="{ width: '25rem' }">
+            <Fluid>
+                <div>
+                    <div class="col-span-full">
+                        <FloatLabel variant="on" class="mb-4">
+                            <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
+                            <label for="evt_start">Event Start</label>
+                        </FloatLabel>
+                    </div>
+                    <div class="col-span-full">
+                        <FloatLabel variant="on" class="mb-4">
+                            <DatePicker v-model="evtEnd" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
+                            <label for="evt_end">Event End</label>
+                        </FloatLabel>
+                    </div>
+                    <div class="col-span-full">
+                        <FloatLabel variant="on" class="mb-4">
+                            <Textarea id="notes" v-model="notes" rows="3" />
+                            <label for="notes">Notes for Vendor</label>
+                        </FloatLabel>
+                    </div>
+                </div>
+            </Fluid>
+            <v-btn
+                @click="addEvent"
+                color="#e28413"
+                variant="outlined"
+                :disabled="evtStart == '' || evtEnd == ''"
+                :loading="loading"
+            >Add Event</v-btn>
+        </Dialog>
+
         <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
     </div>
     <v-snackbar
@@ -159,6 +178,8 @@ const openViewDialog    = ref(false)
 const deleteDialog      = ref(false)
 const snackbar          = ref(false)
 const snacktext         = ref('')
+
+const openAddDialog = ref(false)
 
 // EVENT DATA
 const evtStart = ref('')
@@ -247,6 +268,7 @@ const resetFields = async (action: any) => {
         snackbar.value = true
         selectedEvt.value = null
         openEditDialog.value = false
+        openAddDialog.value = false
 
         evtStart.value = ''
         evtEnd.value = ''
