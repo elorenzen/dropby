@@ -144,6 +144,7 @@
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'menu item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+        <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
 
         <v-snackbar
           v-model="snackbar"
@@ -186,6 +187,10 @@
     const editId = ref('')
     const editVendorId = ref('')
     const editDialog = ref(false)
+
+    const errDialog = ref(false)
+    const errMsg = ref()
+    const errType = ref()
 
     const itemToDelete = ref(null)
     const deleteDialog = ref(false)
@@ -274,6 +279,10 @@
 
                 menuItems.value = await getMenuItems(vendor.value.id)
                 addDialog.value = false
+            } else {
+                errType.value = 'Menu Item Addition'
+                errMsg.value = error
+                errDialog.value = true
             }
         }
     }
@@ -321,6 +330,10 @@
             special.value = false
 
             editDialog.value = false
+        } else {
+            errType.value = 'Menu Item Update(s)'
+            errMsg.value = error.message
+            errDialog.value = true
         }
     }
 
@@ -340,6 +353,10 @@
             menuItems.value = await getMenuItems(vendor.value.id)
             deleteDialog.value = false
             itemToDelete.value = null
+        } else {
+            errType.value = 'Menu Item Deletion'
+            errMsg.value = error.message
+            errDialog.value = true
         }
     }
     const cancelDelete = () => {
@@ -357,11 +374,18 @@
 
             const { error: uploadError } = await supabase.storage.from('menu_images').upload(filePath, file)
 
-            if (uploadError) console.error(uploadError)
-            else {
+            if (uploadError) {
+                errType.value = 'Menu Item Image Upload'
+                errMsg.value = uploadError.message
+                errDialog.value = true
+            } else {
                 const { data, error } = supabase.storage.from('menu_images').getPublicUrl(filePath)
                 if (data) imageUrl.value = data.publicUrl
-                else console.error(error)
+                else {
+                    errType.value = 'Menu Item Image Update'
+                    errMsg.value = error.message
+                    errDialog.value = true
+                }
             }
         }
         console.log('edit image url: ', imageUrl.value)

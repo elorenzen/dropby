@@ -133,6 +133,7 @@
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+        <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
     </div>
     <v-snackbar
       v-model="snackbar"
@@ -186,6 +187,10 @@ const evtStart = ref('')
 const evtEnd = ref('')
 const notes = ref('')
 
+const errDialog = ref(false)
+const errMsg = ref()
+const errType = ref()
+
 onMounted(async () => {
     const { data } = await supabase
         .from('events')
@@ -217,7 +222,13 @@ const addEvent = async () => {
             notes: notes.value !== '' ? notes.value : merchantData.notes
         }
         const { error } = await supabase.from('events').insert(evtObj)
+
         if (!error) await resetFields('created')
+        else {
+            errType.value = 'Event Creation'
+            errMsg.value = error.message
+            errDialog.value = true
+        }
     }
 }
 const selectRow = (event: any) => {
@@ -247,6 +258,11 @@ const saveEdits = async () => {
         .eq('id', selectedEvt.value.id)
 
     if (!error) await resetFields('edited')
+    else {
+        errType.value = 'Event Update(s)'
+        errMsg.value = error.message
+        errDialog.value = true
+    }
 }
 const promptDeletion = () => { deleteDialog.value = true }
 const confirmDelete = async () => {
@@ -254,6 +270,11 @@ const confirmDelete = async () => {
         .from('events').delete().eq('id', selectedEvt.value.id)
 
     if (!error) await resetFields('deleted')
+    else {
+        errType.value = 'Event Deletion'
+        errMsg.value = error.message
+        errDialog.value = true
+    }
     deleteDialog.value = false
 }
 const cancelDelete = () => { deleteDialog.value = false }
@@ -304,9 +325,19 @@ const approveRequest = async (id: any) => {
         .from('events')
         .update(updates)
         .eq('id', selectedEvt.value.id)
+    if (dbErr) {
+        errType.value = 'Event Approval'
+        errMsg.value = error.message
+        errDialog.value = true
+    }
 
     const { error: emailErr } = await useFetch(
         `/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+    if (emailErr) {
+        errType.value = 'Confirmation Email'
+        errMsg.value = error.message
+        errDialog.value = true
+    }
 
     if (!dbErr && !emailErr) {
         openRequestDialog.value = false

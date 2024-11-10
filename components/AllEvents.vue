@@ -58,6 +58,8 @@
           </template>
         </v-snackbar>
     </div>
+
+    <ErrorDialog v-if="errDialog" :errType="'Event Request'" :errMsg="errMsg" @errorClose="errDialog = false" />
 </template>
 
 <script setup lang="ts">
@@ -80,6 +82,8 @@
 
     const snackbar = ref(false)
     const snacktext = ref('')
+    const errDialog = ref(false)
+    const errMsg = ref()
 
     const getStatusLabel = (status: any) => {
         switch (status) {
@@ -133,6 +137,9 @@
             selectedMerchant.value = ''
             snacktext.value = 'Event requested!'
             snackbar.value = true
+        } else {
+            errDialog.value = true
+            errMsg.value = error.message
         }
     }
 </script>

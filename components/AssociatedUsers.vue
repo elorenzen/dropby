@@ -84,6 +84,7 @@
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'user'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+        <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
 
         <v-snackbar
           v-model="snackbar"
@@ -132,6 +133,10 @@ const availableToContact = ref(true)
 const email              = ref('')
 const phone              = ref('')
 
+const errDialog = ref(false)
+const errMsg = ref()
+const errType = ref()
+
 onMounted(async () => {
     associatedUsers.value = await getAssociatedUsers(idParam, user.type)
 })
@@ -168,6 +173,10 @@ const addUser = async () => {
 
         associatedUsers.value = await getAssociatedUsers(idParam, user.type)
         openDialog.value = false
+    } else {
+        errType.value = 'User Creation'
+        errMsg.value = error.message
+        errDialog.value = true
     }
 }
 const openAddDialog = () => {
@@ -210,6 +219,10 @@ const submitEdits = async () => {
         associatedUsers.value = await getAssociatedUsers(idParam, user.type)
 
         openDialog.value = false
+    } else {
+        errType.value = 'User Update(s)'
+        errMsg.value = error.message
+        errDialog.value = true
     }
 }
 const resetFields = () => {
@@ -230,6 +243,7 @@ const confirmDelete = async () => {
         .from('users')
         .delete()
         .eq('id', userToDelete.value.id)
+
     if (!error) {
         snackbar.value = true
         snacktext.value = 'User deleted.'
@@ -237,6 +251,10 @@ const confirmDelete = async () => {
         associatedUsers.value = await getAssociatedUsers(idParam, user.type)
         deleteDialog.value = false
         userToDelete.value = null
+    } else {
+        errType.value = 'User Deletion'
+        errMsg.value = error.message
+        errDialog.value = true
     }
 }
 const cancelDelete = () => {

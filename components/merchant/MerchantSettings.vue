@@ -169,6 +169,8 @@
           </template>
       </Card>
 
+      <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+
       <v-snackbar v-model="snackbar" timeout="6000">
         {{ snacktext }}
 
@@ -198,6 +200,10 @@ const editDialog = ref(false)
 const snackbar   = ref(false)
 const snacktext  = ref('')
 const uploading  = ref(false)
+
+const errDialog = ref(false)
+const errMsg = ref()
+const errType = ref()
 
 const imageUrl     = ref(merchant.value.avatar_url ? merchant.value.avatar_url : '')
 const streetRef    = ref()
@@ -280,6 +286,8 @@ const saveEdits = async () => {
       editDialog.value = false
       snacktext.value = 'Information Updated!'
       snackbar.value = true
+  } else {
+    errType.value = 'Settings Update'
   }
 }
 
@@ -294,7 +302,11 @@ const updateImage = async (e) => {
 
         const { error: uploadError } = await supabase.storage.from('merchant_avatars').upload(filePath, file)
 
-        if (uploadError) console.error(uploadError)
+        if (uploadError) {
+          errType.value = 'Image Upload'
+          errMsg.value = uploadError.message
+          errDialog.value = true
+        }
         else {
             const { data } = supabase.storage.from('merchant_avatars').getPublicUrl(filePath)
             if (data) {
@@ -313,6 +325,10 @@ const updateImage = async (e) => {
               if (!error) {
                 snacktext.value = 'Merchant Avatar Updated!'
                 snackbar.value = true
+              } else {
+                errType.value = 'Image Upload'
+                errMsg.value = error.message
+                errDialog.value = true
               }
             }
         }
