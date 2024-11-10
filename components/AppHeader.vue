@@ -34,6 +34,8 @@
           </div>
       </template>
   </Menubar>
+
+  <ErrorDialog v-if="errDialog" :errType="'Sign-in'" :errMsg="errMsg" @errorClose="errDialog = false" />
 </template>
 
 <script setup lang="ts">
@@ -45,6 +47,9 @@ const user = useSupabaseUser()
 console.log('store user getter? ', store.user)
 
 const loading = ref(false)
+const errDialog = ref(false)
+const errMsg = ref()
+
 const email = ref('')
 const password = ref('')
 const registerMenu = ref();
@@ -118,8 +123,7 @@ const fireAuth = async () => {
     password: password.value,
   })
 
-  if (error) console.log(error) 
-  else if (!error && data) {
+  if (!error && data) {
     const { data: userData } = await supabase
       .from('users')
       .select()
@@ -136,6 +140,9 @@ const fireAuth = async () => {
     } else if (foundUser && foundUser.type === 'admin') {
       await navigateTo('/admin')
     }
+  } else if (error) {
+    errDialog.value = true
+    errMsg.value = error.message
   }
   loading.value = false
 }
