@@ -19,39 +19,17 @@ const maps = ref()
 const config = useRuntimeConfig()
 
 const center = ref()
-
+const userStore = useUserStore()
 const merchantStore = useMerchantStore()
 const merchants = merchantStore.getAllMerchants
 
 const markers = ref([])
 
 
-onMounted(async () => {
-  if (merchants.length > 0) {
-    setMerchantMarkers()
-    const merchantCoords = merchants.map(merchant => JSON.parse(merchant.coordinates))
-    center.value = setCenter(merchantCoords)
-  } else {
-      const locRes = await getLocationFromUser();
-      center.value = {
-        lat: locRes ? locRes.latitude : 34.0549, // Use DTLA lat. as fallback
-        lng: locRes ? locRes.longitude : 118.2426 // Use DTLA lng. as fallback
-      }
-  }
+onMounted(() => {
+  center.value = userStore.getUserLocation
+  if (merchants.length > 0) setMerchantMarkers()
 })
-
-const getLocationFromUser = () => {
-  return new Promise((resolve, reject) => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        resolve(position.coords);
-      }, reject);
-    } else {
-      reject('Geolocation not supported');
-    }
-  });
-}
-
 
 const setMerchantMarkers = () => {
   merchants.forEach(merchant => {
@@ -59,20 +37,5 @@ const setMerchantMarkers = () => {
     const marker = { id: merchant.id, position: coords }
     markers.value.push(marker)
   })
-}
-
-const setCenter = (markers: any) => {
-  let lat = 0;
-  let lng = 0;
-    
-  for(let i = 0; i < markers.length; ++i) {
-      lat += markers[i].lat;
-      lng += markers[i].lng;
-  }
-
-  lat /= markers.length;
-  lng /= markers.length;
-
-  return { lat: lat, lng: lng }
 }
 </script>

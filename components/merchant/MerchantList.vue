@@ -51,16 +51,17 @@
 
 <script setup lang="ts">
 import haversine from 'haversine'
+const userStore = useUserStore()
 const merchantStore = useMerchantStore()
 const merchants = merchantStore.getAllMerchants
 
 const lat = ref(34.0549) // Use DTLA lat. as fallback
 const lng = ref(118.2426) // Use DTLA lat. as fallback
 
-onMounted(async () => {
-  const locRes = await getLocationFromUser();
-  lat.value = locRes ? locRes.latitude : 34.0549 // Use DTLA lat. as fallback
-  lng.value =  locRes ? locRes.longitude : 118.2426 // Use DTLA lng. as fallback
+onMounted(() => {
+  const coordinates = userStore.getUserLocation
+  lat.value = coordinates.lat
+  lng.value =  coordinates.lng
 })
 
 const allMerchants = computed(() => {
@@ -82,18 +83,6 @@ const getDistance = (coordinates: any) => {
     {unit: 'mile'}
   )
   return `${merchantDist.toFixed(2)} mi.`
-}
-
-const getLocationFromUser = () => {
-  return new Promise((resolve, reject) => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        resolve(position.coords);
-      }, reject);
-    } else {
-      reject('Geolocation not supported');
-    }
-  });
 }
 </script>
 

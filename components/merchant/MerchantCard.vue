@@ -75,6 +75,8 @@ import { Loader } from '@googlemaps/js-api-loader'
 const props = defineProps(['merchant']);
 const merchant = ref(props.merchant)
 
+const store = useUserStore()
+
 const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
 businessHours.value = businessHours.value.map((day: any) => JSON.parse(day));
 
@@ -98,9 +100,9 @@ const merchantDist = ref(0)
 
 onMounted(async () => {
   try {
-    const locRes = await getLocationFromUser();
-    lat.value = locRes.latitude
-    lng.value = locRes.longitude
+    const coordinates = store.getUserLocation
+    lat.value = coordinates.lat
+    lng.value =  coordinates.lng
   } catch (error) {
     alert('user denied us');
     //code if user denies location service;
@@ -108,18 +110,6 @@ onMounted(async () => {
   await sdkInit()
   getCoords()
 })
-
-const getLocationFromUser = () => {
-  return new Promise((resolve, reject) => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        resolve(position.coords);
-      }, reject);
-    } else {
-      reject('Geolocation not supported');
-    }
-  });
-}
 
 const getCoords = () => {
   const originCoords = {
