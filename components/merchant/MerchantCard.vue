@@ -48,23 +48,6 @@
             </v-row> 
         </template>
     </Card>
-
-    <v-snackbar
-      v-model="snackbar"
-      timeout="6000"
-    >
-      {{ snacktext }}
-
-      <template v-slot:actions>
-        <v-btn
-          color="#000022"
-          variant="text"
-          @click="snackbar = false"
-        >
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
   </div>
 </template>
 
@@ -79,9 +62,6 @@ const store = useUserStore()
 
 const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
 businessHours.value = businessHours.value.map((day: any) => JSON.parse(day));
-
-const snackbar = ref(false)
-const snacktext = ref('')
 
 const imageUrl = ref(props.merchant.avatar_url ? props.merchant.avatar_url : '')
 
