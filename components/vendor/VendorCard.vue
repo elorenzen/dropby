@@ -14,7 +14,10 @@
                           {{ vendor.vendor_name }}
                         </div>
                         <div class="mt-2">
-                            <NuxtLink class="mx-1" :to="vendor.website" target="_blank">
+                          <Badge class="mx-1" v-for="(i, index) in vendor.cuisine" :key="`${i}-${index}`">{{ i }}</Badge>
+                        </div>
+                        <div>
+                            <NuxtLink class="mr-1" :to="vendor.website" target="_blank">
                               <Button severity="secondary" icon="pi pi-link" rounded text />
                             </NuxtLink>
                             <NuxtLink class="mx-1" :to="vendor.instagram" target="_blank">
@@ -29,14 +32,34 @@
                         <div class="col-span-full">
                           {{ vendor.vendor_description }}
                         </div>
-
-                        <div>
-                          {{ categorizedMenu }}
-                        </div>
                     </div>
                   </Fluid>
                 </v-col>
             </v-row> 
+
+            <Divider />
+
+            <div>
+              <Tabs value="0">
+                  <TabList>
+                      <Tab v-for="tab in categorizedMenu" :key="tab.title" :value="tab.value">{{ tab.title }}</Tab>
+                  </TabList>
+                  <TabPanels>
+                      <TabPanel v-for="tab in categorizedMenu" :key="tab.content" :value="tab.value">
+                        <DataTable :value="tab.items">
+                            <Column header="">
+                              <template #body="slotProps">
+                                <img :src="slotProps.data.image_url" alt="No image" class="w-24 rounded" />
+                              </template>
+                            </Column>
+                            <Column field="name" header="Name"></Column>
+                            <Column field="price" header="Price ($)"></Column>
+                        </DataTable>
+                          <p class="m-0">{{ tab.content }}</p>
+                      </TabPanel>
+                  </TabPanels>
+              </Tabs>
+            </div>
         </template>
     </Card>
   </div>
@@ -63,11 +86,12 @@ const categorizedMenu = computed(() => {
   const uniqCategories = [...new Set(menu.map(item => item.type))]
 
   let categorizedMenu = []
-  uniqCategories.forEach(cat => {
-    const arr = menu.filter(i => i.type === cat)
+  uniqCategories.forEach((cat, index) => {
+    const arr = menu.filter(i=> i.type === cat)
     categorizedMenu.push({
       title: cat,
-      items: arr
+      items: arr,
+      value: `${index}`
     })
   })
 
