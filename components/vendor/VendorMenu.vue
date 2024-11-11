@@ -300,11 +300,7 @@
                 await menuStore.setMenuItems(menuData)
 
                 addDialog.value = false
-            } else {
-                errType.value = 'Menu Item Addition'
-                errMsg.value = error
-                errDialog.value = true
-            }
+            } else throwErr('Menu Item Addition', error.message)
         }
     }
     const openEditDialog = (item) => {
@@ -359,11 +355,7 @@
             special.value = false
 
             editDialog.value = false
-        } else {
-            errType.value = 'Menu Item Update(s)'
-            errMsg.value = error.message
-            errDialog.value = true
-        }
+        } else throwErr('Menu Item Update(s)', error.message)
     }
 
     const promptDeletion = (item) => {
@@ -384,11 +376,7 @@
 
             deleteDialog.value = false
             itemToDelete.value = null
-        } else {
-            errType.value = 'Menu Item Deletion'
-            errMsg.value = error.message
-            errDialog.value = true
-        }
+        } else throwErr('Menu Item Deletion', error.message)
     }
     const cancelDelete = () => {
         console.log('delete canceled!')
@@ -406,14 +394,10 @@
 
             const { error: uploadError } = await supabase.storage.from('menu_images').upload(filePath, file)
 
-            if (uploadError) {
-                errType.value = 'Menu Item Image Upload'
-                errMsg.value = uploadError.message
-                errDialog.value = true
-            } else {
+            if (!uploadError) {
                 const { data } = supabase.storage.from('menu_images').getPublicUrl(filePath)
                 if (data) imageUrl.value = data.publicUrl
-            }
+            } else throwErr('Menu Item Image Upload', uploadError.message)
         }
     }
     const updateImage = async (e: any, prevFile: any) => {
@@ -446,18 +430,15 @@
                         .from('menu_images')
                         .remove([oldFileName])
                     
-                    if (storageDeleteErr) {
-                        errType.value = 'Menu Item Image Upload'
-                        errMsg.value = storageDeleteErr.message
-                        errDialog.value = true
-                    }
+                    if (storageDeleteErr) throwErr('Menu Item Image Upload', storageDeleteErr.message)
                 }
-            } else {
-                errType.value = 'Menu Item Image Upload'
-                errMsg.value = uploadError.message
-                errDialog.value = true
-            }
+            } else throwErr('Menu Item Image Upload', uploadError.message)
         }
+    }
+    const throwErr = (title: any, msg: any) => {
+        errType.value = title
+        errMsg.value = msg
+        errDialog.value = true
     }
     const resetFields = () => {
         name.value = ''
