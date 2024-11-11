@@ -43,16 +43,29 @@
     </DataTable>
     <div class="card flex justify-center">
         <Dialog v-model:visible="openEditDialog" modal header="Edit Event" :style="{ width: '25rem' }">
-            <div class="flex items-center gap-4 mb-4">
-                <label for="evt_start">Event Start</label>
-                <DatePicker v-model="selectedEvt.start" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" dateFormat="dd/mm/yy" />
-            </div>
-            <div class="flex items-center gap-4 mb-8">
-                <label for="evt_end">Event End</label>
-                <DatePicker v-model="selectedEvt.end" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
-            </div>
+            <Fluid>
+                <div>
+                    <div class="col-span-full">
+                        <FloatLabel variant="on" class="mb-4">
+                            <DatePicker v-model="selectedEvt.start" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
+                            <label for="evt_start">Event Start</label>
+                        </FloatLabel>
+                    </div>
+                    <div class="col-span-full">
+                        <FloatLabel variant="on" class="mb-4">
+                            <DatePicker v-model="selectedEvt.end" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
+                            <label for="evt_end">Event End</label>
+                        </FloatLabel>
+                    </div>
+                    <div class="col-span-full">
+                        <FloatLabel variant="on" class="mb-4">
+                            <Textarea id="notes" v-model="selectedEvt.notes" rows="3" />
+                            <label for="notes">Notes for Vendor</label>
+                        </FloatLabel>
+                    </div>
+                </div>
+            </Fluid>
             <div class="flex justify-end gap-2">
-                <Button type="button" label="Cancel" severity="secondary" @click="openEditDialog = false"></Button>
                 <Button type="button" label="Save" @click="saveEdits"></Button>
             </div>
             <div class="flex justify-end mt-2">
