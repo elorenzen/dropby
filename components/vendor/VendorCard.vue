@@ -29,6 +29,10 @@
                         <div class="col-span-full">
                           {{ vendor.vendor_description }}
                         </div>
+
+                        <div>
+                          {{ categorizedMenu }}
+                        </div>
                     </div>
                   </Fluid>
                 </v-col>
@@ -38,13 +42,37 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const props    = defineProps(['id']);
 const idParam = ref(props.id)
-const store = useVendorStore()
-const vendor = ref(await store.getVendorById(idParam.value))
+const supabase = useSupabaseClient()
+const menuStore = useMenuStore()
+const { data: menuData } = await supabase
+    .from('menu_items')
+    .select()
+    .eq('vendor_id', idParam.value)
+await menuStore.setMenuItems(menuData)
+const menuItems = menuStore.getMenuItems
+
+const vendorStore = useVendorStore()
+const vendor = ref(await vendorStore.getVendorById(idParam.value))
 const imageUrl = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
 
+const categorizedMenu = computed(() => {
+  const menu = menuItems
+  const uniqCategories = [...new Set(menu.map(item => item.type))]
+
+  let categorizedMenu = []
+  uniqCategories.forEach(cat => {
+    const arr = menu.filter(i => i.type === cat)
+    categorizedMenu.push({
+      title: cat,
+      items: arr
+    })
+  })
+
+  return categorizedMenu
+})
 </script>
 
 <style lang="scss" scoped></style>
