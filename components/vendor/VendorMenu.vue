@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="ma-2">
         <v-row dense class="flex justify-center pa-2 text-xl"><h3>Menu Items</h3></v-row>
         <v-row v-if="!menuItems || menuItems.length == 0" >
             No items found.
@@ -53,94 +53,113 @@
         </DataView>
 
         <!-- ADD ITEM -->
-        <Dialog v-model:visible="addDialog" modal header="New Menu Item" :style="{ width: '35rem' }">
-            <v-row dense class="pa-2">
-                <v-col>
-                    <v-file-input
-                        variant="outlined"
-                        :label="uploading ? 'Uploading ...' : 'Upload Menu Item Image'"
-                        @change="updateImage"
-                        :disabled="uploading"
-                    ></v-file-input>
-                </v-col>
-            </v-row>
-            <v-row dense class="pa-2">
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputText id="item_name" v-model="name" />
-                        <label for="item_name">Item Name</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6">
-                    <Select v-model="type" :options="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></Select>
-                </v-col>
-                <v-col cols="12">
-                    <FloatLabel variant="on">
-                        <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
-                        <label for="desc">Description</label>
-                    </FloatLabel>
-                </v-col>
-                <v-divider class="my-2" />
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputNumber v-model="price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
-                        <label for="item_price">Price</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6" class="pl-2">
-                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
-                </v-col>
-            </v-row>
-            <v-row class="pa-2">
-                <v-btn @click="addItem" block :loading="loading">Add Menu Item</v-btn>
-            </v-row>
+        <Dialog v-model:visible="addDialog" modal header="New Menu Item" :style="{ width: '50rem' }">
+            <Card style="overflow: hidden;">
+                <template #content>
+                    <v-row>
+                        <v-col cols="4">
+                            <Avatar v-if="imageUrl == ''" icon="pi pi-image" class="mr-2" size="xlarge" />
+                            <img v-else :src="imageUrl" alt="Image" class="w-full rounded" />
+                            
+                            <FileUpload
+                                class="mt-2"
+                                mode="basic"
+                                accept="image/*"
+                                :maxFileSize="1000000"
+                                @upload="updateImage($event)"
+                                :auto="true"
+                                chooseLabel="Upload New Image"
+                            />
+                        </v-col>
+                        <v-col cols="8">
+                            <Fluid>
+                                <div class="my-2">
+                                    <FloatLabel variant="on">
+                                        <InputText id="item_name" v-model="name" />
+                                        <label for="item_name">Item Name</label>
+                                    </FloatLabel>
+                                </div>
+                                <div class="my-2">
+                                    <AutoComplete v-model="type" :suggestions="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></AutoComplete>
+                                </div>
+                                <div class="my-2">
+                                    <FloatLabel variant="on">
+                                        <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
+                                        <label for="desc">Description</label>
+                                    </FloatLabel>
+                                </div>
+                                <div class="my-2">
+                                    <FloatLabel variant="on">
+                                        <InputNumber v-model="price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
+                                        <label for="item_price">Price</label>
+                                    </FloatLabel>
+                                </div>
+                                <div class="ma-2">
+                                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
+                                </div>
+                            </Fluid>
+                        </v-col>
+                    </v-row>
+                    <v-row class="pa-2">
+                        <Button @click="addItem" :loading="loading">Add Menu Item</Button>
+                    </v-row>
+                </template>
+            </Card>
         </Dialog>
 
         <!-- EDIT ITEM -->
-        <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '35rem' }">
-            <v-row dense class="pa-2">
-                <v-col cols="4">
-                    <Avatar :image="imageUrl" class="mr-2" size="xlarge" />
-                </v-col>
-                <v-col>
-                    <v-file-input
-                        variant="outlined"
-                        :label="uploading ? 'Uploading ...' : 'Upload New Image'"
-                        @change="updateImage"
-                        :disabled="uploading"
-                    ></v-file-input>
-                </v-col>
-            </v-row>
-            <v-row dense class="pa-2">
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputText id="item_name" v-model="name" />
-                        <label for="item_name">Item Name</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6">
-                    <Select v-model="type" :options="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></Select>
-                </v-col>
-                <v-col cols="12">
-                    <FloatLabel variant="on">
-                        <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
-                        <label for="desc">Description</label>
-                    </FloatLabel>
-                </v-col>
-                <v-divider class="my-2" />
-                <v-col cols="6">
-                    <FloatLabel variant="on">
-                        <InputNumber v-model="price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
-                        <label for="item_price">Price</label>
-                    </FloatLabel>
-                </v-col>
-                <v-col cols="6" class="pl-2">
-                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
-                </v-col>
-            </v-row>
-            <v-row class="pa-2">
-                <v-btn @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
-            </v-row>
+        <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '50rem' }">
+            <Card style="overflow: hidden;">
+                <template #content>
+                    <v-row>
+                        <v-col cols="4">
+                            <Avatar v-if="imageUrl == ''" icon="pi pi-image" class="mr-2" size="xlarge" />
+                            <img v-else :src="imageUrl" alt="Image" class="w-full rounded" />
+                            
+                            <FileUpload
+                                class="mt-2"
+                                mode="basic"
+                                accept="image/*"
+                                :maxFileSize="1000000"
+                                @upload="updateImage($event)"
+                                :auto="true"
+                                chooseLabel="Upload New Image"
+                            />
+                        </v-col>
+                        <v-col cols="8">
+                            <Fluid>
+                                <div class="my-2">
+                                    <FloatLabel variant="on">
+                                        <InputText id="item_name" v-model="name" />
+                                        <label for="item_name">Item Name</label>
+                                    </FloatLabel>
+                                </div>
+                                <div class="my-2">
+                                    <AutoComplete v-model="type" :suggestions="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></AutoComplete>
+                                </div>
+                                <div class="my-2">
+                                    <FloatLabel variant="on">
+                                        <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
+                                        <label for="desc">Description</label>
+                                    </FloatLabel>
+                                </div>
+                                <div class="my-2">
+                                    <FloatLabel variant="on">
+                                        <InputNumber v-model="price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
+                                        <label for="item_price">Price</label>
+                                    </FloatLabel>
+                                </div>
+                                <div class="ma-2">
+                                    <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
+                                </div>
+                            </Fluid>
+                        </v-col>
+                    </v-row>
+                    <v-row class="pa-2">
+                        <v-btn @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
+                    </v-row>
+                </template>
+            </Card>
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'menu item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
@@ -365,7 +384,7 @@
         itemToDelete.value = null
     }
     const updateImage = async (e) => {
-        const file = e.target.files[0]
+        const file = e.files[0]
 
         if (file) {
             const fileExt = file.name.split('.').pop()
