@@ -46,16 +46,16 @@
                   </TabList>
                   <TabPanels>
                       <TabPanel v-for="tab in categorizedMenu" :key="tab.content" :value="tab.value">
-                        <DataTable :value="tab.items">
+                        <DataTable resizableColumns columnResizeMode="expand" :value="tab.items">
                             <Column header="">
                               <template #body="slotProps">
                                 <img :src="slotProps.data.image_url" alt="No image" class="w-24 rounded" />
                               </template>
                             </Column>
                             <Column field="name" header="Name"></Column>
+                            <Column field="description" header="Description"></Column>
                             <Column field="price" header="Price ($)"></Column>
                         </DataTable>
-                          <p class="m-0">{{ tab.content }}</p>
                       </TabPanel>
                   </TabPanels>
               </Tabs>
