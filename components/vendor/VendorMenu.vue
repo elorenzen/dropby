@@ -184,51 +184,63 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import { v4 } from 'uuid'
-    const loading = ref(false)
-    const uploading = ref(false)
-    const snackbar = ref(false)
-    const snacktext = ref('')
-
-    const store = useUserStore()
-    const storeUser = store.user
-
-    const props = defineProps(['vendor']);
-    const vendor = ref(props.vendor)
+    const props    = defineProps(['id']);
+    const idParam  = ref(props.id)
     const supabase = useSupabaseClient()
-    const sessionUser = useSupabaseUser()
-    const isAdmin = ref(false)
-    const addDialog = ref(false)
-    const menuItems = ref(null)
 
-    const itemToEdit = ref('')
-    const editId = ref('')
+    const userStore   = useUserStore()
+    const menuStore   = useMenuStore()
+    const vendorStore = useVendorStore()
+
+    const { data: menuData } = await supabase
+        .from('menu_items')
+        .select()
+        .eq('vendor_id', idParam.value)
+    await menuStore.setMenuItems(menuData)
+
+    const menuItems = menuStore.getMenuItems
+    const storeUser = userStore.user
+
+    const vendor       = ref(await vendorStore.getVendorById(idParam.value))
+    const isAdmin      = ref(false)
+    const addDialog    = ref(false)
+
+    const itemToEdit   = ref('')
+    const editId       = ref('')
     const editVendorId = ref('')
-    const editDialog = ref(false)
-
-    const errDialog = ref(false)
-    const errMsg = ref()
-    const errType = ref()
+    const editDialog   = ref(false)
 
     const itemToDelete = ref(null)
     const deleteDialog = ref(false)
 
-    // MENU ITEM DATA
-    const name = ref('')
-    const description = ref('')
-    const type = ref('')
-    const imageUrl = ref('')
-    const price = ref(0)
-    const special = ref(false)
+    const errDialog    = ref(false)
+    const errMsg       = ref()
+    const errType      = ref()
 
-    const sortKey = ref();
-    const sortOrder = ref();
-    const sortField = ref();
+    const loading      = ref(false)
+    const snackbar     = ref(false)
+    const snacktext    = ref('')
+
+    // MENU ITEM DATA
+    const name        = ref('')
+    const description = ref('')
+    const type        = ref('')
+    const imageUrl    = ref('')
+    const price       = ref(0)
+    const special     = ref(false)
+
+    const sortKey     = ref();
+    const sortOrder   = ref();
+    const sortField   = ref();
     const sortOptions = ref([
         {label: 'Price High to Low', value: '!price'},
         {label: 'Price Low to High', value: 'price'},
     ]);
+
+    // COMPUTED PROP TO GO HERE TO ORGANIZE 
+    // ALL MENU ITEMS INTO SEPARATE ARRAYS BY CATEGORY
 
     const onSortChange = (event) => {
         const value = event.value.value;
@@ -254,23 +266,6 @@
 
         return data ? data : null
     }
-    
-    onMounted(async () => {
-      menuItems.value = await getMenuItems(vendor.value.id)
-      if (sessionUser) {
-        const { data } = await supabase
-          .from('users')
-          .select()
-          .eq('id', sessionUser.value.id)
-        const foundUser = data[0]
-        if (
-          foundUser &&
-          foundUser.is_admin &&
-          foundUser.associated_vendor_id == vendor.value.id
-        ) isAdmin.value = true
-      }
-      loading.value = false
-    })
 
     const addItem = async () => {
         if (isAdmin) {
@@ -296,7 +291,9 @@
 
                 resetFields()
 
-                menuItems.value = await getMenuItems(vendor.value.id)
+                const { data: menuData } = await getMenuItems(vendor.value.id)
+                await menuStore.setMenuItems(menuData)
+
                 addDialog.value = false
             } else {
                 errType.value = 'Menu Item Addition'
@@ -337,7 +334,8 @@
             snackbar.value = true
             snacktext.value = 'Menu item edited!'
 
-            menuItems.value = await getMenuItems(editVendorId.value)
+            const { data: menuData } = await getMenuItems(vendor.value.id)
+            await menuStore.setMenuItems(menuData)
             // reset fields
             editId.value = ''
             editVendorId.value = ''
@@ -369,7 +367,9 @@
             snackbar.value = true
             snacktext.value = 'Menu item deleted.'
 
-            menuItems.value = await getMenuItems(vendor.value.id)
+            const { data: menuData } = await getMenuItems(vendor.value.id)
+            await menuStore.setMenuItems(menuData)
+
             deleteDialog.value = false
             itemToDelete.value = null
         } else {

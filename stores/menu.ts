@@ -1,18 +1,15 @@
 import { defineStore } from 'pinia'
 
-export const useMenuItemStore = defineStore('menuItem', {
+export const useMenuStore = defineStore('menu', {
   state: () => ({
-    allMenuItems: []
+    menuItems: []
   }),
   getters: {
-    getMenuItemsByMerchantId: (state) => {
-        return (id) => state.allMenuItems.filter((menuItem) => menuItem.merchant === id)
-    },
-    getAllMenuItems: (state) => state.allMenuItems,
+    getMenuItems: (state) => state.menuItems,
   },
   actions: {
-    async setAllMenuItems(menuItems: []) {
-        this.allMenuItems = menuItems
+    async setMenuItems(items: []) {
+        this.menuItems = items
     },
   }
 })

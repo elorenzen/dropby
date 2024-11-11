@@ -1,10 +1,7 @@
 <template>
    <v-row>
-    <v-col cols="6">
-      <VendorCard :id="route.params.id" />
-    </v-col>
-
-    <v-divider class="my-2"></v-divider>
+    <VendorCard :id="route.params.id" />
+    <VendorMenu :id="route.params.id" />
 
     <v-row class="mt-4">
       <v-col><EventList :acctId="route.params.id" :acctType="'vendor'" /></v-col>
