@@ -39,9 +39,11 @@
 </template>
 
 <script setup>
-const props    = defineProps(['vendor']);
-const vendor   = ref(props.vendor)
-const imageUrl = ref(props.vendor.avatar_url ? props.vendor.avatar_url : '')
+const props    = defineProps(['id']);
+const idParam = ref(props.id)
+const store = useVendorStore()
+const vendor = ref(await store.getVendorById(idParam.value))
+const imageUrl = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
 
 </script>
 
