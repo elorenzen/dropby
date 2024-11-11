@@ -66,9 +66,9 @@
                                 mode="basic"
                                 accept="image/*"
                                 :maxFileSize="1000000"
-                                @upload="updateImage($event)"
+                                @upload="addImage($event)"
                                 :auto="true"
-                                chooseLabel="Upload New Image"
+                                chooseLabel="Upload Image"
                             />
                         </v-col>
                         <v-col cols="8">
@@ -121,9 +121,9 @@
                                 mode="basic"
                                 accept="image/*"
                                 :maxFileSize="1000000"
-                                @upload="updateImage($event)"
+                                @upload="updateImage($event, imageName)"
                                 :auto="true"
-                                chooseLabel="Upload New Image"
+                                chooseLabel="Replace Image"
                             />
                         </v-col>
                         <v-col cols="8">
@@ -228,6 +228,7 @@
     const description = ref('')
     const type        = ref('')
     const imageUrl    = ref('')
+    const imageName   = ref('')
     const price       = ref(0)
     const special     = ref(false)
 
@@ -279,6 +280,7 @@
                 description: description.value,
                 type: type.value, // 'appetizer', 'entree', etc.,
                 image_url: imageUrl.value,
+                image_name: imageName.value,
                 created_at: new Date(),
                 updated_at: new Date(),
                 price: price.value,
@@ -291,7 +293,10 @@
 
                 resetFields()
 
-                const { data: menuData } = await getMenuItems(vendor.value.id)
+                const { data: menuData } = await supabase
+                    .from('menu_items')
+                    .select()
+                    .eq('vendor_id', idParam.value)
                 await menuStore.setMenuItems(menuData)
 
                 addDialog.value = false
@@ -305,6 +310,7 @@
     const openEditDialog = (item) => {
         itemToEdit.value = item
         imageUrl.value = item.image_url
+        imageName.value = item.image_name
         editId.value = item.id
         editVendorId.value = item.vendor_id
         name.value = item.name
@@ -322,6 +328,7 @@
             price: price.value,
             type: type.value, // 'appetizer', 'entree', etc.,
             image_url: imageUrl.value,
+            image_name: imageName.value,
             special: special.value // default: FALSE, set to TRUE if item is seasonal/limited edition
         }
 
@@ -334,8 +341,12 @@
             snackbar.value = true
             snacktext.value = 'Menu item edited!'
 
-            const { data: menuData } = await getMenuItems(vendor.value.id)
+            const { data: menuData } = await supabase
+                .from('menu_items')
+                .select()
+                .eq('vendor_id', idParam.value)
             await menuStore.setMenuItems(menuData)
+
             // reset fields
             editId.value = ''
             editVendorId.value = ''
@@ -343,6 +354,7 @@
             description.value = ''
             type.value = ''
             imageUrl.value = ''
+            imageName.value = ''
             price.value = 0
             special.value = false
 
@@ -383,12 +395,13 @@
         deleteDialog.value = false
         itemToDelete.value = null
     }
-    const updateImage = async (e) => {
+    const addImage = async (e: any) => {
         const file = e.files[0]
 
         if (file) {
             const fileExt = file.name.split('.').pop()
             const fileName = `${v4()}.${fileExt}`
+            imageName.value = fileName
             const filePath = `${fileName}`
 
             const { error: uploadError } = await supabase.storage.from('menu_images').upload(filePath, file)
@@ -398,24 +411,60 @@
                 errMsg.value = uploadError.message
                 errDialog.value = true
             } else {
-                const { data, error } = supabase.storage.from('menu_images').getPublicUrl(filePath)
+                const { data } = supabase.storage.from('menu_images').getPublicUrl(filePath)
                 if (data) imageUrl.value = data.publicUrl
-                else {
-                    errType.value = 'Menu Item Image Update'
-                    errMsg.value = error.message
-                    errDialog.value = true
-                }
             }
         }
-        console.log('edit image url: ', imageUrl.value)
-        //         menuItems.value = await getMenuItems(vendor.value.id)
-        //         loading.value = false
+    }
+    const updateImage = async (e: any, prevFile: any) => {
+        const file = e.files[0]
+        const oldFileName = prevFile
+
+        if (file) {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${v4()}.${fileExt}`
+            const filePath = `${fileName}`
+
+            const { error: uploadError } = await supabase.storage.from('menu_images').upload(filePath, file)
+
+            if (!uploadError) {
+                // 1. Upload new file to storage
+                const { data } = supabase.storage.from('menu_images').getPublicUrl(filePath)
+                console.log('new url: ', data.publicUrl)
+                if (data) imageUrl.value = data.publicUrl
+
+                // 2. Replace fields on menu document in Db
+                const { error: dbErr } = await supabase
+                    .from('menu_items')
+                    .update({ image_url: data.publicUrl, image_name: filePath })
+                    .eq('id', editId.value)
+                
+                // 3. Finally, delete old file from storage
+                if (!dbErr) {
+                    const { error: storageDeleteErr } = await supabase
+                        .storage
+                        .from('menu_images')
+                        .remove([oldFileName])
+                    
+                    if (storageDeleteErr) {
+                        errType.value = 'Menu Item Image Upload'
+                        errMsg.value = storageDeleteErr.message
+                        errDialog.value = true
+                    }
+                }
+            } else {
+                errType.value = 'Menu Item Image Upload'
+                errMsg.value = uploadError.message
+                errDialog.value = true
+            }
+        }
     }
     const resetFields = () => {
         name.value = ''
         description.value = ''
         type.value = ''
         imageUrl.value = ''
+        imageName.value = ''
         price.value = 0
         special.value = false
     }
