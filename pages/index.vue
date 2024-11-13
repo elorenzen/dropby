@@ -1,5 +1,8 @@
 <template>
-    <div>
+    <div v-if="loading" class="card flex justify-center mt-4">
+        <ProgressSpinner class="p-progress-spinner-circle" />
+    </div>
+    <div v-else>
       <div v-if="coordinates">
         <div class="flex justify-center p-2">
             <h3 class="text-2xl">Welcome to DropBy!</h3>
@@ -16,6 +19,7 @@
 
 <script setup lang="ts">
 const store = useUserStore()
+const loading = ref(true)
 
 const coordinates = ref()
 onMounted(async () => {
@@ -26,6 +30,7 @@ onMounted(async () => {
   })
 
   coordinates.value = store.getUserLocation
+  loading.value = false
 })
 
 const getLocationFromUser = () => {
