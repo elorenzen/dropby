@@ -6,9 +6,6 @@ export const useEventStore = defineStore('event', {
     allEvents: []
   }),
   getters: {
-    getEventsByMerchantId: (state) => {
-        return (id) => state.allEvents.filter((event) => event.merchant === id)
-    },
     getAllEvents: (state) => state.allEvents,
     getAllOpenEvents: (state) => state.allEvents.filter(e => e.status == 'open')
   },
@@ -16,5 +13,8 @@ export const useEventStore = defineStore('event', {
     async setAllEvents(events: []) {
         this.allEvents = events
     },
+    async getEventsByMerchantId(id: any) {
+      return this.allEvents.filter(e => e.merchant === id)
+    }
   }
 })

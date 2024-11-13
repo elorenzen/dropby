@@ -67,10 +67,8 @@
     const vendor = ref(props.vendor)
 
     const supabase = useSupabaseClient()
-    const { data: eventData } = await supabase.from('events').select()
 
     const eventStore = useEventStore()
-    await eventStore.setAllEvents(eventData)
     const events = eventStore.getAllOpenEvents
 
     const merchantStore = useMerchantStore()

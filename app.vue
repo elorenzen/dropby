@@ -23,6 +23,10 @@ const vendorStore = useVendorStore()
 const { data: vendorData } = await supabase.from('vendors').select()
 await vendorStore.setAllVendors(vendorData)
 
+const eventStore = useEventStore()
+const { data: eventData } = await supabase.from('events').select()
+await eventStore.setAllEvents(eventData)
+
 if (user.value) {
   const { data } = await supabase
       .from('users')
