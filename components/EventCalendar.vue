@@ -1,5 +1,10 @@
 <template>
-  <VCalendar is-dark expanded :attributes="attributes" />
+  <div>
+    <VCalendar is-dark expanded :attributes="attributes" @dayclick="openDayView" />
+    <Dialog v-model:visible="dayViewDialog" modal :header="dayId" :style="{ width: '25rem' }">
+      {{ dayDate }}    
+    </Dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -11,6 +16,8 @@
   const events = ref(await eventStore.getEventsByMerchantId(idParam.value))
   const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
   businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
+
+  const date = ref()
 
   const allOpenDates = computed(() => {
     const allOpenEvents = events.value.filter(e => e.status === 'open')
@@ -24,25 +31,61 @@
     const allPendingEvents = events.value.filter(e => e.status === 'pending')
     return allPendingEvents.map(e => new Date(e.start))
   })
+  
+  // const days = ref([])
+  // const selectMultipleDays = (day: any) => {
+  //   const idx = days.value.findIndex((d: any) => d.id === day.id);
+  //   if (idx >= 0) {
+  //     days.value.splice(idx, 1);
+  //   } else {
+  //     days.value.push({
+  //       id: day.id,
+  //       date: day.date,
+  //     });
+  //   }
+  // }
+
+  const dayViewDialog = ref(false)
 
   const attributes = ref([
     {
-      highlight: 'blue',
+      highlight: { fillMode: 'outline' },
       dates: new Date(),
     },
     {
-      highlight: 'gray',
+      highlight: {
+          color: 'gray',
+          fillMode: 'light',
+        },
       dates: allOpenDates.value
     },
     {
-      highlight: 'yellow',
+      highlight: {
+          color: 'yellow',
+          fillMode: 'light',
+        },
       dates: allPendingDates.value
     },
     {
-      highlight: 'green',
+      highlight: {
+          color: 'green',
+          fillMode: 'light',
+        },
       dates: allBookedDates.value
     }
   ]);
+  watch(date, (newVal) => {
+      if (!newVal) console.log('new date: ', newVal)
+  })
+  const dayId = ref()
+  const dayDate = ref()
+  const openDayView = (day: any) => {
+    dayViewDialog.value = true
+    dayId.value = day.id
+    dayDate.value = day.date
+    console.log('day.id: ', day.id)
+    console.log('day.date: ', day.date)
+  }
 </script>
 
 <style scoped>
