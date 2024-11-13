@@ -217,6 +217,15 @@ onMounted(async () => {
 const addEvent = async () => {
     if (user) {
         const merchantData = merchants.find((i: any) => i.id == user.associated_merchant_id)
+
+        // date funcs for formatting 'day_id' val
+        const start = evtStart.value
+        const year = (new Date(start).getFullYear()).toString()
+        let month = ((new Date(start).getMonth()) + 1).toString()
+        if (month.length < 2) month = '0' + month
+        let day = (new Date(start).getDate()).toString()
+        if (day.length < 2) day = '0' + day
+
         const evtObj = {
             id: v4(),
             created_at: new Date(),
@@ -224,6 +233,7 @@ const addEvent = async () => {
             vendor: null,
             start: evtStart.value,
             end: evtEnd.value,
+            day_id: `${year}-${month}-${day}`,
             location_coordinates: merchantData.coordinates,
             location_address: merchantData.formatted_address,
             location_url: merchantData.address_url,
