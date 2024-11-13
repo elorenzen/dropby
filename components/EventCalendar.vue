@@ -23,16 +23,65 @@
           </template>
       </Card>
       <Card v-else style="width: 30rem; overflow: hidden">
+        <template #title>
+          New Event
+        </template>
         <template #content>
-          No event scheduled. Create one now...
+          <Fluid>
+            <div>
+              <div class="flex-auto">
+                <FloatLabel variant="on" class="my-4">
+                  <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid />
+                  <label for="new-event-start" class="block mb-2"> Start Time</label>
+                </FloatLabel>
+              </div>
+              <div class="flex-auto">
+                <FloatLabel variant="on" class="my-4">
+                  <label for="new-event-end" class="block mb-2"> End Time</label>
+                  <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid />
+                </FloatLabel>
+              </div>
+              <div class="flex-auto">
+                  <FloatLabel variant="on" class="my-4">
+                      <Textarea id="notes" v-model="notes" rows="3" />
+                      <label for="notes">Notes for Vendor</label>
+                  </FloatLabel>
+              </div>
+            </div>
+          </Fluid>
+        </template>
+        <template #footer>
+            <div class="flex gap-4 mt-1">
+                <Button @click="addEvent" label="Add Event" severity="success" class="w-full" />
+            </div>
         </template>
       </Card>
-      <div v-else>No events scheduled. Add one now...</div>
     </Dialog>
+
+    <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+
+    <v-snackbar
+      v-model="snackbar"
+      timeout="6000"
+    >
+      {{ snacktext }}
+
+      <template v-slot:actions>
+        <v-btn
+          color="#000022"
+          variant="text"
+          @click="snackbar = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { v4 } from 'uuid'
+  const supabase      = useSupabaseClient()
   const props         = defineProps(['id'])
   const idParam       = ref(props.id)
 
@@ -44,15 +93,20 @@
   const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
   businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
 
-  const date          = ref()
+  const notes         = ref(merchant.value.notes)
   const dayViewDialog = ref(false)
   const dayId         = ref()
   const dayDate       = ref()
   const eventOnDay    = ref()
 
-  watch(date, (newVal) => {
-      if (!newVal) console.log('new date: ', newVal)
-  })
+  const snackbar      = ref(false)
+  const snacktext     = ref('')
+  const errType       = ref()
+  const errMsg        = ref()
+  const errDialog     = ref(false)
+
+  const newEventStart = ref()
+  const newEventEnd   = ref()
 
   const allOpenDates = computed(() => {
     const allOpenEvents = events.value.filter((e: any) => e.status === 'open')
@@ -124,6 +178,52 @@
               return null;
       }
   };
+  const addEvent = async () => {
+    const startHours = new Date(newEventStart.value).getHours()
+    const endHours = new Date(newEventEnd.value).getHours()
+    const day = dayDate.value
+    const eventStart = day.setHours(startHours)
+    const eventEnd = day.setHours(endHours)
+
+    const evtObj = {
+        id: v4(),
+        created_at: new Date(),
+        merchant: merchant.value.id,
+        vendor: null,
+        start: new Date(eventStart),
+        end: new Date(eventEnd),
+        day_id: dayId.value,
+        location_coordinates: merchant.value.coordinates,
+        location_address: merchant.value.formatted_address,
+        location_url: merchant.value.address_url,
+        status: 'open',
+        vendor_rating: null,
+        merchant_rating: null,
+        vendor_comment: null,
+        merchant_comment: null,
+        notes: notes.value !== '' ? notes.value : merchant.value.notes
+    }
+    const { error } = await supabase.from('events').insert(evtObj)
+    if (!error) await resetFields('created')
+    else {
+        errType.value = 'Event Creation'
+        errMsg.value = error.message
+        errDialog.value = true
+    }
+  }
+  const resetFields = async (action: any) => {
+      const { data: eventData } = await supabase.from('events').select()
+      await eventStore.setAllEvents(eventData)
+      events.value = await eventStore.getEventsByMerchantId(idParam.value)
+      
+      dayViewDialog.value = false
+
+      snacktext.value = `Event ${action}!`
+      snackbar.value = true
+
+      newEventStart.value = ''
+      newEventEnd.value = ''
+}
   // const days = ref([])
   // const selectMultipleDays = (day: any) => {
   //   const idx = days.value.findIndex((d: any) => d.id === day.id);
