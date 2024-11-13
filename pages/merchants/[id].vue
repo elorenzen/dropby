@@ -1,35 +1,19 @@
 <template>
-  <div v-if="merchant && merchant.length > 0">
-    <div>
-      <MerchantCard :merchant="merchant[0]" />
-    </div>
+  <v-row>
+      <MerchantCard :id="route.params.id" />
     <Divider />
     <div>
-      <EventList :acctId="merchant[0].id" :acctType="'merchant'" />
+      <EventList :acctId="route.params.id" :acctType="'merchant'" />
     </div>
-  </div>
+  </v-row>
 </template>
   
-<script setup>
-  import EventList from '~/components/EventList.vue';
+<script setup lang="ts">
+  definePageMeta({
+    middleware: ['auth']
+  })
 
   const route = useRoute()
-  const supabase = useSupabaseClient()
-  const merchant = ref('')
-
-  async function getMerchant() {
-    const { data, error } = await supabase
-        .from('merchants')
-        .select()
-        .eq('id', route.params.id)
-      
-    if (error) console.log(error)
-    merchant.value = data
-  }
-
-  onMounted(() => {
-    getMerchant()
-  })
 </script>
 
 <style lang="scss" scoped>

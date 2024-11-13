@@ -55,15 +55,17 @@
 import haversine from 'haversine'
 import { Loader } from '@googlemaps/js-api-loader'
 
-const props = defineProps(['merchant']);
-const merchant = ref(props.merchant)
+const props = defineProps(['id']);
+const idParam = ref(props.id)
+const merchantStore = useMerchantStore()
+const merchant = ref(await merchantStore.getMerchantById(idParam.value))
 
 const store = useUserStore()
-
+console.log('merchant: ', merchant.value)
 const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
 businessHours.value = businessHours.value.map((day: any) => JSON.parse(day));
 
-const imageUrl = ref(props.merchant.avatar_url ? props.merchant.avatar_url : '')
+const imageUrl = ref(merchant.value.avatar_url ? merchant.value.avatar_url : '')
 
 const streetRef = ref()
 const addressFocus = ref(false)
