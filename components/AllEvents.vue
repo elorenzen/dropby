@@ -38,7 +38,12 @@
             <Dialog v-model:visible="openViewDialog" modal header="Event Information" :style="{ width: '25rem' }">
                 <MerchantCard :merchant="selectedMerchant" />
                 <div>{{ new Date(selectedEvt.start).toLocaleString() }} - {{ new Date(selectedEvt.end).toLocaleString() }}</div>
-                <Button v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(vendor)" type="button" label="Request Event" @click="requestEvent"></Button>
+                <Button
+                    v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(vendor)"
+                    type="button"
+                    label="Request Event"
+                    @click="requestEvent"
+                ></Button>
             </Dialog>
         </div>
         <v-snackbar
@@ -63,25 +68,24 @@
 </template>
 
 <script setup lang="ts">
-    const props = defineProps(['vendor'])
+    const props  = defineProps(['vendor'])
     const vendor = ref(props.vendor)
 
-    const supabase = useSupabaseClient()
-
-    const eventStore = useEventStore()
-    const events = eventStore.getAllOpenEvents
-
+    const supabase      = useSupabaseClient()
+    const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
-    const merchants = merchantStore.getAllMerchants
+    const events        = eventStore.getAllOpenEvents
+    const merchants     = merchantStore.getAllMerchants
 
-    const selectedEvt = ref()
+    const selectedEvt      = ref()
     const selectedMerchant = ref()
-    const openViewDialog = ref(false)
+    const openViewDialog   = ref(false)
 
-    const snackbar = ref(false)
+    const snackbar  = ref(false)
     const snacktext = ref('')
     const errDialog = ref(false)
-    const errMsg = ref()
+    const errMsg    = ref()
+    const loading   = ref(false)
 
     const getStatusLabel = (status: any) => {
         switch (status) {
@@ -114,6 +118,7 @@
         openViewDialog.value = true
     }
     const requestEvent = async () => {
+        loading.value = true
         let reqArr =
             selectedEvt.value.pending_requests ?
             selectedEvt.value.pending_requests : []
@@ -139,6 +144,7 @@
             errDialog.value = true
             errMsg.value = error.message
         }
+        loading.value = false
     }
 </script>
 

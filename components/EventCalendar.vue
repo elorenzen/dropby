@@ -86,7 +86,13 @@
         </template>
         <template #footer>
             <div class="flex gap-4 mt-1">
-                <Button @click="addEvent" label="Add Event" severity="success" class="w-full" />
+                <Button
+                  @click="addEvent"
+                  label="Add Event"
+                  severity="success"
+                  class="w-full"
+                  :loading="loading"
+                ></Button>
             </div>
         </template>
       </Card>
@@ -221,11 +227,12 @@
       }
   };
   const addEvent = async () => {
+    loading.value    = true
     const startHours = new Date(newEventStart.value).getHours()
-    const endHours = new Date(newEventEnd.value).getHours()
-    const day = dayDate.value
+    const endHours   = new Date(newEventEnd.value).getHours()
+    const day        = dayDate.value
     const eventStart = day.setHours(startHours)
-    const eventEnd = day.setHours(endHours)
+    const eventEnd   = day.setHours(endHours)
 
     const evtObj = {
         id: v4(),
@@ -252,6 +259,7 @@
         errMsg.value = error.message
         errDialog.value = true
     }
+    loading.value = false
   }
   const promptDeletion = () => { deleteDialog.value = true }
   const confirmDelete = async () => {

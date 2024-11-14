@@ -66,7 +66,7 @@
                 </div>
             </Fluid>
             <div class="flex justify-end gap-2">
-                <Button type="button" label="Save" @click="saveEdits"></Button>
+                <Button type="button" label="Save" @click="saveEdits" :loading="loading"></Button>
             </div>
             <div class="flex justify-end mt-2">
                 <Button type="button" label="Delete" severity="danger" @click="promptDeletion"></Button>
@@ -97,7 +97,12 @@
                                     </div>
                                     <div class="flex flex-col md:items-end gap-8">
                                         <div class="flex flex-row-reverse md:flex-row gap-2">
-                                            <Button label="Approve" @click="approveRequest(item.id)" class="flex-auto md:flex-initial whitespace-nowrap"></Button>
+                                            <Button
+                                                label="Approve"
+                                                @click="approveRequest(item.id)"
+                                                class="flex-auto md:flex-initial whitespace-nowrap"
+                                                :loading="loading"
+                                            ></Button>
                                         </div>
                                     </div>
                                 </div>
@@ -215,6 +220,7 @@ onMounted(async () => {
 })
 
 const addEvent = async () => {
+    loading.value = true
     if (user) {
         const merchantData = merchants.find((i: any) => i.id == user.associated_merchant_id)
 
@@ -253,6 +259,7 @@ const addEvent = async () => {
             errDialog.value = true
         }
     }
+    loading.value = false
 }
 const selectRow = (event: any) => {
     selectedEvt.value = event.data
@@ -270,6 +277,7 @@ const selectRow = (event: any) => {
     } else openViewDialog.value = true
 }
 const saveEdits = async () => {
+    loading.value = true
     const updates = {
         updated_at: new Date(),
         start: selectedEvt.value.start,
@@ -286,6 +294,7 @@ const saveEdits = async () => {
         errMsg.value = error.message
         errDialog.value = true
     }
+    loading.value = false
 }
 const promptDeletion = () => { deleteDialog.value = true }
 const confirmDelete = async () => {
@@ -339,6 +348,7 @@ const getStatusLabel = (status: any) => {
     }
 };
 const approveRequest = async (id: any) => {
+    loading.value = true
     const updates = {
         updated_at: new Date(),
         status: 'booked',
@@ -354,6 +364,7 @@ const approveRequest = async (id: any) => {
         errMsg.value = dbErr.message
         errDialog.value = true
     } else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+    loading.value = false
 }
 watch(openRequestDialog, (newVal) => {
     if (!newVal) requestedVendors.value = []

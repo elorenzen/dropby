@@ -97,7 +97,7 @@
                     </div>
                   </Fluid>
                   <div class="flex justify-end gap-2 ma-4">
-                      <Button type="button" label="Save Edits" @click="saveEdits"></Button>
+                      <Button type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
                   </div>
                 </v-col>
             </v-row>  
@@ -127,11 +127,12 @@ const props = defineProps(['id'])
 const vendorStore = useVendorStore()
 
 const idParam    = ref(props.id)
-const vendor   = ref(await vendorStore.getVendorById(idParam.value))
+const vendor     = ref(await vendorStore.getVendorById(idParam.value))
 const editDialog = ref(false)
 const snackbar   = ref(false)
 const snacktext  = ref('')
 const uploading  = ref(false)
+const loading    = ref(false)
 
 const errType = ref()
 const errMsg = ref()
@@ -163,6 +164,7 @@ const cuisines = ref([
 ])
 
 const saveEdits = async () => {
+  loading.value = true
   const updates = {
     updated_at: new Date(),
     vendor_name: vendor.value.vendor_name,
@@ -184,6 +186,7 @@ const saveEdits = async () => {
     errMsg.value = error.message
     errDialog.value = true
   }
+  loading.value = false
 }
 
 const updateImage = async (e: any) => {

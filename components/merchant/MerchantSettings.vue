@@ -165,7 +165,7 @@
                     </TabPanels>
                 </Tabs>
                 <div class="flex justify-end gap-2 ma-4">
-                    <Button type="button" label="Save Edits" @click="saveEdits"></Button>
+                    <Button type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
                 </div>
           </template>
       </Card>
@@ -201,10 +201,11 @@ const editDialog = ref(false)
 const snackbar   = ref(false)
 const snacktext  = ref('')
 const uploading  = ref(false)
+const loading    = ref(false)
 
 const errDialog = ref(false)
-const errMsg = ref()
-const errType = ref()
+const errMsg    = ref()
+const errType   = ref()
 
 const imageUrl     = ref(merchant.value.avatar_url ? merchant.value.avatar_url : '')
 const streetRef    = ref()
@@ -266,6 +267,7 @@ const setFormattedClose = (e: any, i: any) => {
 }
 
 const saveEdits = async () => {
+  loading.value = true
   const updates = {
     updated_at: new Date(),
     merchant_name: merchant.value.merchant_name,
@@ -290,6 +292,7 @@ const saveEdits = async () => {
   } else {
     errType.value = 'Settings Update'
   }
+  loading.value = false
 }
 
 const updateImage = async (e) => {
