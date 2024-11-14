@@ -124,7 +124,7 @@
   const merchantStore = useMerchantStore()
   const vendorStore   = useVendorStore()
 
-  const user          = ref(await userStore.getUser)
+  const user          = userStore.user
   const merchant      = ref(await merchantStore.getMerchantById(idParam.value))
   const vendors       = ref(await vendorStore.getAllVendors)
   const events        = ref(await eventStore.getEventsByMerchantId(idParam.value))
@@ -299,15 +299,8 @@
           errDialog.value = true
       }
 
-      const { error: emailErr } = await useFetch(
-          `/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
-      if (emailErr) {
-          errType.value = 'Confirmation Email'
-          errMsg.value = emailErr.message
-          errDialog.value = true
-      }
-
-      if (!dbErr && !emailErr) await resetFields('approved')
+      await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+      if (!dbErr) await resetFields('approved')
   }
   // const days = ref([])
   // const selectMultipleDays = (day: any) => {
