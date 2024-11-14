@@ -7,6 +7,7 @@
                     <Tab value="0">General Information</Tab>
                     <Tab value="1">Business Hours</Tab>
                     <Tab value="2">Event Scheduling</Tab>
+                    <Tab value="3">Associated Users</Tab>
                 </TabList>
                 <TabPanels>
                     <!-- GENERAL INFORMATION SETTINGS -->
@@ -157,6 +158,9 @@
                         </TabPanel>
                         <TabPanel value="2">
                             <EventCalendar :id="idParam" />
+                        </TabPanel>
+                        <TabPanel value="3">
+                            <AssociatedUsers :id="idParam" />
                         </TabPanel>
                     </TabPanels>
                 </Tabs>

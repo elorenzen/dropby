@@ -1,9 +1,7 @@
 <template>
     <div>
         <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6 ma-2">
-            <div class="flex flex-row md:flex-col justify-between items-start gap-2">
-                Associated Users
-            </div>
+            <div></div>
             <div class="flex flex-col md:items-end gap-8">
                 <Button
                     v-if="user"
