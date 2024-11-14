@@ -1,6 +1,6 @@
 <template>
   <div>
-    <VCalendar is-dark expanded :attributes="attributes" @dayclick="openDayView" />
+    <VCalendar transparent is-dark expanded :attributes="attributes" @dayclick="openDayView" :key="refresh" />
     <Dialog v-model:visible="dayViewDialog" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '35rem' }">
       <Card v-if="eventOnDay" style="width: 30rem; overflow: hidden">
           <template #title>
@@ -18,7 +18,7 @@
           <template #footer>
               <div class="flex gap-4 mt-1">
                   <Button label="Edit" severity="secondary" outlined class="w-full" />
-                  <Button label="Delete" severity="danger" class="w-full" />
+                  <Button @click="promptDeletion" label="Delete" severity="danger" class="w-full" />
               </div>
           </template>
       </Card>
@@ -59,6 +59,7 @@
     </Dialog>
 
     <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+    <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
 
     <v-snackbar
       v-model="snackbar"
@@ -104,9 +105,11 @@
   const errType       = ref()
   const errMsg        = ref()
   const errDialog     = ref(false)
+  const deleteDialog  = ref(false)
 
   const newEventStart = ref()
   const newEventEnd   = ref()
+  const refresh       = ref(0)
 
   const allOpenDates = computed(() => {
     const allOpenEvents = events.value.filter((e: any) => e.status === 'open')
@@ -211,6 +214,20 @@
         errDialog.value = true
     }
   }
+  const promptDeletion = () => { deleteDialog.value = true }
+  const confirmDelete = async () => {
+      const { error } = await supabase
+          .from('events').delete().eq('id', eventOnDay.value.id)
+
+      if (!error) await resetFields('deleted')
+      else {
+          errType.value = 'Event Deletion'
+          errMsg.value = error.message
+          errDialog.value = true
+      }
+      deleteDialog.value = false
+  }
+  const cancelDelete = () => { deleteDialog.value = false }
   const resetFields = async (action: any) => {
       const { data: eventData } = await supabase.from('events').select()
       await eventStore.setAllEvents(eventData)
@@ -223,6 +240,7 @@
 
       newEventStart.value = ''
       newEventEnd.value = ''
+      refresh.value++
 }
   // const days = ref([])
   // const selectMultipleDays = (day: any) => {
