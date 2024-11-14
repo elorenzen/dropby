@@ -23,11 +23,14 @@ export default defineEventHandler(async (event) => {
         .from('vendors')
         .select()
         .eq('id', query.vendorId)
-    const vendor = vendorData[0]
 
+    const vendor  = vendorData[0]
+    const date    = new Date(bookedEvt.start).toLocaleDateString()
+    const start   = new Date(bookedEvt.start).toLocaleTimeString('en-US')
+    const end     = new Date(bookedEvt.end).toLocaleTimeString('en-US')
     const content = `
         <p><strong>${merchant.merchant_name} approved ${vendor.vendor_name} to work the following event:</strong></p>
-        <p>${bookedEvt.start} - ${bookedEvt.end} at <a href="${bookedEvt.location_url}">${bookedEvt.location_address}</p>
+        <p>${date}, ${start} - ${end} at <a href="${bookedEvt.location_url}">${bookedEvt.location_address}</p>
         <p><strong>Notes: </strong> ${bookedEvt.notes}</p>
     `
 
@@ -45,6 +48,7 @@ export default defineEventHandler(async (event) => {
 
       return data;
     } catch (error) {
+      console.log('error: ', error)
       return { error };
     }
 });
