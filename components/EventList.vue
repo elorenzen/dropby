@@ -350,7 +350,7 @@ const approveRequest = async (id: any) => {
         .eq('id', selectedEvt.value.id)
     if (dbErr) {
         errType.value = 'Event Approval'
-        errMsg.value = error.message
+        errMsg.value = dbErr.message
         errDialog.value = true
     }
 
@@ -358,7 +358,7 @@ const approveRequest = async (id: any) => {
         `/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
     if (emailErr) {
         errType.value = 'Confirmation Email'
-        errMsg.value = error.message
+        errMsg.value = emailErr.message
         errDialog.value = true
     }
 

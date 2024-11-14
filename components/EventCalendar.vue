@@ -1,8 +1,8 @@
 <template>
   <div>
     <VCalendar transparent is-dark expanded :attributes="attributes" @dayclick="openDayView" :key="refresh" />
-    <Dialog v-model:visible="dayViewDialog" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '35rem' }">
-      <Card v-if="eventOnDay" style="width: 30rem; overflow: hidden">
+    <Dialog v-model:visible="dayViewDialog" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '45rem' }">
+      <Card v-if="eventOnDay && eventOnDay.status !== 'pending'" style="width: 30rem; overflow: hidden">
           <template #title>
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
             <span>
@@ -21,6 +21,39 @@
                   <Button @click="promptDeletion" label="Delete" severity="danger" class="w-full" />
               </div>
           </template>
+      </Card>
+      <Card v-else-if="eventOnDay && eventOnDay.status === 'pending'" style="width: 40rem; overflow: hidden">
+        <template #content>
+          <DataTable :value="eventOnDay.pending_requests" tableStyle="width: 100%">
+              <Column>
+                  <template #body="{ data }">
+                      <img :src="vendorData(data, 'avatar_url')" :alt="vendorData(data, 'vendor_name')" class="w-30 rounded" />
+                  </template>
+              </Column>
+              <template #header>
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                      <span class="text-xl font-bold">Pending Requests</span>
+                  </div>
+              </template>
+              <Column header="Vendor" #body="{ data }">
+                {{ vendorData(data, 'vendor_name') }}
+                <p class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ vendorData(data, 'vendor_description') }}</p>
+              </Column>
+              <Column header="Rating" #body="{ data }">
+                <Rating :model-value="vendorData(data, 'average_merchant_rating')" />
+              </Column>
+              <Column header="" #body="{ data }">
+                <Button
+                  v-tooltip.top="'Approve Vendor for Event'"
+                  outlined
+                  severity="success"
+                  type="button"
+                  icon="pi pi-check"
+                  @click="approveRequest(data)">
+                </Button>
+              </Column>
+          </DataTable>
+        </template>
       </Card>
       <Card v-else style="width: 30rem; overflow: hidden">
         <template #title>
@@ -86,10 +119,14 @@
   const props         = defineProps(['id'])
   const idParam       = ref(props.id)
 
+  const userStore     = useUserStore()
   const eventStore    = useEventStore()
   const merchantStore = useMerchantStore()
+  const vendorStore   = useVendorStore()
 
+  const user          = ref(await userStore.getUser)
   const merchant      = ref(await merchantStore.getMerchantById(idParam.value))
+  const vendors       = ref(await vendorStore.getAllVendors)
   const events        = ref(await eventStore.getEventsByMerchantId(idParam.value))
   const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
   businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
@@ -241,7 +278,37 @@
       newEventStart.value = ''
       newEventEnd.value = ''
       refresh.value++
-}
+  }
+  const vendorData = (id: any, field: any) => {
+    const vendor = vendors.value.find(vendor => vendor.id === id)
+    return vendor[field]
+  }
+  const approveRequest = async (id: any) => {
+      const updates = {
+          updated_at: new Date(),
+          status: 'booked',
+          vendor: id
+      }
+      const { error: dbErr } = await supabase
+          .from('events')
+          .update(updates)
+          .eq('id', eventOnDay.value.id)
+      if (dbErr) {
+          errType.value = 'Event Approval'
+          errMsg.value = dbErr.message
+          errDialog.value = true
+      }
+
+      const { error: emailErr } = await useFetch(
+          `/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+      if (emailErr) {
+          errType.value = 'Confirmation Email'
+          errMsg.value = emailErr.message
+          errDialog.value = true
+      }
+
+      if (!dbErr && !emailErr) await resetFields('approved')
+  }
   // const days = ref([])
   // const selectMultipleDays = (day: any) => {
   //   const idx = days.value.findIndex((d: any) => d.id === day.id);
