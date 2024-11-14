@@ -49,7 +49,8 @@
                   severity="success"
                   type="button"
                   icon="pi pi-check"
-                  @click="approveRequest(data)">
+                  @click="approveRequest(data)"
+                  :loading="loading">
                 </Button>
               </Column>
           </DataTable>
@@ -143,6 +144,7 @@
   const errMsg        = ref()
   const errDialog     = ref(false)
   const deleteDialog  = ref(false)
+  const loading       = ref(false)
 
   const newEventStart = ref()
   const newEventEnd   = ref()
@@ -284,6 +286,7 @@
     return vendor[field]
   }
   const approveRequest = async (id: any) => {
+      loading.value = true
       const updates = {
           updated_at: new Date(),
           status: 'booked',
@@ -293,14 +296,15 @@
           .from('events')
           .update(updates)
           .eq('id', eventOnDay.value.id)
+
       if (dbErr) {
           errType.value = 'Event Approval'
           errMsg.value = dbErr.message
           errDialog.value = true
-      }
+      } else await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
 
-      await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
       if (!dbErr) await resetFields('approved')
+      loading.value = false
   }
   // const days = ref([])
   // const selectMultipleDays = (day: any) => {

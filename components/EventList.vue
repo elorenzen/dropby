@@ -348,26 +348,12 @@ const approveRequest = async (id: any) => {
         .from('events')
         .update(updates)
         .eq('id', selectedEvt.value.id)
+
     if (dbErr) {
         errType.value = 'Event Approval'
         errMsg.value = dbErr.message
         errDialog.value = true
-    }
-
-    const { error: emailErr } = await useFetch(
-        `/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
-    if (emailErr) {
-        errType.value = 'Confirmation Email'
-        errMsg.value = emailErr.message
-        errDialog.value = true
-    }
-
-    if (!dbErr && !emailErr) {
-        openRequestDialog.value = false
-        selectedEvt.value = ''
-        snacktext.value = 'Event approved!'
-        snackbar.value = true
-    }
+    } else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
 }
 watch(openRequestDialog, (newVal) => {
     if (!newVal) requestedVendors.value = []
