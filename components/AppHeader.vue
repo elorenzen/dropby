@@ -15,11 +15,15 @@
                 :loading="loading"
               >Login</Button>
 
-              <Button v-if="!user" outlined severity="secondary" type="button" @click="toggleRegisterMenu" aria-haspopup="true" aria-controls="register_menu">Sign Up</Button>
-              <Menu ref="registerMenu" id="register_menu" :model="registerItems" :popup="true" />
+              <Button
+                v-if="!user"
+                outlined
+                severity="secondary"
+                @click="register"
+              >Sign Up</Button>
 
               <Button v-if="user" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
-              <Menu ref="accountMenu" id="account_menu" :model="accountItems" :popup="true" />
+              <Menu ref="menu" id="account_menu" :model="menuItems" :popup="true" />
               <!-- <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" /> -->
           </div>
       </template>
@@ -29,22 +33,20 @@
 </template>
 
 <script setup lang="ts">
-const supabase = useSupabaseClient()
-const store = useUserStore()
-const router = useRouter()
+const supabase  = useSupabaseClient()
+const router    = useRouter()
+const user      = useSupabaseUser()
+const store     = useUserStore()
 const storeUser = store.user
-const user = useSupabaseUser()
-console.log('store user getter? ', store.user)
 
-const loading = ref(false)
+const loading   = ref(false)
 const errDialog = ref(false)
-const errMsg = ref()
+const errMsg    = ref()
 
-const email = ref('')
-const password = ref('')
-const registerMenu = ref();
-const accountMenu = ref();
-const accountItems = ref([
+const email     = ref('')
+const password  = ref('')
+const menu      = ref();
+const menuItems = ref([
     {
         items: [
             {
@@ -79,32 +81,8 @@ const accountItems = ref([
     }
 ]);
 
-const registerItems = ref([
-    {
-        items: [
-            {
-                label: 'As Merchant',
-                icon: 'pi pi-building-columns',
-                command: () => {
-                  router.push('/merchantSignup')
-                }
-            },
-            {
-                label: 'As Vendor',
-                icon: 'pi pi-truck',
-                command: () => {
-                  router.push('/vendorSignup')
-                }
-            }
-        ]
-    }
-]);
-
-const toggleRegisterMenu = (event: any) => {
-  registerMenu.value.toggle(event);
-};
 const toggleAccountMenu = (event: any) => {
-  accountMenu.value.toggle(event)
+  menu.value.toggle(event)
 }
 const fireAuth = async () => {
   loading.value = true
@@ -136,6 +114,8 @@ const fireAuth = async () => {
   }
   loading.value = false
 }
+
+const register = async () => { await navigateTo('/signup') }
 
 const signOut = async () => {
   console.log('signing out')

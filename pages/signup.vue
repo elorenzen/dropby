@@ -32,10 +32,9 @@
             </template>
         </Card>
     </div>
-    <!-- <div class="flex items-center gap-2">
-        <InputText placeholder="Email" v-model="email" type="text" class="w-32 sm:w-auto" />
-        <Password placeholder="Password" v-model="password" class="w-32 sm:w-auto" />
-    </div> -->
+
+    <ErrorDialog v-if="errDialog" :errType="'User Registration'" :errMsg="errMsg" @errorClose="errDialog = false" />
+
     <v-snackbar
       v-model="snackbar"
       timeout="6000"
@@ -61,6 +60,8 @@ const password  = ref()
 const loading   = ref(false)
 const snackbar  = ref(false)
 const snacktext = ref('')
+const errDialog = ref(false)
+const errMsg    = ref()
 
 const addAuthUser = async () => {
     const { error: authErr } = await supabase.auth.signUp({
@@ -74,8 +75,7 @@ const addAuthUser = async () => {
 
         await navigateTo('/')
     } else {
-        errType.value = 'User Registration'
-        errMsg.value = dbErr.message
+        errMsg.value = authErr.message
         errDialog.value = true
     }
 }
