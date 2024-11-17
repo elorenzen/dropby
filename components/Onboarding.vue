@@ -179,7 +179,7 @@
                     Review shit here
                     <div class="flex pt-6 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('3')" />
-                        <Button label="Submit" />
+                        <Button label="Submit" @click="submit" />
                     </div>
                 </StepPanel>
             </StepPanels>
@@ -188,6 +188,7 @@
 </template>
 
 <script setup lang="ts">
+const supabase = useSupabaseClient()
 import { v4 } from 'uuid';
 import { Loader } from '@googlemaps/js-api-loader'
 
@@ -255,6 +256,25 @@ const sdkInit = async () => {
       addressUrl.value = placeResponse ? placeResponse.url : ''
     })
   })
+}
+
+const submit = async () => {
+    // User
+    const userObj = {
+        id: v4(),
+        created_at: new Date(),
+        first_name: first.value,
+        last_name: last.value,
+        email: email.value,
+        phone: phone.value,
+        is_admin: isAdmin.value,
+        type: type.value.toLowerCase(),
+        associated_merchant_id: null,
+        associated_vendor_id: null,
+        avatar_url: null,
+        available_to_contact: available.value
+    }
+    const { error: userErr } = await supabase.from('users').insert(userObj)
 }
 </script>
 
