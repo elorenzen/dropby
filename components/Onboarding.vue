@@ -92,33 +92,17 @@
                     <div v-if="type === 'Merchant'" class="flex flex-col">
                         <Fluid>
                             <div class="grid grid-cols-2 gap-4">
-                                <div>
+                                <div class="col-span-full">
                                   <FloatLabel variant="on">
                                       <InputText id="name" v-model="bizName" :fluid="true" />
-                                      <label for="name">Name</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- ADDRESS -->
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <div class="p-iconfield">
-                                      <span class="p-inputicon pi pi-map-marker"></span>
-                                      <input
-                                        class="p-inputtext p-component p-filled"
-                                        id="address"
-                                        ref="streetRef"
-                                        placeholder="Enter address"
-                                      />
-                                    </div>
-                                    <label for="address">Location Address</label>
+                                      <label for="name">Merchant Name (e.g. 'McDonald's')</label>
                                   </FloatLabel>
                                 </div>
 
                                 <div class="col-span-full">
                                   <FloatLabel variant="on">
                                       <Textarea id="desc" v-model="bizDesc" rows="5" />
-                                      <label for="desc">Description</label>
+                                      <label for="desc">Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')</label>
                                   </FloatLabel>
                                 </div>
 
@@ -184,13 +168,30 @@
                 </StepPanel>
             </StepPanels>
         </Stepper>
+
+        <v-snackbar
+          v-model="snackbar"
+          timeout="6000"
+        >
+          {{ snacktext }}
+
+          <template v-slot:actions>
+            <v-btn
+              color="#000022"
+              variant="text"
+              @click="snackbar = false"
+            >
+              Close
+            </v-btn>
+          </template>
+        </v-snackbar>
     </div>
 </template>
 
 <script setup lang="ts">
 const supabase = useSupabaseClient()
+const authUser = useSupabaseUser()
 import { v4 } from 'uuid';
-import { Loader } from '@googlemaps/js-api-loader'
 
 // Panel I data
 const type = ref()
@@ -204,77 +205,59 @@ const isAdmin   = ref(true)
 const available = ref(true)
 
 // Panel III data
-const imageUrl  = ref()
 const bizName   = ref()
 const bizDesc   = ref()
 const website   = ref()
 const ig        = ref()
 const bizEmail  = ref()
 const bizPhone  = ref()
-const streetRef = ref()
 
-const addressComponents = ref()
-const coordinates       = ref()
-const formattedAddress  = ref()
-const addressUrl        = ref()
-
-onMounted(async () => {
-    await sdkInit()
-})
-
-const sdkInit = async () => {
-  //initialize google sdk
-  const config = useRuntimeConfig()
-  const loader = new Loader({
-    apiKey: config.public.gMapKey,
-    version: 'beta',
-    libraries: ['places'],
-  })
-  loader.load().then((google) => {
-    const options = {
-      componentRestrictions: { country: 'us' },
-      fields: ['geometry/location', 'name', 'formatted_address', 'types'],
-      strictBounds: false,
-    }
-    // attaches it to the input field with this ref
-    const autocomplete = new google.maps.places.Autocomplete(
-      streetRef.value,
-      options
-    )
-    autocomplete.addListener('place_changed', () => {
-      const placeResponse = autocomplete.getPlace()
-      const lat = placeResponse.geometry.location.lat()
-      const lng = placeResponse.geometry.location.lng()
-
-      addressComponents.value = placeResponse
-        ? placeResponse.address_components
-        : ''
-      coordinates.value = placeResponse ? { lat: lat, lng: lng } : ''
-      formattedAddress.value = placeResponse
-        ? placeResponse.formatted_address
-        : ''
-      addressUrl.value = placeResponse ? placeResponse.url : ''
-    })
-  })
-}
+const snackbar  = ref(false)
+const snacktext = ref('')
 
 const submit = async () => {
-    // User
+    const userId = authUser.value.id
+    const typeId = v4()
+    const typeLower = type.value.toLowerCase()
+
+    // first, create user in db 
     const userObj = {
-        id: v4(),
+        id: userId,
         created_at: new Date(),
         first_name: first.value,
         last_name: last.value,
         email: email.value,
         phone: phone.value,
         is_admin: isAdmin.value,
-        type: type.value.toLowerCase(),
-        associated_merchant_id: null,
-        associated_vendor_id: null,
-        avatar_url: null,
+        type: typeLower,
+        associated_merchant_id: typeLower === 'merchant' ? typeId : null,
+        associated_vendor_id: typeLower === 'vendor' ? typeId : null,
         available_to_contact: available.value
     }
     const { error: userErr } = await supabase.from('users').insert(userObj)
+    // then, create merchant/vendor in db
+    if (!userErr) {
+        const obj = {
+            id: typeId,
+            created_at: new Date(),
+            [`${typeLower}_name`]: bizName.value,
+            [`${typeLower}_description`]: bizDesc.value,
+            website: website.value,
+            instagram: ig.value,
+            phone: bizPhone.value,
+            email: bizEmail.value,
+        }
+        const { error: objErr } = await supabase.from(typeLower).insert(obj)
+        if (!objErr) {
+            snackbar.value = true
+            snacktext.value = `${type.value} Created! An email confirmation has been sent. You will now be redirected.`
+
+            // TO DO: merchant/vendor signup endpoint
+
+            // Redirect
+            await navigateTo(`/${typeLower}/${typeId}`)
+        }
+    }
 }
 </script>
 
