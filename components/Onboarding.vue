@@ -85,11 +85,22 @@
                     </div>
                     <div class="flex pt-6 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
-                        <Button label="Next" icon="pi pi-arrow-right" iconPos="right" @click="activateCallback('3')" />
+                        <Button
+                            label="Next"
+                            icon="pi pi-arrow-right"
+                            iconPos="right"
+                            :disabled="
+                                !first ||
+                                !last ||
+                                !email ||
+                                !phone
+                            "
+                            @click="activateCallback('3')"
+                        />
                     </div>
                 </StepPanel>
                 <StepPanel v-slot="{ activateCallback }" value="3" class="pa-8">
-                    <div v-if="type === 'Merchant'" class="flex flex-col">
+                    <div class="flex flex-col">
                         <Fluid>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="col-span-full">
@@ -110,7 +121,7 @@
                                   <FloatLabel variant="on">
                                     <IconField>
                                         <InputIcon class="pi pi-phone" />
-                                        <InputText id="business_phone" v-model="bizPhone" />
+                                        <InputMask id="business_phone" v-model="bizPhone" mask="(999) 999-9999" />
                                     </IconField>
                                     <label for="business_phone">Phone</label>
                                   </FloatLabel>
@@ -151,16 +162,38 @@
                             </div>
                         </Fluid>
                     </div>
-                    <div v-else class="flex flex-col">
-                        Vendor shit here
-                    </div>
                     <div class="flex pt-6 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
-                        <Button label="Review" icon="pi pi-arrow-right" iconPos="right" @click="activateCallback('4')" />
+                        <Button
+                            label="Review"
+                            icon="pi pi-arrow-right"
+                            iconPos="right"
+                            :disabled="
+                                !bizName ||
+                                !bizDesc ||
+                                !bizEmail ||
+                                !bizPhone
+                            "
+                            @click="activateCallback('4')"
+                        />
                     </div>
                 </StepPanel>
                 <StepPanel v-slot="{ activateCallback }" value="4" class="pa-8">
-                    Review shit here
+                    <h4 class="text-xl font-bold">Primary User</h4>
+                    <p class="ma-2"><span class="font-bold">Name: </span>{{ first }} {{ last }}</p>
+                    <p class="ma-2"><span class="font-bold">Email: </span>{{ email }}</p>
+                    <p class="ma-2"><span class="font-bold">Phone: </span>{{ phone }}</p>
+                    <p class="ma-2"><span class="font-bold">Available for contact: </span>
+                        {{ available ? 'Yes' : 'No' }}
+                    </p>
+
+                    <h4 class="text-xl font-bold">{{ type }} Information</h4>
+                    <p class="ma-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
+                    <p class="ma-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>
+                    <p class="ma-2"><span class="font-bold">Website: </span>{{ website ? website : '-'}}</p>
+                    <p class="ma-2"><span class="font-bold">Instagram: </span>{{ ig ? ig : '-' }}</p>
+                    <p class="ma-2"><span class="font-bold">Phone: </span>{{ bizEmail }}</p>
+                    <p class="ma-2"><span class="font-bold">Email: </span>{{ bizPhone }}</p>
                     <div class="flex pt-6 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('3')" />
                         <Button label="Submit" @click="submit" />
@@ -194,7 +227,7 @@ const authUser = useSupabaseUser()
 import { v4 } from 'uuid';
 
 // Panel I data
-const type = ref()
+const type = ref(null)
 
 // Panel II data
 const first     = ref()
@@ -255,7 +288,7 @@ const submit = async () => {
             // TO DO: merchant/vendor signup endpoint
 
             // Redirect
-            await navigateTo(`/${typeLower}/${typeId}`)
+            await navigateTo(`/settings/${typeId}`)
         }
     }
 }
