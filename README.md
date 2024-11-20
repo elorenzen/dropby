@@ -71,4 +71,9 @@ yarn preview
 # bun
 bun run preview
 ```
-
+![Merchant Profile](merchant_profile.png)
+![Merchant Settings](merchant_settings.png)
+![Event Scheduling](event_scheduling.png)
+![Vendor Profile](vendor_profile.png)
+![Event Request](request_event.png)
+![Landing](landing.png)
