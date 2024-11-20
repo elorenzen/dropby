@@ -1,6 +1,6 @@
 # DropBy
 
-Welcome to the ultimate event platform for food trucks and drinking establishments! 
+Welcome to the ultimate event platform for food trucks and drinking establishments! Good drinks belong with good eats, and every food truck should have a spot to serve a hungry crowd. With DropBy, businesses can find each other and book events, increasing sales for both, and improving the overall experience for a shared customer base.
 
 
 ## For Businesses
