@@ -6,11 +6,11 @@ Welcome to the ultimate event platform for food trucks and drinking establishmen
 ## For Businesses
 Worry no more about finding a food truck to feed your patrons. Easily schedule events and approve food trucks in the area to work during business.
 
-![Merchant Profile](merchant_profile.png)
+![Merchant Profile](merchant_profile-1.png)
 
-![Merchant Settings](merchant_settings.png)
+![Merchant Settings](merchant_settings-1.png)
 
-![Event Scheduling](event_scheduling.png)
+![Event Scheduling](event_scheduling-1.png)
 
 
 ## For Food Trucks
