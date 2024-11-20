@@ -1,6 +1,30 @@
-# Nuxt 3 Minimal Starter
+# DropBy
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Welcome to the ultimate event platform for food trucks and drinking establishments! 
+
+
+## For Businesses
+Worry no more about finding a food truck to feed your patrons. Easily schedule events and approve food trucks in the area to work during business.
+
+![Merchant Profile](merchant_profile.png)
+
+![Merchant Settings](merchant_settings.png)
+
+![Event Scheduling](event_scheduling.png)
+
+
+## For Food Trucks
+Need a place to park your vehicle? With our app, you can find available events in your area and work with breweries and other establishments to increase your sales for the evening.
+
+![Vendor Profile](vendor_profile.png)
+
+![Event Request](request_event.png)
+
+
+## For Everyone Else
+Use our map to follow your favorite food trucks to new locations, or see what food is being served at your local brewery.
+
+![Landing](landing.png)
 
 ## Setup
 
@@ -71,9 +95,3 @@ yarn preview
 # bun
 bun run preview
 ```
-![Merchant Profile](merchant_profile.png)
-![Merchant Settings](merchant_settings.png)
-![Event Scheduling](event_scheduling.png)
-![Vendor Profile](vendor_profile.png)
-![Event Request](request_event.png)
-![Landing](landing.png)
