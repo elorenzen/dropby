@@ -18,6 +18,8 @@ Need a place to park your vehicle? With our app, you can find available events i
 
 ![Vendor Profile](vendor_profile.png)
 
+![Menu](menu.png)
+
 ![Event Request](request_event.png)
 
 
