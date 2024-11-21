@@ -182,15 +182,17 @@ const supabase = useSupabaseClient()
 const userStore     = useUserStore()
 const vendorStore   = useVendorStore()
 const merchantStore = useMerchantStore()
+const eventStore    = useEventStore()
 
 const user      = userStore.user
 const vendors   = vendorStore.getAllVendors
-const merchants = merchantStore.getAllMerchants
 
 const loading           = ref(false)
 const requestedVendors  = ref([])
-const events            = ref()
+const merchant          = ref(await merchantStore.getMerchantById(acctId.value))
+const events            = ref(await eventStore.getEventsByMerchantId(acctId.value))
 const selectedEvt       = ref()
+const openAddDialog     = ref(false)
 const openEditDialog    = ref(false)
 const openRequestDialog = ref(false)
 const openViewDialog    = ref(false)
@@ -198,7 +200,6 @@ const deleteDialog      = ref(false)
 const snackbar          = ref(false)
 const snacktext         = ref('')
 
-const openAddDialog = ref(false)
 
 // EVENT DATA
 const evtStart = ref('')
@@ -209,21 +210,10 @@ const errDialog = ref(false)
 const errMsg = ref()
 const errType = ref()
 
-onMounted(async () => {
-    const { data } = await supabase
-        .from('events')
-        .select()
-        .eq(acctType.value, acctId.value)
-    events.value = data
-    const merchantData = merchants.find((i: any) => i.id == user.associated_merchant_id)
-    notes.value = merchantData.notes
-})
 
 const addEvent = async () => {
     loading.value = true
     if (user) {
-        const merchantData = merchants.find((i: any) => i.id == user.associated_merchant_id)
-
         // date funcs for formatting 'day_id' val
         const start = evtStart.value
         const year = (new Date(start).getFullYear()).toString()
@@ -240,15 +230,15 @@ const addEvent = async () => {
             start: evtStart.value,
             end: evtEnd.value,
             day_id: `${year}-${month}-${day}`,
-            location_coordinates: merchantData.coordinates,
-            location_address: merchantData.formatted_address,
-            location_url: merchantData.address_url,
+            location_coordinates: merchant.value.coordinates,
+            location_address: merchant.value.formatted_address,
+            location_url: merchant.value.address_url,
             status: 'open',
             vendor_rating: null,
             merchant_rating: null,
             vendor_comment: null,
             merchant_comment: null,
-            notes: notes.value !== '' ? notes.value : merchantData.notes
+            notes: notes.value !== '' ? notes.value : merchant.value.notes
         }
         const { error } = await supabase.from('events').insert(evtObj)
 
