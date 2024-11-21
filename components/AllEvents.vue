@@ -20,12 +20,12 @@
             </Column>
             <Column field="start" header="Start">
                 <template #body="slotProps">
-                    {{ new Date(slotProps.data.start).toLocaleString() }}
+                    {{ new Date(slotProps.data.start).toLocaleString('en-US') }}
                 </template>
             </Column>
             <Column field="end" header="End">
                 <template #body="slotProps">
-                    {{ new Date(slotProps.data.end).toLocaleString() }}
+                    {{ new Date(slotProps.data.end).toLocaleString('en-US') }}
                 </template></Column>
             <Column field="status" header="Status">
                 <template #body="slotProps">
@@ -34,16 +34,30 @@
             </Column>
         </DataTable>
 
-        <div class="card flex justify-center">
-            <Dialog v-model:visible="openViewDialog" modal header="Event Information" :style="{ width: '25rem' }">
-                <MerchantCard :merchant="selectedMerchant" />
-                <div>{{ new Date(selectedEvt.start).toLocaleString() }} - {{ new Date(selectedEvt.end).toLocaleString() }}</div>
-                <Button
-                    v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(vendor)"
-                    type="button"
-                    label="Request Event"
-                    @click="requestEvent"
-                ></Button>
+        <div v-if="selectedMerchant" class="card flex justify-center">
+            <Dialog v-model:visible="openViewDialog" modal :header="selectedMerchant.merchant_name" :style="{ width: '35rem' }">
+                <Card style="width: 30rem; overflow: hidden">
+                    <template #title>
+                        {{ new Date(selectedEvt.start).toLocaleTimeString('en-US') }} - {{ new Date(selectedEvt.end).toLocaleTimeString('en-US') }}
+                        <span>
+                        <Tag :value="selectedEvt.status" :severity="getStatusLabel(selectedEvt.status)" />
+                        </span>
+                    </template>
+                    <template #subtitle>
+                        <NuxtLink :to="selectedEvt.location_url" target="_blank">{{ selectedEvt.location_address }}</NuxtLink>
+                    </template>
+                    <template #content>
+                        <p class="m-0">{{ selectedEvt.notes }}</p>
+                    </template>
+                    <template #footer>
+                        <Button
+                            v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(vendor)"
+                            type="button"
+                            label="Request Event"
+                            @click="requestEvent"
+                        ></Button>
+                    </template>
+                </Card>
             </Dialog>
         </div>
         <v-snackbar
@@ -74,8 +88,10 @@
     const supabase      = useSupabaseClient()
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
+    const userStore     = useUserStore()
     const events        = eventStore.getAllOpenEvents
     const merchants     = merchantStore.getAllMerchants
+    const user          = userStore.getUser
 
     const selectedEvt      = ref()
     const selectedMerchant = ref()
@@ -114,6 +130,7 @@
     }
     const selectRow = (event: any) => {
         selectedEvt.value = event.data
+        console.log('event: ', selectedEvt.value)
         selectedMerchant.value = merchants.find(merchant => merchant.id === event.data.merchant)
         openViewDialog.value = true
     }
