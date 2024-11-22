@@ -50,10 +50,10 @@ const menuItems = ref([
     {
         items: [
             {
-                label: 'Profile',
+                label: 'Home',
                 icon: 'pi pi-home',
                 command: () => {
-                  router.push(`/${storeUser.type}s/${storeUser.associated_merchant_id ? storeUser.associated_merchant_id : storeUser.associated_vendor_id}`)
+                  router.push(`/${storeUser.type}/${storeUser.associated_merchant_id ? storeUser.associated_merchant_id : storeUser.associated_vendor_id}`)
                 }
             },
             {
