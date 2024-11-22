@@ -23,7 +23,13 @@
               >Sign Up</Button>
 
               <Button v-if="user" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
-              <Menu ref="menu" id="account_menu" :model="menuItems" :popup="true" />
+              <Menu
+                ref="menu"
+                id="account_menu"
+                :model="menuItems"
+                :popup="true"
+                :rerender="renderKey"
+              />
               <!-- <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" /> -->
           </div>
       </template>
@@ -42,6 +48,7 @@ const storeUser = store.user
 const loading   = ref(false)
 const errDialog = ref(false)
 const errMsg    = ref()
+const renderKey = ref(0)
 
 const email     = ref('')
 const password  = ref('')
@@ -50,10 +57,10 @@ const menuItems = ref([
     {
         items: [
             {
-                label: 'Home',
+                label: 'Profile',
                 icon: 'pi pi-home',
                 command: () => {
-                  router.push(`/${storeUser.type}/${storeUser.associated_merchant_id ? storeUser.associated_merchant_id : storeUser.associated_vendor_id}`)
+                  router.push(`/${storeUser.type}s/${storeUser.associated_merchant_id ? storeUser.associated_merchant_id : storeUser.associated_vendor_id}`)
                 }
             },
             {
@@ -98,6 +105,7 @@ const fireAuth = async () => {
       .eq('id', data.user.id)
     const foundUser = userData ? userData[0] : null
     await store.fetchUser(foundUser)
+    renderKey.value++
 
     if (foundUser && foundUser.type !== 'admin') {
       await navigateTo(
@@ -119,10 +127,10 @@ const register = async () => { await navigateTo('/signup') }
 
 const signOut = async () => {
   console.log('signing out')
-  const { error } = await supabase.auth.signOut()
+  await supabase.auth.signOut()
   email.value = ''
   password.value = ''
-  if (!error) await navigateTo('/')
+  await navigateTo('/')
 }
 
 </script>
