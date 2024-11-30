@@ -5,7 +5,7 @@
                 <label>Are you sure you want to delete this {{ item }}? This action cannot be undone!</label>
             </div>
             <div class="flex justify-end gap-2">
-                <Button type="button" label="Cancel" severity="secondary" @click="deleteCancel = false"></Button>
+                <Button type="button" label="Cancel" severity="secondary" @click="deleteCancel"></Button>
                 <Button type="button" label="Delete" severity="danger" @click="deleteConfirm"></Button>
             </div>
         </Dialog>
