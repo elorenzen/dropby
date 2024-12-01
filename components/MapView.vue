@@ -5,8 +5,7 @@
       :center="center"
       :markers="markers"
       :api-key="config.public.gMapKey"
-      class="group"
-      above-the-fold
+      :mapOptions="{ zoom: 8 }"
     />
   </div>
 </template>
