@@ -22,6 +22,7 @@
     "firebase": "^10.12.5",
     "haversine": "^1.1.1",
     "nuxt": "^3.12.4",
+    "nuxt-svgo": "^4.0.9",
     "pinia": "^2.2.4",
     "primeicons": "^7.0.0",
     "resend": "^4.0.1-alpha.0",
