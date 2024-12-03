@@ -301,20 +301,18 @@ const confirmDelete = async () => {
 }
 const cancelDelete = () => { deleteDialog.value = false }
 const resetFields = async (action: any) => {
-    const { data } = await supabase
-            .from('events')
-            .select()
-            .eq(acctType.value, acctId.value)
-        events.value = data
+    const { data: eventData } = await supabase.from('events').select()
+    await eventStore.setAllEvents(eventData)
+    events.value = await eventStore.getEventsByMerchantId(acctId.value)
+      
+    snacktext.value = `Event ${action}!`
+    snackbar.value = true
+    selectedEvt.value = null
+    openEditDialog.value = false
+    openAddDialog.value = false
 
-        snacktext.value = `Event ${action}!`
-        snackbar.value = true
-        selectedEvt.value = null
-        openEditDialog.value = false
-        openAddDialog.value = false
-
-        evtStart.value = ''
-        evtEnd.value = ''
+    evtStart.value = ''
+    evtEnd.value = ''
 }
 const getStatusLabel = (status: any) => {
     switch (status) {
