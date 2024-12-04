@@ -1,7 +1,8 @@
 <template>
   <Menubar>
       <template #start>
-          <NuxtLink to="/" class="ml-2 text-xl font-bold">DropBy</NuxtLink>
+        <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: #e28413;" />
+          <NuxtLink to="/" class="ml-2 text-xl font-bold" style="color: #e28413;">DropBy</NuxtLink>
       </template>
       <template #end>
           <div class="flex items-center gap-2">
@@ -39,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import Logo from '~/assets/logo-one.svg' // options: '.../logo-two.svg', '.../logo-three.svg'
 const supabase  = useSupabaseClient()
 const router    = useRouter()
 const user      = useSupabaseUser()
