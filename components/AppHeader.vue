@@ -76,7 +76,7 @@ const supabase  = useSupabaseClient()
 const router    = useRouter()
 const user      = useSupabaseUser()
 const store     = useUserStore()
-const storeUser = store.user
+const storeUser = ref(store.user)
 
 const loading   = ref(false)
 const errDialog = ref(false)
@@ -122,7 +122,7 @@ const accountMenu = ref([
           label: 'Home',
           icon: 'pi pi-home',
           command: () => {
-            router.push(`/${storeUser.type}s/${storeUser[`associated_${storeUser.type}_id`]}`)
+            router.push(`/${storeUser.value.type}/${storeUser.value[`associated_${storeUser.value.type}_id`]}`)
           }
         },
         // {
@@ -143,7 +143,7 @@ const accountMenu = ref([
           label: 'Settings',
           icon: 'pi pi-cog',
           command: () => {
-            router.push(`/settings/${storeUser[`associated_${storeUser.type}_id`]}`)
+            router.push(`/settings/${storeUser.value[`associated_${storeUser.value.type}_id`]}`)
           }
         },
         {
@@ -194,7 +194,8 @@ const confirmed = async (str: any) => {
 
   const foundUser = data ? data[0] : null
   await store.setUser(foundUser)
-  await navigateTo(`/${storeUser.type}s/${storeUser[`associated_${storeUser.type}_id`]}`)
+  storeUser.value = store.user
+  await navigateTo(`/${storeUser.value.type}/${storeUser.value[`associated_${storeUser.value.type}_id`]}`)
 }
 const errored = async (str: any) => {
   errMsg.value = str
