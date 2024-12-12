@@ -7,6 +7,12 @@ export default defineNuxtConfig({
   //   '/': { prerender: true }
   // },
   ssr: false,
+  app: {
+    pageTransition: {
+      name: 'fade',
+      mode: 'out-in'
+    }
+  },
   modules: [
     "@nuxt/ui",
     "@nuxtjs/tailwindcss",
