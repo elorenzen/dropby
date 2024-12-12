@@ -1,21 +1,7 @@
 <template>
-          <AppHeader />
-          <v-container>
-            <slot />
-          </v-container>
-          <!-- <AppFooter /> -->
+  <div>
+    <AppHeader />
+    <slot />
+    <!-- <AppFooter /> -->
+  </div>
 </template>
-
-<script>
-export default {
-  setup () {
-      
-
-      return {}
-  }
-}
-</script>
-
-<style lang="scss" scoped>
-
-</style>
