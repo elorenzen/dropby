@@ -99,7 +99,7 @@ const fireAuth = async () => {
       .select()
       .eq('id', data.user.id)
     const foundUser = userData ? userData[0] : null
-    await store.fetchUser(foundUser)
+    await store.setUser(foundUser)
 
     if (foundUser && foundUser.type !== 'admin') {
       await navigateTo(
