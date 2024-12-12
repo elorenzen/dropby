@@ -13,7 +13,7 @@ export const useUserStore = defineStore('user', {
     getUserLocation: (state) => state.coordinates
   },
   actions: {
-    async fetchUser(userParam: any) {
+    async setUser(userParam: any) {
       if (userParam) this.user = userParam
     },
     async setAllUsers(users: []) {

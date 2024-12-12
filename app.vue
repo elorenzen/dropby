@@ -33,7 +33,7 @@ if (user.value) {
       .select()
       .eq('id', user.value.id)
   const foundUser = data ? data[0] : null
-  await userStore.fetchUser(foundUser)
+  await userStore.setUser(foundUser)
 }
 // console.log('user: ', user.user)
         // Get necessary script for Map initializtion (google maps API key required!!)
