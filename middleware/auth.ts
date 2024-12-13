@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
             .from('users')
             .select()
             .eq('id', user.value.id)
-        await userStore.fetchUser(data && data.length > 0 ? data[0] : '')
+        await userStore.setUser(data && data.length > 0 ? data[0] : '')
     }
 
     const storeUser = userStore.getUser

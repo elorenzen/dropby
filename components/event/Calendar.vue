@@ -2,6 +2,7 @@
   <div>
     <VCalendar transparent is-dark expanded :attributes="attributes" @dayclick="openDayView" :key="refresh" />
     <Dialog v-model:visible="dayViewDialog" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '45rem' }">
+      <!-- BOOKED EVENT -->
       <Card v-if="eventOnDay && eventOnDay.status !== 'pending'" style="width: 30rem; overflow: hidden">
           <template #title>
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
@@ -22,6 +23,7 @@
               </div>
           </template>
       </Card>
+      <!-- PENDING EVENT -->
       <Card v-else-if="eventOnDay && eventOnDay.status === 'pending'" style="width: 40rem; overflow: hidden">
         <template #content>
           <DataTable :value="eventOnDay.pending_requests" tableStyle="width: 100%">
@@ -56,6 +58,7 @@
           </DataTable>
         </template>
       </Card>
+      <!-- NEW EVENT -->
       <Card v-else style="width: 30rem; overflow: hidden">
         <template #title>
           New Event
@@ -65,14 +68,14 @@
             <div>
               <div class="flex-auto">
                 <FloatLabel variant="on" class="my-4">
-                  <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid />
+                  <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid hourFormat="12" />
                   <label for="new-event-start" class="block mb-2"> Start Time</label>
                 </FloatLabel>
               </div>
               <div class="flex-auto">
                 <FloatLabel variant="on" class="my-4">
                   <label for="new-event-end" class="block mb-2"> End Time</label>
-                  <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid />
+                  <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid hourFormat="12" />
                 </FloatLabel>
               </div>
               <div class="flex-auto">
@@ -123,18 +126,15 @@
 <script setup lang="ts">
   import { v4 } from 'uuid'
   const supabase      = useSupabaseClient()
-  const props         = defineProps(['id'])
-  const idParam       = ref(props.id)
-
   const userStore     = useUserStore()
   const eventStore    = useEventStore()
   const merchantStore = useMerchantStore()
   const vendorStore   = useVendorStore()
 
-  const user          = userStore.user
-  const merchant      = ref(await merchantStore.getMerchantById(idParam.value))
+  const user          = ref(userStore.user)
+  const merchant      = ref(await merchantStore.getMerchantById(user.value.associated_merchant_id))
   const vendors       = ref(await vendorStore.getAllVendors)
-  const events        = ref(await eventStore.getEventsByMerchantId(idParam.value))
+  const events        = ref(await eventStore.getEventsByMerchantId(user.value.associated_merchant_id))
   const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
   businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
 
@@ -171,12 +171,15 @@
 
   const attributes = ref([
     {
-      highlight: { fillMode: 'outline' },
+      highlight: {
+        color: 'orange',
+        fillMode: 'outline'
+      },
       dates: new Date(),
     },
     {
       highlight: {
-          color: 'blue',
+          color: 'orange',
           fillMode: 'light',
         },
       dates: allOpenDates.value
@@ -199,11 +202,53 @@
 
   
   const openDayView = (day: any) => {
+    // date formatted
     dayId.value = day.id
+    // date as Date()
     dayDate.value = day.date
+    // checks if there's an event on selected day
     eventOnDay.value = events.value
       .find((e: any) => new Date(e.start).toDateString() == new Date(day.date).toDateString())
-    dayViewDialog.value = true
+
+    if (eventOnDay.value) dayViewDialog.value = true
+    // if there's no event on day, and selected day is in the future,
+    // prompt user to add event. Then,
+    // pre-populate 'add event' dialog start, end times
+    // business hour values based on given day.
+    else if (!eventOnDay.value && (new Date(day.date).getTime() > new Date().getTime())) {
+      const dayOfWeek = new Date(day.date).getDay()
+      const dayOpen = getBusinessHour(dayOfWeek, 'open')
+      const dayClose = getBusinessHour(dayOfWeek, 'close')
+      newEventStart.value = new Date(`${day.id} ${dayOpen}`)
+      newEventEnd.value = new Date(`${day.id} ${dayClose}`)
+      dayViewDialog.value = true
+    }
+  }
+  const getBusinessHour = (day:number, type:any) => {
+    const hours = businessHours.value
+    switch (day) {
+      case 0:
+        return hours[6][type]
+        break;
+      case 1:
+        return hours[0][type]
+        break;
+      case 2:
+        return hours[1][type]
+        break;
+      case 3:
+        return hours[2][type]
+        break;
+      case 4:
+        return hours[3][type]
+        break;
+      case 5:
+        return hours[4][type]
+        break;
+      case 6:
+        return hours[5][type]
+        break;
+    }
   }
   const getStatusLabel = (status: any) => {
       switch (status) {
@@ -278,7 +323,7 @@
   const resetFields = async (action: any) => {
       const { data: eventData } = await supabase.from('events').select()
       await eventStore.setAllEvents(eventData)
-      events.value = await eventStore.getEventsByMerchantId(idParam.value)
+      events.value = await eventStore.getEventsByMerchantId(user.value.id)
       
       dayViewDialog.value = false
 
@@ -309,7 +354,7 @@
           errType.value = 'Event Approval'
           errMsg.value = dbErr.message
           errDialog.value = true
-      } else await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+      } else await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.value.associated_merchant_id}`)
 
       if (!dbErr) await resetFields('approved')
       loading.value = false

@@ -6,7 +6,13 @@ export default defineNuxtConfig({
   // routeRules: {
   //   '/': { prerender: true }
   // },
-  // ssr: false,
+  ssr: false,
+  app: {
+    pageTransition: {
+      name: 'fade',
+      mode: 'out-in'
+    }
+  },
   modules: [
     "@nuxt/ui",
     "@nuxtjs/tailwindcss",
@@ -32,14 +38,7 @@ export default defineNuxtConfig({
     redirect: false // set to 'true', EVENTUALLY
   },
   primevue: {
-    components: {
-        include: ['DatePicker']
-    },
-    options: {
-      theme: {
-          preset: Aura
-      }
-    }
+    importTheme: { from: '~/assets/theme.js' },
   },
-  css: ['primeicons/primeicons.css']
+  css: ['~/assets/main.css', 'primeicons/primeicons.css']
 })
