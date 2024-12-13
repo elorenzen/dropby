@@ -203,28 +203,26 @@
   
   const openDayView = (day: any) => {
     // date formatted
-    const dateStr = day.id.replace(/-/g, '/')
-    console.log('dateStr: ', dateStr)
     dayId.value = day.id
-
     // date as Date()
     dayDate.value = day.date
-
     // checks if there's an event on selected day
     eventOnDay.value = events.value
       .find((e: any) => new Date(e.start).toDateString() == new Date(day.date).toDateString())
 
-    // if there's no event on day, prompt user to add event.
-    // Pre-populate 'add event' dialog start, end times
+    if (eventOnDay.value) dayViewDialog.value = true
+    // if there's no event on day, and selected day is in the future,
+    // prompt user to add event. Then,
+    // pre-populate 'add event' dialog start, end times
     // business hour values based on given day.
-    if (!eventOnDay.value) {
+    else if (!eventOnDay.value && (new Date(day.date).getTime() > new Date().getTime())) {
       const dayOfWeek = new Date(day.date).getDay()
       const dayOpen = getBusinessHour(dayOfWeek, 'open')
       const dayClose = getBusinessHour(dayOfWeek, 'close')
       newEventStart.value = new Date(`${day.id} ${dayOpen}`)
       newEventEnd.value = new Date(`${day.id} ${dayClose}`)
+      dayViewDialog.value = true
     }
-    dayViewDialog.value = true
   }
   const getBusinessHour = (day:number, type:any) => {
     const hours = businessHours.value
