@@ -123,18 +123,15 @@
 <script setup lang="ts">
   import { v4 } from 'uuid'
   const supabase      = useSupabaseClient()
-  const props         = defineProps(['id'])
-  const idParam       = ref(props.id)
-
   const userStore     = useUserStore()
   const eventStore    = useEventStore()
   const merchantStore = useMerchantStore()
   const vendorStore   = useVendorStore()
 
-  const user          = userStore.user
-  const merchant      = ref(await merchantStore.getMerchantById(idParam.value))
+  const user          = ref(userStore.user)
+  const merchant      = ref(await merchantStore.getMerchantById(user.value.associated_merchant_id))
   const vendors       = ref(await vendorStore.getAllVendors)
-  const events        = ref(await eventStore.getEventsByMerchantId(idParam.value))
+  const events        = ref(await eventStore.getEventsByMerchantId(user.value.associated_merchant_id))
   const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
   businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
 
@@ -171,12 +168,15 @@
 
   const attributes = ref([
     {
-      highlight: { fillMode: 'outline' },
+      highlight: {
+        color: 'orange',
+        fillMode: 'outline'
+      },
       dates: new Date(),
     },
     {
       highlight: {
-          color: 'blue',
+          color: 'orange',
           fillMode: 'light',
         },
       dates: allOpenDates.value
@@ -278,7 +278,7 @@
   const resetFields = async (action: any) => {
       const { data: eventData } = await supabase.from('events').select()
       await eventStore.setAllEvents(eventData)
-      events.value = await eventStore.getEventsByMerchantId(idParam.value)
+      events.value = await eventStore.getEventsByMerchantId(user.value.id)
       
       dayViewDialog.value = false
 
@@ -309,7 +309,7 @@
           errType.value = 'Event Approval'
           errMsg.value = dbErr.message
           errDialog.value = true
-      } else await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+      } else await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.value.associated_merchant_id}`)
 
       if (!dbErr) await resetFields('approved')
       loading.value = false
