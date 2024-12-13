@@ -2,6 +2,7 @@
   <div>
     <VCalendar transparent is-dark expanded :attributes="attributes" @dayclick="openDayView" :key="refresh" />
     <Dialog v-model:visible="dayViewDialog" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '45rem' }">
+      <!-- BOOKED EVENT -->
       <Card v-if="eventOnDay && eventOnDay.status !== 'pending'" style="width: 30rem; overflow: hidden">
           <template #title>
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
@@ -22,6 +23,7 @@
               </div>
           </template>
       </Card>
+      <!-- PENDING EVENT -->
       <Card v-else-if="eventOnDay && eventOnDay.status === 'pending'" style="width: 40rem; overflow: hidden">
         <template #content>
           <DataTable :value="eventOnDay.pending_requests" tableStyle="width: 100%">
@@ -56,6 +58,7 @@
           </DataTable>
         </template>
       </Card>
+      <!-- NEW EVENT -->
       <Card v-else style="width: 30rem; overflow: hidden">
         <template #title>
           New Event
@@ -65,14 +68,14 @@
             <div>
               <div class="flex-auto">
                 <FloatLabel variant="on" class="my-4">
-                  <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid />
+                  <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid hourFormat="12" />
                   <label for="new-event-start" class="block mb-2"> Start Time</label>
                 </FloatLabel>
               </div>
               <div class="flex-auto">
                 <FloatLabel variant="on" class="my-4">
                   <label for="new-event-end" class="block mb-2"> End Time</label>
-                  <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid />
+                  <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid hourFormat="12" />
                 </FloatLabel>
               </div>
               <div class="flex-auto">
@@ -199,11 +202,55 @@
 
   
   const openDayView = (day: any) => {
+    // date formatted
+    const dateStr = day.id.replace(/-/g, '/')
+    console.log('dateStr: ', dateStr)
     dayId.value = day.id
+
+    // date as Date()
     dayDate.value = day.date
+
+    // checks if there's an event on selected day
     eventOnDay.value = events.value
       .find((e: any) => new Date(e.start).toDateString() == new Date(day.date).toDateString())
+
+    // if there's no event on day, prompt user to add event.
+    // Pre-populate 'add event' dialog start, end times
+    // business hour values based on given day.
+    if (!eventOnDay.value) {
+      const dayOfWeek = new Date(day.date).getDay()
+      const dayOpen = getBusinessHour(dayOfWeek, 'open')
+      const dayClose = getBusinessHour(dayOfWeek, 'close')
+      newEventStart.value = new Date(`${day.id} ${dayOpen}`)
+      newEventEnd.value = new Date(`${day.id} ${dayClose}`)
+    }
     dayViewDialog.value = true
+  }
+  const getBusinessHour = (day:number, type:any) => {
+    const hours = businessHours.value
+    switch (day) {
+      case 0:
+        return hours[6][type]
+        break;
+      case 1:
+        return hours[0][type]
+        break;
+      case 2:
+        return hours[1][type]
+        break;
+      case 3:
+        return hours[2][type]
+        break;
+      case 4:
+        return hours[3][type]
+        break;
+      case 5:
+        return hours[4][type]
+        break;
+      case 6:
+        return hours[5][type]
+        break;
+    }
   }
   const getStatusLabel = (status: any) => {
       switch (status) {
