@@ -1,12 +1,27 @@
 <template>
     <div class="ma-4">
-        <div>
-            <EventCalendar />
-        </div>
-        <Divider />
-        <div>
-            <EventList :acctId="route.params.id" :acctType="'merchant'" />
-        </div>
+        <Card class="ma-2">
+            <template #title>
+                Welcome, {{
+                    (user.first_name && user.last_name) ?
+                    `${user.first_name} ${user.last_name.substring(0, 1)}` :
+                    'User'
+                }}.
+            </template>
+            <template #content>
+                {{ user }}
+            </template>
+        </Card>
+        <Card class="ma-2">
+            <template #title>
+                Upcoming Events
+            </template>
+            <template #content>
+                <EventCalendar />
+                <Divider />
+                <EventList />
+            </template>
+        </Card>
     </div>
 </template>
 
@@ -14,6 +29,8 @@
 definePageMeta({
     middleware: ['auth']
 })
+const store = useUserStore()
+const user = ref(store.user)
 
 const route = useRoute()
 </script>

@@ -1,8 +1,6 @@
 <template>
     <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6 ma-2">
-        <div class="flex flex-row md:flex-col justify-between items-start gap-2">
-            {{ acctType.charAt(0).toUpperCase() + acctType.slice(1) }} Events
-        </div>
+        <div class="flex flex-row md:flex-col justify-between items-start gap-2">Events</div>
         <div class="flex flex-col md:items-end gap-8">
             <Button
                 v-if="user"
@@ -173,24 +171,18 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
-const props    = defineProps(['acctId', 'acctType']);
-const acctType = ref(props.acctType)
-const acctId   = ref(props.acctId)
-
-const supabase = useSupabaseClient()
-
+const supabase      = useSupabaseClient()
 const userStore     = useUserStore()
 const vendorStore   = useVendorStore()
 const merchantStore = useMerchantStore()
 const eventStore    = useEventStore()
-
-const user      = userStore.user
-const vendors   = vendorStore.getAllVendors
+const user          = ref(userStore.user)
+const vendors       = vendorStore.getAllVendors
 
 const loading           = ref(false)
 const requestedVendors  = ref([])
-const merchant          = ref(await merchantStore.getMerchantById(acctId.value))
-const events            = ref(await eventStore.getEventsByMerchantId(acctId.value))
+const merchant          = ref(await merchantStore.getMerchantById(user.value.associated_merchant_id))
+const events            = ref(await eventStore.getEventsByMerchantId(user.value.associated_merchant_id))
 const selectedEvt       = ref()
 const openAddDialog     = ref(false)
 const openEditDialog    = ref(false)
@@ -303,7 +295,7 @@ const cancelDelete = () => { deleteDialog.value = false }
 const resetFields = async (action: any) => {
     const { data: eventData } = await supabase.from('events').select()
     await eventStore.setAllEvents(eventData)
-    events.value = await eventStore.getEventsByMerchantId(acctId.value)
+    events.value = await eventStore.getEventsByMerchantId(user.value.associated_merchant_id)
       
     snacktext.value = `Event ${action}!`
     snackbar.value = true
