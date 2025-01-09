@@ -24,7 +24,7 @@
                 </template>
             </Column>
             <Column field="description" header="Description" style="max-width: 20rem;"></Column>
-            <Column field="category" header="Category" sortable></Column>
+            <Column field="type" header="Type" sortable></Column>
             <!-- <Column field="status" header="Status" sortable>
                 <template #body="slotProps">
                     <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
@@ -45,7 +45,7 @@
 
         <!-- ADD ITEM -->
         <Dialog v-model:visible="addDialog" modal header="New Menu Item" :style="{ width: '50rem' }">
-            <ItemsAdd :id="user.id" @created="itemSuccess" @errored="itemErrored" />
+            <MenuAdd :id="user.id" :vendor="user.associated_vendor_id" @created="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
         <!-- EDIT ITEM -->
@@ -166,15 +166,17 @@ const formatCurrency = (value:any) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 const resetFields = async (action:any) => {
-    const { data: itemData } = await supabase.from('items').select()
-    await itemStore.setAllItems(itemData)
-    saleItems.value = await itemStore.getUserItems(user.value.id)
+    const { data: menuData } = await supabase
+        .from('menu_items')
+        .select()
+        .eq('vendor_id', user.value.associated_vendor_id)
+    await menuStore.setMenuItems(menuData)
 
-    snacktext.value = `Event ${action}!`
-    snackbar.value = true
-
-    addDialog.value = false
-    editDialog.value = false
+    menuItems.value    = await menuStore.getAllMenuItems()  
+    snacktext.value    = `Event ${action}!`
+    snackbar.value     = true
+    addDialog.value    = false
+    editDialog.value   = false
     deleteDialog.value = false
 }
 const getStatusLabel = (status: any) => {
