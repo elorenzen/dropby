@@ -1,10 +1,6 @@
 <template>
-    <div>
-        <!-- <EventCalendar :id="route.params.id" /> -->
-    </div>
-    <Divider />
-    <div>
-        <EventList :acctId="route.params.id" :acctType="'vendor'" />
+    <div class="ma-4">
+        <VendorEventTable />
     </div>
 </template>
 

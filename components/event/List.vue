@@ -217,7 +217,7 @@ const addEvent = async () => {
         const evtObj = {
             id: v4(),
             created_at: new Date(),
-            merchant: user.associated_merchant_id,
+            merchant: user.value.associated_merchant_id,
             vendor: null,
             start: evtStart.value,
             end: evtEnd.value,
