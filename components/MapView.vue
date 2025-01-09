@@ -1,40 +1,34 @@
 <template>
   <div class="flex items-center justify-center p-5">
     <ScriptGoogleMaps
-      ref="maps"
       :center="center"
       :markers="markers"
-      :api-key="config.public.gMapKey"
+      :width="1000"
+      :height="500"
+      :api-key="key"
       :mapOptions="{ zoom: 8 }"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const maps = ref()
-
-const config = useRuntimeConfig()
-
-const center = ref()
-const userStore = useUserStore()
+const config        = useRuntimeConfig()
+const userStore     = useUserStore()
 const merchantStore = useMerchantStore()
-const merchants = merchantStore.getAllMerchants
-
-const markers = ref([])
+const merchants     = ref(merchantStore.allMerchants)
+const key           = ref(config.public.gMapKey)
+const markers       = ref([])
+const center        = ref({ lat: 34.0557, lng: -118.2426})
 
 
 onMounted(() => {
-  center.value = userStore.getUserLocation
-  if (merchants.length > 0) setMerchantMarkers()
+  setMerchantMarkers()
 })
 
 const setMerchantMarkers = () => {
-  merchants.forEach(merchant => {
+  merchants.value.forEach((merchant:any) => {
     const coords = JSON.parse(merchant.coordinates)
-    const marker = { id: merchant.id, position: coords }
-    markers.value.push(marker)
+    markers.value.push(`${coords.lat},${coords.lng}`)
   })
 }
 </script>
