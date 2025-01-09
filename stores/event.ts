@@ -7,14 +7,23 @@ export const useEventStore = defineStore('event', {
   }),
   getters: {
     getAllEvents: (state) => state.allEvents,
-    getAllOpenEvents: (state) => state.allEvents.filter(e => e.status == 'open')
+    getAllOpenEvents: (state) => {
+      return state.allEvents
+        .filter((e) =>
+          e.status == 'open' &&
+          (Date.now() < new Date(e.start).getTime())
+        )
+        .sort((a,b) => Date.parse(b.start) - Date.parse(a.start))
+    }
   },
   actions: {
     async setAllEvents(events: []) {
         this.allEvents = events
     },
     async getEventsByMerchantId(id: any) {
-      return this.allEvents.filter(e => e.merchant === id)
+      return this.allEvents
+        .filter(e => e.merchant === id)
+        .sort((a,b) => Date.parse(b.start) - Date.parse(a.start))
     }
   }
 })

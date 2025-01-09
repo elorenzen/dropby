@@ -2,11 +2,6 @@
     <div>
         <MerchantSettings v-if="type === 'merchant'" :id="route.params.id" />
         <VendorSettings v-else-if="type === 'vendor'" :id="route.params.id" />
-        <div v-if="type === 'vendor'">
-            <Divider />
-            <VendorMenu :id="route.params.id" />
-            <Divider />
-        </div>
     </div>
 </template>
 

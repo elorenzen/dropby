@@ -29,8 +29,13 @@
                 {{ new Date(slotProps.data.end).toLocaleString() }}
             </template></Column>
         <Column field="status" header="Status">
-            <template #body="slotProps">
-                <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
+            <template #body="{ data }">
+                <Tag
+                    v-if="data.status === 'open' && (data.pending_requests && data.pending_requests.length > 0)"
+                    value="PENDING"
+                    severity="warn"
+                />
+                <Tag v-else :value="(data.status).toUpperCase()" :severity="getStatusLabel(data.status)" />
             </template>
         </Column>
         <Column field="status" header="Notes">
@@ -202,6 +207,21 @@ const errDialog = ref(false)
 const errMsg = ref()
 const errType = ref()
 
+onMounted(async () => {
+    const evts = events.value
+    for (let evt of evts) {
+        if (Date.now() > new Date(evt.end).getTime()) {
+            const updates = {
+                updated_at: new Date(),
+                status: 'closed'
+            }
+            const { error } = await supabase
+                .from('events')
+                .update(updates)
+                .eq('id', evt.id)
+        }
+    }
+})
 
 const addEvent = async () => {
     loading.value = true
@@ -217,7 +237,7 @@ const addEvent = async () => {
         const evtObj = {
             id: v4(),
             created_at: new Date(),
-            merchant: user.associated_merchant_id,
+            merchant: user.value.associated_merchant_id,
             vendor: null,
             start: evtStart.value,
             end: evtEnd.value,
@@ -245,17 +265,21 @@ const addEvent = async () => {
 }
 const selectRow = (event: any) => {
     selectedEvt.value = event.data
-    console.log('user: ', user.is_admin)
 
-    if (user && user.is_admin && user.type == 'merchant') {
-        // 'pending' dialog is request dialog for admin merchants
-        if (selectedEvt.value.status == 'pending') {
-            selectedEvt.value.pending_requests.forEach(id => {
-                const found = vendors.find(vendor => vendor.id === id)
-                requestedVendors.value.push(found)
-            })
-            openRequestDialog.value = true
-        } else openEditDialog.value = true
+    // if event is 'open', 
+    // but contains pending requests
+    // that have yet to be approved...
+    if (
+        selectedEvt.value.status == 'open' &&
+        !selectedEvt.value.vendor &&
+        selectedEvt.value.pending_requests &&
+        selectedEvt.value.pending_requests.length > 0
+       ) {
+        selectedEvt.value.pending_requests.forEach(id => {
+            const found = vendors.find(vendor => vendor.id === id)
+            requestedVendors.value.push(found)
+        })
+        openRequestDialog.value = true
     } else openViewDialog.value = true
 }
 const saveEdits = async () => {
@@ -309,10 +333,7 @@ const resetFields = async (action: any) => {
 const getStatusLabel = (status: any) => {
     switch (status) {
         case 'open':
-            return 'secondary';
-
-        case 'pending':
-            return 'warn';
+            return 'info';
 
         case 'booked':
             return 'success';
@@ -343,7 +364,9 @@ const approveRequest = async (id: any) => {
         errType.value = 'Event Approval'
         errMsg.value = dbErr.message
         errDialog.value = true
-    } else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+    } 
+    // UNCOMMENT AFTER FIXING
+    // else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
     loading.value = false
 }
 watch(openRequestDialog, (newVal) => {

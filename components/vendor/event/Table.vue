@@ -1,6 +1,5 @@
 <template>
     <div>
-        <v-row dense class="flex justify-center pa-2 text-xl"><h3>All Events</h3></v-row>
         <DataTable
             v-model:selection="selectedEvt"
             :value="events"
@@ -8,6 +7,11 @@
             dataKey="id"
             @row-select="selectRow"
         >
+            <template #header>
+                <div class="flex flex-wrap items-center justify-around gap-2">
+                    <span class="text-xl font-bold">Events</span>
+                </div>
+            </template>
             <Column field="start" header="Start">
                 <template #body="slotProps">
                     {{ new Date(slotProps.data.start).toLocaleString('en-US') }}
@@ -28,8 +32,19 @@
                 </template>
             </Column>
             <Column field="status" header="Status">
-                <template #body="slotProps">
-                    <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
+                <template #body="{ data }">
+                    <Tag
+                        v-if="data.pending_requests && data.pending_requests.includes(user.associated_vendor_id)"
+                        value="PENDING"
+                        severity="warn"
+                    />
+                    
+                    <Tag
+                        v-else-if="!data.pending_requests || (data.pending_requests && !data.pending_requests.includes(user.associated_vendor_id))"
+                        :value="(data.status).toUpperCase()"
+                        severity="success"
+                    />
+
                 </template>
             </Column>
         </DataTable>
@@ -39,9 +54,6 @@
                 <Card style="width: 30rem; overflow: hidden">
                     <template #title>
                         {{ new Date(selectedEvt.start).toLocaleTimeString('en-US') }} - {{ new Date(selectedEvt.end).toLocaleTimeString('en-US') }}
-                        <span>
-                        <Tag :value="selectedEvt.status" :severity="getStatusLabel(selectedEvt.status)" />
-                        </span>
                     </template>
                     <template #subtitle>
                         <NuxtLink :to="selectedEvt.location_url" target="_blank">{{ selectedEvt.location_address }}</NuxtLink>
@@ -51,7 +63,7 @@
                     </template>
                     <template #footer>
                         <Button
-                            v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(vendor)"
+                            v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(user.associated_vendor_id)"
                             type="button"
                             label="Request Event"
                             @click="requestEvent"
@@ -82,16 +94,13 @@
 </template>
 
 <script setup lang="ts">
-    const props  = defineProps(['vendor'])
-    const vendor = ref(props.vendor)
-
     const supabase      = useSupabaseClient()
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
     const events        = eventStore.getAllOpenEvents
     const merchants     = merchantStore.getAllMerchants
-    const user          = userStore.getUser
+    const user          = ref(userStore.user)
 
     const selectedEvt      = ref()
     const selectedMerchant = ref()
@@ -103,34 +112,12 @@
     const errMsg    = ref()
     const loading   = ref(false)
 
-    const getStatusLabel = (status: any) => {
-        switch (status) {
-            case 'open':
-                return 'secondary';
-
-            case 'pending':
-                return 'warn';
-
-            case 'booked':
-                return 'success';
-
-            case 'unfulfilled':
-                return 'danger';
-            
-            case 'closed':
-                return 'secondary';
-
-            default:
-                return null;
-        }
-    };
     const getMerchantName = (id: any) => {
         const found = merchants.find(merchant => merchant.id === id)
         if (found) return found.merchant_name
     }
     const selectRow = (event: any) => {
         selectedEvt.value = event.data
-        console.log('event: ', selectedEvt.value)
         selectedMerchant.value = merchants.find(merchant => merchant.id === event.data.merchant)
         openViewDialog.value = true
     }
@@ -140,7 +127,7 @@
             selectedEvt.value.pending_requests ?
             selectedEvt.value.pending_requests : []
 
-        reqArr.push(vendor.value)
+        reqArr.push(user.value.associated_vendor_id)
         const updates = {
             updated_at: new Date(),
             pending_requests: reqArr

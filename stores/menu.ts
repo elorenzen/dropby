@@ -11,5 +11,8 @@ export const useMenuStore = defineStore('menu', {
     async setMenuItems(items: []) {
         this.menuItems = items
     },
+    async getAllMenuItems() {
+      return this.menuItems
+    }
   }
 })
