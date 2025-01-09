@@ -364,7 +364,9 @@ const approveRequest = async (id: any) => {
         errType.value = 'Event Approval'
         errMsg.value = dbErr.message
         errDialog.value = true
-    } else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
+    } 
+    // UNCOMMENT AFTER FIXING
+    // else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
     loading.value = false
 }
 watch(openRequestDialog, (newVal) => {
