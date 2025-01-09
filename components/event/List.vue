@@ -207,6 +207,21 @@ const errDialog = ref(false)
 const errMsg = ref()
 const errType = ref()
 
+onMounted(async () => {
+    const evts = events.value
+    for (let evt of evts) {
+        if (Date.now() > new Date(evt.end).getTime()) {
+            const updates = {
+                updated_at: new Date(),
+                status: 'closed'
+            }
+            const { error } = await supabase
+                .from('events')
+                .update(updates)
+                .eq('id', evt.id)
+        }
+    }
+})
 
 const addEvent = async () => {
     loading.value = true
