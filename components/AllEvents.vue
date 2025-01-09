@@ -8,6 +8,15 @@
             dataKey="id"
             @row-select="selectRow"
         >
+            <Column field="start" header="Start">
+                <template #body="slotProps">
+                    {{ new Date(slotProps.data.start).toLocaleString('en-US') }}
+                </template>
+            </Column>
+            <Column field="end" header="End">
+                <template #body="slotProps">
+                    {{ new Date(slotProps.data.end).toLocaleString('en-US') }}
+                </template></Column>
             <Column field="merchant_name" header="Establishment">
                 <template #body="slotProps">
                     {{ getMerchantName(slotProps.data.merchant) }}
@@ -18,15 +27,6 @@
                     {{ slotProps.data.location_address }}
                 </template>
             </Column>
-            <Column field="start" header="Start">
-                <template #body="slotProps">
-                    {{ new Date(slotProps.data.start).toLocaleString('en-US') }}
-                </template>
-            </Column>
-            <Column field="end" header="End">
-                <template #body="slotProps">
-                    {{ new Date(slotProps.data.end).toLocaleString('en-US') }}
-                </template></Column>
             <Column field="status" header="Status">
                 <template #body="slotProps">
                     <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
@@ -143,7 +143,6 @@
         reqArr.push(vendor.value)
         const updates = {
             updated_at: new Date(),
-            status: 'pending',
             pending_requests: reqArr
         }
         const { error } = await supabase
