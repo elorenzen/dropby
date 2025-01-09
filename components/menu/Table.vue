@@ -134,12 +134,12 @@ const promptDeletion = (item:any) => {
 }
 const confirmDelete = async () => {
     const { error: itemErr } = await supabase
-        .from('items')
+        .from('menu_items')
         .delete()
         .eq('id', itemToDelete.value.id)
     const { error: imgErr } = await supabase
         .storage
-        .from('inventory_photos')
+        .from('menu_images')
         .remove([itemToDelete.value.image_name])
     
     if (!itemErr && !imgErr) await resetFields('Deleted')
@@ -173,7 +173,7 @@ const resetFields = async (action:any) => {
     await menuStore.setMenuItems(menuData)
 
     menuItems.value    = await menuStore.getAllMenuItems()  
-    snacktext.value    = `Event ${action}!`
+    snacktext.value    = `Menu Item ${action}!`
     snackbar.value     = true
     addDialog.value    = false
     editDialog.value   = false
