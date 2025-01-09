@@ -3,7 +3,7 @@
         <DataTable :value="menuItems" tableStyle="width: 100%">
             <template #header>
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-xl font-bold">Your Items</span>
+                    <span class="text-xl font-bold">Menu Items</span>
                     <Button
                         outlined
                         severity="secondary"
@@ -50,7 +50,7 @@
 
         <!-- EDIT ITEM -->
         <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '50rem' }">
-            <ItemsEdit :item="itemToEdit" @edited="itemSuccess" @errored="itemErrored" />
+            <MenuEdit :item="itemToEdit" :vendor="user.associated_vendor_id" @edited="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'Inventory Item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
