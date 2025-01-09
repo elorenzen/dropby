@@ -1,106 +1,127 @@
 <template>
     <div>
-      <Card style="overflow: hidden">
+      <Card style="overflow: hidden" class="ma-4">
           <template #content>
-            <v-row>
-                <v-col cols="4">
-                  <img :src="imageUrl" alt="Image" class="w-full rounded" style="height: 60%;" />
-                  <FileUpload
-                    class="mt-2"
-                    mode="basic"
-                    accept="image/*"
-                    :maxFileSize="1000000"
-                    @upload="updateImage($event)"
-                    :auto="true"
-                    chooseLabel="Upload New Image"
-                  />
-                </v-col>
-                <v-col cols="8">
-                  <Fluid>
-                    <span class="font-bold my-4 block">Vendor Information</span>
-                    <div class="grid grid-cols-2 gap-4">
-                        <!-- NAME -->
-                        <div>
-                          <FloatLabel variant="on">
-                              <InputText id="name" v-model="vendor.vendor_name" :fluid="true" />
-                              <label for="name">Name</label>
-                          </FloatLabel>
-                        </div>
+            <Tabs value="0">
+              <TabList>
+                  <Tab value="0">General Information</Tab>
+                  <Tab value="1">Menu</Tab>
+                  <Tab value="2">Associated Users</Tab>
+              </TabList>
+              <TabPanels>
+                  <!-- GENERAL INFORMATION SETTINGS -->
+                  <TabPanel value="0">
+                    <v-row>
+                        <v-col cols="4">
+                          <img :src="imageUrl" alt="Image" class="w-full rounded" style="height: 60%;" />
+                          <FileUpload
+                            class="mt-2"
+                            mode="basic"
+                            accept="image/*"
+                            :maxFileSize="1000000"
+                            @upload="updateImage($event)"
+                            :auto="true"
+                            chooseLabel="Upload New Image"
+                          />
+                        </v-col>
+                        <v-col cols="8">
+                          <Fluid>
+                            <span class="font-bold my-4 block">Vendor Information</span>
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- NAME -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                      <InputText id="name" v-model="vendor.vendor_name" :fluid="true" />
+                                      <label for="name">Name</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- CUISINE -->
-                        <div>
-                            <FloatLabel variant="on">
-                                <MultiSelect
-                                    id="cuisine"
-                                    v-model="vendor.cuisine"
-                                    display="chip"
-                                    :options="cuisines"
-                                    filter
-                                    placeholder="Select Cuisine(s)"
-                                    :maxSelectedLabels="3"
-                                />
-                                <label for="cuisine">Cuisine</label>
-                            </FloatLabel>
-                        </div>
+                                <!-- CUISINE -->
+                                <div>
+                                    <FloatLabel variant="on">
+                                        <MultiSelect
+                                            id="cuisine"
+                                            v-model="vendor.cuisine"
+                                            display="chip"
+                                            :options="cuisines"
+                                            filter
+                                            placeholder="Select Cuisine(s)"
+                                            :maxSelectedLabels="3"
+                                        />
+                                        <label for="cuisine">Cuisine</label>
+                                    </FloatLabel>
+                                </div>
 
-                        <!-- DESCRIPTION -->
-                        <div class="col-span-full">
-                          <FloatLabel variant="on">
-                              <Textarea id="desc" v-model="vendor.vendor_description" rows="5" />
-                              <label for="desc">Description</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- DESCRIPTION -->
+                                <div class="col-span-full">
+                                  <FloatLabel variant="on">
+                                      <Textarea id="desc" v-model="vendor.vendor_description" rows="5" />
+                                      <label for="desc">Description</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- PHONE -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-phone" />
-                                <InputText id="phone" v-model="vendor.phone" placeholder="Phone" />
-                            </IconField>
-                            <label for="phone">Phone</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- PHONE -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-phone" />
+                                        <InputText id="phone" v-model="vendor.phone" placeholder="Phone" />
+                                    </IconField>
+                                    <label for="phone">Phone</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- WEBSITE -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-link" />
-                                <InputText id="website" v-model="vendor.website" placeholder="Website" />
-                            </IconField>
-                            <label for="website">Website</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- WEBSITE -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-link" />
+                                        <InputText id="website" v-model="vendor.website" placeholder="Website" />
+                                    </IconField>
+                                    <label for="website">Website</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- INSTAGRAM -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-instagram" />
-                                <InputText id="ig" v-model="vendor.instagram" placeholder="Instagram" />
-                            </IconField>
-                            <label for="ig">Instagram</label>
-                          </FloatLabel>
-                        </div>
+                                <!-- INSTAGRAM -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-instagram" />
+                                        <InputText id="ig" v-model="vendor.instagram" placeholder="Instagram" />
+                                    </IconField>
+                                    <label for="ig">Instagram</label>
+                                  </FloatLabel>
+                                </div>
 
-                        <!-- EMAIL -->
-                        <div>
-                          <FloatLabel variant="on">
-                            <IconField>
-                                <InputIcon class="pi pi-envelope" />
-                                <InputText id="email" v-model="vendor.email" placeholder="Email" />
-                            </IconField>
-                            <label for="email">Email</label>
-                          </FloatLabel>
-                        </div>
-                    </div>
-                  </Fluid>
-                  <div class="flex justify-end gap-2 ma-4">
-                      <Button type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
-                  </div>
-                </v-col>
-            </v-row>  
+                                <!-- EMAIL -->
+                                <div>
+                                  <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputIcon class="pi pi-envelope" />
+                                        <InputText id="email" v-model="vendor.email" placeholder="Email" />
+                                    </IconField>
+                                    <label for="email">Email</label>
+                                  </FloatLabel>
+                                </div>
+                            </div>
+                          </Fluid>
+                          <div class="flex justify-end gap-2 ma-4">
+                              <Button type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
+                          </div>
+                        </v-col>
+                    </v-row>
+                  </TabPanel>
+
+                  <!-- MENU SETTINGS -->
+                  <TabPanel value="1">
+                    <MenuTable />
+                  </TabPanel>
+
+                  <TabPanel value="2">
+                      <AssociatedUsers :id="idParam" />
+                  </TabPanel>
+              </TabPanels>
+            </Tabs>
           </template>
       </Card>
 

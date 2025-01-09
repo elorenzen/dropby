@@ -11,6 +11,11 @@ export default defineNuxtConfig({
     pageTransition: {
       name: 'fade',
       mode: 'out-in'
+    },
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      ]
     }
   },
   modules: [
