@@ -4,7 +4,7 @@
         <VendorSettings v-else-if="type === 'vendor'" :id="route.params.id" />
         <div v-if="type === 'vendor'">
             <Divider />
-            <VendorMenu :id="route.params.id" />
+            <MenuTable />
             <Divider />
         </div>
     </div>

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <EventCalendar :id="route.params.id" />
+        <!-- <EventCalendar :id="route.params.id" /> -->
     </div>
     <Divider />
     <div>
