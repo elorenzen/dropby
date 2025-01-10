@@ -11,7 +11,7 @@
                             <v-row>
                                 <v-col>
                                     <div class="relative mx-auto">
-                                        <img :src="data.avatar_url" class="w-48 h-48 rounded" />
+                                        <img :src="data.avatar_url" class="w-48 h-36 rounded" />
                                     </div>
                                 </v-col>
                                 <v-col>
@@ -20,30 +20,6 @@
                                     </div>
                                     <Rating class="mt-2" :model-value="data.average_merchant_rating" />
 
-                                    <div>
-                                        <!-- 
-                                        WILL BE READONLY WITH TOOLTIP
-                                        <v-btn icon variant="plain">
-                                            <NuxtLink :to="`tel:${slotProps.data.phone}`" target="_blank">
-                                                <v-icon>mdi-phone</v-icon>
-                                            </NuxtLink>
-                                        </v-btn> -->
-                                        <v-btn icon variant="plain" v-if="data.instagram">
-                                            <NuxtLink :to="data.instagram" target="_blank">
-                                                <v-icon>mdi-instagram</v-icon>
-                                            </NuxtLink>
-                                        </v-btn>
-                                        <v-btn icon variant="plain" v-if="data.website">
-                                            <NuxtLink :to="data.website" target="_blank">
-                                                <v-icon>mdi-web</v-icon>
-                                            </NuxtLink>
-                                        </v-btn>
-                                        <v-btn icon variant="plain" v-if="data.email">
-                                            <NuxtLink :to="`mailto:${data.email}`" target="_blank">
-                                                <v-icon>mdi-email</v-icon>
-                                            </NuxtLink>
-                                        </v-btn>
-                                    </div>
                                     <div class="mt-2">
                                         <Badge class="mx-1" v-for="(i, index) in data.cuisine" :key="`${i}-${index}`">{{ i }}</Badge>
                                     </div>
