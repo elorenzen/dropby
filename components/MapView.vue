@@ -27,8 +27,10 @@ onMounted(() => {
 
 const setMerchantMarkers = () => {
   merchants.value.forEach((merchant:any) => {
-    const coords = JSON.parse(merchant.coordinates)
-    markers.value.push(`${coords.lat},${coords.lng}`)
+    if (merchant.coordinates) {
+      const coords = JSON.parse(merchant.coordinates)
+      markers.value.push(`${coords.lat},${coords.lng}`)
+    }
   })
 }
 </script>

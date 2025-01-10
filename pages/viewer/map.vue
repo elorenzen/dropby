@@ -2,6 +2,9 @@
     <div>
         <MapView />
     </div>
+    <div>
+        <MerchantList />
+    </div>
 </template>
 
 <script setup lang="ts">

@@ -54,15 +54,10 @@ import haversine from 'haversine'
 const userStore = useUserStore()
 const merchantStore = useMerchantStore()
 const merchants = merchantStore.getAllMerchants
+const coordinates = userStore.getUserLocation
 
-const lat = ref(34.0549) // Use DTLA lat. as fallback
-const lng = ref(118.2426) // Use DTLA lat. as fallback
-
-onMounted(() => {
-  const coordinates = userStore.getUserLocation
-  lat.value = coordinates.lat
-  lng.value =  coordinates.lng
-})
+const lat = ref(coordinates.lat ? coordinates.lat : 34.0549) // Use DTLA lat. as fallback
+const lng = ref(coordinates.lng ? coordinates.lng : -118.2426) // Use DTLA lat. as fallback
 
 const allMerchants = computed(() => {
   let allMerchants = merchants

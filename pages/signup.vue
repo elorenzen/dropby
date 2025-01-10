@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-content-center flex-wrap">
+    <div class="flex items-center justify-center p-5">
         <Card style="width: 30rem; overflow: hidden">
             <template #title>
                 Sign Up
@@ -24,7 +24,6 @@
                 <Button
                     @click="addAuthUser"
                     label="Submit"
-                    severity="success"
                     class="w-full"
                     :disabled="!email || !password"
                     :loading="loading"
