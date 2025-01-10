@@ -11,6 +11,7 @@
               <Button
                 outlined
                 @click="fireAuth"
+                :disabled="email == '' || password == ''"
                 :loading="loading"
               >Login</Button>
 
@@ -38,23 +39,6 @@
               />
           </div>
           <div v-else class="flex items-center gap-2">
-              <InputText v-if="!user" placeholder="Email" v-model="email" type="text" class="w-32 sm:w-auto" />
-              <Password v-if="!user" placeholder="Password" v-model="password" class="w-32 sm:w-auto" />
-              <Button
-                v-if="!user"
-                outlined
-                @click="fireAuth"
-                :disabled="email == '' || password == ''"
-                :loading="loading"
-              >Login</Button>
-
-              <Button
-                v-if="!user"
-                outlined
-                severity="secondary"
-                @click="register"
-              >Sign Up</Button>
-
               <Button v-if="user" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
               <Menu
                 ref="acctMenu"
