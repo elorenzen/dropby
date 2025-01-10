@@ -210,19 +210,22 @@
     eventOnDay.value = events.value
       .find((e: any) => new Date(e.start).toDateString() == new Date(day.date).toDateString())
 
-    if (eventOnDay.value) dayViewDialog.value = true
     // if there's no event on day, and selected day is in the future,
     // prompt user to add event. Then,
     // pre-populate 'add event' dialog start, end times
     // business hour values based on given day.
-    else if (!eventOnDay.value && (new Date(day.date).getTime() > new Date().getTime())) {
+    if (
+      !eventOnDay.value &&
+      (new Date(day.date).getTime() > new Date().getTime()) &&
+      businessHours.value.length > 0
+    ) {
       const dayOfWeek = new Date(day.date).getDay()
       const dayOpen = getBusinessHour(dayOfWeek, 'open')
       const dayClose = getBusinessHour(dayOfWeek, 'close')
       newEventStart.value = new Date(`${day.id} ${dayOpen}`)
       newEventEnd.value = new Date(`${day.id} ${dayClose}`)
-      dayViewDialog.value = true
     }
+    dayViewDialog.value = true
   }
   const getBusinessHour = (day:number, type:any) => {
     const hours = businessHours.value
@@ -323,7 +326,7 @@
   const resetFields = async (action: any) => {
       const { data: eventData } = await supabase.from('events').select()
       await eventStore.setAllEvents(eventData)
-      events.value = await eventStore.getEventsByMerchantId(user.value.id)
+      events.value = await eventStore.getEventsByMerchantId(user.value.associated_merchant_id)
       
       dayViewDialog.value = false
 
