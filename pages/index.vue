@@ -2,9 +2,12 @@
     <div>
         <div class="flex justify-center p-2">
             <h3 class="text-2xl">Welcome to DropBy!</h3>
-            <div>
-              <VendorGallery />
-            </div>
+        </div>
+        <div>
+          <MerchantGallery />
+        </div>
+        <div>
+          <VendorGallery />
         </div>
     </div>
 </template>
