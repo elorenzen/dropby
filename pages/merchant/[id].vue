@@ -19,7 +19,7 @@
             <template #content>
                 <EventCalendar />
                 <Divider />
-                <EventList />
+                <MerchantEventTable />
             </template>
         </Card>
     </div>
