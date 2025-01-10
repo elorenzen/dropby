@@ -1,10 +1,6 @@
 <template>
   <v-row>
-      <MerchantCard :id="route.params.id" />
-    <Divider />
-    <div>
-      <EventList :acctId="route.params.id" :acctType="'merchant'" />
-    </div>
+    <MerchantCard :id="route.params.id" />
   </v-row>
 </template>
   
