@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="my-4 flex justify-around justify-center">
-            <div class="text-6xl" style="max-width: 50%; color: #e28413;">We make event scheduling easy!</div>
+            <div class="text-6xl" style="max-width: 50%; color: #e28413;">Event Scheduling Made Easy!</div>
         </div>
         <div class="flex justify-center p-2">
           <div style="max-width: 40%; color: #e28413; text-align: center;">
