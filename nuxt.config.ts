@@ -28,7 +28,8 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@primevue/nuxt-module",
     "haversine",
-    "nuxt-svgo"
+    "nuxt-svgo",
+    "@nuxtjs/google-fonts"
   ],
   runtimeConfig: {
     public: {
@@ -44,6 +45,14 @@ export default defineNuxtConfig({
   },
   primevue: {
     importTheme: { from: '~/assets/theme.js' },
+  },
+  googleFonts: {
+    families: {
+      Taviraj: true,
+      "League Spartan": true,
+      "Fugaz One": true,
+      Shrikhand: true
+    }
   },
   css: ['primeicons/primeicons.css']
 })
