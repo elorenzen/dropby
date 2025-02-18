@@ -19,16 +19,16 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    "@primevue/nuxt-module",
+    "@nuxtjs/supabase",
+    "@pinia/nuxt",
+    "vuetify-nuxt-module",
     "@nuxt/ui",
     "@nuxtjs/tailwindcss",
-    "@nuxtjs/supabase",
-    "vuetify-nuxt-module",
+    "nuxt-svgo",
     "@nuxt/scripts",
     '@samk-dev/nuxt-vcalendar',
-    "@pinia/nuxt",
-    "@primevue/nuxt-module",
     "haversine",
-    "nuxt-svgo",
     "@nuxtjs/google-fonts"
   ],
   runtimeConfig: {
