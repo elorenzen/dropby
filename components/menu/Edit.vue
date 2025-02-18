@@ -50,7 +50,7 @@
                     </v-col>
                 </v-row>
                 <v-row class="pa-2">
-                    <v-btn @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
+                    <Button @click="submitEdits" block :loading="loading">Submit Edits</Button>
                 </v-row>
             </template>
         </Card>

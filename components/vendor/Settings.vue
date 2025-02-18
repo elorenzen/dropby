@@ -131,11 +131,11 @@
         {{ snacktext }}
 
         <template v-slot:actions>
-            <v-btn
+            <Button
                 color="#000022"
                 variant="text"
                 @click="snackbar = false"
-            >Close</v-btn>
+            >Close</Button>
         </template>
       </v-snackbar>
     </div>

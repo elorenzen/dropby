@@ -190,7 +190,7 @@ const getAddrs = (e) => {
                 </v-col>
             </v-row>
             <v-row>
-                <v-btn @click="addAuthUser" block>Add User</v-btn>
+                <Button @click="addAuthUser" block>Add User</Button>
             </v-row> -->
 
             <v-row dense class="pa-2">
@@ -242,22 +242,22 @@ const getAddrs = (e) => {
                 
                 <!-- <div class="m-2">(optional) - component for listing top nearby vendors, and allow user to select "preferences"</div>
                 <div class="m-2">availability component gather</div> -->
-                <v-btn
+                <Button
                     @click="addVendor"
                     small
                     block
-                >Add Vendor</v-btn>
+                >Add Vendor</Button>
             </v-row>
         </form>
         <v-snackbar v-model="snackbar" timeout="6000">
             {{ snacktext }}
 
             <template v-slot:actions>
-                <v-btn
+                <Button
                     color="#000022"
                     variant="text"
                     @click="snackbar = false"
-                >Close</v-btn>
+                >Close</Button>
             </template>
         </v-snackbar>
     </v-container>

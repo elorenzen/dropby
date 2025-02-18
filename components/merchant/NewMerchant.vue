@@ -164,7 +164,7 @@ const getAddrs = (e) => {
             </v-col>
         </v-row>
         <v-row>
-            <v-btn @click="addAuthUser" block :loading="newUserLoading">Add User</v-btn>
+            <Button @click="addAuthUser" block :loading="newUserLoading">Add User</Button>
         </v-row> -->
         <v-row dense class="pa-2">
             <v-col v-if="imageUrl !== ''">
@@ -215,13 +215,13 @@ const getAddrs = (e) => {
             <!-- <div class="m-2">(optional) - component for listing top nearby vendors, and allow user to select "preferences"</div>
             <div class="m-2">availability component gather</div> -->
         <v-row>
-            <v-btn
+            <Button
                 @click="addMerchant"
                 small
                 block
                 :disabled="!user"
                 :loading="newMerchantLoading"
-            >Add Merchant</v-btn>
+            >Add Merchant</Button>
         </v-row>
     </form>
     <v-snackbar
@@ -231,13 +231,13 @@ const getAddrs = (e) => {
       {{ snacktext }}
 
       <template v-slot:actions>
-        <v-btn
+        <Button
           color="#000022"
           variant="text"
           @click="snackbar = false"
         >
           Close
-        </v-btn>
+        </Button>
       </template>
     </v-snackbar>
 </template>

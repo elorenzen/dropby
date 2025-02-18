@@ -54,9 +54,9 @@ const addUser = async () => {
                   ></v-text-field>
               </v-col>
           </v-row>
-              <v-btn
+              <Button
                   @click="addUser"
-              >Add User</v-btn>
+              >Add User</Button>
       </form>
   </v-container>
 </template>

@@ -76,8 +76,8 @@
                 </v-col>
             </v-row>
             <v-row class="pa-2">
-                <v-btn v-if="headerTitle == 'Add'" @click="addUser" block :loading="loading">Add User</v-btn>
-                <v-btn v-if="headerTitle == 'Edit'" @click="submitEdits" block :loading="loading">Submit Edits</v-btn>
+                <Button v-if="headerTitle == 'Add'" @click="addUser" block :loading="loading">Add User</Button>
+                <Button v-if="headerTitle == 'Edit'" @click="submitEdits" block :loading="loading">Submit Edits</Button>
             </v-row>
         </Dialog>
 
@@ -91,13 +91,13 @@
           {{ snacktext }}
 
           <template v-slot:actions>
-            <v-btn
+            <Button
               color="#000022"
               variant="text"
               @click="snackbar = false"
             >
               Close
-            </v-btn>
+            </Button>
           </template>
         </v-snackbar>
     </div>

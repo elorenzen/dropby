@@ -144,13 +144,13 @@
                     </div>
                 </div>
             </Fluid>
-            <v-btn
+            <Button
                 @click="addEvent"
                 color="#e28413"
                 variant="outlined"
                 :disabled="evtStart == '' || evtEnd == ''"
                 :loading="loading"
-            >Add Event</v-btn>
+            >Add Event</Button>
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
@@ -163,13 +163,13 @@
       {{ snacktext }}
 
       <template v-slot:actions>
-        <v-btn
+        <Button
           color="#000022"
           variant="text"
           @click="snackbar = false"
         >
           Close
-        </v-btn>
+        </Button>
       </template>
     </v-snackbar>
 </template>

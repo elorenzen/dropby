@@ -22,26 +22,26 @@
           <template #body="slotProps">
             <!-- 
             WILL BE READONLY WITH TOOLTIP
-            <v-btn icon variant="plain">
+            <Button icon variant="plain">
                 <NuxtLink :to="`tel:${slotProps.data.phone}`" target="_blank">
                     <v-icon>mdi-phone</v-icon>
                 </NuxtLink>
-            </v-btn> -->
-            <v-btn icon variant="plain">
+            </Button> -->
+            <Button icon variant="plain">
                 <NuxtLink :to="slotProps.data.website" target="_blank">
                     <v-icon>mdi-web</v-icon>
                 </NuxtLink>
-            </v-btn>
-            <v-btn icon variant="plain">
+            </Button>
+            <Button icon variant="plain">
                 <NuxtLink :to="slotProps.data.instagram" target="_blank">
                     <v-icon>mdi-instagram</v-icon>
                 </NuxtLink>
-            </v-btn>
-            <v-btn icon variant="plain">
+            </Button>
+            <Button icon variant="plain">
               <NuxtLink :to="`mailto:${slotProps.data.email}`" target="_blank">
                   <v-icon>mdi-email</v-icon>
               </NuxtLink>
-            </v-btn>
+            </Button>
           </template>
       </Column>
   </DataTable>
