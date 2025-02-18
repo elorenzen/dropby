@@ -27,20 +27,14 @@
                     <v-icon>mdi-phone</v-icon>
                 </NuxtLink>
             </Button> -->
-            <Button icon variant="plain">
-                <NuxtLink :to="slotProps.data.website" target="_blank">
-                    <v-icon>mdi-web</v-icon>
-                </NuxtLink>
+            <Button icon="pi pi-globe" variant="plain">
+                <NuxtLink :to="slotProps.data.website" target="_blank" />
             </Button>
-            <Button icon variant="plain">
-                <NuxtLink :to="slotProps.data.instagram" target="_blank">
-                    <v-icon>mdi-instagram</v-icon>
-                </NuxtLink>
+            <Button icon="pi pi-instagram" variant="plain">
+                <NuxtLink :to="slotProps.data.instagram" target="_blank" />
             </Button>
-            <Button icon variant="plain">
-              <NuxtLink :to="`mailto:${slotProps.data.email}`" target="_blank">
-                  <v-icon>mdi-email</v-icon>
-              </NuxtLink>
+            <Button icon="pi pi-envelope" variant="plain">
+              <NuxtLink :to="`mailto:${slotProps.data.email}`" target="_blank" />
             </Button>
           </template>
       </Column>
