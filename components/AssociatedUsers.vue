@@ -72,7 +72,7 @@
                     <v-switch density="compact" label="Administrative Access" v-model="isAdmin"></v-switch>
                 </v-col>
                 <v-col cols="6">
-                    <v-switch density="compact" label="Available to Contact" v-model="availableToContact"></v-switch>
+                    <v-switch density="compact" label="Available to Contact" v-model="available"></v-switch>
                 </v-col>
             </v-row>
             <v-row class="pa-2">
@@ -105,13 +105,11 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
-const props = defineProps(['id'])
-const idParam = props.id
-
-const supabase = useSupabaseClient()
-
-const store = useUserStore()
-const user = store.getUser
+const supabase        = useSupabaseClient()
+const store           = useUserStore()
+const user:any        = store.getUser
+const assocId         = user[`associated_${user.type}_id`]
+const allUsers        = store.getAllUsers
 
 const associatedUsers = ref()
 const openDialog      = ref(false)
@@ -124,28 +122,24 @@ const deleteDialog    = ref(false)
 const editId          = ref('')
 
 // USER DATA 
-const first              = ref('')
-const last               = ref('')
-const isAdmin            = ref(false)
-const availableToContact = ref(true)
-const email              = ref('')
-const phone              = ref('')
+const first           = ref('')
+const last            = ref('')
+const isAdmin         = ref(false)
+const available       = ref(true)
+const email           = ref('')
+const phone           = ref('')
 
-const errDialog = ref(false)
-const errMsg = ref()
-const errType = ref()
+const errDialog       = ref(false)
+const errMsg          = ref()
+const errType         = ref()
 
-onMounted(async () => {
-    associatedUsers.value = await getAssociatedUsers(idParam, user.type)
+onMounted(() => {
+    getAssociatedUsers()
 })
 
-const getAssociatedUsers = async (id: any, type: any) => {
-    const { data } = await supabase
-      .from('users')
-      .select()
-      .eq(`associated_${type}_id`, id)
-
-    return data ? data : null
+const getAssociatedUsers = () => {
+    associatedUsers.value = allUsers
+        .filter((user:any) => user[`associated_${user.type}_id`] === assocId)
 }
 
 const addUser = async () => {
@@ -158,7 +152,7 @@ const addUser = async () => {
         email: email.value,
         type: user.type,
         id: v4(),
-        available_to_contact: availableToContact.value,
+        available_to_contact: available.value,
         associated_merchant_id: user.type == 'merchant' ? user[`associated_${user.type}_id`] : null,
         associated_vendor_id: user.type == 'vendor' ? user[`associated_${user.type}_id`] : null,
     }
@@ -169,7 +163,7 @@ const addUser = async () => {
 
         resetFields()
 
-        associatedUsers.value = await getAssociatedUsers(idParam, user.type)
+        getAssociatedUsers()
         openDialog.value = false
     } else {
         errType.value = 'User Creation'
@@ -186,7 +180,7 @@ const openEditDialog = (user: any) => {
     first.value = user.first_name
     last.value = user.last_name
     isAdmin.value = user.is_admin
-    availableToContact.value = user.available_to_contact
+    available.value = user.available_to_contact
     email.value = user.email
     phone.value = user.phone
 
@@ -199,7 +193,7 @@ const submitEdits = async () => {
         first_name: first.value,
         last_name: last.value,
         is_admin: isAdmin.value,
-        available_to_contact: availableToContact.value,
+        available_to_contact: available.value,
         email: email.value,
         phone: phone.value
     }
@@ -214,8 +208,7 @@ const submitEdits = async () => {
         snacktext.value = 'Menu item edited!'
 
         resetFields()
-        associatedUsers.value = await getAssociatedUsers(idParam, user.type)
-
+        getAssociatedUsers()
         openDialog.value = false
     } else {
         errType.value = 'User Update(s)'
@@ -228,7 +221,7 @@ const resetFields = () => {
     first.value = ''
     last.value = ''
     isAdmin.value = false
-    availableToContact.value = true
+    available.value = true
     email.value = ''
     phone.value = ''
 }
@@ -246,7 +239,7 @@ const confirmDelete = async () => {
         snackbar.value = true
         snacktext.value = 'User deleted.'
 
-        associatedUsers.value = await getAssociatedUsers(idParam, user.type)
+        getAssociatedUsers()
         deleteDialog.value = false
         userToDelete.value = null
     } else {

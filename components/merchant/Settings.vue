@@ -156,7 +156,7 @@
                             </Fluid>
                         </TabPanel>
                         <TabPanel value="3">
-                            <AssociatedUsers :id="idParam" />
+                            <AssociatedUsers />
                         </TabPanel>
                     </TabPanels>
                 </Tabs>
@@ -183,37 +183,38 @@
 </template>
 
 <script setup lang="ts">
-const supabase = useSupabaseClient()
 import { v4 } from 'uuid';
 import { Loader } from '@googlemaps/js-api-loader'
-const props = defineProps(['id'])
-const merchantStore = useMerchantStore()
-const vendorStore = useVendorStore()
-const vendors = vendorStore.getAllVendors
+const supabase          = useSupabaseClient()
+const merchantStore     = useMerchantStore()
+const vendorStore       = useVendorStore()
+const userStore         = useUserStore()
+const vendors           = vendorStore.getAllVendors
+const user:any          = userStore.getUser
+const assocId           = user[`associated_${user.type}_id`]
 
-const idParam    = ref(props.id)
-const merchant   = ref(await merchantStore.getMerchantById(idParam.value))
-const editDialog = ref(false)
-const snackbar   = ref(false)
-const snacktext  = ref('')
-const uploading  = ref(false)
-const loading    = ref(false)
+const merchant:any      = ref(await merchantStore.getMerchantById(assocId))
+const editDialog        = ref(false)
+const snackbar          = ref(false)
+const snacktext         = ref('')
+const uploading         = ref(false)
+const loading           = ref(false)
 
-const errDialog = ref(false)
-const errMsg    = ref()
-const errType   = ref()
+const errDialog         = ref(false)
+const errMsg            = ref()
+const errType           = ref()
 
-const imageUrl     = ref(merchant.value.avatar_url ? merchant.value.avatar_url : '')
-const streetRef    = ref()
-const addressFocus = ref(false)
+const imageUrl          = ref(merchant.value.avatar_url ? merchant.value.avatar_url : '')
+const streetRef         = ref()
+const addressFocus      = ref(false)
 
 const addressComponents = ref()
 const coordinates       = ref()
 const formattedAddress  = ref()
 const addressUrl        = ref()
 
-const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
-businessHours.value = businessHours.value.map((day: any) => JSON.parse(day));
+const businessHours     = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
+businessHours.value     = businessHours.value.map((day: any) => JSON.parse(day));
 
 onMounted(async () => {
     await sdkInit()

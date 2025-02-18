@@ -118,7 +118,7 @@
                   </TabPanel>
 
                   <TabPanel value="2">
-                      <AssociatedUsers :id="idParam" />
+                      <AssociatedUsers />
                   </TabPanel>
               </TabPanels>
             </Tabs>
@@ -142,26 +142,25 @@
 </template>
 
 <script setup lang="ts">
-const supabase = useSupabaseClient()
 import { v4 } from 'uuid';
-const props = defineProps(['id'])
+const supabase    = useSupabaseClient()
 const vendorStore = useVendorStore()
+const userStore   = useUserStore()
+const user:any    = userStore.getUser
+const assocId     = user[`associated_${user.type}_id`]
+const vendor:any  = ref(await vendorStore.getVendorById(assocId))
 
-const idParam    = ref(props.id)
-const vendor     = ref(await vendorStore.getVendorById(idParam.value))
-const editDialog = ref(false)
-const snackbar   = ref(false)
-const snacktext  = ref('')
-const uploading  = ref(false)
-const loading    = ref(false)
+const editDialog  = ref(false)
+const snackbar    = ref(false)
+const snacktext   = ref('')
+const uploading   = ref(false)
+const loading     = ref(false)
 
-const errType = ref()
-const errMsg = ref()
-const errDialog = ref(false)
-
-const imageUrl     = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
-
-const cuisines = ref([
+const errType     = ref()
+const errMsg      = ref()
+const errDialog   = ref(false)
+const imageUrl    = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
+const cuisines    = ref([
     'Alcohol',
     'American',
     'Asian fusion',
