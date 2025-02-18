@@ -6,27 +6,27 @@ Welcome to the ultimate event platform for food trucks and drinking establishmen
 ## For Businesses
 Worry no more about finding a food truck to feed your patrons. Easily schedule events and approve food trucks in the area to work during business.
 
-![Merchant Profile](merchant_profile-1.png)
+![Merchant Profile](assets/readme/merchant_profile-1.png)
 
-![Merchant Settings](merchant_settings-1.png)
+![Merchant Settings](assets/readme/merchant_settings-1.png)
 
-![Event Scheduling](event_scheduling-1.png)
+![Event Scheduling](assets/readme/event_scheduling-1.png)
 
 
 ## For Food Trucks
 Need a place to park your vehicle? With our app, you can find available events in your area and work with breweries and other establishments to increase your sales for the evening.
 
-![Vendor Profile](vendor_profile.png)
+![Vendor Profile](assets/readme/vendor_profile.png)
 
-![Menu](menu.png)
+![Menu](assets/readme/menu.png)
 
-![Event Request](request_event.png)
+![Event Request](assets/readme/request_event.png)
 
 
 ## For Everyone Else
 Use our map to follow your favorite food trucks to new locations, or see what food is being served at your local brewery.
 
-![Landing](landing.png)
+![Landing](assets/readme/landing.png)
 
 ## Setup
 
