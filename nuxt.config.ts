@@ -45,5 +45,5 @@ export default defineNuxtConfig({
   primevue: {
     importTheme: { from: '~/assets/theme.js' },
   },
-  css: ['~/assets/main.css', 'primeicons/primeicons.css']
+  css: ['primeicons/primeicons.css']
 })
