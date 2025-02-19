@@ -8,11 +8,14 @@ export const useMenuStore = defineStore('menu', {
     getMenuItems: (state) => state.menuItems,
   },
   actions: {
-    async setMenuItems(items: []) {
-        this.menuItems = items
+    async setAllMenuItems(items: []) {
+      this.menuItems = items
     },
     async getAllMenuItems() {
       return this.menuItems
+    },
+    async getItemsByVendorId(id: any) {
+      return this.menuItems.filter((i:any) => i.vendor_id === id)
     }
   }
 })

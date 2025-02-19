@@ -78,17 +78,12 @@
 <script setup lang="ts">
 const supabase     = useSupabaseClient()
 const userStore    = useUserStore()
-const menuStore    = useMenuStore()
-const vendorStore  = useVendorStore()
-const user         = ref(userStore.user)
+const store        = useMenuStore()
 
-const { data: menuData } = await supabase
-    .from('menu_items')
-    .select()
-    .eq('vendor_id', user.value.associated_vendor_id)
-await menuStore.setMenuItems(menuData)
+const user:any     = ref(userStore.user)
+const vendorId     = user.value.associated_vendor_id
 
-const menuItems    = ref(await menuStore.getAllMenuItems())
+const menuItems    = ref(await store.getItemsByVendorId(vendorId))
 const addDialog    = ref(false)
 const editDialog   = ref(false)
 const itemToEdit   = ref(null)
@@ -170,9 +165,9 @@ const resetFields = async (action:any) => {
         .from('menu_items')
         .select()
         .eq('vendor_id', user.value.associated_vendor_id)
-    await menuStore.setMenuItems(menuData)
+    await store.setAllMenuItems(menuData)
 
-    menuItems.value    = await menuStore.getAllMenuItems()  
+    menuItems.value    = await store.getAllMenuItems()  
     snacktext.value    = `Menu Item ${action}!`
     snackbar.value     = true
     addDialog.value    = false

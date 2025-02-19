@@ -27,6 +27,10 @@ const eventStore = useEventStore()
 const { data: eventData } = await supabase.from('events').select()
 await eventStore.setAllEvents(eventData)
 
+const menuStore = useMenuStore()
+const { data: menuData } = await supabase.from('menu_items').select()
+await menuStore.setAllMenuItems(menuData)
+
 if (user.value) {
   const { data } = await supabase
       .from('users')
