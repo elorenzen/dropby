@@ -13,6 +13,7 @@
         <div class="flex items-center justify-center">
           <HomeGalleries />
         </div>
+        <NuxtLink to="/search">Food Search</NuxtLink>
     </div>
 </template>
 

@@ -29,12 +29,14 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     '@samk-dev/nuxt-vcalendar',
     "haversine",
-    "@nuxtjs/google-fonts"
+    "@nuxtjs/google-fonts",
+    "nuxt-graphql-client"
   ],
   runtimeConfig: {
     public: {
       autocomplete: process.env.GEO_KEY,
-      gMapKey: process.env.GMAPS_API_KEY
+      gMapKey: process.env.GMAPS_API_KEY,
+      GQL_HOST: 'https://spacex-api-2gl6xp7kua-ue.a.run.app/query'
     }
   },
   supabase: {
