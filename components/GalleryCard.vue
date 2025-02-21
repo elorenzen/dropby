@@ -1,5 +1,5 @@
 <template>
-    <div class="border border-surface-200 bg-black dark:border-surface-700 rounded m-2  p-4">
+    <div class="border border-surface-200 gallery-card rounded m-2 p-4">
         <v-row>
             <v-col>
                 <div class="flex justify-between items-center">
@@ -30,5 +30,8 @@ export default {
 </script>
 
 <style>
-
+.gallery-card {
+    height: 100%;
+    background-color: #201f25
+}
 </style>

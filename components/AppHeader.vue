@@ -1,8 +1,8 @@
 <template>
   <Menubar>
       <template #start>
-        <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: #e28413;" />
-          <NuxtLink to="/" class="ml-2 text-xl font-bold" style="color: #e28413; font-family: 'Fugaz One';">DropBy</NuxtLink>
+        <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: #FF8906;" />
+        <NuxtLink to="/" class="ml-2 text-xl font-bold" style="color: #FF8906;">DropBy</NuxtLink>
       </template>
       <template #end>
           <div v-if="!user" class="flex items-center gap-2">
