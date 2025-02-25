@@ -1,18 +1,20 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
     const supabase = useSupabaseClient()
     const user = useSupabaseUser()
-    const userStore = useUserStore()
+    const store = useUserStore()
+    const storeUser = store.getUser
 
     // if user exists and is signed in, set user data in store
-    if (user.value) {
+    if (user.value && !storeUser) {
         const { data } = await supabase
             .from('users')
             .select()
             .eq('id', user.value.id)
-        await userStore.setUser(data && data.length > 0 ? data[0] : '')
+        if (data && data.length > 0) await store.setUser(data[0])
+        else return navigateTo('/onboarding')
     }
 
-    const storeUser = userStore.getUser
+    if (user.value && storeUser && !storeUser.type) return navigateTo('/onboarding')
 
     if (
         user.value &&
