@@ -31,21 +31,65 @@ const menuStore = useMenuStore()
 const { data: menuData } = await supabase.from('menu_items').select()
 await menuStore.setAllMenuItems(menuData)
 
-// === TESTING NEEDED ===  
-// const subscribeToMerchants = async () => {
-//   supabase
-//     .channel('merchants')
-//     .on(
-//       'postgres_changes',
-//       {
-//         event: '*', schema: 'public', table: 'merchants'
-//       },
-//       async (payload:any) => {
-//         const { data: merchantData } = await supabase.from('merchants').select()
-//         await merchantStore.setAllMerchants(merchantData)
-//       })
-//     .subscribe()
-// }
+const subscribeToEvents = async () => {
+  supabase
+    .channel('events')
+    .on(
+      'postgres_changes',
+      {
+        event: '*', schema: 'public', table: 'events'
+      },
+      async (payload:any) => {
+        const { data: eventData } = await supabase.from('events').select()
+        await eventStore.setAllEvents(eventData)
+      })
+    .subscribe()
+}
+
+const subscribeToMerchants = async () => {
+  supabase
+    .channel('merchants')
+    .on(
+      'postgres_changes',
+      {
+        event: '*', schema: 'public', table: 'merchants'
+      },
+      async (payload:any) => {
+        const { data: merchantData } = await supabase.from('merchants').select()
+        await merchantStore.setAllMerchants(merchantData)
+      })
+    .subscribe()
+}
+
+const subscribeToVendors = async () => {
+  supabase
+    .channel('vendors')
+    .on(
+      'postgres_changes',
+      {
+        event: '*', schema: 'public', table: 'vendors'
+      },
+      async (payload:any) => {
+        const { data: vendorData } = await supabase.from('vendors').select()
+        await vendorStore.setAllVendors(vendorData)
+      })
+    .subscribe()
+}
+
+const subscribeToUsers = async () => {
+  supabase
+    .channel('users')
+    .on(
+      'postgres_changes',
+      {
+        event: '*', schema: 'public', table: 'users'
+      },
+      async (payload:any) => {
+        const { data: userData } = await supabase.from('users').select()
+        await userStore.setAllUsers(userData)
+      })
+    .subscribe()
+}
 
 const subscribeToMenuItems = async () => {
   supabase
@@ -56,7 +100,6 @@ const subscribeToMenuItems = async () => {
         event: '*', schema: 'public', table: 'menu_items'
       },
       async (payload:any) => {
-        console.log('payload: ', payload)
         const { data: menuData } = await supabase.from('menu_items').select()
         await menuStore.setAllMenuItems(menuData)
       })
@@ -73,7 +116,10 @@ if (user.value) {
 }
 
 onMounted(async () => {
-  // TESTING NEEDED --> await subscribeToMerchants()
+  await subscribeToEvents()
+  await subscribeToUsers()
+  await subscribeToVendors()
+  await subscribeToMerchants()
   await subscribeToMenuItems()
 })
 // console.log('user: ', user.user)

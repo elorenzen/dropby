@@ -187,7 +187,11 @@ const vendors       = vendorStore.getAllVendors
 const loading           = ref(false)
 const requestedVendors  = ref([])
 const merchant          = ref(await merchantStore.getMerchantById(user.value.associated_merchant_id))
-const events            = ref(await eventStore.getEventsByMerchantId(user.value.associated_merchant_id))
+const events        = computed(() => {
+  return eventStore.allEvents
+    .filter((e: any) => e.merchant === user.value.associated_merchant_id)
+    .sort((a:any,b:any) => Date.parse(b.start) - Date.parse(a.start))
+})
 const selectedEvt       = ref()
 const openAddDialog     = ref(false)
 const openEditDialog    = ref(false)
@@ -316,17 +320,12 @@ const confirmDelete = async () => {
     deleteDialog.value = false
 }
 const cancelDelete = () => { deleteDialog.value = false }
-const resetFields = async (action: any) => {
-    const { data: eventData } = await supabase.from('events').select()
-    await eventStore.setAllEvents(eventData)
-    events.value = await eventStore.getEventsByMerchantId(user.value.associated_merchant_id)
-      
+const resetFields = async (action: any) => { 
     snacktext.value = `Event ${action}!`
     snackbar.value = true
     selectedEvt.value = null
     openEditDialog.value = false
     openAddDialog.value = false
-
     evtStart.value = ''
     evtEnd.value = ''
 }

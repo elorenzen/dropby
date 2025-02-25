@@ -134,7 +134,12 @@
   const user          = ref(userStore.user)
   const merchant      = ref(await merchantStore.getMerchantById(user.value.associated_merchant_id))
   const vendors       = ref(await vendorStore.getAllVendors)
-  const events        = ref(await eventStore.getEventsByMerchantId(user.value.associated_merchant_id))
+
+  const events        = computed(() => {
+    return eventStore.allEvents
+      .filter((e: any) => e.merchant === user.value.associated_merchant_id)
+      .sort((a:any,b:any) => Date.parse(b.start) - Date.parse(a.start))
+  })
   const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
   businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
 
@@ -324,15 +329,9 @@
   }
   const cancelDelete = () => { deleteDialog.value = false }
   const resetFields = async (action: any) => {
-      const { data: eventData } = await supabase.from('events').select()
-      await eventStore.setAllEvents(eventData)
-      events.value = await eventStore.getEventsByMerchantId(user.value.associated_merchant_id)
-      
       dayViewDialog.value = false
-
       snacktext.value = `Event ${action}!`
       snackbar.value = true
-
       newEventStart.value = ''
       newEventEnd.value = ''
       refresh.value++
