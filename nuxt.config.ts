@@ -37,7 +37,8 @@ export default defineNuxtConfig({
     public: {
       autocomplete: process.env.GEO_KEY,
       gMapKey: process.env.GMAPS_API_KEY,
-      GQL_HOST: 'https://spacex-api-2gl6xp7kua-ue.a.run.app/query'
+      GQL_HOST: 'https://spacex-api-2gl6xp7kua-ue.a.run.app/query',
+      openaiApiKey: process.env.OPENAI_API_KEY,
     }
   },
   supabase: {

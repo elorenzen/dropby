@@ -36,6 +36,7 @@
                                     <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
                                     <label for="desc">Description</label>
                                 </FloatLabel>
+                                <Button @click="generateDescription">Generate Description</Button>
                             </div>
                             <div class="my-2">
                                 <FloatLabel variant="on">
@@ -119,6 +120,10 @@
         errType.value = title
         errMsg.value = msg
         errDialog.value = true
+    }
+    const generateDescription = async () => {
+        const response = await useFetch(`/api/generateMenuItemDescription?string=${name.value}`)
+        if (response.data.value) description.value = response.data.value
     }
 </script>
 
