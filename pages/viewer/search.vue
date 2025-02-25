@@ -14,20 +14,19 @@
             v-if="entry?.links?.patch?.small"
             class="thumbnail"
           >
-            <img
+            <NuxtImg
               class="lazyload"
-              src="https://placehold.co/150"
-              :data-src="entry?.links.patch?.small"
+              :src="entry?.links.patch?.small"
               :alt="entry.name || `Launch ${i}`"
-            >
+            />
           </div>
 
           <div v-else>
             <div class="thumbnail">
-              <img
+              <NuxtImg
                 src="https://placehold.co/150"
                 :alt="entry.name || `Launch ${i}`"
-              >
+              />
             </div>
           </div>
 

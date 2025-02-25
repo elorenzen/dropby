@@ -13,7 +13,7 @@
                   <TabPanel value="0">
                     <v-row>
                         <v-col cols="4">
-                          <img :src="imageUrl" alt="Image" class="w-full rounded" style="height: 60%;" />
+                          <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" style="height: 60%;" />
                           <FileUpload
                             class="mt-2"
                             mode="basic"

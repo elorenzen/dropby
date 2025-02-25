@@ -5,7 +5,7 @@
                 <v-row>
                     <v-col cols="4">
                         <Avatar v-if="item.image_url == ''" icon="pi pi-image" class="mr-2" size="xlarge" />
-                        <img v-else :src="item.image_url" alt="Image" class="w-full rounded" />
+                        <NuxtImg v-else :src="item.image_url" alt="Image" class="w-full rounded" />
                         
                         <FileUpload
                             class="mt-2"

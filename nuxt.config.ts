@@ -30,7 +30,8 @@ export default defineNuxtConfig({
     '@samk-dev/nuxt-vcalendar',
     "haversine",
     "@nuxtjs/google-fonts",
-    "nuxt-graphql-client"
+    "nuxt-graphql-client",
+    "@nuxt/image"
   ],
   runtimeConfig: {
     public: {

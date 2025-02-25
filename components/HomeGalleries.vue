@@ -11,7 +11,15 @@
                             <template #title>{{ data.merchant_name }}</template>
                             <template #description>{{ data.merchant_description }}</template>
                             <template #image>
-                                <img :src="data.avatar_url" class="w-48 h-36 rounded" />
+                                <NuxtImg
+                                    :src="data.avatar_url"
+                                    width="400"
+                                    height="300"
+                                    loading="lazy"
+                                    fit="inside"
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    class="rounded w-full h-full aspect-[4/3]"
+                                />
                             </template>
                             <template #rating>
                                 <Rating class="mt-2" :model-value="data.average_vendor_rating" />
@@ -34,7 +42,15 @@
                             <template #title>{{ data.vendor_name }}</template>
                             <template #description>{{ data.vendor_description }}</template>
                             <template #image>
-                                <img :src="data.avatar_url" class="w-48 h-36 rounded" />
+                                <NuxtImg
+                                    :src="data.avatar_url"
+                                    width="400"
+                                    height="300"
+                                    loading="lazy"
+                                    fit="inside"
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    class="rounded w-full h-full aspect-[4/3]"
+                                />
                             </template>
                             <template #rating>
                                 <Rating class="mt-2" :model-value="data.average_merchant_rating" />

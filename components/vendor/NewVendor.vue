@@ -195,7 +195,7 @@ const getAddrs = (e) => {
 
             <v-row dense class="pa-2">
                 <v-col v-if="imageUrl !== ''">
-                    <img :src="imageUrl" />
+                    <NuxtImg :src="imageUrl" />
                 </v-col>
                 <v-col>
                     <v-file-input

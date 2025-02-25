@@ -15,7 +15,7 @@
             <Column field="name" header="Name" sortable></Column>
             <Column header="Image">
                 <template #body="{ data }">
-                    <img :src="data.image_url" :alt="data.name" class="w-24 h-24 rounded" />
+                    <NuxtImg :src="data.image_url" :alt="data.name" class="w-24 h-24 rounded" />
                 </template>
             </Column>
             <Column field="price" header="Price" sortable>

@@ -29,7 +29,7 @@
           <DataTable :value="eventOnDay.pending_requests" tableStyle="width: 100%">
               <Column>
                   <template #body="{ data }">
-                      <img :src="vendorData(data, 'avatar_url')" :alt="vendorData(data, 'vendor_name')" class="w-30 rounded" />
+                      <NuxtImg :src="vendorData(data, 'avatar_url')" :alt="vendorData(data, 'vendor_name')" class="w-30 rounded" />
                   </template>
               </Column>
               <template #header>

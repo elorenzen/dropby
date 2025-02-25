@@ -4,7 +4,7 @@
         <template #content>
           <v-row>
               <v-col cols="3">
-                <img :src="imageUrl" alt="Image" class="w-full rounded" />
+                <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" />
               </v-col>
                 <v-col cols="9">
                   <Fluid>
@@ -49,7 +49,7 @@
                         <DataTable resizableColumns columnResizeMode="expand" :value="tab.items">
                             <Column header="">
                               <template #body="slotProps">
-                                <img :src="slotProps.data.image_url" alt="No image" class="w-24 rounded" />
+                                <NuxtImg :src="slotProps.data.image_url" alt="No image" class="w-24 rounded" />
                               </template>
                             </Column>
                             <Column field="name" header="Name"></Column>

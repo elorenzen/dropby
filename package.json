@@ -12,6 +12,7 @@
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",
     "@googlemaps/js-api-loader": "^1.16.8",
+    "@nuxt/image": "^1.9.0",
     "@nuxt/scripts": "^0.8.3",
     "@nuxt/ui": "^2.18.4",
     "@nuxtjs/google-fonts": "^3.2.0",
