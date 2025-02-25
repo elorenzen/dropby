@@ -4,21 +4,36 @@
             <template #content>
                 <v-row>
                     <v-col cols="4">
-                        <Avatar v-if="imageUrl == ''" icon="pi pi-image" class="mr-2" size="xlarge" />
-                        <NuxtImg v-else :src="imageUrl" alt="Image" class="w-full rounded" />
-                        
-                        <FileUpload
-                            class="mt-2"
-                            mode="basic"
-                            accept="image/*"
-                            :maxFileSize="1000000"
-                            @upload="addImage($event)"
-                            :auto="true"
-                            chooseLabel="Upload Image"
+                        <NuxtImg
+                            :src="imageUrl"
+                            class="rounded w-full"
+                            :height="200"
+                            :width="200"
+                            sizes="sm:75px md:150px lg:200px"    
                         />
-                        <div v-if="uploading" class="card flex justify-center mt-4">
-                            <ProgressSpinner class="p-progress-spinner-circle" />
-                        </div>
+                        <v-row dense class="flex justify-center pa-2 ma-2">
+                            <FileUpload
+                                class="my-2 p-button-sm"
+                                mode="basic"
+                                accept="image/*"
+                                :maxFileSize="1000000"
+                                @upload="addImage($event)"
+                                :auto="true"
+                                chooseLabel="Upload Image"
+                            />
+                            <Button
+                                size="small"
+                                label="Generate Image"
+                                icon="pi pi-microchip-ai"
+                                iconPos="left"
+                                variant="outlined"
+                                @click="generateImage"
+                                :loading="loadingImg"
+                            />
+                            <div v-if="uploading" class="card flex justify-center mt-4">
+                                <ProgressSpinner class="p-progress-spinner-circle" />
+                            </div>
+                        </v-row>
                     </v-col>
                     <v-col cols="8">
                         <Fluid>
@@ -36,7 +51,14 @@
                                     <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
                                     <label for="desc">Description</label>
                                 </FloatLabel>
-                                <Button @click="generateDescription">Generate Description</Button>
+                                <Button
+                                    size="small"
+                                    label="Generate Description"
+                                    icon="pi pi-microchip-ai"
+                                    iconPos="left"
+                                    @click="generateDescription"
+                                    :loading="loadingDesc"
+                                />
                             </div>
                             <div class="my-2">
                                 <FloatLabel variant="on">
@@ -66,7 +88,7 @@
     const name        = ref()
     const description = ref()
     const type        = ref()
-    const imageUrl    = ref()
+    const imageUrl    = ref('https://ionicframework.com/docs/img/demos/card-media.png')
     const imageName   = ref()
     const price       = ref(0)
     const special     = ref(false)
@@ -75,6 +97,8 @@
     const errType     = ref()
     const errMsg      = ref()
     const errDialog   = ref(false)
+    const loadingDesc = ref(false)
+    const loadingImg  = ref(false)
 
     const addItem = async () => {
         loading.value = true
@@ -122,8 +146,16 @@
         errDialog.value = true
     }
     const generateDescription = async () => {
+        loadingDesc.value = true
         const response = await useFetch(`/api/generateMenuItemDescription?string=${name.value}`)
         if (response.data.value) description.value = response.data.value
+        loadingDesc.value = false
+    }
+    const generateImage = async () => {
+        loadingImg.value = true
+        const response = await useFetch(`/api/generateImage?string=${name.value}`)
+        if (response.data.value) imageUrl.value = response.data.value
+        loadingImg.value = false
     }
 </script>
 
