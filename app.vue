@@ -31,6 +31,38 @@ const menuStore = useMenuStore()
 const { data: menuData } = await supabase.from('menu_items').select()
 await menuStore.setAllMenuItems(menuData)
 
+// === TESTING NEEDED ===  
+// const subscribeToMerchants = async () => {
+//   supabase
+//     .channel('merchants')
+//     .on(
+//       'postgres_changes',
+//       {
+//         event: '*', schema: 'public', table: 'merchants'
+//       },
+//       async (payload:any) => {
+//         const { data: merchantData } = await supabase.from('merchants').select()
+//         await merchantStore.setAllMerchants(merchantData)
+//       })
+//     .subscribe()
+// }
+
+const subscribeToMenuItems = async () => {
+  supabase
+    .channel('menu_items')
+    .on(
+      'postgres_changes',
+      {
+        event: '*', schema: 'public', table: 'menu_items'
+      },
+      async (payload:any) => {
+        console.log('payload: ', payload)
+        const { data: menuData } = await supabase.from('menu_items').select()
+        await menuStore.setAllMenuItems(menuData)
+      })
+    .subscribe()
+}
+
 if (user.value) {
   const { data } = await supabase
       .from('users')
@@ -39,6 +71,11 @@ if (user.value) {
   const foundUser = data ? data[0] : null
   await userStore.setUser(foundUser)
 }
+
+onMounted(async () => {
+  // TESTING NEEDED --> await subscribeToMerchants()
+  await subscribeToMenuItems()
+})
 // console.log('user: ', user.user)
         // Get necessary script for Map initializtion (google maps API key required!!)
         // if (process.server) {

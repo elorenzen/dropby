@@ -83,7 +83,8 @@ const store        = useMenuStore()
 const user:any     = ref(userStore.user)
 const vendorId     = user.value.associated_vendor_id
 
-const menuItems    = ref(await store.getItemsByVendorId(vendorId))
+const menuItems    = computed(() => store.menuItems.filter((i:any) => i.vendor_id === vendorId))
+
 const addDialog    = ref(false)
 const editDialog   = ref(false)
 const itemToEdit   = ref(null)
@@ -161,13 +162,6 @@ const formatCurrency = (value:any) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 const resetFields = async (action:any) => {
-    const { data: menuData } = await supabase
-        .from('menu_items')
-        .select()
-        .eq('vendor_id', user.value.associated_vendor_id)
-    await store.setAllMenuItems(menuData)
-
-    menuItems.value    = await store.getAllMenuItems()  
     snacktext.value    = `Menu Item ${action}!`
     snackbar.value     = true
     addDialog.value    = false
