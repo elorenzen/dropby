@@ -11,25 +11,23 @@
                 <StepPanel v-slot="{ activateCallback }" value="1" class="pa-8">
                     <div class="flex flex-col">
                         <Splitter class="mb-8">
-                            <SplitterPanel class="flex items-center justify-center">
+                            <SplitterPanel class="flex justify-center">
                                 <Card>
                                     <template #title>Merchant Description</template>
                                     <template #content>
-                                        Storage shed, troughs feed bale manure, is garden wheat oats at augers.
-                                        Bulls at rose garden cucumbers mice sunflower wheat in pig.
-                                        Chainsaw foal hay hook, herbs at combine harvester, children is mallet.
-                                        Goat goose hen horse. Pick up truck livestock, pets and storage shed,
-                                        troughs feed bale manure, is garden wheat oats at augers. Lamb.
+                                        Select this option if you are an employee or owner of a physical business.
+                                        You must have a physical location and a business license in order to be approved 
+                                        for food trucks to begin setting up at your place of business.
                                     </template>
                                 </Card>
                             </SplitterPanel>
-                            <SplitterPanel class="flex items-center justify-center">
+                            <SplitterPanel class="flex justify-center">
                                 <Card>
                                     <template #title>Vendor Description</template>
                                     <template #content>
-                                        Lookout flogging bilge rat main sheet bilge water nipper fluke to go on account heave down clap of thunder.
-                                        Reef sails six pounders skysail code of conduct sloop cog Yellow Jack gunwalls grog blossom starboard.
-                                        Swab black jack ahoy Brethren of the Coast schooner poop deck main sheet topmast furl marooned.
+                                        Select this option if you are an employee or owner of a food truck business.
+                                        You must have a valid business license in order to be approved and begin setting up
+                                        at breweries, and other establishments in the area.
                                     </template>
                                 </Card>
                             </SplitterPanel>

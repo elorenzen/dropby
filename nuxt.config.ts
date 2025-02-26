@@ -1,5 +1,4 @@
-import Aura from '@primevue/themes/aura';
-
+import Aura from '@primevue/themes/aura'
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
@@ -47,8 +46,27 @@ export default defineNuxtConfig({
     serviceKey: process.env.SUPABASE_SERVICE,
     redirect: false // set to 'true', EVENTUALLY
   },
+  css: [
+    '@/assets/styles/tailwind.css',
+    '@/assets/styles/base.css',
+    'primeicons/primeicons.css'
+  ],
   primevue: {
-    importTheme: { from: '~/assets/theme.js' },
+    options: {
+        theme: {
+            preset: Aura,
+            options: {
+              darkModeSelector: ".p-dark",
+          },
+        },
+    },
+  },
+  postcss: {
+      plugins: {
+          "postcss-import": {},
+          tailwindcss: {},
+          autoprefixer: {},
+      },
   },
   googleFonts: {
     families: {
@@ -58,5 +76,4 @@ export default defineNuxtConfig({
       Shrikhand: true
     }
   },
-  css: ['primeicons/primeicons.css']
 })
