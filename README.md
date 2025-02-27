@@ -26,7 +26,7 @@ Need a place to park your vehicle? With our app, you can find available events i
 ## For Everyone Else
 Use our map to follow your favorite food trucks to new locations, or see what food is being served at your local brewery.
 
-![Landing](assets/readme/landing.png)
+![Landing](assets/readme/landing-new.png)
 
 ## Setup
 
