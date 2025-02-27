@@ -1,18 +1,17 @@
 <template>
-    <div>
-        <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6 ma-2">
-            <div></div>
-            <div class="flex flex-col md:items-end gap-8">
-                <Button
-                    v-if="user"
-                    outlined
-                    severity="secondary"
-                    icon="pi pi-plus-circle"
-                    @click="openAddDialog"
-                />
-            </div>
-        </div>
+    <div class="ma-2">
         <DataTable :value="associatedUsers">
+            <template #header>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xl font-bold">Menu Items</span>
+                    <Button
+                        outlined
+                        severity="secondary"
+                        icon="pi pi-plus-circle"
+                        @click="addDialog = true"
+                    />
+                </div>
+            </template>
             <Column field="user_name" header="Name">
                 <template #body="slotProps">
                     {{ slotProps.data.first_name }} {{ slotProps.data.last_name }}
@@ -33,10 +32,10 @@
                     {{ slotProps.data.phone }}
                 </template>
             </Column>
-            <Column field="actions" header="Actions" class="flex flex-col md:flex-row justify-between md:items-center">
+            <Column field="actions">
                 <template #body="{ data }">
-                    <Button outlined severity="contrast" type="button" icon="pi pi-user-edit" @click="openEditDialog(data)"></Button>
-                    <Button outlined severity="danger" type="button" icon="pi pi-trash" @click="promptDeletion(data)"></Button>
+                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="openEditDialog(data)" />
+                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="promptDeletion(data)" />
                 </template>
             </Column>
         </DataTable>
