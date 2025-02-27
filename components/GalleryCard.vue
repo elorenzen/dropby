@@ -1,5 +1,5 @@
 <template>
-    <div class="border border-surface-200 gallery-card rounded m-2 p-4">
+    <div class="gallery-card bg-surface-900 rounded m-2 p-4">
         <v-row>
             <v-col>
                 <div class="flex justify-between items-center">
@@ -19,7 +19,11 @@
                 </div>
             </v-col>
         </v-row>
-        <div class="my-4 font-medium"><slot name="description" /></div>
+        <div class="my-4 font-medium">
+            <ScrollPanel style="height: 12vh;">
+                <slot name="description" />
+            </ScrollPanel>
+        </div>
     </div>
 </template>
 
@@ -32,6 +36,5 @@ export default {
 <style>
 .gallery-card {
     height: 100%;
-    background-color: #201f25
 }
 </style>

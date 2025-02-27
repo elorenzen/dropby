@@ -1,8 +1,8 @@
 <template>
     <div>
-        <Card class="ma-2 bg-transparent border border-black">
+        <Card class="ma-2 bg-transparent">
             <template #title>
-                Bars & Taprooms
+                <div class="text-primary-500">Bars & Taprooms</div>
             </template>
             <template #content>
                 <Carousel :value="merchants" :numVisible="3" :numScroll="3" :responsive="responsive">
@@ -31,9 +31,9 @@
             </template>
         </Card>
 
-        <Card class="ma-2 bg-transparent border border-black">
+        <Card class="ma-2 bg-transparent">
             <template #title>
-                Food Trucks
+                <div class="text-primary-500">Food Trucks</div>
             </template>
             <template #content>
                 <Carousel :value="vendors" :numVisible="3" :numScroll="3" :responsive="responsive">
