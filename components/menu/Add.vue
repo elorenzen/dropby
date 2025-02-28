@@ -13,7 +13,7 @@
                         />
                         <v-row dense class="flex justify-center pa-2 ma-2">
                             <FileUpload
-                                class="my-2 p-button-sm"
+                                class="my-2 p-button-sm p-button-outlined"
                                 mode="basic"
                                 accept="image/*"
                                 :maxFileSize="1000000"
@@ -26,7 +26,7 @@
                                 label="Generate Image"
                                 icon="pi pi-microchip-ai"
                                 iconPos="left"
-                                variant="outlined"
+                                class="p-button-outlined"
                                 @click="generateImage"
                                 :loading="loadingImg"
                             />
@@ -56,6 +56,7 @@
                                     label="Generate Description"
                                     icon="pi pi-microchip-ai"
                                     iconPos="left"
+                                    class="p-button-outlined"
                                     @click="generateDescription"
                                     :loading="loadingDesc"
                                 />
@@ -72,9 +73,11 @@
                         </Fluid>
                     </v-col>
                 </v-row>
-                <v-row class="pa-2">
-                    <Button @click="addItem" :loading="loading">Add Menu Item</Button>
-                </v-row>
+            </template>
+            <template #footer>
+                <div class="flex justify-end gap-2 ma-4">
+                    <Button class="w-full" @click="addItem" :loading="loading">Save</Button>
+                </div>  
             </template>
         </Card>
     </div>

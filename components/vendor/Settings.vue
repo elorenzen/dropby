@@ -5,8 +5,12 @@
             <Tabs value="0">
               <TabList>
                   <Tab value="0">General Information</Tab>
-                  <Tab value="1">Menu</Tab>
-                  <Tab value="2">Associated Users</Tab>
+                  <Tab value="1">Business Hours</Tab>
+                  <Tab value="2">Menu</Tab>
+                  <Tab value="3">Associated Users</Tab>
+                  <div class="flex justify-end gap-2 ma-4">
+                      <Button class="p-outlined" size="small" type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
+                  </div>
               </TabList>
               <TabPanels>
                   <!-- GENERAL INFORMATION SETTINGS -->
@@ -105,19 +109,40 @@
                                 </div>
                             </div>
                           </Fluid>
-                          <div class="flex justify-end gap-2 ma-4">
-                              <Button type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
-                          </div>
                         </v-col>
                     </v-row>
                   </TabPanel>
 
-                  <!-- MENU SETTINGS -->
+                  <!-- BUSINESS HOURS SETTINGS -->
                   <TabPanel value="1">
+                      <Fluid v-for="(day, index) in businessHours" :key="index">
+                        <div class="grid grid-cols-3 gap-4">
+                          <div>
+                            {{ day.name }}
+                          </div>
+                          <div>
+                            <FloatLabel variant="on">
+                              <DatePicker :id="`open-${index}`" v-model="day.open" hour-format="12" timeOnly fluid @blur="setFormattedOpen($event, index)" />
+                              <Label :for="`open-${index}`">{{ day.name }} Open</Label>
+                            </FloatLabel>
+                          </div>
+                          <div>
+                            <FloatLabel variant="on">
+                              <DatePicker :id="`close-${index}`" v-model="day.close" hour-format="12" timeOnly fluid @blur="setFormattedClose($event, index)" />
+                              <Label :for="`close-${index}`">{{ day.name }} Close</Label>
+                            </FloatLabel>
+                          </div>
+                        </div>
+                        <Divider />
+                      </Fluid>
+                  </TabPanel>
+
+                  <!-- MENU SETTINGS -->
+                  <TabPanel value="2">
                     <MenuTable />
                   </TabPanel>
 
-                  <TabPanel value="2">
+                  <TabPanel value="3">
                       <AssociatedUsers />
                   </TabPanel>
               </TabPanels>
@@ -142,6 +167,7 @@
 </template>
 
 <script setup lang="ts">
+import Button from 'primevue/button';
 import { v4 } from 'uuid';
 const supabase    = useSupabaseClient()
 const vendorStore = useVendorStore()
@@ -160,6 +186,46 @@ const errType     = ref()
 const errMsg      = ref()
 const errDialog   = ref(false)
 const imageUrl    = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
+const businessHours = ref(
+  vendor.value.business_hours ?
+  JSON.parse(JSON.stringify(vendor.value.business_hours)) :
+  [{
+    name: 'Monday',
+    open: '',
+    close: '',
+  },
+  {
+    name: 'Tuesday',
+    open: '',
+    close: '',
+  },
+  {
+    name: 'Wednesday',
+    open: '',
+    close: '',
+  },
+  {
+    name: 'Thursday',
+    open: '',
+    close: '',
+  },
+  {
+    name: 'Friday',
+    open: '',
+    close: '',
+  },
+  {
+    name: 'Saturday',
+    open: '',
+    close: '',
+  },
+  {
+    name: 'Sunday',
+    open: '',
+    close: '',
+  }]
+)
+
 const cuisines    = ref([
     'Alcohol',
     'American',
@@ -194,6 +260,7 @@ const saveEdits = async () => {
     website: vendor.value.website,
     instagram: vendor.value.instagram,
     email: vendor.value.email,
+    business_hours: businessHours.value
   }
 
   const { error } = await supabase.from('vendors').update(updates).eq('id', vendor.value.id)
@@ -207,6 +274,13 @@ const saveEdits = async () => {
     errDialog.value = true
   }
   loading.value = false
+}
+
+const setFormattedOpen = (e: any, i: any) => {
+  businessHours.value[i].open = e.value
+}
+const setFormattedClose = (e: any, i: any) => {
+  businessHours.value[i].close = e.value
 }
 
 const updateImage = async (e: any) => {

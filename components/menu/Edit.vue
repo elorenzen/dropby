@@ -7,18 +7,29 @@
                         <Avatar v-if="item.image_url == ''" icon="pi pi-image" class="mr-2" size="xlarge" />
                         <NuxtImg v-else :src="item.image_url" alt="Image" class="w-full rounded" />
                         
-                        <FileUpload
-                            class="mt-2"
-                            mode="basic"
-                            accept="image/*"
-                            :maxFileSize="1000000"
-                            @upload="updateImage($event, item.image_name)"
-                            :auto="true"
-                            chooseLabel="Upload Image"
-                        />
-                        <div v-if="uploading" class="card flex justify-center mt-4">
-                            <ProgressSpinner class="p-progress-spinner-circle" />
-                        </div>
+                        <v-row dense class="flex justify-center pa-2 ma-2">
+                            <FileUpload
+                                class="my-2 p-button-sm p-button-outlined"
+                                mode="basic"
+                                accept="image/*"
+                                :maxFileSize="1000000"
+                                @upload="updateImage($event, item.image_name)"
+                                :auto="true"
+                                chooseLabel="Upload Image"
+                            />
+                            <Button
+                                size="small"
+                                label="Generate Image"
+                                icon="pi pi-microchip-ai"
+                                iconPos="left"
+                                class="p-button-outlined"
+                                @click="generateImage"
+                                :loading="loadingImg"
+                            />
+                            <div v-if="uploading" class="card flex justify-center mt-4">
+                                <ProgressSpinner class="p-progress-spinner-circle" />
+                            </div>
+                        </v-row>
                     </v-col>
                     <v-col cols="8">
                         <Fluid>
@@ -49,9 +60,11 @@
                         </Fluid>
                     </v-col>
                 </v-row>
-                <v-row class="pa-2">
-                    <Button @click="submitEdits" block :loading="loading">Submit Edits</Button>
-                </v-row>
+            </template>
+            <template #footer>
+                <div class="flex justify-end gap-2 ma-4">
+                    <Button @click="submitEdits" class="w-full" :loading="loading">Submit Edits</Button>
+                </div>
             </template>
         </Card>
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
@@ -69,7 +82,7 @@
     const errMsg       = ref()
     const loading      = ref(false)
     const uploading    = ref(false)
-
+    const loadingImg   = ref(false)
     const submitEdits = async () => {
         loading.value = true
         const itemObj = {
@@ -135,6 +148,12 @@
         errMsg.value = msg
         errDialog.value = true
     }
+    const generateImage = async () => {
+        loadingImg.value = true
+        const response = await useFetch(`/api/generateImage?string=${item.value.name}`)
+        if (response.data.value) item.value.image_url = response.data.value
+        loadingImg.value = false
+    }   
 </script>
 
 <style scoped>

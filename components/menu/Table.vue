@@ -44,12 +44,12 @@
         </DataTable>
 
         <!-- ADD ITEM -->
-        <Dialog v-model:visible="addDialog" modal header="New Menu Item" :style="{ width: '50rem' }">
+        <Dialog v-model:visible="addDialog" modal header="Add Menu Item" :style="{ width: '50rem' }">
             <MenuAdd :id="user.id" :vendor="user.associated_vendor_id" @created="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
         <!-- EDIT ITEM -->
-        <Dialog v-model:visible="editDialog" modal header="Edit Item" :style="{ width: '50rem' }">
+        <Dialog v-model:visible="editDialog" modal header="Edit Menu Item" :style="{ width: '50rem' }">
             <MenuEdit :item="itemToEdit" :vendor="user.associated_vendor_id" @edited="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
