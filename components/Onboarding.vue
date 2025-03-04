@@ -9,29 +9,38 @@
             </StepList>
             <StepPanels>
                 <StepPanel v-slot="{ activateCallback }" value="1" class="pa-8">
-                    <div class="flex flex-col">
-                        <Splitter class="mb-8">
-                            <SplitterPanel class="flex justify-center">
-                                <Card>
-                                    <template #title>Merchant Description</template>
-                                    <template #content>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <Card class="h-full">
+                                <template #title>
+                                    <div class="text-xl font-semibold mb-2">Merchant</div>
+                                </template>
+                                <template #content>
+                                    <p class="text-gray-600">
                                         Select this option if you are an employee or owner of a physical business.
                                         You must have a physical location and a business license in order to be approved 
                                         for food trucks to begin setting up at your place of business.
-                                    </template>
-                                </Card>
-                            </SplitterPanel>
-                            <SplitterPanel class="flex justify-center">
-                                <Card>
-                                    <template #title>Vendor Description</template>
-                                    <template #content>
+                                    </p>
+                                </template>
+                            </Card>
+                        </div>
+
+                        <div>
+                            <Card class="h-full">
+                                <template #title>
+                                    <div class="text-xl font-semibold mb-2">Vendor</div>
+                                </template>
+                                <template #content>
+                                    <p class="text-gray-600">
                                         Select this option if you are an employee or owner of a food truck business.
                                         You must have a valid business license in order to be approved and begin setting up
                                         at breweries, and other establishments in the area.
-                                    </template>
-                                </Card>
-                            </SplitterPanel>
-                        </Splitter>
+                                    </p>
+                                </template>
+                            </Card>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
                         <SelectButton
                             class="flex items-center justify-center"
                             v-model="type"
@@ -133,15 +142,17 @@
                     </p>
 
                     <h4 class="text-xl font-bold">{{ type }} Information</h4>
+                    <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" />
                     <p class="ma-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
                     <p class="ma-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>
                     <p class="ma-2"><span class="font-bold">Website: </span>{{ website ? website : '-'}}</p>
                     <p class="ma-2"><span class="font-bold">Instagram: </span>{{ ig ? ig : '-' }}</p>
                     <p class="ma-2"><span class="font-bold">Phone: </span>{{ bizEmail }}</p>
                     <p class="ma-2"><span class="font-bold">Email: </span>{{ bizPhone }}</p>
+
                     <div class="flex pt-6 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('3')" />
-                        <Button label="Submit" @click="submit" />
+                        <Button label="Submit" @click="submit" :loading="submitting" />
                     </div>
                 </StepPanel>
             </StepPanels>
@@ -163,6 +174,8 @@
             </Button>
           </template>
         </v-snackbar>
+
+        <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
     </div>
 </template>
 
@@ -177,7 +190,7 @@ const type = ref(null)
 // Panel II data
 const first     = ref()
 const last      = ref()
-const email     = ref()
+const email     = ref(authUser.value.email)
 const phone     = ref()
 const isAdmin   = ref(true)
 const available = ref(true)
@@ -189,34 +202,23 @@ const website   = ref()
 const ig        = ref()
 const bizEmail  = ref()
 const bizPhone  = ref()
+const imageUrl  = ref('https://ionicframework.com/docs/img/demos/card-media.png')
 
 // if vendor,
 const cuisine = ref([])
-const cuisines = ref([
-    'Alcohol',
-    'American',
-    'Asian fusion',
-    'Bakery',
-    'Breaksfast',
-    'Coffee',
-    'Comfort food',
-    'Dessert',
-    'Healthy food',
-    'Ice cream',
-    'Italian',
-    'Latin',
-    'mediterranean',
-    'Mexican',
-    'Pizza',
-    'Sandwich',
-    'Seafood',
-    'Snacks',
-    'Tacos',
-    'Vegan'
-])
 
+// if merchant,
+const addressComponents = ref([])
+const coordinates = ref({})
+const formattedAddress = ref('')
+const addressUrl = ref('')
+
+const submitting = ref(false)
 const snackbar  = ref(false)
 const snacktext = ref('')
+const errType   = ref('')
+const errMsg    = ref('')
+const errDialog = ref(false)
 
 const objUpdated = (obj:any) => {
     bizName.value = obj.name
@@ -226,12 +228,17 @@ const objUpdated = (obj:any) => {
     website.value = obj.website
     ig.value = obj.ig
     cuisine.value = obj.cuisine ? obj.cuisine : []
+    addressComponents.value = obj.addressComponents ? obj.addressComponents : []
+    coordinates.value = obj.coordinates ? obj.coordinates : {}
+    formattedAddress.value = obj.formattedAddress ? obj.formattedAddress : ''
+    addressUrl.value = obj.addressUrl ? obj.addressUrl : ''
+    imageUrl.value = obj.imageUrl ? obj.imageUrl : ''
 }
 
 const submit = async () => {
+    submitting.value = true
     const userId = authUser.value.id
     const typeId = v4()
-    const typeLower = type.value.toLowerCase()
 
     // first, create user in db 
     const userObj = {
@@ -242,35 +249,48 @@ const submit = async () => {
         email: email.value,
         phone: phone.value,
         is_admin: isAdmin.value,
-        type: typeLower,
-        associated_merchant_id: typeLower === 'merchant' ? typeId : null,
-        associated_vendor_id: typeLower === 'vendor' ? typeId : null,
+        type: type.value,
+        associated_merchant_id: type.value === 'merchant' ? typeId : null,
+        associated_vendor_id: type.value === 'vendor' ? typeId : null,
         available_to_contact: available.value
     }
+
+    // create user in db
     const { error: userErr } = await supabase.from('users').insert(userObj)
     // then, create merchant/vendor in db
     if (!userErr) {
         const obj = {
             id: typeId,
             created_at: new Date(),
-            [`${typeLower}_name`]: bizName.value,
-            [`${typeLower}_description`]: bizDesc.value,
+            [`${type.value}_name`]: bizName.value,
+            [`${type.value}_description`]: bizDesc.value,
             website: website.value,
             instagram: ig.value,
             phone: bizPhone.value,
             email: bizEmail.value,
+            avatar_url: imageUrl.value
         }
-        const { error: objErr } = await supabase.from(typeLower).insert(obj)
+        if (type.value === 'merchant') {
+            obj.address_components = addressComponents.value
+            obj.coordinates = coordinates.value
+            obj.formatted_address = formattedAddress.value
+            obj.address_url = addressUrl.value
+        } else if (type.value === 'vendor') obj.cuisine = cuisine.value
+
+        const { error: objErr } = await supabase.from(`${type.value}s`).insert(obj)
         if (!objErr) {
             snackbar.value = true
             snacktext.value = `${type.value} Created! An email confirmation has been sent. You will now be redirected.`
-
-            // TO DO: merchant/vendor signup endpoint
-
-            // Redirect
-            await navigateTo(`/settings/${typeId}`)
-        }
-    }
+        } else throwErr('Business Creation', objErr.message)
+        // Redirect
+        await navigateTo(`/settings/${typeId}`)
+    } else throwErr('User Creation', userErr.message)
+    submitting.value = false
+}
+const throwErr = (title: any, msg: any) => {
+    errType.value = title
+    errMsg.value = msg
+    errDialog.value = true
 }
 </script>
 

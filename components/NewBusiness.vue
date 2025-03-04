@@ -1,91 +1,115 @@
 <template>
-    <Fluid>
-        <div class="grid grid-cols-2 gap-4">
-            <div class="col-span-full">
-              <FloatLabel variant="on">
-                  <InputText id="name" v-model="businessObj.name" :fluid="true" />
-                  <label for="name">{{ altLabels[bizType].name }}</label>
-              </FloatLabel>
-            </div>
+    <div>
+        <Fluid>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-4">
+                    <NuxtImg :src="businessObj.imageUrl" alt="Image" class="w-full rounded" />
+                    
+                    <v-row dense class="flex justify-center pa-2 ma-2">
+                        <FileUpload
+                            class="my-2 p-button-sm p-button-outlined"
+                            mode="basic"
+                            accept="image/*"
+                            :maxFileSize="1000000"
+                            @upload="addImage($event)"
+                            :auto="true"
+                            chooseLabel="Upload Image"
+                            :loading="uploading"
+                        />
+                    </v-row>
+                    <div v-if="uploading" class="card flex justify-center mt-4">
+                        <ProgressSpinner class="p-progress-spinner-circle" />
+                    </div>
+                </div>
 
-            <div v-if="bizType === 'merchant'" class="col-span-full">
-                <FloatLabel variant="on">
-                  <div class="p-iconfield">
-                    <span class="p-inputicon pi pi-map-marker"></span>
-                    <input
-                      class="p-inputtext p-component p-filled"
-                      id="address"
-                      ref="streetRef"
-                    />
-                  </div>
-                  <label for="phone">Location Address</label>
-                </FloatLabel>
-            </div>
+                <div class="col-span-8">
+                    <FloatLabel variant="on">
+                        <InputText id="name" v-model="businessObj.name" :fluid="true" />
+                        <label for="name">{{ altLabels[bizType].name }}</label>
+                    </FloatLabel>
+                    <div v-if="bizType === 'merchant'" class="my-1">
+                        <FloatLabel variant="on">
+                        <div class="p-iconfield">
+                            <span class="p-inputicon pi pi-map-marker"></span>
+                            <input
+                                class="p-inputtext p-component p-filled w-full"
+                                id="address"
+                                ref="streetRef"
+                            />
+                        </div>
+                        <label for="phone">Location Address</label>
+                        </FloatLabel>
+                    </div>
+                    <div v-if="bizType === 'vendor'" class="my-1">
+                        <FloatLabel variant="on">
+                            <MultiSelect v-model="businessObj.cuisine" display="chip" :options="cuisines" filter />
+                            <label for="cuisine">Select Cuisine(s)</label>
+                        </FloatLabel>
+                    </div>
 
-            <div class="col-span-full">
-              <FloatLabel variant="on">
-                  <Textarea id="desc" v-model="businessObj.desc" rows="5" />
-                  <label for="desc">{{ altLabels[bizType].desc }}</label>
-              </FloatLabel>
-            </div>
+                    <div class="my-1">
+                        <FloatLabel variant="on">
+                            <Textarea id="desc" v-model="businessObj.desc" rows="5" />
+                            <label for="desc">{{ altLabels[bizType].desc }}</label>
+                        </FloatLabel>
+                    </div>
+                </div>
 
-            <div>
-              <FloatLabel variant="on">
-                <IconField>
-                    <InputIcon class="pi pi-phone" />
-                    <InputMask id="business_phone" v-model="businessObj.phone" mask="(999) 999-9999" />
-                </IconField>
-                <label for="business_phone">Phone</label>
-              </FloatLabel>
-            </div>
-            <div>
-              <FloatLabel variant="on">
-                <IconField>
-                    <InputIcon class="pi pi-envelope" />
-                    <InputText id="business_email" v-model="businessObj.email"/>
-                </IconField>
-                <label for="business_email">Email</label>
-              </FloatLabel>
-            </div>
-            <div>
+                <div class="col-span-3">
                 <FloatLabel variant="on">
                     <IconField>
-                        <InputIcon class="pi pi-link" />
-                        <InputText id="website" v-model="businessObj.website"/>
+                        <InputIcon class="pi pi-phone" />
+                        <InputMask id="business_phone" v-model="businessObj.phone" mask="(999) 999-9999" />
                     </IconField>
-                    <label for="website">Website</label>
+                    <label for="business_phone">Phone</label>
                 </FloatLabel>
-            </div>
-            <div>
-              <FloatLabel variant="on">
-                <IconField>
-                    <InputIcon class="pi pi-instagram" />
-                    <InputText id="ig" v-model="businessObj.ig" />
-                </IconField>
-                <label for="ig">Instagram</label>
-              </FloatLabel>
-            </div>
-            <div v-if="bizType === 'vendor'" class="col-span-full">
+                </div>
+                <div class="col-span-3">
                 <FloatLabel variant="on">
-                    <MultiSelect v-model="businessObj.cuisine" display="chip" :options="cuisines" filter />
-                    <label for="cuisine">Select Cuisine(s)</label>
+                    <IconField>
+                        <InputIcon class="pi pi-envelope" />
+                        <InputText id="business_email" v-model="businessObj.email"/>
+                    </IconField>
+                    <label for="business_email">Email</label>
                 </FloatLabel>
+                </div>
+                <div class="col-span-3">
+                    <FloatLabel variant="on">
+                        <IconField>
+                            <InputIcon class="pi pi-link" />
+                            <InputText id="website" v-model="businessObj.website"/>
+                        </IconField>
+                        <label for="website">Website</label>
+                    </FloatLabel>
+                </div>
+                <div class="col-span-3">
+                <FloatLabel variant="on">
+                    <IconField>
+                        <InputIcon class="pi pi-instagram" />
+                        <InputText id="ig" v-model="businessObj.ig" />
+                    </IconField>
+                    <label for="ig">Instagram</label>
+                </FloatLabel>
+                </div>
             </div>
-        </div>
-    </Fluid>
+        </Fluid>
+        <ErrorDialog v-if="errDialog" :errType="'Image Upload'" :errMsg="errMsg" @errorClose="errDialog = false" />
+    </div>
 </template>
 
 <script setup lang="ts">
 import { Loader } from '@googlemaps/js-api-loader'
+import { v4 } from 'uuid'
+const supabase          = useSupabaseClient()
 
 const props             = defineProps(['bizType'])
 const bizType:string    = props.bizType
 const emit              = defineEmits(['objUpdated'])
 const streetRef         = ref()
-const addressComponents = ref()
-const coordinates       = ref()
-const formattedAddress  = ref()
-const addressUrl        = ref()
+const uploading         = ref(false)
+const errDialog         = ref(false)
+const errMsg            = ref('')
+
 const businessObj       = reactive({
     name: '',
     desc: '',
@@ -93,7 +117,12 @@ const businessObj       = reactive({
     email: '',
     website: '',
     ig: '',
-    cuisine: []
+    cuisine: [],
+    addressComponents: [],
+    coordinates: {},
+    formattedAddress: '',
+    addressUrl: '',
+    imageUrl: 'https://ionicframework.com/docs/img/demos/card-media.png'
 })
 
 const cuisines = ref([
@@ -161,17 +190,38 @@ const sdkInit = async () => {
       const lat = placeResponse.geometry.location.lat()
       const lng = placeResponse.geometry.location.lng()
 
-      addressComponents.value = placeResponse
+      businessObj.addressComponents = placeResponse
         ? placeResponse.address_components
         : ''
-      coordinates.value = placeResponse ? { lat: lat, lng: lng } : ''
-      formattedAddress.value = placeResponse
+      businessObj.coordinates = placeResponse ? { lat: lat, lng: lng } : ''
+      businessObj.formattedAddress = placeResponse
         ? placeResponse.formatted_address
         : ''
-      addressUrl.value = placeResponse ? placeResponse.url : ''
+      businessObj.addressUrl = placeResponse ? placeResponse.url : ''
     })
   })
 }
+const addImage = async (e: any) => {
+        uploading.value = true
+        const file = e.files[0]
+
+        if (file) {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${v4()}.${fileExt}`
+            const filePath = `${fileName}`
+
+            const { error } = await supabase.storage.from('business_images').upload(filePath, file)
+
+            if (!error) {
+                const { data } = supabase.storage.from('business_images').getPublicUrl(filePath)
+                if (data) businessObj.imageUrl = data.publicUrl
+            } else {
+                errDialog.value = true
+                errMsg.value = error.message
+            }
+        }
+        uploading.value = false
+    }
 </script>
 
 <style>
