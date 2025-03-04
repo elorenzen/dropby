@@ -9,7 +9,7 @@
                   <Tab value="2">Menu</Tab>
                   <Tab value="3">Associated Users</Tab>
                   <div class="flex justify-end gap-2 ma-4">
-                      <Button class="p-outlined" size="small" type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
+                      <Button class="p-button-sm" size="small" type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
                   </div>
               </TabList>
               <TabPanels>
@@ -19,7 +19,7 @@
                         <v-col cols="4">
                           <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" style="height: 60%;" />
                           <FileUpload
-                            class="mt-2"
+                            class="my-2 p-button-sm p-button-outlined"
                             mode="basic"
                             accept="image/*"
                             :maxFileSize="1000000"
@@ -27,6 +27,9 @@
                             :auto="true"
                             chooseLabel="Upload New Image"
                           />
+                          <div v-if="uploading" class="card flex justify-center mt-4">
+                              <ProgressSpinner class="p-progress-spinner-circle" />
+                          </div>
                         </v-col>
                         <v-col cols="8">
                           <Fluid>
@@ -167,7 +170,6 @@
 </template>
 
 <script setup lang="ts">
-import Button from 'primevue/button';
 import { v4 } from 'uuid';
 const supabase    = useSupabaseClient()
 const vendorStore = useVendorStore()

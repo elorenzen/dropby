@@ -32,11 +32,17 @@
                                 </Card>
                             </SplitterPanel>
                         </Splitter>
-                        <SelectButton class="flex items-center justify-center" v-model="type" :options="['Merchant', 'Vendor']" />
+                        <SelectButton
+                            class="flex items-center justify-center"
+                            v-model="type"
+                            :options="[{label: 'Merchant', value: 'merchant'}, {label: 'Vendor', value: 'vendor'}]"
+                            optionLabel="label"
+                            optionValue="value"
+                        />
                     </div>
                     <div class="flex pt-6 justify-end">
                         <Button
-                            :label="!type ? 'Continue' : `Continue as ${type}`"
+                            :label="!type ? 'Continue' : `Continue as ${type.charAt(0).toUpperCase() + type.slice(1)}`"
                             :disabled="!type"
                             icon="pi pi-arrow-right"
                             iconPos="right"
@@ -98,67 +104,8 @@
                     </div>
                 </StepPanel>
                 <StepPanel v-slot="{ activateCallback }" value="3" class="pa-8">
-                    <div class="flex flex-col">
-                        <Fluid>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="col-span-full">
-                                  <FloatLabel variant="on">
-                                      <InputText id="name" v-model="bizName" :fluid="true" />
-                                      <label for="name">Merchant Name (e.g. 'McDonald's')</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <div class="col-span-full">
-                                  <FloatLabel variant="on">
-                                      <Textarea id="desc" v-model="bizDesc" rows="5" />
-                                      <label for="desc">Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <IconField>
-                                        <InputIcon class="pi pi-phone" />
-                                        <InputMask id="business_phone" v-model="bizPhone" mask="(999) 999-9999" />
-                                    </IconField>
-                                    <label for="business_phone">Phone</label>
-                                  </FloatLabel>
-                                </div>
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <IconField>
-                                        <InputIcon class="pi pi-envelope" />
-                                        <InputText id="business_email" v-model="bizEmail"/>
-                                    </IconField>
-                                    <label for="business_email">Email</label>
-                                  </FloatLabel>
-                                </div>
-                                <div>
-                                    <FloatLabel variant="on">
-                                        <IconField>
-                                            <InputIcon class="pi pi-link" />
-                                            <InputText id="website" v-model="website"/>
-                                        </IconField>
-                                        <label for="website">Website</label>
-                                    </FloatLabel>
-                                </div>
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <IconField>
-                                        <InputIcon class="pi pi-instagram" />
-                                        <InputText id="ig" v-model="ig" />
-                                    </IconField>
-                                    <label for="ig">Instagram</label>
-                                  </FloatLabel>
-                                </div>
-                                <div class="card flex justify-center">
-                                    <v-switch density="compact" label="Administrative Access" v-model="isAdmin" :disabled="true"></v-switch>
-                                </div>
-                                <div class="card flex justify-center">
-                                    <v-switch density="compact" label="Available to Contact" v-model="available"></v-switch>
-                                </div>
-                            </div>
-                        </Fluid>
+                    <div v-if="type" class="flex flex-col">
+                        <NewBusiness @objUpdated="objUpdated" :bizType="type" />
                     </div>
                     <div class="flex pt-6 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
@@ -243,8 +190,43 @@ const ig        = ref()
 const bizEmail  = ref()
 const bizPhone  = ref()
 
+// if vendor,
+const cuisine = ref([])
+const cuisines = ref([
+    'Alcohol',
+    'American',
+    'Asian fusion',
+    'Bakery',
+    'Breaksfast',
+    'Coffee',
+    'Comfort food',
+    'Dessert',
+    'Healthy food',
+    'Ice cream',
+    'Italian',
+    'Latin',
+    'mediterranean',
+    'Mexican',
+    'Pizza',
+    'Sandwich',
+    'Seafood',
+    'Snacks',
+    'Tacos',
+    'Vegan'
+])
+
 const snackbar  = ref(false)
 const snacktext = ref('')
+
+const objUpdated = (obj:any) => {
+    bizName.value = obj.name
+    bizDesc.value = obj.desc
+    bizPhone.value = obj.phone
+    bizEmail.value = obj.email
+    website.value = obj.website
+    ig.value = obj.ig
+    cuisine.value = obj.cuisine ? obj.cuisine : []
+}
 
 const submit = async () => {
     const userId = authUser.value.id

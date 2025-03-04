@@ -7,6 +7,16 @@
                     <Tab value="0">General Information</Tab>
                     <Tab value="1">Business Hours</Tab>
                     <Tab value="3">Associated Users</Tab>
+                    <div class="flex justify-end gap-2 ma-4">
+                      <Button
+                        class="p-button-sm"
+                        size="small"
+                        type="button"
+                        label="Save Edits"
+                        @click="saveEdits"
+                        :loading="loading">
+                      </Button>
+                  </div>
                 </TabList>
                 <TabPanels>
                     <!-- GENERAL INFORMATION SETTINGS -->
@@ -15,7 +25,7 @@
                         <v-col cols="3">
                           <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" />
                           <FileUpload
-                            class="mt-2"
+                            class="my-2 p-button-sm p-button-outlined"
                             mode="basic"
                             accept="image/*"
                             :maxFileSize="1000000"
@@ -23,6 +33,9 @@
                             :auto="true"
                             chooseLabel="Upload New Image"
                           />
+                          <div v-if="uploading" class="card flex justify-center mt-4">
+                              <ProgressSpinner class="p-progress-spinner-circle" />
+                          </div>
                         </v-col>
                         <v-col cols="9">
                           <Fluid>
@@ -160,9 +173,6 @@
                         </TabPanel>
                     </TabPanels>
                 </Tabs>
-                <div class="flex justify-end gap-2 ma-4">
-                    <Button type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
-                </div>
           </template>
       </Card>
 

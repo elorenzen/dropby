@@ -10,7 +10,7 @@
                 <label>{{ errorMessage }}.</label>
             </div>
             <div class="flex justify-end gap-2">
-                <Button type="button" label="OK" severity="secondary" @click="close"></Button>
+                <Button class="w-full" type="button" label="OK" severity="secondary" @click="close"></Button>
             </div>
         </Dialog>
     </div>
