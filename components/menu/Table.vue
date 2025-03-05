@@ -23,7 +23,13 @@
                     {{ formatCurrency(slotProps.data.price) }}
                 </template>
             </Column>
-            <Column field="description" header="Description" style="max-width: 20rem;"></Column>
+            <Column field="description" header="Description" style="max-width: 20rem;">
+                <template #body="{ data }">
+                    <ScrollPanel style="height: 10vh;">
+                        <p class="m-0">{{ data.description }}</p>
+                    </ScrollPanel>
+                </template>
+            </Column>
             <Column field="type" header="Type" sortable></Column>
             <!-- <Column field="status" header="Status" sortable>
                 <template #body="slotProps">
