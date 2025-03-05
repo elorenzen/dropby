@@ -116,11 +116,6 @@
             </DataView>
         </Dialog>
 
-        <Dialog v-model:visible="openViewDialog" modal header="Event Information" :style="{ width: '25rem' }">
-            <MerchantCard :merchant="selectedEvt.merchant" />
-            <div>{{ new Date(selectedEvt.start).toLocaleString() }} - {{ new Date(selectedEvt.end).toLocaleString() }}</div>
-        </Dialog>
-
         <Dialog v-model:visible="openAddDialog" modal header="Add Event" :style="{ width: '25rem' }">
             <Fluid>
                 <div>
@@ -196,7 +191,6 @@ const selectedEvt       = ref()
 const openAddDialog     = ref(false)
 const openEditDialog    = ref(false)
 const openRequestDialog = ref(false)
-const openViewDialog    = ref(false)
 const deleteDialog      = ref(false)
 const snackbar          = ref(false)
 const snacktext         = ref('')
@@ -284,7 +278,7 @@ const selectRow = (event: any) => {
             requestedVendors.value.push(found)
         })
         openRequestDialog.value = true
-    } else openViewDialog.value = true
+    }
 }
 const saveEdits = async () => {
     loading.value = true

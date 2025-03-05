@@ -1,18 +1,17 @@
 <template>
   <DataTable
-      v-if="allMerchants && allMerchants.length > 0"
-      :value="allMerchants"
+      :value="merchants"
       sortField="average_vendor_rating" :sort-order="-1"
   >
-      <Column field="merchant_name" header="Name" sortable>
+      <Column field="merchant_name" header="Merchant" sortable>
           <template #body="slotProps">
-              {{ slotProps.data.merchant_name }}
+              <p class="m-0 font-semibold">{{ slotProps.data.merchant_name }}</p>
           </template>
       </Column>
       <Column field="formatted_address" header="Address">
           <template #body="slotProps">
               {{ slotProps.data.formatted_address }}
-              <Badge v-if="slotProps.data && slotProps.data.coordinates" :value="getDistance(slotProps.data.coordinates)"></Badge>
+              <!-- <Badge v-if="slotProps.data.coordinates" :value="getDistance(slotProps.data.coordinates)"></Badge> -->
           </template>
       </Column>
       <Column field="average_vendor_rating" header="Rating" :sortable="true">
@@ -22,22 +21,36 @@
       </Column>
       <Column field="socials" header="">
           <template #body="slotProps">
-            <!-- 
-            WILL BE READONLY WITH TOOLTIP
-            <Button icon variant="plain">
-                <NuxtLink :to="`tel:${slotProps.data.phone}`" target="_blank">
-                    <v-icon>mdi-phone</v-icon>
-                </NuxtLink>
-            </Button> -->
-            <Button icon="pi pi-globe" variant="plain">
-                <NuxtLink :to="slotProps.data.website" target="_blank" />
-            </Button>
-            <Button icon="pi pi-instagram" variant="plain">
-                <NuxtLink :to="slotProps.data.instagram" target="_blank" />
-            </Button>
-            <Button icon="pi pi-envelope" variant="plain">
-              <NuxtLink :to="`mailto:${slotProps.data.email}`" target="_blank" />
-            </Button>
+              <Button
+                  as="a"
+                  size="small"
+                  class="mr-1"
+                  icon="pi pi-globe"
+                  variant="text"
+                  :href="slotProps.data.website"
+                  rounded
+                  target="_blank"
+              />
+              <Button
+                  as="a"
+                  size="small"
+                  class="mr-1"
+                  icon="pi pi-instagram"
+                  variant="text"
+                  :href="slotProps.data.instagram"
+                  rounded
+                  target="_blank"
+              />
+              <Button
+                  as="a"
+                  size="small"
+                  class="mr-1"
+                  icon="pi pi-envelope"
+                  variant="text"
+                  :href="`mailto:${slotProps.data.email}`"
+                  rounded
+                  target="_blank"
+              />
           </template>
       </Column>
   </DataTable>
@@ -52,11 +65,6 @@ const coordinates = userStore.getUserLocation
 
 const lat = ref(coordinates.lat ? coordinates.lat : 34.0549) // Use DTLA lat. as fallback
 const lng = ref(coordinates.lng ? coordinates.lng : -118.2426) // Use DTLA lat. as fallback
-
-const allMerchants = computed(() => {
-  let allMerchants = merchants
-  return allMerchants.sort((a, b) => a.merchant_name.localeCompare(b.merchant_name))
-})
 
 const getDistance = (coordinates: any) => {
   const coordsParam = JSON.parse(coordinates)
