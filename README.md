@@ -10,7 +10,7 @@ Worry no more about finding a food truck to feed your patrons. Easily schedule e
 
 ![Merchant Profile](assets/readme/merchant_profile-1.png)
 
-![Merchant Settings](assets/readme/merchant_settings-1.png)
+![Merchant Settings](assets/readme/new_merchant_settings.png)
 
 ![Event Scheduling](assets/readme/event_scheduling-1.png)
 
