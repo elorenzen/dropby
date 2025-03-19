@@ -101,9 +101,10 @@
                                     <div class="flex flex-col md:items-end gap-8">
                                         <div class="flex flex-row-reverse md:flex-row gap-2">
                                             <Button
-                                                label="Approve"
+                                                :label="alreadyBooked(item.id) ? 'Booked' : 'Approve'"
                                                 @click="approveRequest(item.id)"
                                                 class="flex-auto md:flex-initial whitespace-nowrap"
+                                                :disabled="alreadyBooked(item.id)"
                                                 :loading="loading"
                                             ></Button>
                                         </div>
@@ -117,35 +118,40 @@
         </Dialog>
 
         <Dialog v-model:visible="openAddDialog" modal header="Add Event" :style="{ width: '25rem' }">
-            <Fluid>
-                <div>
-                    <div class="col-span-full">
-                        <FloatLabel variant="on" class="mb-4">
-                            <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
-                            <label for="evt_start">Event Start</label>
-                        </FloatLabel>
-                    </div>
-                    <div class="col-span-full">
-                        <FloatLabel variant="on" class="mb-4">
-                            <DatePicker v-model="evtEnd" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
-                            <label for="evt_end">Event End</label>
-                        </FloatLabel>
-                    </div>
-                    <div class="col-span-full">
-                        <FloatLabel variant="on" class="mb-4">
-                            <Textarea id="notes" v-model="notes" rows="3" />
-                            <label for="notes">Notes for Vendor</label>
-                        </FloatLabel>
-                    </div>
-                </div>
-            </Fluid>
-            <Button
-                @click="addEvent"
-                color="#e28413"
-                variant="outlined"
-                :disabled="evtStart == '' || evtEnd == ''"
-                :loading="loading"
-            >Add Event</Button>
+            <Card style="overflow: hidden;">
+                <template #content>
+                    <Fluid>
+                        <div class="col-span-full">
+                            <FloatLabel variant="on" class="mb-4">
+                                <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
+                                <label for="evt_start">Event Start</label>
+                            </FloatLabel>
+                        </div>
+                        <div class="col-span-full">
+                            <FloatLabel variant="on" class="mb-4">
+                                <DatePicker v-model="evtEnd" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
+                                <label for="evt_end">Event End</label>
+                            </FloatLabel>
+                        </div>
+                        <div class="col-span-full">
+                            <FloatLabel variant="on" class="mb-4">
+                                <Textarea id="notes" v-model="notes" rows="3" />
+                                <label for="notes">Notes for Vendor</label>
+                            </FloatLabel>
+                        </div>
+                    </Fluid>
+                </template>
+                <template #footer>
+                    <div class="flex justify-end gap-2 ma-4">
+                        <Button
+                            class="w-full"
+                            @click="addItem"
+                            :disabled="evtStart == '' || evtEnd == ''"
+                            :loading="loading"
+                        >Save</Button>
+                    </div>  
+                </template>
+            </Card>
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
@@ -361,6 +367,10 @@ const approveRequest = async (id: any) => {
     // UNCOMMENT AFTER FIXING
     // else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
     loading.value = false
+    openRequestDialog.value = false
+}
+const alreadyBooked = (id: any) => {
+    return (selectedEvt.value.status == 'Booked' && selectedEvt.value.pending_requests.includes(id))
 }
 watch(openRequestDialog, (newVal) => {
     if (!newVal) requestedVendors.value = []
