@@ -59,6 +59,27 @@
                                     </FloatLabel>
                                 </div>
 
+                                <div class="col">
+                                  <FloatLabel variant="on">
+                                    <div class="p-iconfield">
+                                      <span class="p-inputicon pi pi-map-marker"></span>
+                                      <input
+                                        class="p-inputtext p-component p-filled w-full"
+                                        id="address"
+                                        ref="streetRef"
+                                        :placeholder="vendor.formatted_address ? vendor.formatted_address : 'Enter address'"
+                                      />
+                                    </div>
+                                    <label for="phone">Base Address</label>
+                                  </FloatLabel>
+                                </div>
+                                <div class="col">
+                                  <FloatLabel variant="on">
+                                    <InputNumber id="radius" v-model="radius" suffix=" mi" fluid />
+                                    <label for="radius">Service Radius</label>
+                                  </FloatLabel>
+                                </div>
+
                                 <!-- DESCRIPTION -->
                                 <div class="col-span-full">
                                   <FloatLabel variant="on">
@@ -171,23 +192,29 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
-const supabase    = useSupabaseClient()
-const vendorStore = useVendorStore()
-const userStore   = useUserStore()
-const user:any    = userStore.getUser
-const assocId     = user[`associated_${user.type}_id`]
-const vendor:any  = ref(await vendorStore.getVendorById(assocId))
+import { Loader } from '@googlemaps/js-api-loader'
+const supabase      = useSupabaseClient()
+const vendorStore   = useVendorStore()
+const userStore     = useUserStore()
+const user:any      = userStore.getUser
+const assocId       = user[`associated_${user.type}_id`]
+const vendor:any    = ref(await vendorStore.getVendorById(assocId))
 
-const editDialog  = ref(false)
-const snackbar    = ref(false)
-const snacktext   = ref('')
-const uploading   = ref(false)
-const loading     = ref(false)
+const editDialog    = ref(false)
+const snackbar      = ref(false)
+const snacktext     = ref('')
+const uploading     = ref(false)
+const loading       = ref(false)
 
-const errType     = ref()
-const errMsg      = ref()
-const errDialog   = ref(false)
-const imageUrl    = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
+const errType       = ref()
+const errMsg        = ref()
+const errDialog     = ref(false)
+const imageUrl      = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
+const radius        = ref(vendor.value.service_radius ? vendor.value.service_radius : 10)
+const streetRef     = ref()
+const baseLat       = ref()
+const baseLng       = ref()
+const forattedAddr  = ref()
 const businessHours = ref(
   vendor.value.business_hours ?
   JSON.parse(JSON.stringify(vendor.value.business_hours)) :
@@ -251,6 +278,41 @@ const cuisines    = ref([
     'Vegan'
 ])
 
+onMounted(async () => {
+  await sdkInit()
+})
+
+const sdkInit = async () => {
+  //initialize google sdk
+  const config = useRuntimeConfig()
+  const loader = new Loader({
+    apiKey: config.public.gMapKey,
+    version: 'beta',
+    libraries: ['places'],
+  })
+  loader.load().then((google) => {
+    const options = {
+      componentRestrictions: { country: 'us' },
+      fields: ['geometry/location', 'name', 'formatted_address', 'types'],
+      strictBounds: false,
+    }
+    // attaches it to the input field with this ref
+    const autocomplete = new google.maps.places.Autocomplete(
+      streetRef.value,
+      options
+    )
+    autocomplete.addListener('place_changed', () => {
+      const placeResponse = autocomplete.getPlace()
+      baseLat.value = placeResponse.geometry.location.lat()
+      baseLng.value = placeResponse.geometry.location.lng()
+
+      forattedAddr.value = placeResponse
+        ? placeResponse.formatted_address
+        : ''
+    })
+  })
+}
+
 const saveEdits = async () => {
   loading.value = true
   const updates = {
@@ -262,7 +324,11 @@ const saveEdits = async () => {
     website: vendor.value.website,
     instagram: vendor.value.instagram,
     email: vendor.value.email,
-    business_hours: businessHours.value
+    business_hours: businessHours.value,
+    service_radius: radius.value,
+    base_latitude: baseLat.value,
+    base_longitude: baseLng.value,
+    formatted_address: forattedAddr.value
   }
 
   const { error } = await supabase.from('vendors').update(updates).eq('id', vendor.value.id)
