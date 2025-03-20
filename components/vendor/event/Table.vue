@@ -5,6 +5,7 @@
             :value="events"
             selectionMode="single"
             dataKey="id"
+            :refresh="refreshKey"
             @row-select="selectRow"
         >
             <template #header>
@@ -28,19 +29,25 @@
             </Column>
             <Column field="location_address" header="Location">
                 <template #body="slotProps">
-                    {{ slotProps.data.location_address }}
+                    <div class="flex items-center justify-between gap-2 py-4 w-full">
+                        <span>{{ slotProps.data.location_address }}</span>
+                        <Badge
+                            v-if="slotProps.data.location_coordinates && userCoords"
+                            :value="getDistance(slotProps.data.location_coordinates)">
+                        </Badge>
+                    </div>
                 </template>
             </Column>
             <Column field="status" header="Status">
                 <template #body="{ data }">
                     <Tag
-                        v-if="data.pending_requests && data.pending_requests.includes(user.associated_vendor_id)"
+                        v-if="data.pending_requests && data.pending_requests.includes(vendor.id)"
                         value="PENDING"
                         severity="warn"
                     />
                     
                     <Tag
-                        v-else-if="!data.pending_requests || (data.pending_requests && !data.pending_requests.includes(user.associated_vendor_id))"
+                        v-else-if="!data.pending_requests || (data.pending_requests && !data.pending_requests.includes(vendor.id))"
                         :value="(data.status).toUpperCase()"
                         severity="success"
                     />
@@ -62,12 +69,24 @@
                         <p class="m-0">{{ selectedEvt.notes }}</p>
                     </template>
                     <template #footer>
-                        <Button
-                            v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(user.associated_vendor_id)"
-                            type="button"
-                            label="Request Event"
-                            @click="requestEvent"
-                        ></Button>
+                        <div class="flex justify-end gap-2 ma-4">
+                            <Button
+                                v-if="!selectedEvt.pending_requests || !selectedEvt.pending_requests.includes(vendor.id)"
+                                type="button"
+                                label="Request Event"
+                                @click="requestEvent"
+                                class="w-full"
+                            ></Button>
+                            <Button
+                                v-else-if="selectedEvt.pending_requests && selectedEvt.pending_requests.includes(vendor.id)"
+                                type="button"
+                                outlined
+                                severity="danger"
+                                label="Cancel Request"
+                                @click="cancelRequest"
+                                class="w-full"
+                            ></Button>
+                        </div>
                     </template>
                 </Card>
             </Dialog>
@@ -98,9 +117,11 @@
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
+    const vendorStore   = useVendorStore()
     const events        = eventStore.getAllOpenEvents
     const merchants     = merchantStore.getAllMerchants
     const user          = ref(userStore.user)
+    const vendor        = ref(await vendorStore.getVendorById(user.value.associated_vendor_id))
 
     const selectedEvt      = ref()
     const selectedMerchant = ref()
@@ -111,6 +132,18 @@
     const errDialog = ref(false)
     const errMsg    = ref()
     const loading   = ref(false)
+    const userCoords = ref()
+    const refreshKey = ref(0)
+    onMounted(() => {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const obj = position.coords.toJSON()
+            const coords = {
+            latitude: obj.latitude,
+            longitude: obj.longitude
+            }
+            userCoords.value = coords
+        });
+    });
 
     const getMerchantName = (id: any) => {
         const found = merchants.find(merchant => merchant.id === id)
@@ -127,7 +160,7 @@
             selectedEvt.value.pending_requests ?
             selectedEvt.value.pending_requests : []
 
-        reqArr.push(user.value.associated_vendor_id)
+        reqArr.push(vendor.value.id)
         const updates = {
             updated_at: new Date(),
             pending_requests: reqArr
@@ -138,6 +171,7 @@
             .eq('id', selectedEvt.value.id)
         
         if (!error) {
+            refreshKey.value++
             openViewDialog.value = false
             selectedEvt.value = ''
             selectedMerchant.value = ''
@@ -149,6 +183,61 @@
         }
         loading.value = false
     }
+    const cancelRequest = async () => {
+        loading.value = true
+
+        let reqArr = selectedEvt.value.pending_requests
+        reqArr = reqArr.filter((id: any) => id !== vendor.value.id)
+
+        const updates = {
+            updated_at: new Date(),
+            pending_requests: reqArr
+        }
+        const { error } = await supabase
+            .from('events')
+            .update(updates)
+            .eq('id', selectedEvt.value.id)
+            
+        if (!error) {
+            refreshKey.value++
+            openViewDialog.value = false
+            selectedEvt.value = ''
+            selectedMerchant.value = ''
+            snacktext.value = 'Request cancelled!'
+            snackbar.value = true
+        } else {
+            errDialog.value = true
+            errMsg.value = error.message
+        }
+        loading.value = false
+    }
+    const getDistance = (coordinates: any) => {
+        console.log(coordinates)
+        const parsedCoords = JSON.parse(coordinates)
+
+        // Convert degrees to radians
+        const radLat1 = userCoords.value.latitude * Math.PI / 180;
+        const radLon1 = userCoords.value.longitude * Math.PI / 180;
+        const radLat2 = parsedCoords.lat * Math.PI / 180;
+        const radLon2 = parsedCoords.lng * Math.PI / 180;
+
+        // Radius of the Earth in miles
+        const R = 3950; // mi
+
+        // Differences in coordinates
+        const dLat = radLat2 - radLat1;
+        const dLon = radLon2 - radLon1;
+
+        // Haversine formula
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(radLat1) * Math.cos(radLat2) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+
+        return `${distance.toFixed(2)} mi.`; // Return distance rounded to 2 decimal places
+    };
 </script>
 
 <style scoped>
