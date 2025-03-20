@@ -59,40 +59,39 @@
         </template>
       </Card>
       <!-- NEW EVENT -->
-      <Card v-else style="width: 30rem; overflow: hidden">
-        <template #title>
-          New Event
-        </template>
+      <Card v-else style="overflow: hidden">
         <template #content>
           <Fluid>
-            <div>
-              <div class="flex-auto">
+              <div class="col-span-full">
                 <FloatLabel variant="on" class="my-4">
                   <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid hourFormat="12" />
                   <label for="new-event-start" class="block mb-2"> Start Time</label>
                 </FloatLabel>
               </div>
-              <div class="flex-auto">
+              <div class="col-span-full">
                 <FloatLabel variant="on" class="my-4">
                   <label for="new-event-end" class="block mb-2"> End Time</label>
                   <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid hourFormat="12" />
                 </FloatLabel>
               </div>
-              <div class="flex-auto">
+              <div class="col-span-full">
                   <FloatLabel variant="on" class="my-4">
                       <Textarea id="notes" v-model="notes" rows="3" />
                       <label for="notes">Notes for Vendor</label>
                   </FloatLabel>
               </div>
-            </div>
           </Fluid>
         </template>
         <template #footer>
             <div class="flex gap-4 mt-1">
                 <Button
                   @click="addEvent"
+                  :disabled="
+                    !newEventStart ||
+                    !newEventEnd ||
+                    new Date(newEventStart.value).getTime() < new Date().getTime()
+                  "
                   label="Add Event"
-                  severity="success"
                   class="w-full"
                   :loading="loading"
                 ></Button>
@@ -172,6 +171,11 @@
   const allPendingDates = computed(() => {
     const allPendingEvents = events.value.filter((e: any) => e.status === 'pending')
     return allPendingEvents.map((e: any) => new Date(e.start))
+  })
+
+  watch(newEventStart, (newVal) => {
+    console.log(new Date(newVal).getTime())
+    console.log(new Date().getTime())
   })
 
   const attributes = ref([
