@@ -2,7 +2,7 @@
     <div>
         <Card class="ma-2 bg-transparent">
             <template #title>
-                <div class="text-primary-500">Bars & Taprooms</div>
+                <div class="font-bold">Bars & Taprooms</div>
             </template>
             <template #content>
                 <Carousel :value="merchants" :numVisible="3" :numScroll="3" :responsive="responsive">
@@ -33,7 +33,7 @@
 
         <Card class="ma-2 bg-transparent">
             <template #title>
-                <div class="text-primary-500">Food Trucks</div>
+                <div class="font-bold">Food Trucks</div>
             </template>
             <template #content>
                 <Carousel :value="vendors" :numVisible="3" :numScroll="3" :responsive="responsive">

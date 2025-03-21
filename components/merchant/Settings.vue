@@ -54,7 +54,7 @@
                                     <div class="p-iconfield">
                                       <span class="p-inputicon pi pi-map-marker"></span>
                                       <input
-                                        class="p-inputtext p-component p-filled"
+                                        class="p-inputtext p-component p-filled w-full"
                                         id="address"
                                         ref="streetRef"
                                         :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
