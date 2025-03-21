@@ -24,6 +24,11 @@ export const useEventStore = defineStore('event', {
       return this.allEvents
         .filter(e => e.merchant === id)
         .sort((a,b) => Date.parse(b.start) - Date.parse(a.start))
+    },
+    async getBookedEventsByVendorId(id: any) {
+      return this.allEvents
+        .filter(e => e.vendor === id && e.status === 'booked')
+        .sort((a,b) => Date.parse(b.start) - Date.parse(a.start))
     }
   }
 })
