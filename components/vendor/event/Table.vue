@@ -29,9 +29,10 @@
             </Column>
             <Column field="location_address" header="Location">
                 <template #body="slotProps">
-                    <div class="flex items-center justify-between gap-2 py-4 w-full">
+                    <div class="flex justify-between gap-2 py-4 w-full">
                         <span>{{ slotProps.data.location_address }}</span>
                         <Badge
+                            class="text-xs px-2 py-1"
                             v-if="slotProps.data.location_coordinates && userCoords"
                             :value="getDistance(slotProps.data.location_coordinates)">
                         </Badge>
@@ -40,8 +41,9 @@
             </Column>
             <Column field="status" header="Status">
                 <template #body="{ data }">
+                    <Tag v-if="data.status === 'booked'" value="BOOKED" severity="info" />
                     <Tag
-                        v-if="data.pending_requests && data.pending_requests.includes(vendor.id)"
+                        v-else-if="data.pending_requests && data.pending_requests.includes(vendor.id)"
                         value="PENDING"
                         severity="warn"
                     />
@@ -118,11 +120,13 @@
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
     const vendorStore   = useVendorStore()
-    const events        = eventStore.getAllOpenEvents
+    const events        = ref(eventStore.getAllOpenEvents)
     const merchants     = merchantStore.getAllMerchants
     const user          = ref(userStore.user)
     const vendor        = ref(await vendorStore.getVendorById(user.value.associated_vendor_id))
-
+    const bookedEvents  = ref(await eventStore.getBookedEventsByVendorId(vendor.value.id))
+    events.value = [...events.value, ...bookedEvents.value]
+    console.log(events.value)
     const selectedEvt      = ref()
     const selectedMerchant = ref()
     const openViewDialog   = ref(false)
@@ -236,7 +240,7 @@
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = R * c;
 
-        return `${distance.toFixed(2)} mi.`; // Return distance rounded to 2 decimal places
+        return `${distance.toFixed(2)}mi`; // Return distance rounded to 2 decimal places
     };
 </script>
 
