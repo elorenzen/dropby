@@ -29,6 +29,11 @@ export const useEventStore = defineStore('event', {
       return this.allEvents
         .filter(e => e.vendor === id && e.status === 'booked')
         .sort((a,b) => Date.parse(b.start) - Date.parse(a.start))
+    },
+    async getPendingEventsByVendorId(id: any) {
+      return this.allEvents
+        .filter(e => e.pending_requests && e.pending_requests.includes(id) && e.status === 'open')
+        .sort((a,b) => Date.parse(b.start) - Date.parse(a.start))
     }
   }
 })
