@@ -22,10 +22,45 @@
                 <VendorEventTable />
             </template>
         </Card>
-        <Dialog v-model:visible="addEventDialog" modal header="Add Event" :style="{ width: '45rem' }">
+        <Dialog v-model:visible="addEventDialog" modal :header="`Add Event for ${newEventDate.toLocaleDateString()}`" :style="{ width: '45rem' }">
             <EventBaseDialog>
-                <template #content>content here</template>
-                <template #footer>footer here</template>
+                <template #content>
+                    <Fluid>
+                        <div class="col-span-full">
+                            <FloatLabel variant="on" class="my-4">
+                            <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid hourFormat="12" />
+                            <label for="new-event-start" class="block mb-2"> Start Time</label>
+                            </FloatLabel>
+                        </div>
+                        <div class="col-span-full">
+                            <FloatLabel variant="on" class="my-4">
+                            <label for="new-event-end" class="block mb-2"> End Time</label>
+                            <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid hourFormat="12" />
+                            </FloatLabel>
+                        </div>
+                        <div class="col-span-full">
+                            <FloatLabel variant="on" class="my-4">
+                                <Textarea id="notes" v-model="notes" rows="3" />
+                                <label for="notes">Notes for Vendor</label>
+                            </FloatLabel>
+                        </div>
+                    </Fluid>
+                </template>
+                <template #footer>
+                    <div class="flex gap-4 mt-1">
+                        <Button
+                            @click="addEvent"
+                            :disabled="
+                                !newEventStart ||
+                                !newEventEnd ||
+                                new Date(newEventStart).getTime() < new Date().getTime()
+                            "
+                            label="Add Event"
+                            class="w-full"
+                            :loading="loading"
+                        ></Button>
+                    </div>
+                </template>
             </EventBaseDialog>
         </Dialog>
     </div>
@@ -35,6 +70,8 @@
 definePageMeta({
     middleware: ['auth']
 })
+import { v4 } from 'uuid'
+const supabase       = useSupabaseClient()
 const userStore      = useUserStore()
 const vendorStore    = useVendorStore()
 const eventStore     = useEventStore()
@@ -46,7 +83,12 @@ const allEvents      = ref(eventStore.getAllOpenEvents)
 const bookedEvents   = ref(await eventStore.getBookedEventsByVendorId(vendor.value.id))
 console.log(bookedEvents.value)
 const pendingEvents  = ref(await eventStore.getPendingEventsByVendorId(vendor.value.id))
-
+const newEventDate   = ref(new Date())
+const newEventStart  = ref(new Date())
+const newEventEnd    = ref(new Date())
+const notes          = ref('')
+const loading        = ref(false)
+const dayId          = ref()
 const events         = computed(() => {
     return eventStore.allEvents
       .filter((e: any) => e.vendor === vendor.value.id)
@@ -58,6 +100,11 @@ const allBookedDates = computed(() => {
   console.log(allBookedEvents)
   return allBookedEvents.map((e: any) => new Date(e.start))
 })
+
+watch(newEventStart, (newVal) => {
+    console.log(new Date(newVal).getTime())
+    console.log(new Date().getTime())
+  })
 
 const attributes     = ref([
     {
@@ -100,7 +147,43 @@ const openDayView = (day: any) => {
     // else, if day is not in the past, show 'Add Event' dialog for vendor
     if (eventsOnDay.length === 0 && day.date > new Date()){
         addEventDialog.value = true
-
+        newEventDate.value = day.date
+        dayId.value = day.id
     }
 }
+const addEvent = async () => {
+    loading.value    = true
+    const startHours = new Date(newEventStart.value).getHours()
+    const endHours   = new Date(newEventEnd.value).getHours()
+    const day        = newEventDate.value
+    const eventStart = day.setHours(startHours)
+    const eventEnd   = day.setHours(endHours)
+
+    const evtObj = {
+        id: v4(),
+        created_at: new Date(),
+        merchant: null,
+        vendor: vendor.value.id,
+        start: new Date(eventStart),
+        end: new Date(eventEnd),
+        day_id: dayId.value,
+        // location_coordinates:(vendor.value.base_latitude && vendor.value.base_longitude) ? `${vendor.value.base_latitude},${vendor.value.base_longitude}` : null,
+        // location_address: (vendor.value.base_address) ? vendor.value.base_address : null,
+        // location_url: (vendor.value.base_url) ? vendor.value.base_url : null,
+        status: 'booked',
+        vendor_rating: null,
+        merchant_rating: null,
+        vendor_comment: null,
+        merchant_comment: null,
+        notes: notes.value
+    }
+    const { error } = await supabase.from('events').insert(evtObj)
+    // if (!error) await resetFields('created')
+    // else {
+    //     errType.value = 'Event Creation'
+    //     errMsg.value = error.message
+    //     errDialog.value = true
+    // }
+    loading.value = false
+  }
 </script>
