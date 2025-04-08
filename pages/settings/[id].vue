@@ -10,9 +10,17 @@ definePageMeta({
     middleware: ['auth']
 })
 const route = useRoute()
-const store = useUserStore()
-const user:any = store.getUser
+const userStore = useUserStore()
+const merchantStore = useMerchantStore()
+const vendorStore = useVendorStore()
+const user:any = userStore.getUser
 const type = user?.type
+const business = ref(
+    type === 'merchant' ?
+    await merchantStore.getMerchantById(route.params.id) :
+    await vendorStore.getVendorById(route.params.id)
+)
+useSeoMeta({ title: () => `${business.value[`${type}_name`]} Settings` })
 </script>
 
 <style scoped>

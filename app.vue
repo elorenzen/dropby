@@ -7,6 +7,11 @@
 </template>
 
 <script setup lang="ts">
+useHead({
+	titleTemplate(title) {
+		return title ? `${title} | DropBy` : "DropBy";
+	},
+});
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 

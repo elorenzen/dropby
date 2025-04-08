@@ -33,4 +33,7 @@ const store = useUserStore()
 const user = ref(store.user)
 
 const route = useRoute()
+const merchantStore = useMerchantStore()
+const merchant = ref(await merchantStore.getMerchantById(route.params.id))
+useSeoMeta({ title: () => `${merchant.value.merchant_name} Home` })
 </script>
