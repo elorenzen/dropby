@@ -21,6 +21,7 @@
     "@pinia/nuxt": "^0.5.5",
     "@primevue/nuxt-module": "^4.1.0",
     "@primevue/themes": "^4.1.0",
+    "@types/uuid": "^10.0.0",
     "ai": "^4.1.46",
     "firebase": "^10.12.5",
     "haversine": "^1.1.1",
