@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Onboarding />
+        <GetStarted />
     </div>
 </template>
 

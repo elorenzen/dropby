@@ -1,11 +1,12 @@
 <template>
+  <div>
   <Menubar>
       <template #start>
         <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: #FF8906;" />
         <NuxtLink to="/" class="ml-2 text-xl font-bold" style="color: #FF8906;">DropBy</NuxtLink>
       </template>
       <template #end>
-          <div v-if="!user" class="flex items-center gap-2">
+            <div v-if="!isAuthenticated" class="flex items-center gap-2">
               <InputText placeholder="Email" v-model="email" type="text" class="w-32 sm:w-auto" />
               <Password placeholder="Password" v-model="password" class="w-32 sm:w-auto" />
               <Button
@@ -39,7 +40,7 @@
               />
           </div>
           <div v-else class="flex items-center gap-2">
-              <Button v-if="user" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
+                <Button v-if="isAuthenticated" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
               <Menu
                 ref="acctMenu"
                 id="account_menu"
@@ -52,139 +53,169 @@
       </template>
   </Menubar>
   <ErrorDialog v-if="errDialog" :errType="'Sign In'" :errMsg="errMsg" @errorClose="errDialog = false" />
+  </div>
 </template>
 
 <script setup lang="ts">
 import Logo from '~/assets/logo-one.svg' // options: '.../logo-two.svg', '.../logo-three.svg'
-const supabase  = useSupabaseClient()
-const router    = useRouter()
-const user      = useSupabaseUser()
-const store     = useUserStore()
-const storeUser = ref(store.user)
 
-const loading   = ref(false)
+const supabase = useSupabaseClient()
+const router = useRouter()
+const { isAuthenticated, currentUser, signOut } = useAuth()
+
+const loading = ref(false)
 const errDialog = ref(false)
-const errMsg    = ref()
+const errMsg = ref()
 const renderKey = ref(0)
 
-const email     = ref('')
-const password  = ref('')
-const acctMenu  = ref();
-const viewMenu  = ref();
+const email = ref('')
+const password = ref('')
+const acctMenu = ref()
+const viewMenu = ref()
 
-const viewerMenu  = ref([
+const viewerMenu = ref([
   {
     items: [
       {
         label: 'How It Works',
         icon: 'pi pi-info-circle',
         command: () => {
-          router.push('/about')
+          router.push('/viewer/about')
         }
       },
       {
         label: 'Map View',
         icon: 'pi pi-globe',
         command: () => {
-          router.push('/map')
+          router.push('/viewer/map')
         }
       },
-      // {
-      //   label: 'Sale Items',
-      //   icon: 'pi pi-shopping-cart',
-      //   command: () => {
-      //     router.push('/saleItems')
-      //   }
-      // },
+      {
+        label: 'Search',
+        icon: 'pi pi-search',
+        command: () => {
+          router.push('/viewer/search')
+        }
+      },
     ]
   }
 ])
-const accountMenu = ref([
+
+const accountMenu = computed(() => [
   {
     items: [
         {
           label: 'Home',
           icon: 'pi pi-home',
           command: () => {
-            router.push(`/${storeUser.value.type}/${storeUser.value[`associated_${storeUser.value.type}_id`]}`)
+            if (currentUser.value?.type) {
+              const associatedIdKey = `associated_${currentUser.value.type}_id` as keyof typeof currentUser.value
+              const userAssociatedId = currentUser.value[associatedIdKey]
+              if (userAssociatedId) {
+                router.push(`/${currentUser.value.type}/${userAssociatedId}`)
+              }
+            }
           }
         },
-        // {
-        //   label: 'Sales Events',
-        //   icon: 'pi pi-receipt',
-        //   command: () => {
-        //     router.push(`/sales/${storeUser ? storeUser.id : user.value.id}`)
-        //   }
-        // },
-        // {
-        //   label: 'Inventory',
-        //   icon: 'pi pi-shopping-cart',
-        //   command: () => {
-        //     router.push(`/inventory/${storeUser ? storeUser.id : user.value.id}`)
-        //   }
-        // },
         {
           label: 'Settings',
           icon: 'pi pi-cog',
           command: () => {
-            router.push(`/settings/${storeUser.value[`associated_${storeUser.value.type}_id`]}`)
+            if (currentUser.value?.type) {
+              const associatedIdKey = `associated_${currentUser.value.type}_id` as keyof typeof currentUser.value
+              const userAssociatedId = currentUser.value[associatedIdKey]
+              if (userAssociatedId) {
+                router.push(`/settings/${userAssociatedId}`)
+              }
+            }
           }
         },
         {
-          label: `Sign out`,
+          label: 'Sign out',
           icon: 'pi pi-sign-out',
           command: async () => {
-            await signOut()
+            await handleSignOut()
           }
         },
     ]
   }
-]);
+])
 
 const toggleAccountMenu = (event: any) => {
   acctMenu.value.toggle(event)
 }
+
 const toggleViewerMenu = (event: any) => {
   viewMenu.value.toggle(event)
 }
+
 const fireAuth = async () => {
   loading.value = true
+  try {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.value,
     password: password.value,
   })
 
-  if (!error && data) await confirmed(data?.user.id)
-  else await errored(error?.message)
+    if (error) {
+      await errored(error.message)
+    } else if (data?.user) {
+      await confirmed(data.user.id)
+    }
+  } catch (err) {
+    await errored('An unexpected error occurred')
+  } finally {
+    loading.value = false
   renderKey.value++
-  loading.value = false
+  }
 }
 
-const register = async () => { await navigateTo('/signup') }
+const register = async () => { 
+  await navigateTo('/get-started') 
+}
 
-const signOut = async () => {
-  console.log('signing out')
-  await supabase.auth.signOut()
-  await store.setUser(null)
+const handleSignOut = async () => {
+  try {
+    const result = await signOut()
+    if (result.error) {
+      console.error('Sign out failed:', result.error)
+    }
   email.value = ''
   password.value = ''
-  await navigateTo('/')
+  } catch (err) {
+    console.error('Sign out error:', err)
 }
-const confirmed = async (str: any) => {
-  const { data } = await supabase
-    .from('users')
-    .select()
-    .eq('id', user.value.id)
+}
 
-  const foundUser = data ? data[0] : null
-  await store.setUser(foundUser)
-  storeUser.value = store.user
-  await navigateTo(`/${storeUser.value.type}/${storeUser.value[`associated_${storeUser.value.type}_id`]}`)
+const confirmed = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+    .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error) {
+      console.error('Error fetching user:', error)
+      return
+    }
+
+    if (data) {
+      const userStore = useUserStore()
+      await userStore.setUser(data)
+      
+      // Redirect to user dashboard
+      const { redirectToUserDashboard } = useAuth()
+      await redirectToUserDashboard()
+    }
+  } catch (err) {
+    console.error('Error in confirmed:', err)
 }
-const errored = async (str: any) => {
-  errMsg.value = str
+}
+
+const errored = async (message: string) => {
+  errMsg.value = message
   errDialog.value = true
 }
-
 </script>
 

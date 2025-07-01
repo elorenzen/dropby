@@ -9,7 +9,7 @@
                 <Step value="5">Review</Step>
             </StepList>
             <StepPanels>
-                <StepPanel value="1" class="pa-8">
+                <StepPanel v-slot="{ activateCallback }" value="1" class="pa-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Create Your Account</h2>
                         <p class="text-gray-600">Let's get you started with DropBy</p>
@@ -18,31 +18,34 @@
                         <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <FloatLabel variant="on">
-                                    <InputText id="signup_email" v-model="signupEmail" type="email" />
+                                    <InputText id="signup_email" v-model="signupEmail" type="email" @blur="validateSignupEmail" />
                                     <label for="signup_email">Email Address</label>
                                 </FloatLabel>
+                                <p v-if="signupEmailError" class="text-red-500 text-xs mt-1">{{ signupEmailError }}</p>
                             </div>
                             <div>
                                 <FloatLabel variant="on">
-                                    <Password id="signup_password" v-model="signupPassword" />
+                                    <Password id="signup_password" v-model="signupPassword" @blur="validateSignupPassword" />
                                     <label for="signup_password">Password</label>
                                 </FloatLabel>
+                                <p v-if="signupPasswordError" class="text-red-500 text-xs mt-1">{{ signupPasswordError }}</p>
                             </div>
                             <div>
                                 <FloatLabel variant="on">
-                                    <Password id="confirm_password" v-model="confirmPassword" />
+                                    <Password id="confirm_password" v-model="confirmPassword" @blur="validateConfirmPassword" />
                                     <label for="confirm_password">Confirm Password</label>
                                 </FloatLabel>
+                                <p v-if="confirmPasswordError" class="text-red-500 text-xs mt-1">{{ confirmPasswordError }}</p>
                             </div>
                         </div>
                     </Fluid>
                     <div class="flex pt-6 justify-end">
                         <Button
                             label="Create Account"
-                            :disabled="!canProceedToStep2"
+                            :disabled="!step1Valid || accountCreating"
                             icon="pi pi-arrow-right"
                             iconPos="right"
-                            @click="createAccount"
+                            @click="createAccount(activateCallback)"
                             :loading="accountCreating"
                         />
                     </div>
@@ -54,7 +57,13 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Card class="h-full cursor-pointer" :class="{ 'ring-2 ring-blue-500': type === 'merchant' }" @click="type = 'merchant'">
+                            <Card
+                                class="h-full cursor-pointer transition-all duration-200"
+                                :class="[
+                                    type === 'merchant' ? 'ring-4 ring-orange-500 bg-orange-200/30 shadow-2xl scale-105 border-2 border-orange-500' : 'hover:ring-2 hover:ring-orange-300 hover:bg-orange-50/5 hover:shadow',
+                                ]"
+                                @click="type = 'merchant'"
+                            >
                                 <template #title>
                                     <div class="text-xl font-semibold mb-2">Merchant</div>
                                 </template>
@@ -67,9 +76,14 @@
                                 </template>
                             </Card>
                         </div>
-
                         <div>
-                            <Card class="h-full cursor-pointer" :class="{ 'ring-2 ring-blue-500': type === 'vendor' }" @click="type = 'vendor'">
+                            <Card
+                                class="h-full cursor-pointer transition-all duration-200"
+                                :class="[
+                                    type === 'vendor' ? 'ring-4 ring-orange-500 bg-orange-200/30 shadow-2xl scale-105 border-2 border-orange-500' : 'hover:ring-2 hover:ring-orange-300 hover:bg-orange-50/5 hover:shadow',
+                                ]"
+                                @click="type = 'vendor'"
+                            >
                                 <template #title>
                                     <div class="text-xl font-semibold mb-2">Vendor</div>
                                 </template>
@@ -104,27 +118,31 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputText id="first_name" v-model="first" />
+                                        <InputText id="first_name" v-model="first" @blur="validateFirst" />
                                         <label for="first_name">First Name</label>
                                     </FloatLabel>
+                                    <p v-if="firstError" class="text-red-500 text-xs mt-1">{{ firstError }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputText id="last_name" v-model="last" />
+                                        <InputText id="last_name" v-model="last" @blur="validateLast" />
                                         <label for="last_name">Last Name</label>
                                     </FloatLabel>
+                                    <p v-if="lastError" class="text-red-500 text-xs mt-1">{{ lastError }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
                                         <InputText id="email" v-model="email" disabled />
                                         <label for="email">Email</label>
                                     </FloatLabel>
+                                    <p v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" />
+                                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" @blur="validatePhone" />
                                         <label for="phone">Phone</label>
                                     </FloatLabel>
+                                    <p v-if="phoneError" class="text-red-500 text-xs mt-1">{{ phoneError }}</p>
                                 </div>
                                 <div class="card flex justify-center">
                                     <v-switch density="compact" label="Administrative Access" v-model="isAdmin" :disabled="true"></v-switch>
@@ -141,12 +159,7 @@
                             label="Next"
                             icon="pi pi-arrow-right"
                             iconPos="right"
-                            :disabled="
-                                !first ||
-                                !last ||
-                                !email ||
-                                !phone
-                            "
+                            :disabled="!step3Valid"
                             @click="activateCallback('4')"
                         />
                     </div>
@@ -165,12 +178,7 @@
                             label="Review"
                             icon="pi pi-arrow-right"
                             iconPos="right"
-                            :disabled="
-                                !bizName ||
-                                !bizDesc ||
-                                !bizEmail ||
-                                !bizPhone
-                            "
+                            :disabled="!step4Valid"
                             @click="activateCallback('5')"
                         />
                     </div>
@@ -279,18 +287,92 @@ const errType = ref('')
 const errMsg = ref('')
 const errDialog = ref(false)
 
-// Computed
-const canProceedToStep2 = computed(() => {
-    return signupEmail.value && 
-           signupPassword.value && 
-           confirmPassword.value && 
-           signupPassword.value === confirmPassword.value &&
-           signupPassword.value.length >= 6
+// Validation state
+const signupEmailError = ref('')
+const signupPasswordError = ref('')
+const confirmPasswordError = ref('')
+const firstError = ref('')
+const lastError = ref('')
+const emailError = ref('')
+const phoneError = ref('')
+const bizNameError = ref('')
+const bizDescError = ref('')
+const bizEmailError = ref('')
+const bizPhoneError = ref('')
+
+// Validation functions
+const validateEmailFormat = (val: string) => /.+@.+\..+/.test(val)
+const validatePhoneFormat = (val: string) => /\(\d{3}\) \d{3}-\d{4}/.test(val)
+
+const validateSignupEmail = () => {
+    signupEmailError.value = !signupEmail.value
+        ? 'Email is required.'
+        : !validateEmailFormat(signupEmail.value)
+        ? 'Invalid email format.'
+        : ''
+}
+const validateSignupPassword = () => {
+    signupPasswordError.value = !signupPassword.value
+        ? 'Password is required.'
+        : signupPassword.value.length < 6
+        ? 'Password must be at least 6 characters.'
+        : ''
+}
+const validateConfirmPassword = () => {
+    confirmPasswordError.value = !confirmPassword.value
+        ? 'Please confirm your password.'
+        : confirmPassword.value !== signupPassword.value
+        ? 'Passwords do not match.'
+        : ''
+}
+const validateFirst = () => {
+    firstError.value = !first.value ? 'First name is required.' : ''
+}
+const validateLast = () => {
+    lastError.value = !last.value ? 'Last name is required.' : ''
+}
+const validatePhone = () => {
+    phoneError.value = !phone.value
+        ? 'Phone is required.'
+        : !validatePhoneFormat(phone.value)
+        ? 'Invalid phone format. Use (555) 555-5555.'
+        : ''
+}
+
+// Step 1 validation
+const step1Valid = computed(() => {
+    validateSignupEmail()
+    validateSignupPassword()
+    validateConfirmPassword()
+    return !signupEmailError.value && !signupPasswordError.value && !confirmPasswordError.value
+})
+// Step 3 validation
+const step3Valid = computed(() => {
+    validateFirst()
+    validateLast()
+    validatePhone()
+    return !firstError.value && !lastError.value && !phoneError.value
+})
+// Step 4 validation (business info)
+const step4Valid = computed(() => {
+    bizNameError.value = !bizName.value ? 'Business name is required.' : ''
+    bizDescError.value = !bizDesc.value ? 'Description is required.' : ''
+    bizEmailError.value = !bizEmail.value
+        ? 'Business email is required.'
+        : !validateEmailFormat(bizEmail.value)
+        ? 'Invalid email format.'
+        : ''
+    bizPhoneError.value = !bizPhone.value
+        ? 'Business phone is required.'
+        : !validatePhoneFormat(bizPhone.value)
+        ? 'Invalid phone format. Use (555) 555-5555.'
+        : ''
+    return !bizNameError.value && !bizDescError.value && !bizEmailError.value && !bizPhoneError.value
 })
 
 // Methods
-const createAccount = async () => {
-    if (!canProceedToStep2.value) return
+const createAccount = async (activateCallback?: Function) => {
+    if (!step1Valid.value) return
     
     accountCreating.value = true
     try {
@@ -306,6 +388,7 @@ const createAccount = async () => {
             email.value = signupEmail.value
             snackbar.value = true
             snacktext.value = 'Account created successfully! Please check your email for verification.'
+            if (activateCallback) activateCallback('2') // Move to next step
         }
     } catch (err) {
         console.error('Account creation error:', err)

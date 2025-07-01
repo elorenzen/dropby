@@ -157,7 +157,7 @@ const events = computed(() => {
     return eventStore.allEvents
       .filter((e: any) => e.vendor === vendor.value?.id)
       .sort((a:any,b:any) => Date.parse(b.start) - Date.parse(a.start))
-})
+  })
 
 const allBookedDates = computed(() => {
   const allBookedEvents = events.value.filter((e: any) => e.status === 'booked')
@@ -168,7 +168,7 @@ const allBookedDates = computed(() => {
 watch(newEventStart, (newVal: Date) => {
     console.log(new Date(newVal).getTime())
     console.log(new Date().getTime())
-})
+  })
 
 const attributes = ref([
     {
@@ -273,5 +273,5 @@ const addEvent = async () => {
     //     errDialog.value = true
     // }
     loading.value = false
-}
+  }
 </script>
