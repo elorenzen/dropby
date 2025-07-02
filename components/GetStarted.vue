@@ -2,11 +2,11 @@
     <div class="card flex justify-center">
         <Stepper value="1" class="basis-[60rem]">
             <StepList>
-                <Step value="1">Account Setup</Step>
-                <Step value="2">Business Type</Step>
-                <Step value="3">Primary User Information</Step>
-                <Step value="4">Business Information</Step>
-                <Step value="5">Review</Step>
+                <Step value="1" :disabled="!step1Valid">Account Setup</Step>
+                <Step value="2" :disabled="!step1Valid">Business Type</Step>
+                <Step value="3" :disabled="!step1Valid || !type">Primary User Information</Step>
+                <Step value="4" :disabled="!step1Valid || !type || !step3Valid">Business Information</Step>
+                <Step value="5" :disabled="!step1Valid || !type || !step3Valid || !step4Valid">Review</Step>
             </StepList>
             <StepPanels>
                 <StepPanel v-slot="{ activateCallback }" value="1" class="pa-8">
@@ -18,24 +18,24 @@
                         <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <FloatLabel variant="on">
-                                    <InputText id="signup_email" v-model="signupEmail" type="email" @blur="validateSignupEmail" />
+                                    <InputText id="signup_email" v-model="signupEmail" type="email" @blur="() => { step1Touched = true; validateStep1() }" />
                                     <label for="signup_email">Email Address</label>
                                 </FloatLabel>
-                                <p v-if="signupEmailError" class="text-red-500 text-xs mt-1">{{ signupEmailError }}</p>
+                                <p v-if="step1Touched && step1Errors.email" class="text-red-500 text-xs mt-1">{{ step1Errors.email }}</p>
                             </div>
                             <div>
                                 <FloatLabel variant="on">
-                                    <Password id="signup_password" v-model="signupPassword" @blur="validateSignupPassword" />
+                                    <Password id="signup_password" v-model="signupPassword" @blur="() => { step1Touched = true; validateStep1() }" />
                                     <label for="signup_password">Password</label>
                                 </FloatLabel>
-                                <p v-if="signupPasswordError" class="text-red-500 text-xs mt-1">{{ signupPasswordError }}</p>
+                                <p v-if="step1Touched && step1Errors.password" class="text-red-500 text-xs mt-1">{{ step1Errors.password }}</p>
                             </div>
                             <div>
                                 <FloatLabel variant="on">
-                                    <Password id="confirm_password" v-model="confirmPassword" @blur="validateConfirmPassword" />
+                                    <Password id="confirm_password" v-model="confirmPassword" @blur="() => { step1Touched = true; validateStep1() }" />
                                     <label for="confirm_password">Confirm Password</label>
                                 </FloatLabel>
-                                <p v-if="confirmPasswordError" class="text-red-500 text-xs mt-1">{{ confirmPasswordError }}</p>
+                                <p v-if="step1Touched && step1Errors.confirmPassword" class="text-red-500 text-xs mt-1">{{ step1Errors.confirmPassword }}</p>
                             </div>
                         </div>
                     </Fluid>
@@ -118,31 +118,31 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputText id="first_name" v-model="first" @blur="validateFirst" />
+                                        <InputText id="first_name" v-model="first" @blur="validateStep3" />
                                         <label for="first_name">First Name</label>
                                     </FloatLabel>
-                                    <p v-if="firstError" class="text-red-500 text-xs mt-1">{{ firstError }}</p>
+                                    <p v-if="step3Errors.first" class="text-red-500 text-xs mt-1">{{ step3Errors.first }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputText id="last_name" v-model="last" @blur="validateLast" />
+                                        <InputText id="last_name" v-model="last" @blur="validateStep3" />
                                         <label for="last_name">Last Name</label>
                                     </FloatLabel>
-                                    <p v-if="lastError" class="text-red-500 text-xs mt-1">{{ lastError }}</p>
+                                    <p v-if="step3Errors.last" class="text-red-500 text-xs mt-1">{{ step3Errors.last }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
                                         <InputText id="email" v-model="email" disabled />
                                         <label for="email">Email</label>
                                     </FloatLabel>
-                                    <p v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</p>
+                                    <p v-if="step3Errors.email" class="text-red-500 text-xs mt-1">{{ step3Errors.email }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" @blur="validatePhone" />
+                                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" @blur="validateStep3" />
                                         <label for="phone">Phone</label>
                                     </FloatLabel>
-                                    <p v-if="phoneError" class="text-red-500 text-xs mt-1">{{ phoneError }}</p>
+                                    <p v-if="step3Errors.phone" class="text-red-500 text-xs mt-1">{{ step3Errors.phone }}</p>
                                 </div>
                                 <div class="card flex justify-center">
                                     <v-switch density="compact" label="Administrative Access" v-model="isAdmin" :disabled="true"></v-switch>
@@ -240,6 +240,7 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
+import { z } from 'zod'
 
 const supabase = useSupabaseClient()
 const authUser = useSupabaseUser()
@@ -249,6 +250,7 @@ const signupEmail = ref('')
 const signupPassword = ref('')
 const confirmPassword = ref('')
 const accountCreating = ref(false)
+const step1Touched = ref(false)
 
 // Step 2: Business Type
 const type = ref<'vendor' | 'merchant' | null>(null)
@@ -287,87 +289,112 @@ const errType = ref('')
 const errMsg = ref('')
 const errDialog = ref(false)
 
-// Validation state
-const signupEmailError = ref('')
-const signupPasswordError = ref('')
-const confirmPasswordError = ref('')
-const firstError = ref('')
-const lastError = ref('')
-const emailError = ref('')
-const phoneError = ref('')
-const bizNameError = ref('')
-const bizDescError = ref('')
-const bizEmailError = ref('')
-const bizPhoneError = ref('')
+// Validation errors
+const step1Errors = ref<Record<string, string>>({})
+const step3Errors = ref<Record<string, string>>({})
+const step4Errors = ref<Record<string, string>>({})
+
+// Zod schemas
+const step1Schema = z.object({
+    email: z.string().min(1, 'Email is required').email('Invalid email format'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password')
+}).refine((data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"]
+})
+
+const step3Schema = z.object({
+    first: z.string().min(1, 'First name is required'),
+    last: z.string().min(1, 'Last name is required'),
+    email: z.string().min(1, 'Email is required').email('Invalid email format'),
+    phone: z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Invalid phone format. Use (555) 555-5555')
+})
+
+const step4Schema = z.object({
+    name: z.string().min(1, 'Business name is required'),
+    desc: z.string().min(1, 'Description is required'),
+    email: z.string().min(1, 'Business email is required').email('Invalid email format'),
+    phone: z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Invalid phone format. Use (555) 555-5555')
+})
 
 // Validation functions
-const validateEmailFormat = (val: string) => /.+@.+\..+/.test(val)
-const validatePhoneFormat = (val: string) => /\(\d{3}\) \d{3}-\d{4}/.test(val)
-
-const validateSignupEmail = () => {
-    signupEmailError.value = !signupEmail.value
-        ? 'Email is required.'
-        : !validateEmailFormat(signupEmail.value)
-        ? 'Invalid email format.'
-        : ''
-}
-const validateSignupPassword = () => {
-    signupPasswordError.value = !signupPassword.value
-        ? 'Password is required.'
-        : signupPassword.value.length < 6
-        ? 'Password must be at least 6 characters.'
-        : ''
-}
-const validateConfirmPassword = () => {
-    confirmPasswordError.value = !confirmPassword.value
-        ? 'Please confirm your password.'
-        : confirmPassword.value !== signupPassword.value
-        ? 'Passwords do not match.'
-        : ''
-}
-const validateFirst = () => {
-    firstError.value = !first.value ? 'First name is required.' : ''
-}
-const validateLast = () => {
-    lastError.value = !last.value ? 'Last name is required.' : ''
-}
-const validatePhone = () => {
-    phoneError.value = !phone.value
-        ? 'Phone is required.'
-        : !validatePhoneFormat(phone.value)
-        ? 'Invalid phone format. Use (555) 555-5555.'
-        : ''
+const validateStep1 = () => {
+    step1Touched.value = true
+    try {
+        step1Schema.parse({
+            email: signupEmail.value,
+            password: signupPassword.value,
+            confirmPassword: confirmPassword.value
+        })
+        step1Errors.value = {}
+    } catch (error: unknown) {
+        if (error instanceof z.ZodError) {
+            step1Errors.value = {}
+            error.errors.forEach((err: z.ZodIssue) => {
+                const field = err.path[0] as string
+                step1Errors.value[field] = err.message
+            })
+        }
+    }
 }
 
-// Step 1 validation
+const validateStep3 = () => {
+    try {
+        step3Schema.parse({
+            first: first.value,
+            last: last.value,
+            email: email.value,
+            phone: phone.value
+        })
+        step3Errors.value = {}
+    } catch (error: unknown) {
+        if (error instanceof z.ZodError) {
+            step3Errors.value = {}
+            error.errors.forEach((err: z.ZodIssue) => {
+                const field = err.path[0] as string
+                step3Errors.value[field] = err.message
+            })
+        }
+    }
+}
+
+const validateStep4 = () => {
+    try {
+        step4Schema.parse({
+            name: bizName.value,
+            desc: bizDesc.value,
+            email: bizEmail.value,
+            phone: bizPhone.value
+        })
+        step4Errors.value = {}
+    } catch (error: unknown) {
+        if (error instanceof z.ZodError) {
+            step4Errors.value = {}
+            error.errors.forEach((err: z.ZodIssue) => {
+                const field = err.path[0] as string
+                step4Errors.value[field] = err.message
+            })
+        }
+    }
+}
+
+// Step validation computed properties
 const step1Valid = computed(() => {
-    validateSignupEmail()
-    validateSignupPassword()
-    validateConfirmPassword()
-    return !signupEmailError.value && !signupPasswordError.value && !confirmPasswordError.value
+    if (step1Touched.value) {
+        validateStep1()
+    }
+    return Object.keys(step1Errors.value).length === 0
 })
-// Step 3 validation
+
 const step3Valid = computed(() => {
-    validateFirst()
-    validateLast()
-    validatePhone()
-    return !firstError.value && !lastError.value && !phoneError.value
+    validateStep3()
+    return Object.keys(step3Errors.value).length === 0
 })
-// Step 4 validation (business info)
+
 const step4Valid = computed(() => {
-    bizNameError.value = !bizName.value ? 'Business name is required.' : ''
-    bizDescError.value = !bizDesc.value ? 'Description is required.' : ''
-    bizEmailError.value = !bizEmail.value
-        ? 'Business email is required.'
-        : !validateEmailFormat(bizEmail.value)
-        ? 'Invalid email format.'
-        : ''
-    bizPhoneError.value = !bizPhone.value
-        ? 'Business phone is required.'
-        : !validatePhoneFormat(bizPhone.value)
-        ? 'Invalid phone format. Use (555) 555-5555.'
-        : ''
-    return !bizNameError.value && !bizDescError.value && !bizEmailError.value && !bizPhoneError.value
+    validateStep4()
+    return Object.keys(step4Errors.value).length === 0
 })
 
 // Methods
@@ -484,8 +511,8 @@ const submit = async () => {
             snackbar.value = true
             snacktext.value = `${type.value} Created! An email confirmation has been sent. You will now be redirected.`
         
-        // Redirect to settings
-        await navigateTo(`/settings/${typeId}`)
+        // Redirect to business page
+        await navigateTo(`/${type.value}/${typeId}`)
         
     } catch (err) {
         console.error('Submission error:', err)
