@@ -21,8 +21,8 @@
                 <TabPanels>
                     <!-- GENERAL INFORMATION SETTINGS -->
                     <TabPanel value="0">
-                      <v-row>
-                        <v-col cols="3">
+                      <div class="flex flex-wrap gap-4">
+                        <div class="w-full md:w-1/4 p-2">
                           <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" />
                           <FileUpload
                             class="my-2 p-button-sm p-button-outlined"
@@ -36,8 +36,8 @@
                           <div v-if="uploading" class="card flex justify-center mt-4">
                               <ProgressSpinner class="p-progress-spinner-circle" />
                           </div>
-                        </v-col>
-                        <v-col cols="9">
+                        </div>
+                        <div class="w-full md:w-3/4 p-2">
                           <Fluid>
                             <div class="grid grid-cols-2 gap-4">
                                 <!-- NAME -->
@@ -141,60 +141,54 @@
                                 </div>
                                 </div>
                               </Fluid>
-                            </v-col>
-                          </v-row>
-                        </TabPanel>
+                        </div>
+                      </div>
+                    </TabPanel>
 
-                        <!-- BUSINESS HOURS SETTINGS -->
-                        <TabPanel value="1">
-                            <Fluid v-for="(day, index) in businessHours" :key="index">
-                              <div class="grid grid-cols-3 gap-4">
-                                <div>
-                                  {{ day.name }}
-                                </div>
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <DatePicker :id="`open-${index}`" v-model="day.open" hour-format="12" timeOnly fluid @blur="setFormattedOpen($event, index)" />
-                                    <Label :for="`open-${index}`">{{ day.name }} Open</Label>
-                                  </FloatLabel>
-                                </div>
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <DatePicker :id="`close-${index}`" v-model="day.close" hour-format="12" timeOnly fluid @blur="setFormattedClose($event, index)" />
-                                    <Label :for="`close-${index}`">{{ day.name }} Close</Label>
-                                  </FloatLabel>
-                                </div>
-                              </div>
-                              <Divider />
-                            </Fluid>
-                        </TabPanel>
-                        <TabPanel value="3">
-                            <AssociatedUsers />
-                        </TabPanel>
-                    </TabPanels>
-                </Tabs>
+                    <!-- BUSINESS HOURS SETTINGS -->
+                    <TabPanel value="1">
+                        <Fluid v-for="(day, index) in businessHours" :key="index">
+                          <div class="grid grid-cols-3 gap-4">
+                            <div>
+                              {{ day.name }}
+                            </div>
+                            <div>
+                              <FloatLabel variant="on">
+                                <DatePicker :id="`open-${index}`" v-model="day.open" hour-format="12" timeOnly fluid @blur="setFormattedOpen($event, index)" />
+                                <Label :for="`open-${index}`">{{ day.name }} Open</Label>
+                              </FloatLabel>
+                            </div>
+                            <div>
+                              <FloatLabel variant="on">
+                                <DatePicker :id="`close-${index}`" v-model="day.close" hour-format="12" timeOnly fluid @blur="setFormattedClose($event, index)" />
+                                <Label :for="`close-${index}`">{{ day.name }} Close</Label>
+                              </FloatLabel>
+                            </div>
+                          </div>
+                          <Divider />
+                        </Fluid>
+                    </TabPanel>
+                    <TabPanel value="3">
+                        <AssociatedUsers />
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
           </template>
       </Card>
 
       <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
 
-      <v-snackbar v-model="snackbar" timeout="6000">
+      <Toast v-model:visible="snackbar" :severity="snackbarSeverity" :group="false">
         {{ snacktext }}
-
-        <template v-slot:actions>
-            <Button
-                color="#000022"
-                variant="text"
-                @click="snackbar = false"
-            >Close</Button>
-        </template>
-      </v-snackbar>
+      </Toast>
     </div>
 </template>
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
 import { Loader } from '@googlemaps/js-api-loader'
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
 const supabase          = useSupabaseClient()
 const merchantStore     = useMerchantStore()
 const vendorStore       = useVendorStore()

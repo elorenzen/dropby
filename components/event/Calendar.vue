@@ -103,27 +103,14 @@
     <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
     <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
 
-    <v-snackbar
-      v-model="snackbar"
-      timeout="6000"
-    >
-      {{ snacktext }}
-
-      <template v-slot:actions>
-        <Button
-          color="#000022"
-          variant="text"
-          @click="snackbar = false"
-        >
-          Close
-        </Button>
-      </template>
-    </v-snackbar>
+    <Toast group="main" position="bottom-center" @close="onClose" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { v4 } from 'uuid'
+  import { useToast } from 'primevue/usetoast'
+  const toast = useToast()
   const supabase      = useSupabaseClient()
   const userStore     = useUserStore()
   const eventStore    = useEventStore()
@@ -148,8 +135,6 @@
   const dayDate       = ref()
   const eventOnDay    = ref()
 
-  const snackbar      = ref(false)
-  const snacktext     = ref('')
   const errType       = ref()
   const errMsg        = ref()
   const errDialog     = ref(false)
@@ -334,10 +319,10 @@
   const cancelDelete = () => { deleteDialog.value = false }
   const resetFields = async (action: any) => {
       dayViewDialog.value = false
-      snacktext.value = `Event ${action}!`
-      snackbar.value = true
+      toast.add({ severity: 'success', summary: 'Success', detail: `Event ${action}!`, group: 'main', life: 6000 })
       newEventStart.value = ''
       newEventEnd.value = ''
+      notes.value = ''
       refresh.value++
   }
   const vendorData = (id: any, field: any) => {
@@ -364,6 +349,9 @@
 
       if (!dbErr) await resetFields('approved')
       loading.value = false
+  }
+  const onClose = () => {
+    // Toast closed functionality
   }
   // const days = ref([])
   // const selectMultipleDays = (day: any) => {

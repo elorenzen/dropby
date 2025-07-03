@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6 ma-2">
+    <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6 m-2">
         <div class="flex flex-row md:flex-col justify-between items-start gap-2">Events</div>
         <div class="flex flex-col md:items-end gap-8">
             <Button
@@ -156,27 +156,14 @@
 
         <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+        <Toast group="main" position="bottom-center" @close="onClose" />
     </div>
-    <v-snackbar
-      v-model="snackbar"
-      timeout="6000"
-    >
-      {{ snacktext }}
-
-      <template v-slot:actions>
-        <Button
-          color="#000022"
-          variant="text"
-          @click="snackbar = false"
-        >
-          Close
-        </Button>
-      </template>
-    </v-snackbar>
 </template>
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
 const supabase      = useSupabaseClient()
 const userStore     = useUserStore()
 const vendorStore   = useVendorStore()
@@ -198,8 +185,6 @@ const openAddDialog     = ref(false)
 const openEditDialog    = ref(false)
 const openRequestDialog = ref(false)
 const deleteDialog      = ref(false)
-const snackbar          = ref(false)
-const snacktext         = ref('')
 
 
 // EVENT DATA
@@ -210,6 +195,10 @@ const notes = ref('')
 const errDialog = ref(false)
 const errMsg = ref()
 const errType = ref()
+
+const onClose = () => {
+  // Toast closed functionality
+}
 
 onMounted(async () => {
     const evts = events.value
@@ -321,8 +310,7 @@ const confirmDelete = async () => {
 }
 const cancelDelete = () => { deleteDialog.value = false }
 const resetFields = async (action: any) => { 
-    snacktext.value = `Event ${action}!`
-    snackbar.value = true
+    toast.add({ severity: 'success', summary: 'Success', detail: `Event ${action}!`, group: 'main', life: 6000 })
     selectedEvt.value = null
     openEditDialog.value = false
     openAddDialog.value = false

@@ -61,27 +61,13 @@
 
         <DeleteDialog v-if="deleteDialog" :itemType="'Inventory Item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
-
-        <v-snackbar
-          v-model="snackbar"
-          timeout="6000"
-        >
-          {{ snacktext }}
-
-          <template v-slot:actions>
-            <Button
-              color="#000022"
-              variant="text"
-              @click="snackbar = false"
-            >
-              Close
-            </Button>
-          </template>
-        </v-snackbar>
+        <Toast group="main" position="bottom-center" @close="onClose" />
     </div>
 </template>
 
 <script setup lang="ts">
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
 const supabase     = useSupabaseClient()
 const userStore    = useUserStore()
 const store        = useMenuStore()
@@ -101,8 +87,6 @@ const errMsg       = ref()
 const errType      = ref()
 const layout       = ref('grid')
 const loading      = ref(false)
-const snackbar     = ref(false)
-const snacktext    = ref('')
 const sortKey      = ref();
 const sortOrder    = ref();
 const sortField    = ref();
@@ -168,8 +152,7 @@ const formatCurrency = (value:any) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 const resetFields = async (action:any) => {
-    snacktext.value    = `Menu Item ${action}!`
-    snackbar.value     = true
+    toast.add({ severity: 'success', summary: 'Success', detail: `Menu Item ${action}!`, group: 'main', life: 6000 })
     addDialog.value    = false
     editDialog.value   = false
     deleteDialog.value = false
@@ -192,6 +175,9 @@ const getStatusLabel = (status: any) => {
             return null;
     }
 };
+const onClose = () => {
+  // Toast closed functionality
+}
 </script>
 
 <style scoped>

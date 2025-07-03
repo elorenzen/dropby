@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-row dense class="flex justify-center pa-2 text-xl"><h3>All Events</h3></v-row>
+        <div class="flex justify-center p-2 text-xl"><h3>All Events</h3></div>
         <DataTable
             v-model:selection="selectedEvt"
             :value="events"
@@ -60,22 +60,7 @@
                 </Card>
             </Dialog>
         </div>
-        <v-snackbar
-          v-model="snackbar"
-          timeout="6000"
-        >
-          {{ snacktext }}
-
-          <template v-slot:actions>
-            <Button
-              color="#000022"
-              variant="text"
-              @click="snackbar = false"
-            >
-              Close
-            </Button>
-          </template>
-        </v-snackbar>
+        <Toast ref="toast" />
     </div>
 
     <ErrorDialog v-if="errDialog" :errType="'Event Request'" :errMsg="errMsg" @errorClose="errDialog = false" />

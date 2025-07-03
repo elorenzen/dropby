@@ -7,7 +7,7 @@
                         <Avatar v-if="item.image_url == ''" icon="pi pi-image" class="mr-2" size="xlarge" />
                         <NuxtImg v-else :src="item.image_url" alt="Image" class="w-full rounded" />
                         
-                        <v-row dense class="flex justify-center pa-2 ma-2">
+                        <v-row dense class="flex justify-center p-2 m-2">
                             <FileUpload
                                 class="my-2 p-button-sm p-button-outlined"
                                 mode="basic"

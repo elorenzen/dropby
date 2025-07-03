@@ -5,7 +5,7 @@
                 <div class="col-span-4">
                     <NuxtImg :src="businessObj.imageUrl" alt="Image" class="w-full rounded" />
                     
-                    <v-row dense class="flex justify-center pa-2 ma-2">
+                    <div class="flex flex-wrap justify-center p-2 m-2">
                         <FileUpload
                             class="my-2 p-button-sm p-button-outlined"
                             mode="basic"
@@ -16,7 +16,7 @@
                             chooseLabel="Upload Image"
                             :loading="uploading"
                         />
-                    </v-row>
+                    </div>
                     <div v-if="uploading" class="card flex justify-center mt-4">
                         <ProgressSpinner class="p-progress-spinner-circle" />
                     </div>

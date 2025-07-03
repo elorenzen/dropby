@@ -1,12 +1,12 @@
 <template>
-    <div class="ml-8">
+    <div class="m-8">
         <Card v-if="vendor.vendor_description">
             <template #subtitle>Vendor Description</template>
             <template #content>
                 <p class="m-0">{{ vendor.vendor_description }}</p>
             </template>
         </Card>
-        <DataTable :value="menuItems" class="ml-4" size="small">
+        <DataTable :value="menuItems" class="m-4" size="small">
             <Column field="name" header="Menu Item" sortable></Column>
             <Column header="Image">
                 <template #body="{ data }">

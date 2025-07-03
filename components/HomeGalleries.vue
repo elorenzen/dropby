@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Card class="ma-2 bg-transparent">
+        <Card class="m-2 bg-transparent">
             <template #title>
                 <div class="font-bold">Bars & Taprooms</div>
             </template>
@@ -31,7 +31,7 @@
             </template>
         </Card>
 
-        <Card class="ma-2 bg-transparent">
+        <Card class="m-2 bg-transparent">
             <template #title>
                 <div class="font-bold">Food Trucks</div>
             </template>

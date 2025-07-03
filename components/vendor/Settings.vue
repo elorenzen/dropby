@@ -175,24 +175,15 @@
       </Card>
 
       <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
-
-      <v-snackbar v-model="snackbar" timeout="6000">
-        {{ snacktext }}
-
-        <template v-slot:actions>
-            <Button
-                color="#000022"
-                variant="text"
-                @click="snackbar = false"
-            >Close</Button>
-        </template>
-      </v-snackbar>
+      <Toast group="main" position="bottom-center" @close="onClose" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
 import { Loader } from '@googlemaps/js-api-loader'
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
 const supabase      = useSupabaseClient()
 const vendorStore   = useVendorStore()
 const userStore     = useUserStore()
@@ -201,8 +192,6 @@ const assocId       = user[`associated_${user.type}_id`]
 const vendor:any    = ref(await vendorStore.getVendorById(assocId))
 
 const editDialog    = ref(false)
-const snackbar      = ref(false)
-const snacktext     = ref('')
 const uploading     = ref(false)
 const loading       = ref(false)
 
@@ -334,8 +323,7 @@ const saveEdits = async () => {
   const { error } = await supabase.from('vendors').update(updates).eq('id', vendor.value.id)
   if (!error) {
       editDialog.value = false
-      snacktext.value = 'Information Updated!'
-      snackbar.value = true
+      toast.add({ severity: 'success', summary: 'Success', detail: 'Information Updated!', group: 'main', life: 6000 })
   } else {
     errType.value = "Settings Update(s)"
     errMsg.value = error.message
@@ -382,8 +370,7 @@ const updateImage = async (e: any) => {
                 .eq('id', vendor.value.id)
               
               if (!error) {
-                snacktext.value = 'Vendor Avatar Updated!'
-                snackbar.value = true
+                toast.add({ severity: 'success', summary: 'Success', detail: 'Vendor Avatar Updated!', group: 'main', life: 6000 })
               } else {
                 errType.value = 'Avatar Image Update'
                 errMsg.value = error.message
@@ -393,5 +380,9 @@ const updateImage = async (e: any) => {
         }
     }
     uploading.value = false
+}
+
+const onClose = () => {
+  // Toast closed functionality
 }
 </script>

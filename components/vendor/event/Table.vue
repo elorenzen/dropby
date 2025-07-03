@@ -93,22 +93,7 @@
                 </Card>
             </Dialog>
         </div>
-        <v-snackbar
-          v-model="snackbar"
-          timeout="6000"
-        >
-          {{ snacktext }}
-
-          <template v-slot:actions>
-            <Button
-              color="#000022"
-              variant="text"
-              @click="snackbar = false"
-            >
-              Close
-            </Button>
-          </template>
-        </v-snackbar>
+        <Toast group="main" position="bottom-center" @close="onClose" />
     </div>
 
     <ErrorDialog v-if="errDialog" :errType="'Event Request'" :errMsg="errMsg" @errorClose="errDialog = false" />
@@ -131,13 +116,17 @@
     const selectedMerchant = ref()
     const openViewDialog   = ref(false)
 
-    const snackbar  = ref(false)
-    const snacktext = ref('')
     const errDialog = ref(false)
     const errMsg    = ref()
     const loading   = ref(false)
     const userCoords = ref()
     const refreshKey = ref(0)
+    const toast = useToast()
+
+    const onClose = () => {
+      // Toast closed functionality
+    }
+
     onMounted(() => {
         navigator.geolocation.getCurrentPosition((position) => {
             const obj = position.coords.toJSON()
@@ -179,8 +168,7 @@
             openViewDialog.value = false
             selectedEvt.value = ''
             selectedMerchant.value = ''
-            snacktext.value = 'Event requested!'
-            snackbar.value = true
+            toast.add({ severity: 'success', summary: 'Success', detail: 'Event requested!', group: 'main', life: 6000 })
         } else {
             errDialog.value = true
             errMsg.value = error.message
@@ -207,8 +195,7 @@
             openViewDialog.value = false
             selectedEvt.value = ''
             selectedMerchant.value = ''
-            snacktext.value = 'Request cancelled!'
-            snackbar.value = true
+            toast.add({ severity: 'success', summary: 'Success', detail: 'Request cancelled!', group: 'main', life: 6000 })
         } else {
             errDialog.value = true
             errMsg.value = error.message

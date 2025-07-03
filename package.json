@@ -19,6 +19,7 @@
     "@nuxtjs/supabase": "^1.3.5",
     "@nuxtjs/tailwindcss": "^6.12.1",
     "@pinia/nuxt": "^0.5.5",
+    "@primevue/forms": "^4.3.5",
     "@primevue/nuxt-module": "^4.1.0",
     "@primevue/themes": "^4.1.0",
     "@types/uuid": "^10.0.0",
@@ -38,7 +39,8 @@
     "vue": "latest",
     "vue-router": "^4.5.0",
     "vuetify-google-autocomplete": "^2.1.2",
-    "vuetify-nuxt-module": "^0.18.2"
+    "vuetify-nuxt-module": "^0.18.7",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@samk-dev/nuxt-vcalendar": "^1.0.4",

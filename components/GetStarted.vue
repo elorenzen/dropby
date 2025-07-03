@@ -9,7 +9,7 @@
                 <Step value="5" :disabled="!step1Valid || !type || !step3Valid || !step4Valid">Review</Step>
             </StepList>
             <StepPanels>
-                <StepPanel v-slot="{ activateCallback }" value="1" class="pa-8">
+                <StepPanel v-slot="{ activateCallback }" value="1" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Create Your Account</h2>
                         <p class="text-gray-600">Let's get you started with DropBy</p>
@@ -39,7 +39,7 @@
                             </div>
                         </div>
                     </Fluid>
-                    <div class="flex pt-6 justify-end">
+                    <div class="flex justify-end">
                         <Button
                             label="Create Account"
                             :disabled="!step1Valid || accountCreating"
@@ -50,7 +50,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="2" class="pa-8">
+                <StepPanel v-slot="{ activateCallback }" value="2" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">What type of business are you?</h2>
                         <p class="text-gray-600">This helps us customize your experience</p>
@@ -97,7 +97,7 @@
                             </Card>
                         </div>
                     </div>
-                    <div class="flex pt-6 justify-between">
+                    <div class="flex justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
                         <Button
                             :label="!type ? 'Continue' : `Continue as ${type.charAt(0).toUpperCase() + type.slice(1)}`"
@@ -108,7 +108,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="3" class="pa-8">
+                <StepPanel v-slot="{ activateCallback }" value="3" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Tell us about yourself</h2>
                         <p class="text-gray-600">Primary contact information</p>
@@ -145,15 +145,15 @@
                                     <p v-if="step3Errors.phone" class="text-red-500 text-xs mt-1">{{ step3Errors.phone }}</p>
                                 </div>
                                 <div class="card flex justify-center">
-                                    <v-switch density="compact" label="Administrative Access" v-model="isAdmin" :disabled="true"></v-switch>
+                                    <InputSwitch v-model="isAdmin" :disabled="true" class="mt-2" />
                                 </div>
                                 <div class="card flex justify-center">
-                                    <v-switch density="compact" label="Available to Contact" v-model="available"></v-switch>
+                                    <InputSwitch v-model="available" class="mt-2" />
                                 </div>
                             </div>
                         </Fluid>
                     </div>
-                    <div class="flex pt-6 justify-between">
+                    <div class="flex justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
                         <Button
                             label="Next"
@@ -164,7 +164,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="4" class="pa-8">
+                <StepPanel v-slot="{ activateCallback }" value="4" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Business Information</h2>
                         <p class="text-gray-600">Tell us about your {{ type }}</p>
@@ -172,7 +172,7 @@
                     <div v-if="type" class="flex flex-col">
                         <NewBusiness @objUpdated="objUpdated" :bizType="type" />
                     </div>
-                    <div class="flex pt-6 justify-between">
+                    <div class="flex justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('3')" />
                         <Button
                             label="Review"
@@ -183,7 +183,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="5" class="pa-8">
+                <StepPanel v-slot="{ activateCallback }" value="5" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Review Your Information</h2>
                         <p class="text-gray-600">Please review before submitting</p>
@@ -191,48 +191,31 @@
                     
                     <div class="bg-gray-50 p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">Primary User</h4>
-                    <p class="ma-2"><span class="font-bold">Name: </span>{{ first }} {{ last }}</p>
-                    <p class="ma-2"><span class="font-bold">Email: </span>{{ email }}</p>
-                    <p class="ma-2"><span class="font-bold">Phone: </span>{{ phone }}</p>
-                    <p class="ma-2"><span class="font-bold">Available for contact: </span>
+                    <p class="m-2"><span class="font-bold">Name: </span>{{ first }} {{ last }}</p>
+                    <p class="m-2"><span class="font-bold">Email: </span>{{ email }}</p>
+                    <p class="m-2"><span class="font-bold">Phone: </span>{{ phone }}</p>
+                    <p class="m-2"><span class="font-bold">Available for contact: </span>
                         {{ available ? 'Yes' : 'No' }}
                     </p>
                     </div>
 
                     <div class="bg-gray-50 p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">{{ type }} Information</h4>
-                    <p class="ma-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
-                    <p class="ma-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>
-                    <p class="ma-2"><span class="font-bold">Website: </span>{{ website ? website : '-'}}</p>
-                    <p class="ma-2"><span class="font-bold">Instagram: </span>{{ ig ? ig : '-' }}</p>
-                    <p class="ma-2"><span class="font-bold">Phone: </span>{{ bizEmail }}</p>
-                    <p class="ma-2"><span class="font-bold">Email: </span>{{ bizPhone }}</p>
+                    <p class="m-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
+                    <p class="m-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>
+                    <p class="m-2"><span class="font-bold">Website: </span>{{ website ? website : '-'}}</p>
+                    <p class="m-2"><span class="font-bold">Instagram: </span>{{ ig ? ig : '-' }}</p>
+                    <p class="m-2"><span class="font-bold">Phone: </span>{{ bizEmail }}</p>
+                    <p class="m-2"><span class="font-bold">Email: </span>{{ bizPhone }}</p>
                     </div>
 
-                    <div class="flex pt-6 justify-between">
+                    <div class="flex justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('4')" />
                         <Button label="Complete Setup" @click="submit" :loading="submitting" />
                     </div>
                 </StepPanel>
             </StepPanels>
         </Stepper>
-
-        <v-snackbar
-          v-model="snackbar"
-          timeout="6000"
-        >
-          {{ snacktext }}
-
-          <template v-slot:actions>
-            <Button
-              color="#000022"
-              variant="text"
-              @click="snackbar = false"
-            >
-              Close
-            </Button>
-          </template>
-        </v-snackbar>
 
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
     </div>

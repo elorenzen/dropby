@@ -1,5 +1,5 @@
 <template>
-    <div class="ma-2">
+    <div class="m-2">
         <DataTable :value="associatedUsers">
             <template #header>
                 <div class="flex flex-wrap items-center justify-between gap-2">
@@ -42,63 +42,50 @@
 
         <!-- ADD USER -->
         <Dialog v-model:visible="openDialog" modal :header="`${headerTitle} User`" :style="{ width: '35rem' }">
-            <v-row dense class="ma-2">
-                <v-col cols="6">
+            <div class="flex flex-wrap gap-4 m-2">
+                <div class="w-full md:w-1/2 p-2">
                     <FloatLabel variant="on">
                         <InputText id="first_name" v-model="first" />
                         <label for="first_name">First Name</label>
                     </FloatLabel>
-                </v-col>
-                <v-col cols="6">
+                </div>
+                <div class="w-full md:w-1/2 p-2">
                     <FloatLabel variant="on">
                         <InputText id="last_name" v-model="last" />
                         <label for="last_name">Last Name</label>
                     </FloatLabel>
-                </v-col>
-                <v-col cols="6">
+                </div>
+                <div class="w-full md:w-1/2 p-2">
                     <FloatLabel variant="on">
                         <InputText id="email" v-model="email" />
                         <label for="email">Email</label>
                     </FloatLabel>
-                </v-col>
-                <v-col cols="6">
+                </div>
+                <div class="w-full md:w-1/2 p-2">
                     <FloatLabel variant="on">
                         <InputMask id="phone" v-model="phone" mask="(999) 999-9999" />
                         <label for="phone">Phone</label>
                     </FloatLabel>
-                </v-col>
-                <v-col cols="6">
-                    <v-switch density="compact" label="Administrative Access" v-model="isAdmin"></v-switch>
-                </v-col>
-                <v-col cols="6">
-                    <v-switch density="compact" label="Available to Contact" v-model="available"></v-switch>
-                </v-col>
-            </v-row>
-            <v-row class="pa-2">
+                </div>
+                <div class="w-full md:w-1/2 p-2">
+                    <InputSwitch v-model="isAdmin" />
+                    <label class="m-2">Administrative Access</label>
+                </div>
+                <div class="w-full md:w-1/2 p-2">
+                    <InputSwitch v-model="available" />
+                    <label class="m-2">Available to Contact</label>
+                </div>
+            </div>
+            <div class="flex gap-2 p-2">
                 <Button v-if="headerTitle == 'Add'" @click="addUser" block :loading="loading">Add User</Button>
                 <Button v-if="headerTitle == 'Edit'" @click="submitEdits" block :loading="loading">Submit Edits</Button>
-            </v-row>
+            </div>
         </Dialog>
 
         <DeleteDialog v-if="deleteDialog" :itemType="'user'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
 
-        <v-snackbar
-          v-model="snackbar"
-          timeout="6000"
-        >
-          {{ snacktext }}
-
-          <template v-slot:actions>
-            <Button
-              color="#000022"
-              variant="text"
-              @click="snackbar = false"
-            >
-              Close
-            </Button>
-          </template>
-        </v-snackbar>
+        <Toast ref="toast" />
     </div>
 </template>
 

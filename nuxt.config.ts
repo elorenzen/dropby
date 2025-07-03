@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     "@primevue/nuxt-module",
     "@nuxtjs/supabase",
     "@pinia/nuxt",
-    "vuetify-nuxt-module",
+    // "vuetify-nuxt-module",
     "@nuxt/ui",
     "@nuxtjs/tailwindcss",
     "nuxt-svgo",

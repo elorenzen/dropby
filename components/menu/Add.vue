@@ -11,7 +11,7 @@
                             :width="200"
                             sizes="sm:75px md:150px lg:200px"    
                         />
-                        <v-row dense class="flex justify-center pa-2 ma-2">
+                        <v-row dense class="flex justify-center p-2 m-2">
                             <FileUpload
                                 class="my-2 p-button-sm p-button-outlined"
                                 mode="basic"
