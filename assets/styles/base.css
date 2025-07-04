@@ -1,3 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply bg-background text-text-main font-sans;
+  }
+}
+
 :root {
     --color-primary-DEFAULT: #ff8906;
     --p-primary-DEFAULT: #ff8906;

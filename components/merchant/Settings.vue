@@ -1,187 +1,163 @@
 <template>
-    <div>
-      <Card style="overflow: hidden">
-          <template #content>
-              <Tabs value="0">
-                <TabList>
-                    <Tab value="0">General Information</Tab>
-                    <Tab value="1">Business Hours</Tab>
-                    <Tab value="3">Associated Users</Tab>
-                    <div class="flex justify-end gap-2 ma-4">
-                      <Button
-                        class="p-button-sm"
-                        size="small"
-                        type="button"
-                        label="Save Edits"
-                        @click="saveEdits"
-                        :loading="loading">
-                      </Button>
-                  </div>
-                </TabList>
-                <TabPanels>
-                    <!-- GENERAL INFORMATION SETTINGS -->
-                    <TabPanel value="0">
-                      <div class="flex flex-wrap gap-4">
-                        <div class="w-full md:w-1/4 p-2">
-                          <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" />
-                          <FileUpload
-                            class="my-2 p-button-sm p-button-outlined"
-                            mode="basic"
-                            accept="image/*"
-                            :maxFileSize="1000000"
-                            @upload="updateImage($event)"
-                            :auto="true"
-                            chooseLabel="Upload New Image"
-                          />
-                          <div v-if="uploading" class="card flex justify-center mt-4">
-                              <ProgressSpinner class="p-progress-spinner-circle" />
-                          </div>
-                        </div>
-                        <div class="w-full md:w-3/4 p-2">
-                          <Fluid>
-                            <div class="grid grid-cols-2 gap-4">
-                                <!-- NAME -->
-                                <div>
-                                  <FloatLabel variant="on">
-                                      <InputText id="name" v-model="merchant.merchant_name" :fluid="true" />
-                                      <label for="name">Name</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- ADDRESS -->
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <div class="p-iconfield">
-                                      <span class="p-inputicon pi pi-map-marker"></span>
-                                      <input
-                                        class="p-inputtext p-component p-filled w-full"
-                                        id="address"
-                                        ref="streetRef"
-                                        :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
-                                      />
-                                    </div>
-                                    <label for="phone">Location Address</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- DESCRIPTION -->
-                                <div class="col-span-full">
-                                  <FloatLabel variant="on">
-                                      <Textarea id="desc" v-model="merchant.merchant_description" rows="5" />
-                                      <label for="desc">Description</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- PHONE -->
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <IconField>
-                                        <InputIcon class="pi pi-phone" />
-                                        <InputText id="phone" v-model="merchant.phone" placeholder="Phone" />
-                                    </IconField>
-                                    <label for="phone">Phone</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- WEBSITE -->
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <IconField>
-                                        <InputIcon class="pi pi-link" />
-                                        <InputText id="website" v-model="merchant.website" placeholder="Website" />
-                                    </IconField>
-                                    <label for="website">Website</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- INSTAGRAM -->
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <IconField>
-                                        <InputIcon class="pi pi-instagram" />
-                                        <InputText id="ig" v-model="merchant.instagram" placeholder="Instagram" />
-                                    </IconField>
-                                    <label for="ig">Instagram</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- EMAIL -->
-                                <div>
-                                  <FloatLabel variant="on">
-                                    <IconField>
-                                        <InputIcon class="pi pi-envelope" />
-                                        <InputText id="email" v-model="merchant.email" placeholder="Email" />
-                                    </IconField>
-                                    <label for="email">Email</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- VENDOR NOTES -->
-                                <div class="col-span-full">
-                                  <FloatLabel variant="on">
-                                      <Textarea id="notes" v-model="merchant.notes" rows="5" />
-                                      <label for="notes">Directions/Notes for Vendors</label>
-                                  </FloatLabel>
-                                </div>
-
-                                <!-- PREFERRED VENDOR(S) -->
-                                <div class="col-span-full">
-                                    <FloatLabel variant="on">
-                                        <MultiSelect
-                                            id="cuisine"
-                                            v-model="merchant.preferred_vendors"
-                                            display="chip"
-                                            optionLabel="vendor_name"
-                                            :options="vendors"
-                                            filter
-                                            :maxSelectedLabels="3"
-                                        />
-                                        <label for="cuisine">Preferred Vendor(s)</label>
-                                    </FloatLabel>
-                                </div>
-                                </div>
-                              </Fluid>
-                        </div>
-                      </div>
-                    </TabPanel>
-
-                    <!-- BUSINESS HOURS SETTINGS -->
-                    <TabPanel value="1">
-                        <Fluid v-for="(day, index) in businessHours" :key="index">
-                          <div class="grid grid-cols-3 gap-4">
-                            <div>
-                              {{ day.name }}
-                            </div>
-                            <div>
-                              <FloatLabel variant="on">
-                                <DatePicker :id="`open-${index}`" v-model="day.open" hour-format="12" timeOnly fluid @blur="setFormattedOpen($event, index)" />
-                                <Label :for="`open-${index}`">{{ day.name }} Open</Label>
-                              </FloatLabel>
-                            </div>
-                            <div>
-                              <FloatLabel variant="on">
-                                <DatePicker :id="`close-${index}`" v-model="day.close" hour-format="12" timeOnly fluid @blur="setFormattedClose($event, index)" />
-                                <Label :for="`close-${index}`">{{ day.name }} Close</Label>
-                              </FloatLabel>
-                            </div>
-                          </div>
-                          <Divider />
-                        </Fluid>
-                    </TabPanel>
-                    <TabPanel value="3">
-                        <AssociatedUsers />
-                    </TabPanel>
-                </TabPanels>
-            </Tabs>
-          </template>
-      </Card>
-
-      <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
-
-      <Toast v-model:visible="snackbar" :severity="snackbarSeverity" :group="false">
-        {{ snacktext }}
-      </Toast>
-    </div>
+  <div class="min-h-screen bg-background py-12 flex flex-col items-center">
+    <Tabs value="0" class="w-full max-w-5xl">
+      <TabList>
+        <Tab value="0">General Information</Tab>
+        <Tab value="1">Business Hours</Tab>
+        <Tab value="3">Associated Users</Tab>
+      </TabList>
+      <TabPanels>
+        <!-- GENERAL INFORMATION SETTINGS -->
+        <TabPanel value="0">
+          <form class="flex flex-col md:flex-row gap-12 items-start w-full">
+            <div class="w-full md:w-1/3 flex flex-col items-center">
+              <div class="rounded-2xl overflow-hidden shadow-lg w-full mb-6">
+                <NuxtImg :src="imageUrl" alt="Image" class="w-full object-cover" style="height: 256px;" />
+              </div>
+              <FileUpload
+                class="my-2"
+                mode="basic"
+                accept="image/*"
+                :maxFileSize="1000000"
+                @upload="updateImage($event)"
+                :auto="true"
+                chooseLabel="Upload New Image"
+              />
+              <div v-if="uploading" class="flex justify-center mt-4">
+                <ProgressSpinner class="p-progress-spinner-circle" />
+              </div>
+            </div>
+            <div class="w-full md:w-2/3 relative">
+              <span class="text-2xl font-extrabold mb-6 block text-accent">Merchant Information</span>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- NAME -->
+                <div>
+                  <FloatLabel variant="on">
+                    <InputText id="name" v-model="merchant.merchant_name" class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" />
+                    <label for="name" class="text-lg text-text-muted font-semibold">Name</label>
+                  </FloatLabel>
+                </div>
+                <!-- ADDRESS -->
+                <div>
+                  <FloatLabel variant="on">
+                    <div class="p-iconfield">
+                      <span class="p-inputicon pi pi-map-marker"></span>
+                      <input
+                        class="p-inputtext p-component p-filled w-full bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition"
+                        id="address"
+                        ref="streetRef"
+                        :placeholder="merchant.formatted_address ? merchant.formatted_address : 'Enter address'"
+                      />
+                    </div>
+                    <label for="address" class="text-lg text-text-muted font-semibold">Location Address</label>
+                  </FloatLabel>
+                </div>
+                <!-- DESCRIPTION -->
+                <div class="md:col-span-2">
+                  <FloatLabel variant="on">
+                    <Textarea id="desc" v-model="merchant.merchant_description" rows="5" class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" />
+                    <label for="desc" class="text-lg text-text-muted font-semibold">Description</label>
+                  </FloatLabel>
+                </div>
+                <!-- PHONE -->
+                <div>
+                  <FloatLabel variant="on">
+                    <IconField>
+                      <InputIcon class="pi pi-phone" />
+                      <InputText id="phone" v-model="merchant.phone" placeholder="Phone" class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" />
+                    </IconField>
+                    <label for="phone" class="text-lg text-text-muted font-semibold">Phone</label>
+                  </FloatLabel>
+                </div>
+                <!-- WEBSITE -->
+                <div>
+                  <FloatLabel variant="on">
+                    <IconField>
+                      <InputIcon class="pi pi-link" />
+                      <InputText id="website" v-model="merchant.website" placeholder="Website" class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" />
+                    </IconField>
+                    <label for="website" class="text-lg text-text-muted font-semibold">Website</label>
+                  </FloatLabel>
+                </div>
+                <!-- INSTAGRAM -->
+                <div>
+                  <FloatLabel variant="on">
+                    <IconField>
+                      <InputIcon class="pi pi-instagram" />
+                      <InputText id="ig" v-model="merchant.instagram" placeholder="Instagram" class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" />
+                    </IconField>
+                    <label for="ig" class="text-lg text-text-muted font-semibold">Instagram</label>
+                  </FloatLabel>
+                </div>
+                <!-- EMAIL -->
+                <div>
+                  <FloatLabel variant="on">
+                    <IconField>
+                      <InputIcon class="pi pi-envelope" />
+                      <InputText id="email" v-model="merchant.email" placeholder="Email" class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" />
+                    </IconField>
+                    <label for="email" class="text-lg text-text-muted font-semibold">Email</label>
+                  </FloatLabel>
+                </div>
+                <!-- VENDOR NOTES -->
+                <div class="md:col-span-2">
+                  <FloatLabel variant="on">
+                    <Textarea id="notes" v-model="merchant.notes" rows="5" class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" />
+                    <label for="notes" class="text-lg text-text-muted font-semibold">Directions/Notes for Vendors</label>
+                  </FloatLabel>
+                </div>
+                <!-- PREFERRED VENDOR(S) -->
+                <div class="md:col-span-2">
+                  <FloatLabel variant="on">
+                    <MultiSelect
+                      id="cuisine"
+                      v-model="merchant.preferred_vendors"
+                      display="chip"
+                      optionLabel="vendor_name"
+                      :options="vendors"
+                      filter
+                      :maxSelectedLabels="3"
+                      class="bg-background border border-surface rounded-lg px-2 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full"
+                    />
+                    <label for="cuisine" class="text-lg text-text-muted font-semibold">Preferred Vendor(s)</label>
+                  </FloatLabel>
+                </div>
+              </div>
+              <div class="flex justify-end mt-8">
+                <Button class="bg-accent text-background rounded-full px-8 py-3 text-lg font-bold shadow-lg hover:bg-accent-dark transition" size="large" type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
+              </div>
+            </div>
+          </form>
+        </TabPanel>
+        <!-- BUSINESS HOURS SETTINGS -->
+        <TabPanel value="1">
+          <Fluid v-for="(day, index) in businessHours" :key="index">
+            <div class="grid grid-cols-3 gap-8">
+              <div class="text-lg font-semibold text-text-main">{{ day.name }}</div>
+              <div>
+                <FloatLabel variant="on">
+                  <DatePicker :id="`open-${index}`" v-model="day.open" hour-format="12" timeOnly fluid @blur="setFormattedOpen($event, index)" />
+                  <Label :for="`open-${index}`" class="text-lg text-text-muted font-semibold">{{ day.name }} Open</Label>
+                </FloatLabel>
+              </div>
+              <div>
+                <FloatLabel variant="on">
+                  <DatePicker :id="`close-${index}`" v-model="day.close" hour-format="12" timeOnly fluid @blur="setFormattedClose($event, index)" />
+                  <Label :for="`close-${index}`" class="text-lg text-text-muted font-semibold">{{ day.name }} Close</Label>
+                </FloatLabel>
+              </div>
+            </div>
+            <Divider />
+          </Fluid>
+        </TabPanel>
+        <TabPanel value="3">
+          <AssociatedUsers />
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
+    <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+    <Toast group="main" position="bottom-center" @close="onClose" />
+  </div>
 </template>
 
 <script setup lang="ts">
