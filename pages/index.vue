@@ -10,10 +10,30 @@
             </div>
         </div>
 
+        <!-- Call to Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+          <NuxtLink to="/viewer/events">
+            <Button 
+              label="Browse Events" 
+              icon="pi pi-calendar"
+              size="large"
+              class="w-full sm:w-auto"
+            />
+          </NuxtLink>
+          <NuxtLink to="/viewer/search">
+            <Button 
+              label="Search Food Trucks" 
+              icon="pi pi-search"
+              outlined
+              size="large"
+              class="w-full sm:w-auto"
+            />
+          </NuxtLink>
+        </div>
+
         <div class="flex items-center justify-center">
           <HomeGalleries />
         </div>
-        <NuxtLink to="/search">Food Search</NuxtLink>
     </div>
 </template>
 

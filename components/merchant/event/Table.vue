@@ -174,10 +174,10 @@ const vendors       = vendorStore.getAllVendors
 
 const loading           = ref(false)
 const requestedVendors  = ref([])
-const merchant          = ref(await merchantStore.getMerchantById(user.value.associated_merchant_id))
+const merchant          = ref(await merchantStore.getMerchantById(user.value?.associated_merchant_id || ''))
 const events        = computed(() => {
   return eventStore.allEvents
-    .filter((e: any) => e.merchant === user.value.associated_merchant_id)
+    .filter((e: any) => e.merchant === user.value?.associated_merchant_id)
     .sort((a:any,b:any) => Date.parse(b.start) - Date.parse(a.start))
 })
 const selectedEvt       = ref()
@@ -230,20 +230,20 @@ const addEvent = async () => {
         const evtObj = {
             id: v4(),
             created_at: new Date(),
-            merchant: user.value.associated_merchant_id,
+            merchant: user.value?.associated_merchant_id,
             vendor: null,
             start: evtStart.value,
             end: evtEnd.value,
             day_id: `${year}-${month}-${day}`,
-            location_coordinates: merchant.value.coordinates,
-            location_address: merchant.value.formatted_address,
-            location_url: merchant.value.address_url,
+            location_coordinates: merchant.value?.coordinates,
+            location_address: merchant.value?.formatted_address,
+            location_url: merchant.value?.address_url,
             status: 'open',
             vendor_rating: null,
             merchant_rating: null,
             vendor_comment: null,
             merchant_comment: null,
-            notes: notes.value !== '' ? notes.value : merchant.value.notes
+            notes: notes.value !== '' ? notes.value : merchant.value?.notes
         }
         const { error } = await supabase.from('events').insert(evtObj)
 
@@ -336,26 +336,63 @@ const getStatusLabel = (status: any) => {
     }
 };
 const approveRequest = async (id: any) => {
-    loading.value = true
-    const updates = {
-        updated_at: new Date(),
-        status: 'booked',
-        vendor: id
-    }
-    const { error: dbErr } = await supabase
-        .from('events')
-        .update(updates)
-        .eq('id', selectedEvt.value.id)
-
-    if (dbErr) {
+    if (!user.value?.associated_merchant_id) {
         errType.value = 'Event Approval'
-        errMsg.value = dbErr.message
+        errMsg.value = 'User not found'
         errDialog.value = true
-    } 
-    // UNCOMMENT AFTER FIXING
-    // else await useFetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.associated_merchant_id}`)
-    loading.value = false
-    openRequestDialog.value = false
+        return
+    }
+
+    loading.value = true
+    try {
+        const updates = {
+            updated_at: new Date(),
+            status: 'booked',
+            vendor: id,
+            pending_requests: [] // Clear pending requests after approval
+        }
+        const { error: dbErr } = await supabase
+            .from('events')
+            .update(updates)
+            .eq('id', selectedEvt.value.id)
+
+        if (dbErr) {
+            errType.value = 'Event Approval'
+            errMsg.value = dbErr.message
+            errDialog.value = true
+        } else {
+            // Send booking confirmation email
+            try {
+                await $fetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.value.associated_merchant_id}`)
+            } catch (emailErr) {
+                console.error('Email notification failed:', emailErr)
+                // Don't fail the whole operation if email fails
+            }
+            
+            toast.add({ 
+                severity: 'success', 
+                summary: 'Success', 
+                detail: 'Event approved and vendor notified!', 
+                group: 'main', 
+                life: 6000 
+            })
+            
+            // Refresh the events list
+            const { data: eventData } = await supabase.from('events').select()
+            if (eventData) {
+                await eventStore.setAllEvents(eventData)
+            }
+        }
+    } catch (err) {
+        console.error('Approval error:', err)
+        errType.value = 'Event Approval'
+        errMsg.value = 'An unexpected error occurred'
+        errDialog.value = true
+    } finally {
+        loading.value = false
+        openRequestDialog.value = false
+        requestedVendors.value = []
+    }
 }
 const alreadyBooked = (id: any) => {
     return (selectedEvt.value.status == 'Booked' && selectedEvt.value.pending_requests.includes(id))

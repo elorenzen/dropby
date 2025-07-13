@@ -84,6 +84,13 @@ const viewerMenu = ref([
         }
       },
       {
+        label: 'Events',
+        icon: 'pi pi-calendar',
+        command: () => {
+          router.push('/viewer/events')
+        }
+      },
+      {
         label: 'Map View',
         icon: 'pi pi-globe',
         command: () => {

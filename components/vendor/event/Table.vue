@@ -41,19 +41,22 @@
             </Column>
             <Column field="status" header="Status">
                 <template #body="{ data }">
-                    <Tag v-if="data.status === 'booked'" value="BOOKED" severity="info" />
+                    <Tag v-if="data.status === 'booked'" value="BOOKED" severity="success" />
                     <Tag
                         v-else-if="data.pending_requests && data.pending_requests.includes(vendor.id)"
                         value="PENDING"
                         severity="warn"
                     />
-                    
                     <Tag
-                        v-else-if="!data.pending_requests || (data.pending_requests && !data.pending_requests.includes(vendor.id))"
-                        :value="(data.status).toUpperCase()"
-                        severity="success"
+                        v-else-if="data.status === 'open'"
+                        value="AVAILABLE"
+                        severity="info"
                     />
-
+                    <Tag
+                        v-else
+                        :value="(data.status).toUpperCase()"
+                        severity="secondary"
+                    />
                 </template>
             </Column>
         </DataTable>
@@ -149,31 +152,46 @@
     }
     const requestEvent = async () => {
         loading.value = true
-        let reqArr =
-            selectedEvt.value.pending_requests ?
-            selectedEvt.value.pending_requests : []
+        try {
+            let reqArr =
+                selectedEvt.value.pending_requests ?
+                selectedEvt.value.pending_requests : []
 
-        reqArr.push(vendor.value.id)
-        const updates = {
-            updated_at: new Date(),
-            pending_requests: reqArr
-        }
-        const { error } = await supabase
-            .from('events')
-            .update(updates)
-            .eq('id', selectedEvt.value.id)
-        
-        if (!error) {
-            refreshKey.value++
-            openViewDialog.value = false
-            selectedEvt.value = ''
-            selectedMerchant.value = ''
-            toast.add({ severity: 'success', summary: 'Success', detail: 'Event requested!', group: 'main', life: 6000 })
-        } else {
+            reqArr.push(vendor.value.id)
+            const updates = {
+                updated_at: new Date(),
+                pending_requests: reqArr
+            }
+            const { error } = await supabase
+                .from('events')
+                .update(updates)
+                .eq('id', selectedEvt.value.id)
+            
+            if (!error) {
+                // Send notification to merchant
+                try {
+                    await $fetch(`/api/sendEventRequestNotification?eventId=${selectedEvt.value.id}&vendorId=${vendor.value.id}&merchantId=${selectedEvt.value.merchant}`)
+                } catch (emailErr) {
+                    console.error('Email notification failed:', emailErr)
+                    // Don't fail the whole operation if email fails
+                }
+                
+                refreshKey.value++
+                openViewDialog.value = false
+                selectedEvt.value = ''
+                selectedMerchant.value = ''
+                toast.add({ severity: 'success', summary: 'Success', detail: 'Event requested! Merchant has been notified.', group: 'main', life: 6000 })
+            } else {
+                errDialog.value = true
+                errMsg.value = error.message
+            }
+        } catch (err) {
+            console.error('Request event error:', err)
             errDialog.value = true
-            errMsg.value = error.message
+            errMsg.value = 'An unexpected error occurred'
+        } finally {
+            loading.value = false
         }
-        loading.value = false
     }
     const cancelRequest = async () => {
         loading.value = true

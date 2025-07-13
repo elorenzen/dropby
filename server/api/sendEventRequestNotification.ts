@@ -64,18 +64,27 @@ export default defineEventHandler(async (event) => {
         
         const content = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #FF8906;">🎉 Event Booked Successfully!</h2>
-                <p><strong>${merchantData.merchant_name}</strong> has approved <strong>${vendorData.vendor_name}</strong> to work the following event:</p>
+                <h2 style="color: #FF8906;">📋 New Event Request</h2>
+                <p><strong>${vendorData.vendor_name}</strong> has requested to work at your establishment:</p>
                 
                 <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <h3 style="margin-top: 0;">Event Details</h3>
                     <p><strong>Date:</strong> ${date}</p>
                     <p><strong>Time:</strong> ${start} - ${end}</p>
-                    <p><strong>Location:</strong> <a href="${eventData.location_url || '#'}" target="_blank">${eventData.location_address || 'TBD'}</a></p>
+                    <p><strong>Location:</strong> ${eventData.location_address || 'TBD'}</p>
                     ${eventData.notes ? `<p><strong>Notes:</strong> ${eventData.notes}</p>` : ''}
                 </div>
                 
-                <p>Please contact each other to coordinate setup and any additional details.</p>
+                <div style="background-color: #e8f4fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="margin-top: 0;">Vendor Information</h4>
+                    <p><strong>Name:</strong> ${vendorData.vendor_name}</p>
+                    <p><strong>Description:</strong> ${vendorData.vendor_description || 'No description provided'}</p>
+                    ${vendorData.cuisine ? `<p><strong>Cuisine:</strong> ${vendorData.cuisine.join(', ')}</p>` : ''}
+                    ${vendorData.phone ? `<p><strong>Phone:</strong> ${vendorData.phone}</p>` : ''}
+                    ${vendorData.email ? `<p><strong>Email:</strong> ${vendorData.email}</p>` : ''}
+                </div>
+                
+                <p>Please log into your DropBy dashboard to approve or decline this request.</p>
                 
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
                     <p>This is an automated message from DropBy. Please do not reply to this email.</p>
@@ -83,28 +92,24 @@ export default defineEventHandler(async (event) => {
             </div>
         `
 
-        // Send email to both parties if they have email addresses
+        // Send email to merchant
         const recipients = ['eric.lorenzen@gmail.com'] // Default for testing
         
         if (merchantData.email) {
             recipients.push(merchantData.email)
         }
-        
-        if (vendorData.email) {
-            recipients.push(vendorData.email)
-        }
 
         const emailData = await resend.emails.send({
             from: 'DropBy Support <noreply@dropby.com>',
             to: recipients,
-            subject: `Event Booked: ${vendorData.vendor_name} at ${merchantData.merchant_name}`,
+            subject: `New Event Request: ${vendorData.vendor_name} for ${date}`,
             html: content,
         })
 
         return { success: true, data: emailData }
         
     } catch (error) {
-        console.error('Email notification error:', error)
-        return { error: error.message || 'Failed to send email notification' }
+        console.error('Event request notification error:', error)
+        return { error: error.message || 'Failed to send event request notification' }
     }
-})
+}) 

@@ -47,8 +47,8 @@ export default defineNuxtConfig({
     redirect: false // set to 'true', EVENTUALLY
   },
   css: [
-    '@/assets/styles/tailwind.css',
-    '@/assets/styles/base.css',
+    // '@/assets/styles/tailwind.css',
+    // '@/assets/styles/base.css',
     'primeicons/primeicons.css'
   ],
   primevue: {
