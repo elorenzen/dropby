@@ -23,13 +23,12 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     // "vuetify-nuxt-module",
     "@nuxt/ui",
-    "@nuxtjs/tailwindcss",
+    "@nuxtjs/google-fonts",
+    "nuxt-graphql-client",
     "nuxt-svgo",
     "@nuxt/scripts",
     '@samk-dev/nuxt-vcalendar',
     "haversine",
-    "@nuxtjs/google-fonts",
-    "nuxt-graphql-client",
     "@nuxt/image"
   ],
   runtimeConfig: {
@@ -47,26 +46,27 @@ export default defineNuxtConfig({
     redirect: false // set to 'true', EVENTUALLY
   },
   css: [
-    // '@/assets/styles/tailwind.css',
-    // '@/assets/styles/base.css',
-    'primeicons/primeicons.css'
+    'primeicons/primeicons.css',
+    '~/assets/styles/base.css'
   ],
   primevue: {
     options: {
-        theme: {
-            preset: Aura,
-            options: {
-              darkModeSelector: ".p-dark",
-          },
+      theme: {
+        preset: Aura,
+        options: {
+          colorScheme: 'dark', // Force dark mode
+          primaryColor: '#FF8906', // PrimeVue orange
+          accentColor: '#FF8906',
+          darkModeSelector: ".p-dark"
         },
+      },
     },
   },
   postcss: {
-      plugins: {
-          "postcss-import": {},
-          tailwindcss: {},
-          autoprefixer: {},
-      },
+    plugins: {
+      "postcss-import": {},
+      autoprefixer: {},
+    },
   },
   googleFonts: {
     families: {

@@ -1,78 +1,236 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* PrimeVue Dark Theme Overrides for DropBy */
+:root {
+  /* Brand Orange */
+  --primary-color: #ff9800;
+  --primary-color-text: #fff;
+  --highlight-bg: #ff9800;
+  --highlight-text-color: #fff;
 
-@layer base {
-  html, body {
-    @apply bg-background text-text-main font-sans;
+  /* Surfaces */
+  --surface-ground: #18191b;
+  --surface-section: #232428;
+  --surface-card: #232428;
+  --surface-overlay: #232428;
+  --surface-border: #33343a;
+
+  /* Text */
+  --text-color: #f5f6fa;
+  --text-color-secondary: #b0b3b8;
+  --heading-color: #fff;
+
+  /* Shadows */
+  --card-shadow: 0 4px 32px 0 rgba(0,0,0,0.45);
+}
+
+body {
+  background: var(--surface-ground) !important;
+  color: var(--text-color) !important;
+}
+
+.p-card, .p-dialog, .p-panel, .p-carousel-item {
+  background: var(--surface-card) !important;
+  color: var(--text-color) !important;
+  border-radius: 1.25rem !important;
+  box-shadow: var(--card-shadow) !important;
+  border: 1px solid var(--surface-border) !important;
+}
+
+.p-card-title, h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color) !important;
+  font-weight: 700;
+}
+
+.p-button, .p-button:focus, .p-button:active {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color-text) !important;
+  box-shadow: 0 2px 8px 0 rgba(255,152,0,0.15) !important;
+}
+
+.p-button.p-button-outlined {
+  background: transparent !important;
+  color: var(--primary-color) !important;
+  border: 2px solid var(--primary-color) !important;
+}
+
+.p-link, a {
+  color: var(--primary-color) !important;
+}
+
+.p-carousel-indicators .p-carousel-indicator.p-highlight button {
+  background: var(--primary-color) !important;
+}
+
+.p-carousel-indicators .p-carousel-indicator button {
+  background: var(--surface-border) !important;
+}
+
+.p-carousel {
+  padding-bottom: 2rem;
+}
+
+.p-card-content, .p-card-subtitle, .p-dialog-content, .p-panel-content {
+  color: var(--text-color-secondary) !important;
+}
+
+/* Global page content padding */
+.page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 3rem 2rem;
+}
+
+/* Section spacing */
+.section {
+  margin-bottom: 2.5rem;
+}
+
+/* Card spacing */
+.p-card {
+  margin-bottom: 2rem !important;
+}
+
+/* Icon color consistency */
+.p-button .pi,
+.p-menuitem-icon,
+.p-menubar .pi,
+.p-tabmenu .pi,
+.p-carousel .pi,
+.p-badge .pi {
+  color: var(--primary-color-text) !important;
+}
+
+/* Orange for primary action icons */
+.p-button.p-button-primary .pi,
+.p-button:not(.p-button-outlined):not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .pi {
+  color: var(--primary-color) !important;
+}
+
+/* Menu and dropdown icons */
+.p-menuitem-icon, .p-menubar .pi {
+  color: var(--primary-color-text) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .page-content {
+    padding: 1.25rem 0.5rem 2rem 0.5rem;
+  }
+} 
+
+/* Button icon color: always match text */
+.p-button .pi {
+  color: inherit !important;
+}
+
+/* Force button icon to always match button text color */
+.p-button .p-button-icon, .p-button .pi {
+  color: currentColor !important;
+}
+
+/* Rating stars: orange for filled, gray for empty */
+.p-rating .pi-star-fill {
+  color: var(--primary-color) !important;
+}
+.p-rating .pi-star {
+  color: #888 !important;
+}
+
+/* Gallery card spacing in carousel */
+.p-carousel .p-card {
+  margin-right: 2rem !important;
+}
+.p-carousel .p-card:last-child {
+  margin-right: 0 !important;
+} 
+
+/* Outlined button: set color on button, icon inherits */
+.p-button.p-button-outlined {
+  color: #ff9800 !important;
+}
+.p-button.p-button-outlined .p-button-icon, .p-button.p-button-outlined .pi {
+  color: inherit !important;
+}
+
+/* Filled button: icon is always white */
+.p-button:not(.p-button-outlined) .p-button-icon, .p-button:not(.p-button-outlined) .pi {
+  color: #fff !important;
+}
+
+/* Rating stars: orange for filled, gray for empty (force override) */
+.p-rating .p-rating-icon.p-icon, .p-rating .p-rating-icon.pi {
+  color: #888 !important;
+}
+.p-rating .p-rating-option-active .p-rating-icon.p-icon, .p-rating .p-rating-option-active .p-rating-icon.pi {
+  color: var(--primary-color) !important;
+}
+
+/* Gallery carousel item spacing and sizing */
+.gallery-carousel-item {
+  width: 340px;
+  margin-right: 2rem;
+  flex-shrink: 0;
+}
+
+/* Remove right margin for last visible card in carousel (PrimeVue uses inline style for last, so this is a fallback) */
+.p-carousel-item:last-child .gallery-carousel-item {
+  margin-right: 0;
+}
+
+@media (max-width: 900px) {
+  .gallery-carousel-item {
+    width: 90vw;
+    margin-right: 1rem;
   }
 }
 
-:root {
-    --color-primary-DEFAULT: #ff8906;
-    --p-primary-DEFAULT: #ff8906;
-    --p-primary-50: #fff3e5;
-    --p-primary-100: #ffe1c2;
-    --p-primary-200: #ffc894;
-    --p-primary-300: #ffaf66;
-    --p-primary-400: #ff9b3d;
-    --p-primary-500: #ff8906;
-    --p-primary-600: #cc6e05;
-    --p-primary-700: #995204;
-    --p-primary-800: #663702;
-    --p-primary-900: #331c01;
-    --p-primary-950: #1a0e01;
-    --p-surface-0: #fffffe;
-    --p-surface-50: #f2f2f3;
-    --p-surface-100: #e6e5e7;
-    --p-surface-200: #c2c1c5;
-    --p-surface-300: #9e9ca2;
-    --p-surface-400: #7a7880;
-    --p-surface-500: #56545d;
-    --p-surface-600: #403e47;
-    --p-surface-700: #2a2931;
-    --p-surface-800: #0f0e17;  /* Base color */
-    --p-surface-900: #0a090f;
-    --p-surface-950: #050508;
-    --p-content-border-radius: 6px;
+/* Remove old .gallery-card margin rules */
+.gallery-card {
+  margin-right: 0 !important;
+} 
+
+/* --- GALLERY CAROUSEL CARD SPACING & CONTRAST IMPROVEMENTS --- */
+.p-carousel-item {
+  margin-right: 2rem !important;
+  margin-bottom: 2rem !important;
+}
+.p-carousel-item:last-child {
+  margin-right: 0 !important;
 }
 
-/* Light */
-:root {
-    --p-primary-color: var(--p-primary-500);
-    --p-primary-contrast-color: var(--p-surface-0);
-    --p-primary-hover-color: var(--p-primary-600);
-    --p-primary-active-color: var(--p-primary-700);
-    --p-content-border-color: var(--p-surface-200);
-    --p-content-hover-background: var(--p-surface-100);
-    --p-content-hover-color: var(--p-surface-800);
-    --p-highlight-background: var(--p-primary-50);
-    --p-highlight-color: var(--p-primary-700);
-    --p-highlight-focus-background: var(--p-primary-100);
-    --p-highlight-focus-color: var(--p-primary-800);
-    --p-text-color: var(--p-surface-700);
-    --p-text-hover-color: var(--p-surface-800);
-    --p-text-muted-color: var(--p-surface-500);
-    --p-text-hover-muted-color: var(--p-surface-600);
+.gallery-section {
+  background: transparent;
+  border-radius: 0;
+  padding: 0 0 2rem 0;
+  margin-bottom: 2.5rem;
+  box-shadow: none;
+  border: none;
 }
 
-/* Dark */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --p-primary-color: var(--p-primary-400);
-        --p-primary-contrast-color: var(--p-surface-900);
-        --p-primary-hover-color: var(--p-primary-300);
-        --p-primary-active-color: var(--p-primary-200);
-        --p-content-border-color: var(--p-surface-700);
-        --p-content-hover-background: var(--p-surface-800);
-        --p-content-hover-color: var(--p-surface-0);
-        --p-highlight-background: color-mix(in srgb, var(--p-primary-400), transparent 84%);
-        --p-highlight-color: rgba(255, 255, 255, 0.87);
-        --p-highlight-focus-background: color-mix(in srgb, var(--p-primary-400), transparent 76%);
-        --p-highlight-focus-color: rgba(255, 255, 255, 0.87);
-        --p-text-color: var(--p-surface-0);
-        --p-text-hover-color: var(--p-surface-0);
-        --p-text-muted-color: var(--p-surface-400);
-        --p-text-hover-muted-color: var(--p-surface-300);
-    }
+.gallery-section .font-bold {
+  margin-bottom: 2.5rem;
 }
+
+.gallery-carousel-item {
+  background: #26282e !important;
+  border: none !important;
+  box-shadow: 0 6px 32px 0 rgba(0,0,0,0.22), 0 1.5px 4px rgba(0,0,0,0.10);
+  border-radius: 1.1rem !important;
+  min-height: 420px;
+  margin-right: 0 !important;
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+
+.gallery-carousel-item:hover {
+  box-shadow: 0 12px 48px 0 rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.13);
+  transform: translateY(-2px) scale(1.01);
+} 
+
+/* Remove all background, border, and shadow from carousel wrappers */
+.p-carousel-item,
+.p-carousel-content,
+.p-carousel-item-list {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+} 
