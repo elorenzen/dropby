@@ -18,7 +18,6 @@
 
               <Button
                 outlined
-                severity="secondary"
                 @click="register"
               >Sign Up</Button>
 
@@ -225,4 +224,14 @@ const errored = async (message: string) => {
   errDialog.value = true
 }
 </script>
+
+<style scoped>
+/* Make the header background match the card color */
+.p-menubar {
+  background: var(--surface-card) !important;
+  border-radius: 0 0 1.25rem 1.25rem;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  border: none;
+}
+</style>
 

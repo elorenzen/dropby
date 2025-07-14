@@ -1,134 +1,138 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <!-- Header Section -->
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">Find Food Trucks Near You</h1>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-        Discover amazing food trucks and events happening at local establishments. 
-        From tacos to gourmet burgers, find your next favorite meal!
-      </p>
-    </div>
+  <div class="page-content">
+    <div class="section">
+      <!-- Header Section -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Find Food Trucks Near You</h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          Discover amazing food trucks and events happening at local establishments. 
+          From tacos to gourmet burgers, find your next favorite meal!
+        </p>
+      </div>
 
-    <!-- Search and Filter Section -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Location Search -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-          <InputText 
-            v-model="searchLocation" 
-            placeholder="Enter city or zip code"
-            class="w-full"
-            @input="filterEvents"
-          />
-        </div>
-        
-        <!-- Date Filter -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-          <DatePicker 
-            v-model="selectedDate" 
-            placeholder="Select date"
-            class="w-full"
-            @update:model-value="filterEvents"
-          />
-        </div>
-        
-        <!-- Cuisine Filter -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Cuisine Type</label>
-          <Dropdown 
-            v-model="selectedCuisine" 
-            :options="cuisineOptions"
-            placeholder="All cuisines"
-            class="w-full"
-            @change="filterEvents"
-          />
+      <!-- Search and Filter Section -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Location Search -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+            <InputText 
+              v-model="searchLocation" 
+              placeholder="Enter city or zip code"
+              class="w-full"
+              @input="filterEvents"
+            />
+          </div>
+          
+          <!-- Date Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+            <DatePicker 
+              v-model="selectedDate" 
+              placeholder="Select date"
+              class="w-full"
+              @update:model-value="filterEvents"
+            />
+          </div>
+          
+          <!-- Cuisine Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Cuisine Type</label>
+            <Dropdown 
+              v-model="selectedCuisine" 
+              :options="cuisineOptions"
+              placeholder="All cuisines"
+              class="w-full"
+              @change="filterEvents"
+            />
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Events Grid -->
-    <div v-if="filteredEvents.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Card 
-        v-for="event in filteredEvents" 
-        :key="event.id"
-        class="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-        @click="openEventDetails(event)"
-      >
-        <template #header>
-          <div class="relative">
-            <NuxtImg
-              :src="getMerchantImage(event.merchant)"
-              :alt="getMerchantName(event.merchant)"
-              class="w-full h-48 object-cover rounded-t-lg"
-              loading="lazy"
-            />
-            <div class="absolute top-2 right-2">
-              <Tag :value="getStatusDisplay(event.status)" :severity="getStatusSeverity(event.status)" />
+    <div class="section">
+      <!-- Events Grid -->
+      <div v-if="filteredEvents.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card 
+          v-for="event in filteredEvents" 
+          :key="event.id"
+          class="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+          @click="openEventDetails(event)"
+        >
+          <template #header>
+            <div class="relative">
+              <NuxtImg
+                :src="getMerchantImage(event.merchant)"
+                :alt="getMerchantName(event.merchant)"
+                class="w-full h-48 object-cover rounded-t-lg"
+                loading="lazy"
+              />
+              <div class="absolute top-2 right-2">
+                <Tag :value="getStatusDisplay(event.status)" :severity="getStatusSeverity(event.status)" />
+              </div>
             </div>
-          </div>
-        </template>
-        
-        <template #title>
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">{{ getMerchantName(event.merchant) }}</h3>
-          </div>
-        </template>
-        
-        <template #content>
-          <div class="space-y-3">
-            <div class="flex items-center text-gray-600">
-              <i class="pi pi-calendar mr-2"></i>
-              <span>{{ formatDate(event.start) }}</span>
+          </template>
+          
+          <template #title>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-gray-900">{{ getMerchantName(event.merchant) }}</h3>
             </div>
-            <div class="flex items-center text-gray-600">
-              <i class="pi pi-clock mr-2"></i>
-              <span>{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
+          </template>
+          
+          <template #content>
+            <div class="space-y-3">
+              <div class="flex items-center text-gray-600">
+                <i class="pi pi-calendar mr-2"></i>
+                <span>{{ formatDate(event.start) }}</span>
+              </div>
+              <div class="flex items-center text-gray-600">
+                <i class="pi pi-clock mr-2"></i>
+                <span>{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
+              </div>
+              <div class="flex items-center text-gray-600">
+                <i class="pi pi-map-marker mr-2"></i>
+                <span>{{ event.location_address || 'Location TBD' }}</span>
+              </div>
+              <div v-if="event.notes" class="text-gray-600 text-sm">
+                <p class="line-clamp-2">{{ event.notes }}</p>
+              </div>
             </div>
-            <div class="flex items-center text-gray-600">
-              <i class="pi pi-map-marker mr-2"></i>
-              <span>{{ event.location_address || 'Location TBD' }}</span>
+          </template>
+          
+          <template #footer>
+            <div class="flex justify-between items-center">
+              <Button 
+                label="View Details" 
+                icon="pi pi-external-link"
+                outlined
+                @click.stop="openEventDetails(event)"
+              />
+              <Button 
+                v-if="event.status === 'open'"
+                label="Request Event" 
+                icon="pi pi-send"
+                @click.stop="requestEvent(event)"
+                class="ml-2"
+              />
             </div>
-            <div v-if="event.notes" class="text-gray-600 text-sm">
-              <p class="line-clamp-2">{{ event.notes }}</p>
-            </div>
-          </div>
-        </template>
-        
-        <template #footer>
-          <div class="flex justify-between items-center">
-            <Button 
-              label="View Details" 
-              icon="pi pi-external-link"
-              outlined
-              @click.stop="openEventDetails(event)"
-            />
-            <Button 
-              v-if="event.status === 'open'"
-              label="Request Event" 
-              icon="pi pi-send"
-              @click.stop="requestEvent(event)"
-              class="ml-2"
-            />
-          </div>
-        </template>
-      </Card>
-    </div>
-
-    <!-- No Events Found -->
-    <div v-else-if="!loading" class="text-center py-12">
-      <div class="text-gray-400 mb-4">
-        <i class="pi pi-search text-6xl"></i>
+          </template>
+        </Card>
       </div>
-      <h3 class="text-xl font-semibold text-gray-600 mb-2">No events found</h3>
-      <p class="text-gray-500">Try adjusting your search criteria or check back later for new events.</p>
-    </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center py-12">
-      <ProgressSpinner />
-      <p class="mt-4 text-gray-600">Loading events...</p>
+      <!-- No Events Found -->
+      <div v-else-if="!loading" class="text-center py-12">
+        <div class="text-gray-400 mb-4">
+          <i class="pi pi-search text-6xl"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-600 mb-2">No events found</h3>
+        <p class="text-gray-500">Try adjusting your search criteria or check back later for new events.</p>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-12">
+        <ProgressSpinner />
+        <p class="mt-4 text-gray-600">Loading events...</p>
+      </div>
     </div>
 
     <!-- Event Details Dialog -->

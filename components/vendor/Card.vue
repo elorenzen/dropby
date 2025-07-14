@@ -18,13 +18,13 @@
                         </div>
                         <div>
                             <NuxtLink class="mr-1" :to="vendor.website" target="_blank">
-                              <Button severity="secondary" icon="pi pi-link" rounded text />
+                              <Button icon="pi pi-link" rounded text />
                             </NuxtLink>
                             <NuxtLink class="mx-1" :to="vendor.instagram" target="_blank">
-                              <Button severity="secondary" icon="pi pi-instagram" rounded text />
+                              <Button icon="pi pi-instagram" rounded text />
                             </NuxtLink>
                             <NuxtLink class="mx-1" :to="`mailto:${vendor.email}`" target="_blank">
-                              <Button severity="secondary" icon="pi pi-envelope" rounded text />
+                              <Button icon="pi pi-envelope" rounded text />
                             </NuxtLink>
                         </div>
 

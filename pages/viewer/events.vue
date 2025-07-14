@@ -1,184 +1,121 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <!-- Header Section -->
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">Upcoming Food Truck Events</h1>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-        Discover where your favorite food trucks will be serving next. 
-        Find events near you and never miss out on amazing food!
-      </p>
-    </div>
-
-    <!-- Stats Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <Card class="text-center">
-        <template #content>
-          <div class="text-3xl font-bold text-orange-500 mb-2">{{ totalEvents }}</div>
-          <div class="text-gray-600">Available Events</div>
-        </template>
-      </Card>
-      <Card class="text-center">
-        <template #content>
-          <div class="text-3xl font-bold text-blue-500 mb-2">{{ totalMerchants }}</div>
-          <div class="text-gray-600">Participating Establishments</div>
-        </template>
-      </Card>
-      <Card class="text-center">
-        <template #content>
-          <div class="text-3xl font-bold text-green-500 mb-2">{{ totalVendors }}</div>
-          <div class="text-gray-600">Food Truck Vendors</div>
-        </template>
-      </Card>
-    </div>
-
-    <!-- Advanced Search and Filter Section -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h3 class="text-lg font-semibold mb-4">Search & Filter Events</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Location Search -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-          <InputText 
-            v-model="filters.location" 
-            placeholder="City, zip code, or address"
-            class="w-full"
-          />
-        </div>
-        
-        <!-- Date Range -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-          <Calendar 
-            v-model="filters.dateRange" 
-            selectionMode="range"
-            placeholder="Select date range"
-            class="w-full"
-            :showIcon="true"
-          />
-        </div>
-        
-        <!-- Cuisine Type -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Cuisine Type</label>
-          <MultiSelect 
-            v-model="filters.cuisines" 
-            :options="cuisineOptions"
-            placeholder="Select cuisines"
-            class="w-full"
-            :showClear="true"
-          />
-        </div>
-        
-        <!-- Sort By -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-          <Dropdown 
-            v-model="filters.sortBy" 
-            :options="sortOptions"
-            placeholder="Sort by"
-            class="w-full"
-          />
-        </div>
+  <div class="page-content">
+    <div class="section">
+      <!-- Header Section -->
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 class="font-bold" style="font-size: 2rem; margin-bottom: 1rem;">Upcoming Food Truck Events</h1>
+        <p style="font-size: 1.2rem; color: var(--text-color-secondary); max-width: 600px; margin: 0 auto;">
+          Discover where your favorite food trucks will be serving next. 
+          Find events near you and never miss out on amazing food!
+        </p>
       </div>
-      
-      <div class="flex justify-between items-center mt-4">
-        <Button 
-          label="Clear Filters" 
-          outlined
-          @click="clearFilters"
-        />
-        <div class="text-sm text-gray-600">
-          Showing {{ filteredEvents.length }} of {{ totalEvents }} events
-        </div>
+
+      <!-- Stats Section -->
+      <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem;">
+        <Card style="text-align: center; min-width: 180px;">
+          <template #content>
+            <div class="font-bold" style="font-size: 2rem; color: #FF8906; margin-bottom: 0.5rem;">{{ totalEvents }}</div>
+            <div>Available Events</div>
+          </template>
+        </Card>
+        <Card style="text-align: center; min-width: 180px;">
+          <template #content>
+            <div class="font-bold" style="font-size: 2rem; color: #2196F3; margin-bottom: 0.5rem;">{{ totalMerchants }}</div>
+            <div>Participating Establishments</div>
+          </template>
+        </Card>
+        <Card style="text-align: center; min-width: 180px;">
+          <template #content>
+            <div class="font-bold" style="font-size: 2rem; color: #4CAF50; margin-bottom: 0.5rem;">{{ totalVendors }}</div>
+            <div>Food Truck Vendors</div>
+          </template>
+        </Card>
       </div>
+
+      <!-- Advanced Search and Filter Section -->
+      <Card style="margin-bottom: 2rem;">
+        <template #content>
+          <div style="margin-bottom: 1rem; font-weight: bold; font-size: 1.1rem;">Search & Filter Events</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+            <div style="flex: 1 1 200px; min-width: 200px;">
+              <label>Location</label>
+              <InputText v-model="filters.location" placeholder="City, zip code, or address" class="w-full" />
+            </div>
+            <div style="flex: 1 1 200px; min-width: 200px;">
+              <label>Date Range</label>
+              <Calendar v-model="filters.dateRange" selectionMode="range" placeholder="Select date range" class="w-full" :showIcon="true" />
+            </div>
+            <div style="flex: 1 1 200px; min-width: 200px;">
+              <label>Cuisine Type</label>
+              <MultiSelect v-model="filters.cuisines" :options="cuisineOptions" placeholder="Select cuisines" class="w-full" :showClear="true" />
+            </div>
+            <div style="flex: 1 1 200px; min-width: 200px;">
+              <label>Sort By</label>
+              <Dropdown v-model="filters.sortBy" :options="sortOptions" placeholder="Sort by" class="w-full" />
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+            <Button label="Clear Filters" outlined @click="clearFilters" />
+            <div style="font-size: 0.95rem; color: var(--text-color-secondary);">
+              Showing {{ filteredEvents.length }} of {{ totalEvents }} events
+            </div>
+          </div>
+        </template>
+      </Card>
     </div>
 
     <!-- Events List -->
-    <div v-if="filteredEvents.length > 0" class="space-y-6">
-      <Card 
-        v-for="event in filteredEvents" 
-        :key="event.id"
-        class="hover:shadow-lg transition-shadow duration-300"
-      >
+    <div v-if="filteredEvents.length > 0" style="display: flex; flex-direction: column; gap: 2rem;">
+      <Card v-for="event in filteredEvents" :key="event.id" style="box-shadow: var(--card-shadow);">
         <template #content>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start;">
             <!-- Event Image -->
-            <div class="lg:col-span-1">
-              <div class="relative">
+            <div style="flex: 1 1 250px; min-width: 250px; max-width: 350px;">
+              <div style="position: relative;">
                 <NuxtImg
                   :src="getMerchantImage(event.merchant)"
                   :alt="getMerchantName(event.merchant)"
-                  class="w-full h-48 object-cover rounded-lg"
+                  style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px;"
                   loading="lazy"
                 />
-                <div class="absolute top-2 right-2">
+                <div style="position: absolute; top: 8px; right: 8px;">
                   <Tag :value="getStatusDisplay(event.status)" :severity="getStatusSeverity(event.status)" />
                 </div>
               </div>
             </div>
-            
             <!-- Event Details -->
-            <div class="lg:col-span-2">
-              <div class="flex justify-between items-start mb-4">
+            <div style="flex: 2 1 350px; min-width: 250px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <div>
-                  <h3 class="text-xl font-semibold text-gray-900 mb-2">
-                    {{ getMerchantName(event.merchant) }}
-                  </h3>
-                  <div class="flex items-center text-gray-600 mb-2">
-                    <i class="pi pi-map-marker mr-2"></i>
+                  <div class="font-bold" style="font-size: 1.2rem; margin-bottom: 0.5rem;">{{ getMerchantName(event.merchant) }}</div>
+                  <div style="color: var(--text-color-secondary); margin-bottom: 0.5rem;">
+                    <i class="pi pi-map-marker" style="margin-right: 0.5rem;"></i>
                     <span>{{ event.location_address || 'Location TBD' }}</span>
                   </div>
                 </div>
-                <Button 
-                  label="View Details" 
-                  icon="pi pi-external-link"
-                  outlined
-                  @click="openEventDetails(event)"
-                />
+                <Button label="View Details" icon="pi pi-external-link" outlined @click="openEventDetails(event)" />
               </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="flex items-center text-gray-600">
-                  <i class="pi pi-calendar mr-2"></i>
+              <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
+                <div style="color: var(--text-color-secondary);">
+                  <i class="pi pi-calendar" style="margin-right: 0.5rem;"></i>
                   <span>{{ formatDate(event.start) }}</span>
                 </div>
-                <div class="flex items-center text-gray-600">
-                  <i class="pi pi-clock mr-2"></i>
+                <div style="color: var(--text-color-secondary);">
+                  <i class="pi pi-clock" style="margin-right: 0.5rem;"></i>
                   <span>{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
                 </div>
               </div>
-              
-              <div v-if="event.notes" class="mb-4">
-                <p class="text-gray-600">{{ event.notes }}</p>
+              <div v-if="event.notes" style="margin-bottom: 1rem; color: var(--text-color-secondary);">
+                <p>{{ event.notes }}</p>
               </div>
-              
-              <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                  <Badge 
-                    v-if="getMerchantCuisine(event.merchant)"
-                    :value="getMerchantCuisine(event.merchant)"
-                    severity="info"
-                  />
-                  <Badge 
-                    v-if="getDistance(event.location_coordinates)"
-                    :value="getDistance(event.location_coordinates)"
-                    severity="secondary"
-                  />
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <Badge v-if="getMerchantCuisine(event.merchant)" :value="getMerchantCuisine(event.merchant)" severity="info" />
+                  <Badge v-if="getDistance(event.location_coordinates)" :value="getDistance(event.location_coordinates)" severity="secondary" />
                 </div>
-                
-                <div class="flex space-x-2">
-                  <Button 
-                    v-if="event.status === 'open'"
-                    label="Request Event" 
-                    icon="pi pi-send"
-                    @click="requestEvent(event)"
-                  />
-                  <Button 
-                    label="Get Directions" 
-                    icon="pi pi-map"
-                    outlined
-                    @click="getDirections(event)"
-                  />
+                <div style="display: flex; gap: 0.5rem;">
+                  <Button v-if="event.status === 'open'" label="Request Event" icon="pi pi-send custom-white-icon" :iconStyle="{ color: '#fff' }" style="background-color: #fff; border-color: #ff9800;" @click="requestEvent(event)" />
+                  <Button label="Get Directions" icon="pi pi-map" outlined @click="getDirections(event)" />
                 </div>
               </div>
             </div>
@@ -188,124 +125,60 @@
     </div>
 
     <!-- No Events Found -->
-    <div v-else-if="!loading" class="text-center py-12">
-      <div class="text-gray-400 mb-4">
-        <i class="pi pi-search text-6xl"></i>
+    <div v-else-if="!loading" style="text-align: center; padding: 3rem 0;">
+      <div style="color: #888; margin-bottom: 1rem;">
+        <i class="pi pi-search" style="font-size: 3rem;"></i>
       </div>
-      <h3 class="text-xl font-semibold text-gray-600 mb-2">No events found</h3>
-      <p class="text-gray-500 mb-4">Try adjusting your search criteria or check back later for new events.</p>
-      <Button 
-        label="Clear All Filters" 
-        @click="clearFilters"
-      />
+      <div class="font-bold" style="font-size: 1.2rem; margin-bottom: 0.5rem;">No events found</div>
+      <p style="color: #888; margin-bottom: 1rem;">Try adjusting your search criteria or check back later for new events.</p>
+      <Button label="Clear All Filters" @click="clearFilters" />
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="text-center py-12">
+    <div v-if="loading" style="text-align: center; padding: 3rem 0;">
       <ProgressSpinner />
-      <p class="mt-4 text-gray-600">Loading events...</p>
+      <p style="margin-top: 1rem; color: var(--text-color-secondary);">Loading events...</p>
     </div>
 
     <!-- Event Details Dialog -->
-    <Dialog 
-      v-model:visible="showEventDialog" 
-      modal 
-      :header="selectedEvent ? getMerchantName(selectedEvent.merchant) : 'Event Details'"
-      :style="{ width: '60rem' }"
-    >
-      <div v-if="selectedEvent" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold mb-3">Event Information</h4>
-            <div class="space-y-3">
-              <div>
-                <span class="font-medium">Date:</span>
-                <span class="ml-2">{{ formatFullDate(selectedEvent.start) }}</span>
-              </div>
-              <div>
-                <span class="font-medium">Time:</span>
-                <span class="ml-2">{{ formatTime(selectedEvent.start) }} - {{ formatTime(selectedEvent.end) }}</span>
-              </div>
-              <div>
-                <span class="font-medium">Location:</span>
-                <span class="ml-2">{{ selectedEvent.location_address || 'TBD' }}</span>
-              </div>
-              <div v-if="selectedEvent.notes">
-                <span class="font-medium">Notes:</span>
-                <p class="ml-2 mt-1 text-gray-600">{{ selectedEvent.notes }}</p>
-              </div>
+    <Dialog v-model:visible="showEventDialog" modal :header="selectedEvent ? getMerchantName(selectedEvent.merchant) : 'Event Details'" :style="{ width: '60rem' }">
+      <div v-if="selectedEvent" style="display: flex; flex-direction: column; gap: 2rem;">
+        <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+          <div style="flex: 1 1 300px; min-width: 250px;">
+            <h4 class="font-bold" style="margin-bottom: 1rem;">Event Information</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <div><span class="font-bold">Date:</span> <span>{{ formatFullDate(selectedEvent.start) }}</span></div>
+              <div><span class="font-bold">Time:</span> <span>{{ formatTime(selectedEvent.start) }} - {{ formatTime(selectedEvent.end) }}</span></div>
+              <div><span class="font-bold">Location:</span> <span>{{ selectedEvent.location_address || 'TBD' }}</span></div>
+              <div v-if="selectedEvent.notes"><span class="font-bold">Notes:</span> <span>{{ selectedEvent.notes }}</span></div>
             </div>
           </div>
-          
-          <div v-if="selectedMerchant">
-            <h4 class="font-semibold mb-3">Establishment</h4>
-            <div class="space-y-3">
-              <div>
-                <span class="font-medium">Name:</span>
-                <span class="ml-2">{{ selectedMerchant.merchant_name }}</span>
-              </div>
-              <div v-if="selectedMerchant.merchant_description">
-                <span class="font-medium">Description:</span>
-                <p class="ml-2 mt-1 text-gray-600">{{ selectedMerchant.merchant_description }}</p>
-              </div>
-              <div v-if="selectedMerchant.phone">
-                <span class="font-medium">Phone:</span>
-                <span class="ml-2">{{ selectedMerchant.phone }}</span>
-              </div>
-              <div v-if="selectedMerchant.email">
-                <span class="font-medium">Email:</span>
-                <span class="ml-2">{{ selectedMerchant.email }}</span>
-              </div>
-              <div v-if="selectedMerchant.website">
-                <span class="font-medium">Website:</span>
-                <a :href="selectedMerchant.website" target="_blank" class="ml-2 text-blue-600 hover:underline">
-                  Visit Website
-                </a>
-              </div>
+          <div v-if="selectedMerchant" style="flex: 1 1 300px; min-width: 250px;">
+            <h4 class="font-bold" style="margin-bottom: 1rem;">Establishment</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <div><span class="font-bold">Name:</span> <span>{{ selectedMerchant.merchant_name }}</span></div>
+              <div v-if="selectedMerchant.merchant_description"><span class="font-bold">Description:</span> <span>{{ selectedMerchant.merchant_description }}</span></div>
+              <div v-if="selectedMerchant.phone"><span class="font-bold">Phone:</span> <span>{{ selectedMerchant.phone }}</span></div>
+              <div v-if="selectedMerchant.email"><span class="font-bold">Email:</span> <span>{{ selectedMerchant.email }}</span></div>
+              <div v-if="selectedMerchant.website"><span class="font-bold">Website:</span> <a :href="selectedMerchant.website" target="_blank">Visit Website</a></div>
             </div>
           </div>
         </div>
-        
-        <div class="flex justify-end gap-2">
-          <Button 
-            v-if="selectedEvent.status === 'open'"
-            label="Request This Event" 
-            icon="pi pi-send"
-            @click="requestEvent(selectedEvent)"
-          />
-          <Button 
-            label="Get Directions" 
-            icon="pi pi-map"
-            outlined
-            @click="getDirections(selectedEvent)"
-          />
-          <Button 
-            label="Close" 
-            outlined
-            @click="showEventDialog = false"
-          />
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+          <Button v-if="selectedEvent.status === 'open'" label="Request This Event" icon="pi pi-send" @click="requestEvent(selectedEvent)" />
+          <Button label="Get Directions" icon="pi pi-map" outlined @click="getDirections(selectedEvent)" />
+          <Button label="Close" outlined @click="showEventDialog = false" />
         </div>
       </div>
     </Dialog>
 
     <!-- Call to Action -->
-    <div v-if="!isAuthenticated" class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-8 mt-12 text-white text-center">
-      <h3 class="text-2xl font-semibold mb-4">Join the DropBy Community</h3>
-      <p class="text-lg mb-6">Are you a food truck owner or establishment looking to connect?</p>
-      <div class="flex flex-col sm:flex-row justify-center gap-4">
-        <Button 
-          label="Sign Up as Food Truck Vendor" 
-          severity="contrast"
-          size="large"
-          @click="navigateToSignup('vendor')"
-        />
-        <Button 
-          label="Sign Up as Establishment" 
-          severity="contrast"
-          outlined
-          size="large"
-          @click="navigateToSignup('merchant')"
-        />
+    <div v-if="!isAuthenticated" style="background: linear-gradient(90deg, #FF8906 0%, #FFB86B 100%); border-radius: 12px; padding: 2rem; margin-top: 3rem; text-align: center; color: #fff;">
+      <h3 class="font-bold" style="font-size: 1.5rem; margin-bottom: 1rem;">Join the DropBy Community</h3>
+      <p style="font-size: 1.1rem; margin-bottom: 2rem;">Are you a food truck owner or establishment looking to connect?</p>
+      <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
+        <Button label="Sign Up as Food Truck Vendor" severity="contrast" style="font-size: 1.1rem;" @click="navigateToSignup('vendor')" />
+        <Button label="Sign Up as Establishment" severity="contrast" outlined style="font-size: 1.1rem;" @click="navigateToSignup('merchant')" />
       </div>
     </div>
   </div>
