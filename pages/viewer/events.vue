@@ -37,13 +37,9 @@
         <template #content>
           <div style="margin-bottom: 1rem; font-weight: bold; font-size: 1.1rem;">Search & Filter Events</div>
           <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-            <div style="flex: 1 1 200px; min-width: 200px;">
-              <label>Location</label>
-              <InputText v-model="filters.location" placeholder="City, zip code, or address" class="w-full" />
-            </div>
-            <div style="flex: 1 1 200px; min-width: 200px;">
-              <label>Date Range</label>
-              <Calendar v-model="filters.dateRange" selectionMode="range" placeholder="Select date range" class="w-full" :showIcon="true" />
+            <div style="flex: 1 1 300px; min-width: 250px;">
+              <label>Keyword Search</label>
+              <InputText v-model="filters.keyword" placeholder="Event name, location, or keyword" class="w-full" />
             </div>
             <div style="flex: 1 1 200px; min-width: 200px;">
               <label>Cuisine Type</label>
@@ -55,9 +51,12 @@
             </div>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-            <Button label="Clear Filters" outlined @click="clearFilters" />
             <div style="font-size: 0.95rem; color: var(--text-color-secondary);">
               Showing {{ filteredEvents.length }} of {{ totalEvents }} events
+            </div>
+            <div style="display: flex; gap: 1rem;">
+              <Button label="Clear" outlined @click="clearFilters" />
+              <Button label="Apply" outlined @click="filterEvents" />
             </div>
           </div>
         </template>
@@ -108,10 +107,10 @@
                 </div>
                 <div>
                   <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <Badge v-if="getDistance(event.location_coordinates)" :value="getDistance(event.location_coordinates)" severity="secondary" />
+                    <Badge v-if="getDistance(event.location_coordinates)" :value="getDistance(event.location_coordinates) || ''" severity="secondary" />
                     <Button @click="openEventDetails(event)" outlined>
                       <template #icon>
-                        <BaseIcon name="eye" color="#ff9800" size="20" />
+                        <i class="pi pi-eye" style="color: #ff9800; font-size: 20px;"></i>
                       </template>
                     </Button>
                   </div>
@@ -130,7 +129,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <Badge v-if="getVendorCuisine(event.vendor)" :value="getVendorCuisine(event.vendor)" severity="info" />
+                  <Badge v-if="getVendorCuisine(event.vendor)" :value="getVendorCuisine(event.vendor) || ''" severity="info" />
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
                   <Button v-if="isAuthenticated && userType === 'vendor' && event.status === 'open'" label="Request Event" outlined @click="requestEvent(event)">
@@ -164,7 +163,13 @@
     </div>
 
     <!-- Event Details Dialog -->
-    <Dialog v-model:visible="showEventDialog" modal :header="selectedEvent ? `${getMerchantName(selectedEvent.merchant)} | ${getVendorName(selectedEvent.vendor)}` : 'Event Details'" :style="{ width: '60rem' }">
+    <Dialog 
+      :visible="showEventDialog" 
+      @update:visible="showEventDialog = $event"
+      modal 
+      :header="selectedEvent ? `${getMerchantName(selectedEvent.merchant)} | ${getVendorName(selectedEvent.vendor)}` : 'Event Details'" 
+      :style="{ width: '60rem' }"
+    >
       <div v-if="selectedEvent" style="display: flex; flex-direction: column; gap: 2rem;">
         <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
           <div style="flex: 1 1 300px; min-width: 250px;">
@@ -219,25 +224,65 @@
 
 <script setup lang="ts">
 import BaseIcon from '~/components/BaseIcon.vue'
+
+// Type definitions
+interface Event {
+  id: string
+  merchant: string
+  vendor: string
+  start: string
+  end: string
+  status: string
+  location_address?: string
+  location_coordinates?: string
+  notes?: string
+}
+
+interface Merchant {
+  id: string
+  merchant_name: string
+  merchant_description?: string
+  avatar_url?: string
+  cuisine_type?: string
+  phone?: string
+  email?: string
+  website?: string
+}
+
+interface Vendor {
+  id: string
+  vendor_name: string
+  vendor_description?: string
+  avatar_url?: string
+  cuisine_type?: string
+  phone?: string
+  email?: string
+  website?: string
+}
+
+interface UserLocation {
+  lat: number
+  lng: number
+}
+
 const supabase = useSupabaseClient()
 const { isAuthenticated, userType } = useAuth()
 
 // Reactive data
-const events = ref([])
-const merchants = ref([])
-const vendors = ref([])
+const events = ref<Event[]>([])
+const merchants = ref<Merchant[]>([])
+const vendors = ref<Vendor[]>([])
 const loading = ref(true)
 const showEventDialog = ref(false)
-const selectedEvent = ref(null)
-const selectedMerchant = ref(null)
-const selectedVendor = ref(null) // Added for vendor details in dialog
-const userLocation = ref(null)
+const selectedEvent = ref<Event | null>(null)
+const selectedMerchant = ref<Merchant | null>(null)
+const selectedVendor = ref<Vendor | null>(null)
+const userLocation = ref<UserLocation | null>(null)
 
 // Filters
 const filters = ref({
-  location: '',
-  dateRange: null,
-  cuisines: [],
+  keyword: '',
+  cuisines: [] as string[],
   sortBy: 'date'
 })
 
@@ -248,10 +293,11 @@ const cuisineOptions = ref([
 ])
 
 const sortOptions = ref([
+  { label: 'Distance (Closest)', value: 'distance' },
+  { label: 'Establishment Name (A-Z)', value: 'merchant' },
+  { label: 'Food Truck Name (A-Z)', value: 'vendor' },
   { label: 'Date (Earliest)', value: 'date' },
-  { label: 'Date (Latest)', value: 'date-desc' },
-  { label: 'Distance', value: 'distance' },
-  { label: 'Establishment Name', value: 'name' }
+  { label: 'Date (Latest)', value: 'date-desc' }
 ])
 
 // Computed properties
@@ -260,7 +306,7 @@ const totalMerchants = computed(() => merchants.value.length)
 const totalVendors = computed(() => vendors.value.length)
 
 const filteredEvents = computed(() => {
-  let filtered = events.value.filter(event => {
+  let filtered = events.value.filter((event: Event) => {
     // Show booked events that are currently happening or haven't started yet
     if (event.status !== 'booked') return false
     
@@ -270,19 +316,24 @@ const filteredEvents = computed(() => {
     
     // Show events that haven't started yet OR are currently happening (started but not ended)
     if (eventStart > now || (eventStart <= now && eventEnd > now)) {
-      // Filter by location
-      if (filters.value.location && event.location_address) {
-        const location = event.location_address.toLowerCase()
-        const search = filters.value.location.toLowerCase()
-        if (!location.includes(search)) return false
+      // Filter by keyword search
+      if (filters.value.keyword) {
+        const keyword = filters.value.keyword.toLowerCase()
+        const eventName = getMerchantName(event.merchant).toLowerCase()
+        const eventLocation = event.location_address?.toLowerCase() || ''
+        const eventVendor = getVendorName(event.vendor).toLowerCase()
+
+        if (!eventName.includes(keyword) && !eventLocation.includes(keyword) && !eventVendor.includes(keyword)) {
+          return false
+        }
       }
       
-      // Filter by date range
-      if (filters.value.dateRange && filters.value.dateRange.length === 2) {
-        const eventDate = new Date(event.start)
-        const startDate = new Date(filters.value.dateRange[0])
-        const endDate = new Date(filters.value.dateRange[1])
-        if (eventDate < startDate || eventDate > endDate) return false
+      // Filter by cuisine type
+      if (filters.value.cuisines.length > 0) {
+        const vendorCuisine = getVendorCuisine(event.vendor)
+        if (!filters.value.cuisines.includes(vendorCuisine || '')) {
+          return false
+        }
       }
       
       return true
@@ -292,14 +343,16 @@ const filteredEvents = computed(() => {
   })
   
   // Sort events
-  filtered.sort((a, b) => {
+  filtered.sort((a: Event, b: Event) => {
     switch (filters.value.sortBy) {
       case 'date':
         return new Date(a.start).getTime() - new Date(b.start).getTime()
       case 'date-desc':
         return new Date(b.start).getTime() - new Date(a.start).getTime()
-      case 'name':
+      case 'merchant':
         return getMerchantName(a.merchant).localeCompare(getMerchantName(b.merchant))
+      case 'vendor':
+        return getVendorName(a.vendor).localeCompare(getVendorName(b.vendor))
       case 'distance':
         if (userLocation.value) {
           const distA = getDistanceFromUser(a.location_coordinates)
@@ -355,59 +408,33 @@ const loadEvents = async () => {
 }
 
 const getMerchantName = (merchantId: string) => {
-  const merchant = merchants.value.find(m => m.id === merchantId)
+  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
   return merchant ? merchant.merchant_name : 'Unknown Establishment'
 }
 
 const getMerchantImage = (merchantId: string) => {
-  const merchant = merchants.value.find(m => m.id === merchantId)
+  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
   return merchant?.avatar_url || 'https://placehold.co/400x300?text=Establishment'
 }
 
 const getMerchantCuisine = (merchantId: string) => {
-  const merchant = merchants.value.find(m => m.id === merchantId)
+  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
   return merchant?.cuisine_type || null
 }
 
 const getVendorName = (vendorId: string) => {
-  const vendor = vendors.value.find(v => v.id === vendorId)
+  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
   return vendor ? vendor.vendor_name : 'Unknown Food Truck'
 }
 
 const getVendorImage = (vendorId: string) => {
-  const vendor = vendors.value.find(v => v.id === vendorId)
+  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
   return vendor?.avatar_url || 'https://placehold.co/400x300?text=Food+Truck'
 }
 
 const getVendorCuisine = (vendorId: string) => {
-  const vendor = vendors.value.find(v => v.id === vendorId)
+  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
   return vendor?.cuisine_type || null
-}
-
-const getStatusDisplay = (status: string) => {
-  switch (status) {
-    case 'open':
-      return 'AVAILABLE'
-    case 'booked':
-      return 'CONFIRMED'
-    case 'closed':
-      return 'CLOSED'
-    default:
-      return status.toUpperCase()
-  }
-}
-
-const getStatusSeverity = (status: string) => {
-  switch (status) {
-    case 'open':
-      return 'success'
-    case 'booked':
-      return 'info'
-    case 'closed':
-      return 'secondary'
-    default:
-      return 'info'
-  }
 }
 
 const getEventStatus = (event: any) => {
@@ -465,7 +492,7 @@ const formatTime = (dateString: string) => {
   })
 }
 
-const getDistance = (coordinates: string) => {
+const getDistance = (coordinates: string | undefined) => {
   if (!coordinates || !userLocation.value) return null
   
   try {
@@ -482,7 +509,7 @@ const getDistance = (coordinates: string) => {
   }
 }
 
-const getDistanceFromUser = (coordinates: string) => {
+const getDistanceFromUser = (coordinates: string | undefined) => {
   if (!coordinates || !userLocation.value) return Infinity
   
   try {
@@ -510,10 +537,10 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c
 }
 
-const openEventDetails = (event: any) => {
+const openEventDetails = (event: Event) => {
   selectedEvent.value = event
-  selectedMerchant.value = merchants.value.find(m => m.id === event.merchant)
-  selectedVendor.value = vendors.value.find(v => v.id === event.vendor) // Set selectedVendor
+  selectedMerchant.value = merchants.value.find((m: Merchant) => m.id === event.merchant) || null
+  selectedVendor.value = vendors.value.find((v: Vendor) => v.id === event.vendor) || null
   showEventDialog.value = true
 }
 
@@ -534,8 +561,7 @@ const getDirections = (event: any) => {
 
 const clearFilters = () => {
   filters.value = {
-    location: '',
-    dateRange: null,
+    keyword: '',
     cuisines: [],
     sortBy: 'date'
   }
@@ -559,6 +585,10 @@ const getUserLocation = () => {
       }
     )
   }
+}
+
+const filterEvents = () => {
+  console.log('Filtering events...')
 }
 
 // Load data on mount
