@@ -1,9 +1,9 @@
 <template>
     <div class="page-content">
-        <div class="section">
+        <div class="section" style="text-align: center;">
             <div>
                 <div class="font-bold" style="font-size: 2rem; margin-bottom: 1rem;">Event Scheduling Made Easy!</div>
-                <div style="font-size: 1.2rem; margin-bottom: 2rem;">
+                <div style="font-size: 1.2rem; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
                   Good drinks belong with good eats,
                   and every food truck should have a spot to serve a hungry crowd.
                   With <span class="font-bold" style="color: #FF8906;">DropBy</span>, businesses can find each other and book events,
@@ -16,16 +16,22 @@
                 <NuxtLink to="/viewer/events">
                     <Button 
                         label="Browse Events" 
-                        icon="pi pi-calendar"
                         style="margin-right: 1rem;"
-                    />
+                    >
+                        <template #icon>
+                            <BaseIcon name="calendar" color="#fff" size="20" />
+                        </template>
+                    </Button>
                 </NuxtLink>
                 <NuxtLink to="/viewer/search">
                     <Button 
                         label="Search Food Trucks" 
-                        icon="pi pi-search"
                         outlined
-                    />
+                    >
+                        <template #icon>
+                            <BaseIcon name="search" color="#ff9800" size="20" />
+                        </template>
+                    </Button>
                 </NuxtLink>
             </div>
         </div>

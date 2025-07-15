@@ -72,14 +72,27 @@
             <!-- Event Image -->
             <div style="flex: 1 1 250px; min-width: 250px; max-width: 350px;">
               <div style="position: relative;">
-                <NuxtImg
-                  :src="getMerchantImage(event.merchant)"
-                  :alt="getMerchantName(event.merchant)"
-                  style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px;"
-                  loading="lazy"
-                />
-                <div style="position: absolute; top: 8px; right: 8px;">
-                  <Tag :value="getStatusDisplay(event.status)" :severity="getStatusSeverity(event.status)" />
+                <!-- Establishment Image (Background) -->
+                <div style="position: relative;">
+                  <NuxtImg
+                    :src="getMerchantImage(event.merchant)"
+                    :alt="getMerchantName(event.merchant)"
+                    style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px;"
+                    loading="lazy"
+                  />
+                  <!-- Event Status Badge -->
+                  <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                    <Badge :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" />
+                  </div>
+                </div>
+                <!-- Food Truck Avatar (Overlay) -->
+                <div style="position: absolute; bottom: -20px; right: -20px; z-index: 20;">
+                  <NuxtImg
+                    :src="getVendorImage(event.vendor)"
+                    :alt="getVendorName(event.vendor)"
+                    style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid #ff9800; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             </div>
@@ -87,13 +100,23 @@
             <div style="flex: 2 1 350px; min-width: 250px;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <div>
-                  <div class="font-bold" style="font-size: 1.2rem; margin-bottom: 0.5rem;">{{ getMerchantName(event.merchant) }}</div>
+                  <div class="font-bold" style="font-size: 1.2rem; margin-bottom: 0.5rem;">{{ getMerchantName(event.merchant) }} | {{ getVendorName(event.vendor) }}</div>
                   <div style="color: var(--text-color-secondary); margin-bottom: 0.5rem;">
                     <i class="pi pi-map-marker" style="margin-right: 0.5rem;"></i>
                     <span>{{ event.location_address || 'Location TBD' }}</span>
                   </div>
                 </div>
-                <Button label="View Details" icon="pi pi-external-link" outlined @click="openEventDetails(event)" />
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <Badge v-if="getDistance(event.location_coordinates)" :value="getDistance(event.location_coordinates)" severity="secondary" />
+                    <Button @click="openEventDetails(event)" outlined>
+                      <template #icon>
+                        <BaseIcon name="eye" color="#ff9800" size="20" />
+                      </template>
+                    </Button>
+                  </div>
+                </div>
+                
               </div>
               <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
                 <div style="color: var(--text-color-secondary);">
@@ -105,16 +128,16 @@
                   <span>{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
                 </div>
               </div>
-              <div v-if="event.notes" style="margin-bottom: 1rem; color: var(--text-color-secondary);">
-                <p>{{ event.notes }}</p>
-              </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <Badge v-if="getMerchantCuisine(event.merchant)" :value="getMerchantCuisine(event.merchant)" severity="info" />
-                  <Badge v-if="getDistance(event.location_coordinates)" :value="getDistance(event.location_coordinates)" severity="secondary" />
+                  <Badge v-if="getVendorCuisine(event.vendor)" :value="getVendorCuisine(event.vendor)" severity="info" />
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
-                  <Button v-if="event.status === 'open'" label="Request Event" icon="pi pi-send custom-white-icon" :iconStyle="{ color: '#fff' }" style="background-color: #fff; border-color: #ff9800;" @click="requestEvent(event)" />
+                  <Button v-if="isAuthenticated && userType === 'vendor' && event.status === 'open'" label="Request Event" outlined @click="requestEvent(event)">
+                    <template #icon>
+                      <BaseIcon name="send" color="#ff9800" size="20" />
+                    </template>
+                  </Button>
                   <Button label="Get Directions" icon="pi pi-map" outlined @click="getDirections(event)" />
                 </div>
               </div>
@@ -141,7 +164,7 @@
     </div>
 
     <!-- Event Details Dialog -->
-    <Dialog v-model:visible="showEventDialog" modal :header="selectedEvent ? getMerchantName(selectedEvent.merchant) : 'Event Details'" :style="{ width: '60rem' }">
+    <Dialog v-model:visible="showEventDialog" modal :header="selectedEvent ? `${getMerchantName(selectedEvent.merchant)} | ${getVendorName(selectedEvent.vendor)}` : 'Event Details'" :style="{ width: '60rem' }">
       <div v-if="selectedEvent" style="display: flex; flex-direction: column; gap: 2rem;">
         <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
           <div style="flex: 1 1 300px; min-width: 250px;">
@@ -163,9 +186,19 @@
               <div v-if="selectedMerchant.website"><span class="font-bold">Website:</span> <a :href="selectedMerchant.website" target="_blank">Visit Website</a></div>
             </div>
           </div>
+          <div v-if="selectedVendor" style="flex: 1 1 300px; min-width: 250px;">
+            <h4 class="font-bold" style="margin-bottom: 1rem;">Food Truck</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <div><span class="font-bold">Name:</span> <span>{{ selectedVendor.vendor_name }}</span></div>
+              <div v-if="selectedVendor.vendor_description"><span class="font-bold">Description:</span> <span>{{ selectedVendor.vendor_description }}</span></div>
+              <div v-if="selectedVendor.phone"><span class="font-bold">Phone:</span> <span>{{ selectedVendor.phone }}</span></div>
+              <div v-if="selectedVendor.email"><span class="font-bold">Email:</span> <span>{{ selectedVendor.email }}</span></div>
+              <div v-if="selectedVendor.website"><span class="font-bold">Website:</span> <a :href="selectedVendor.website" target="_blank">Visit Website</a></div>
+            </div>
+          </div>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-          <Button v-if="selectedEvent.status === 'open'" label="Request This Event" icon="pi pi-send" @click="requestEvent(selectedEvent)" />
+          <Button v-if="isAuthenticated && userType === 'vendor' && selectedEvent.status === 'open'" label="Request This Event" icon="pi pi-send" @click="requestEvent(selectedEvent)" />
           <Button label="Get Directions" icon="pi pi-map" outlined @click="getDirections(selectedEvent)" />
           <Button label="Close" outlined @click="showEventDialog = false" />
         </div>
@@ -185,8 +218,9 @@
 </template>
 
 <script setup lang="ts">
+import BaseIcon from '~/components/BaseIcon.vue'
 const supabase = useSupabaseClient()
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, userType } = useAuth()
 
 // Reactive data
 const events = ref([])
@@ -196,6 +230,7 @@ const loading = ref(true)
 const showEventDialog = ref(false)
 const selectedEvent = ref(null)
 const selectedMerchant = ref(null)
+const selectedVendor = ref(null) // Added for vendor details in dialog
 const userLocation = ref(null)
 
 // Filters
@@ -226,25 +261,34 @@ const totalVendors = computed(() => vendors.value.length)
 
 const filteredEvents = computed(() => {
   let filtered = events.value.filter(event => {
-    // Only show open events to public
-    if (event.status !== 'open') return false
+    // Show booked events that are currently happening or haven't started yet
+    if (event.status !== 'booked') return false
     
-    // Filter by location
-    if (filters.value.location && event.location_address) {
-      const location = event.location_address.toLowerCase()
-      const search = filters.value.location.toLowerCase()
-      if (!location.includes(search)) return false
+    const now = new Date()
+    const eventStart = new Date(event.start)
+    const eventEnd = new Date(event.end)
+    
+    // Show events that haven't started yet OR are currently happening (started but not ended)
+    if (eventStart > now || (eventStart <= now && eventEnd > now)) {
+      // Filter by location
+      if (filters.value.location && event.location_address) {
+        const location = event.location_address.toLowerCase()
+        const search = filters.value.location.toLowerCase()
+        if (!location.includes(search)) return false
+      }
+      
+      // Filter by date range
+      if (filters.value.dateRange && filters.value.dateRange.length === 2) {
+        const eventDate = new Date(event.start)
+        const startDate = new Date(filters.value.dateRange[0])
+        const endDate = new Date(filters.value.dateRange[1])
+        if (eventDate < startDate || eventDate > endDate) return false
+      }
+      
+      return true
     }
     
-    // Filter by date range
-    if (filters.value.dateRange && filters.value.dateRange.length === 2) {
-      const eventDate = new Date(event.start)
-      const startDate = new Date(filters.value.dateRange[0])
-      const endDate = new Date(filters.value.dateRange[1])
-      if (eventDate < startDate || eventDate > endDate) return false
-    }
-    
-    return true
+    return false
   })
   
   // Sort events
@@ -275,12 +319,11 @@ const filteredEvents = computed(() => {
 const loadEvents = async () => {
   loading.value = true
   try {
-    // Load events
+    // Load events - get all booked events and let frontend filtering handle the time logic
     const { data: eventData } = await supabase
       .from('events')
       .select('*')
-      .eq('status', 'open')
-      .gte('start', new Date().toISOString())
+      .eq('status', 'booked')
       .order('start', { ascending: true })
     
     if (eventData) {
@@ -326,12 +369,27 @@ const getMerchantCuisine = (merchantId: string) => {
   return merchant?.cuisine_type || null
 }
 
+const getVendorName = (vendorId: string) => {
+  const vendor = vendors.value.find(v => v.id === vendorId)
+  return vendor ? vendor.vendor_name : 'Unknown Food Truck'
+}
+
+const getVendorImage = (vendorId: string) => {
+  const vendor = vendors.value.find(v => v.id === vendorId)
+  return vendor?.avatar_url || 'https://placehold.co/400x300?text=Food+Truck'
+}
+
+const getVendorCuisine = (vendorId: string) => {
+  const vendor = vendors.value.find(v => v.id === vendorId)
+  return vendor?.cuisine_type || null
+}
+
 const getStatusDisplay = (status: string) => {
   switch (status) {
     case 'open':
       return 'AVAILABLE'
     case 'booked':
-      return 'BOOKED'
+      return 'CONFIRMED'
     case 'closed':
       return 'CLOSED'
     default:
@@ -349,6 +407,36 @@ const getStatusSeverity = (status: string) => {
       return 'secondary'
     default:
       return 'info'
+  }
+}
+
+const getEventStatus = (event: any) => {
+  const now = new Date()
+  const eventStart = new Date(event.start)
+  const eventEnd = new Date(event.end)
+  
+  // Event is currently happening (started but not ended)
+  if (eventStart <= now && eventEnd > now) {
+    return 'LIVE'
+  }
+  // Event hasn't started yet
+  else {
+    return 'UPCOMING'
+  }
+}
+
+const getEventStatusSeverity = (event: any) => {
+  const now = new Date()
+  const eventStart = new Date(event.start)
+  const eventEnd = new Date(event.end)
+  
+  // Event is currently happening (started but not ended)
+  if (eventStart <= now && eventEnd > now) {
+    return 'danger' // Red for live events
+  }
+  // Event hasn't started yet
+  else {
+    return 'success' // Green for upcoming events
   }
 }
 
@@ -425,6 +513,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 const openEventDetails = (event: any) => {
   selectedEvent.value = event
   selectedMerchant.value = merchants.value.find(m => m.id === event.merchant)
+  selectedVendor.value = vendors.value.find(v => v.id === event.vendor) // Set selectedVendor
   showEventDialog.value = true
 }
 

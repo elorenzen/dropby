@@ -36,7 +36,17 @@
                 :model="viewerMenu"
                 :popup="true"
                 :rerender="renderKey"
-              />
+              >
+                <template #item="{ item }">
+                  <div class="flex items-center gap-3 px-3 py-2 cursor-pointer">
+                    <BaseIcon v-if="item.label === 'How It Works'" name="info" color="#ff9800" size="20" />
+                    <BaseIcon v-else-if="item.label === 'Events'" name="calendar" color="#ff9800" size="20" />
+                    <BaseIcon v-else-if="item.label === 'Map View'" name="globe" color="#ff9800" size="20" />
+                    <BaseIcon v-else-if="item.label === 'Search'" name="search" color="#ff9800" size="20" />
+                    <span class="ml-2" style="color: #ff9800;">{{ item.label }}</span>
+                  </div>
+                </template>
+              </Menu>
           </div>
           <div v-else class="flex items-center gap-2">
                 <Button v-if="isAuthenticated" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
@@ -56,7 +66,9 @@
 </template>
 
 <script setup lang="ts">
+import { h } from 'vue'
 import Logo from '~/assets/logo-one.svg' // options: '.../logo-two.svg', '.../logo-three.svg'
+import BaseIcon from '~/components/BaseIcon.vue'
 
 const supabase = useSupabaseClient()
 const router = useRouter()
@@ -77,28 +89,28 @@ const viewerMenu = ref([
     items: [
       {
         label: 'How It Works',
-        icon: 'pi pi-info-circle',
+        icon: () => h(BaseIcon, { name: 'info', color: '#ff9800', size: 20 }),
         command: () => {
           router.push('/viewer/about')
         }
       },
       {
         label: 'Events',
-        icon: 'pi pi-calendar',
+        icon: () => h(BaseIcon, { name: 'calendar', color: '#ff9800', size: 20 }),
         command: () => {
           router.push('/viewer/events')
         }
       },
       {
         label: 'Map View',
-        icon: 'pi pi-globe',
+        icon: () => h(BaseIcon, { name: 'globe', color: '#ff9800', size: 20 }),
         command: () => {
           router.push('/viewer/map')
         }
       },
       {
         label: 'Search',
-        icon: 'pi pi-search',
+        icon: () => h(BaseIcon, { name: 'search', color: '#ff9800', size: 20 }),
         command: () => {
           router.push('/viewer/search')
         }
