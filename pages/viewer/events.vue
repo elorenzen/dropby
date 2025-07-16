@@ -47,7 +47,7 @@
             </div>
             <div style="flex: 1 1 200px; min-width: 200px;">
               <label>Sort By</label>
-              <Dropdown v-model="filters.sortBy" :options="sortOptions" placeholder="Sort by" class="w-full" />
+              <Dropdown v-model="filters.sortBy" :options="sortOptions" optionLabel="label" optionValue="value" placeholder="Sort by" class="w-full" />
             </div>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
@@ -55,8 +55,7 @@
               Showing {{ filteredEvents.length }} of {{ totalEvents }} events
             </div>
             <div style="display: flex; gap: 1rem;">
-              <Button label="Clear" outlined @click="clearFilters" />
-              <Button label="Apply" outlined @click="filterEvents" />
+              <Button label="Clear Filters" outlined @click="clearFilters" style="border-color: var(--secondary-color); color: var(--secondary-color);" />
             </div>
           </div>
         </template>
@@ -108,11 +107,11 @@
                 <div>
                   <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <Badge v-if="getDistance(event.location_coordinates)" :value="getDistance(event.location_coordinates) || ''" severity="secondary" />
-                    <Button @click="openEventDetails(event)" outlined>
-                      <template #icon>
-                        <i class="pi pi-eye" style="color: #ff9800; font-size: 20px;"></i>
-                      </template>
-                    </Button>
+                                          <Button @click="openEventDetails(event)" outlined style="border-color: var(--secondary-color); color: var(--secondary-color);">
+                        <template #icon>
+                          <i class="pi pi-eye" style="font-size: 20px;"></i>
+                        </template>
+                      </Button>
                   </div>
                 </div>
                 
@@ -129,7 +128,12 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <Badge v-if="getVendorCuisine(event.vendor)" :value="getVendorCuisine(event.vendor) || ''" severity="info" />
+                  <Badge 
+                    v-for="cuisine in getVendorCuisines(event.vendor)" 
+                    :key="cuisine" 
+                    :value="cuisine" 
+                    severity="info" 
+                  />
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
                   <Button v-if="isAuthenticated && userType === 'vendor' && event.status === 'open'" label="Request Event" outlined @click="requestEvent(event)">
@@ -215,8 +219,18 @@
       <h3 class="font-bold" style="font-size: 1.5rem; margin-bottom: 1rem;">Join the DropBy Community</h3>
       <p style="font-size: 1.1rem; margin-bottom: 2rem;">Are you a food truck owner or establishment looking to connect?</p>
       <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
-        <Button label="Sign Up as Food Truck Vendor" severity="contrast" style="font-size: 1.1rem;" @click="navigateToSignup('vendor')" />
-        <Button label="Sign Up as Establishment" severity="contrast" outlined style="font-size: 1.1rem;" @click="navigateToSignup('merchant')" />
+        <button 
+          class="cta-primary-btn"
+          @click="navigateToSignup('vendor')"
+        >
+          Sign Up as Food Truck Vendor
+        </button>
+        <button 
+          class="cta-secondary-btn"
+          @click="navigateToSignup('merchant')"
+        >
+          Sign Up as Establishment
+        </button>
       </div>
     </div>
   </div>
@@ -243,7 +257,6 @@ interface Merchant {
   merchant_name: string
   merchant_description?: string
   avatar_url?: string
-  cuisine_type?: string
   phone?: string
   email?: string
   website?: string
@@ -254,7 +267,7 @@ interface Vendor {
   vendor_name: string
   vendor_description?: string
   avatar_url?: string
-  cuisine_type?: string
+  cuisine?: string[]
   phone?: string
   email?: string
   website?: string
@@ -288,8 +301,10 @@ const filters = ref({
 
 // Options
 const cuisineOptions = ref([
-  'American', 'Mexican', 'Italian', 'Asian', 'Mediterranean', 
-  'BBQ', 'Seafood', 'Vegetarian', 'Desserts', 'Coffee', 'Other'
+  'Alcohol', 'American', 'Asian fusion', 'Bakery', 'Breaksfast', 
+  'Coffee', 'Comfort food', 'Dessert', 'Healthy food', 'Ice cream', 
+  'Italian', 'Latin', 'Mediterranean', 'Mexican', 'Pizza', 
+  'Sandwich', 'Seafood', 'Snacks', 'Tacos', 'Vegan'
 ])
 
 const sortOptions = ref([
@@ -330,8 +345,8 @@ const filteredEvents = computed(() => {
       
       // Filter by cuisine type
       if (filters.value.cuisines.length > 0) {
-        const vendorCuisine = getVendorCuisine(event.vendor)
-        if (!filters.value.cuisines.includes(vendorCuisine || '')) {
+        const vendor = vendors.value.find((v: Vendor) => v.id === event.vendor)
+        if (!vendor?.cuisine || !vendor.cuisine.some((cuisine: string) => filters.value.cuisines.includes(cuisine))) {
           return false
         }
       }
@@ -417,10 +432,7 @@ const getMerchantImage = (merchantId: string) => {
   return merchant?.avatar_url || 'https://placehold.co/400x300?text=Establishment'
 }
 
-const getMerchantCuisine = (merchantId: string) => {
-  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
-  return merchant?.cuisine_type || null
-}
+
 
 const getVendorName = (vendorId: string) => {
   const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
@@ -434,7 +446,14 @@ const getVendorImage = (vendorId: string) => {
 
 const getVendorCuisine = (vendorId: string) => {
   const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
-  return vendor?.cuisine_type || null
+  if (!vendor?.cuisine || vendor.cuisine.length === 0) return null
+  // Return the first cuisine type for display purposes
+  return vendor.cuisine[0]
+}
+
+const getVendorCuisines = (vendorId: string) => {
+  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
+  return vendor?.cuisine || []
 }
 
 const getEventStatus = (event: any) => {
@@ -596,4 +615,47 @@ onMounted(() => {
   loadEvents()
   getUserLocation()
 })
-</script> 
+</script>
+
+<style scoped>
+.cta-primary-btn {
+  background-color: #1a1a1a !important;
+  border: 2px solid #1a1a1a !important;
+  color: #ffffff !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+}
+
+.cta-primary-btn:hover {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+}
+
+.cta-secondary-btn {
+  background-color: transparent !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+}
+
+.cta-secondary-btn:hover {
+  background-color: rgba(255,255,255,0.1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+</style> 

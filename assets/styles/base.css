@@ -6,6 +6,9 @@
   --highlight-bg: #ff9800;
   --highlight-text-color: #fff;
 
+  /* Secondary Color */
+  --secondary-color: #666;
+
   /* Surfaces */
   --surface-ground: #18191b;
   --surface-section: #232428;
@@ -233,4 +236,26 @@ body {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+/* Secondary color outlined buttons */
+.p-button.p-button-outlined[style*="--secondary-color"] {
+  border-color: var(--secondary-color) !important;
+  color: var(--secondary-color) !important;
+}
+
+.p-button.p-button-outlined[style*="--secondary-color"] .p-button-icon,
+.p-button.p-button-outlined[style*="--secondary-color"] .pi {
+  color: var(--secondary-color) !important;
+}
+
+/* Force secondary color on buttons with inline styles */
+.p-button[style*="border-color: var(--secondary-color)"] {
+  border-color: var(--secondary-color) !important;
+  color: var(--secondary-color) !important;
+}
+
+.p-button[style*="border-color: var(--secondary-color)"] .p-button-icon,
+.p-button[style*="border-color: var(--secondary-color)"] .pi {
+  color: var(--secondary-color) !important;
 } 

@@ -29,6 +29,7 @@
                 @click="toggleViewerMenu"
                 aria-haspopup="true"
                 aria-controls="viewer_menu"
+                style="border-color: var(--secondary-color); color: var(--secondary-color);"
               />
               <Menu
                 ref="viewMenu"
@@ -49,7 +50,7 @@
               </Menu>
           </div>
           <div v-else class="flex items-center gap-2">
-                <Button v-if="isAuthenticated" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" />
+                <Button v-if="isAuthenticated" outlined severity="contrast" type="button" icon="pi pi-user" @click="toggleAccountMenu" aria-haspopup="true" aria-controls="account_menu" style="border-color: var(--secondary-color); color: var(--secondary-color);" />
               <Menu
                 ref="acctMenu"
                 id="account_menu"
