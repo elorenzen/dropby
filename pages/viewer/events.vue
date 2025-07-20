@@ -615,7 +615,7 @@ onMounted(() => {
   loadEvents()
   getUserLocation()
 })
-</script>
+</script> 
 
 <style scoped>
 .cta-primary-btn {

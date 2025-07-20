@@ -176,8 +176,12 @@ const loading           = ref(false)
 const requestedVendors  = ref([])
 const merchant          = ref(await merchantStore.getMerchantById(user.value?.associated_merchant_id || ''))
 const events        = computed(() => {
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  
   return eventStore.allEvents
     .filter((e: any) => e.merchant === user.value?.associated_merchant_id)
+    .filter((e: any) => new Date(e.start) >= thirtyDaysAgo)
     .sort((a:any,b:any) => Date.parse(b.start) - Date.parse(a.start))
 })
 const selectedEvt       = ref()
