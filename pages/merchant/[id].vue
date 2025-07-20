@@ -186,8 +186,17 @@ const route = useRoute()
 const merchantStore = useMerchantStore()
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const timelineStore = useTimelineStore()
-const { data: timelineData } = await supabase.from('timeline').select('*').eq('owner_id', route.params.id)
-await timelineStore.setTimeline(timelineData)
+const { data: timelineData, error: timelineError } = await supabase
+  .from('timeline_items')
+  .select('*')
+  .eq('owner_id', route.params.id)
+  .order('created_at', { ascending: false })
+
+if (timelineError) {
+  console.error('Error loading timeline:', timelineError)
+}
+
+await timelineStore.setTimeline(timelineData || [])
 const menu = ref()
 
 // Analytics data (move above menuItems)
@@ -234,41 +243,65 @@ const menuItems = ref([
   }
 ])
 
-// Recent activity data
-const recentActivity = ref([
-  {
-    id: 1,
-    title: 'Event Request Received',
-    description: 'Taco Truck Express requested to book July 20th',
-    time: '2 hours ago',
-    icon: 'pi pi-inbox',
-    iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
-  },
-  {
-    id: 2,
-    title: 'Event Completed',
-    description: 'Burger Joint completed their event successfully',
-    time: '1 day ago',
-    icon: 'pi pi-check-circle',
-    iconClass: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-  },
-  {
-    id: 3,
-    title: 'New Rating Received',
-    description: '4.5 stars from Pizza Palace vendor',
-    time: '2 days ago',
-    icon: 'pi pi-star',
-    iconClass: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
-  },
-  {
-    id: 4,
-    title: 'Profile Updated',
-    description: 'Business hours updated',
-    time: '3 days ago',
-    icon: 'pi pi-user-edit',
-    iconClass: 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400'
-  }
-])
+// Helper function to format time ago
+const getTimeAgo = (date: Date): string => {
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`
+  return `${Math.floor(diffInSeconds / 2592000)} months ago`
+}
+
+// Recent activity data - now computed from timeline
+const recentActivity = computed(() => {
+  return timelineItems.value.slice(0, 4).map((item: any) => {
+    const timeAgo = getTimeAgo(new Date(item.created_at))
+    
+    // Determine icon and styling based on timeline item type
+    let icon = 'pi pi-info-circle'
+    let iconClass = 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+    
+    switch (item.type) {
+      case 'event_completed':
+        icon = 'pi pi-check-circle'
+        iconClass = 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+        break
+      case 'event':
+        icon = 'pi pi-calendar-plus'
+        iconClass = 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400'
+        break
+      case 'rating':
+        icon = 'pi pi-star'
+        iconClass = 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
+        break
+      case 'profile':
+        icon = 'pi pi-user-edit'
+        iconClass = 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400'
+        break
+    }
+    
+    return {
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      time: timeAgo,
+      icon,
+      iconClass
+    }
+  })
+})
+
+const timelineItems = computed(() => {
+  return timelineStore.getTimeline
+})
+
+// Debug timeline data
+watchEffect(() => {
+  console.log('Timeline items:', timelineItems.value)
+})
 
 // Methods
 const navigateToSettings = () => {
@@ -339,7 +372,8 @@ const loadAnalytics = async () => {
 
 onMounted(() => {
   loadAnalytics()
-  console.log(timelineStore.getTimeline)
+  console.log('Timeline items on mount:', timelineItems.value)
+  console.log('Timeline store state:', timelineStore.timeline)
 })
 </script>
 
