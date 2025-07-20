@@ -179,13 +179,15 @@
 definePageMeta({
   middleware: ['auth']
 })
-
+const supabase = useSupabaseClient()
 const store = useUserStore()
 const user = ref(store.user)
 const route = useRoute()
 const merchantStore = useMerchantStore()
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
-const eventStore = useEventStore()
+const timelineStore = useTimelineStore()
+const { data: timelineData } = await supabase.from('timeline').select('*').eq('owner_id', route.params.id)
+await timelineStore.setTimeline(timelineData)
 const menu = ref()
 
 // Analytics data (move above menuItems)
@@ -337,6 +339,7 @@ const loadAnalytics = async () => {
 
 onMounted(() => {
   loadAnalytics()
+  console.log(timelineStore.getTimeline)
 })
 </script>
 
