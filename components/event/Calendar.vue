@@ -295,13 +295,29 @@
         notes: notes.value !== '' ? notes.value : merchant.value.notes
     }
     const { error } = await supabase.from('events').insert(evtObj)
-    if (!error) await resetFields('created')
-    else {
+    if (!error) {
+      await resetFields('created')
+      await addTimelineEvent(evtObj)
+    } else {
         errType.value = 'Event Creation'
         errMsg.value = error.message
         errDialog.value = true
     }
     loading.value = false
+  }
+  const addTimelineEvent = async (event: any) => {
+    const { error } = await supabase.from('timeline_items').insert({
+      id: v4(),
+      owner_id: user.value.associated_merchant_id,
+      title: 'Event Created',
+      description: `Event created by ${user.value.first_name} ${user.value.last_name} for ${event.start} - ${event.end}`,
+      type: 'event'
+    })
+    if (error) {
+        errType.value = 'Timeline Event Creation'
+        errMsg.value = error.message
+        errDialog.value = true
+    }
   }
   const promptDeletion = () => { deleteDialog.value = true }
   const confirmDelete = async () => {

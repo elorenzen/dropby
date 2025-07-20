@@ -126,6 +126,7 @@ onMounted(async () => {
   await subscribeToVendors()
   await subscribeToMerchants()
   await subscribeToMenuItems()
+  
 })
 // console.log('user: ', user.user)
         // Get necessary script for Map initializtion (google maps API key required!!)
