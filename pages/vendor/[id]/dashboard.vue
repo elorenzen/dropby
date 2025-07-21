@@ -12,19 +12,14 @@
           </p>
         </div>
         <div class="flex items-center gap-4">
-          <Button 
-            label="Find Events" 
-            icon="pi pi-search" 
-            @click="navigateToEvents"
-            class="bg-accent text-background hover:bg-accent-dark"
-          />
-          <Button 
-            label="Settings" 
-            icon="pi pi-cog" 
-            outlined 
-            @click="navigateToSettings"
-          />
-        </div>
+            <Menu ref="menu" :model="menuItems" :popup="true" />
+            <Button 
+              icon="pi pi-bars" 
+              @click="toggleMenu"
+              outlined 
+              aria-label="Menu"
+            />
+          </div>
       </div>
     </div>
 
@@ -311,6 +306,7 @@ const newEventEnd = ref(new Date())
 const notes = ref('')
 const loading = ref(false)
 const dayId = ref()
+const menu = ref<any>(null)
 
 // Analytics data
 const analytics = ref({
@@ -397,6 +393,39 @@ const attributes = ref([
       dates: bookedEvents.value
     }
 ])
+
+const toggleMenu = (event: Event) => {
+    menu.value?.toggle(event)
+}
+
+const menuItems = ref([
+    {
+      label: 'Ratings & Reviews',
+      icon: 'pi pi-star',
+      command: () => navigateTo(`/vendor/${route.params.id}/ratings-and-reviews`)
+    },
+    {
+      label: 'Financials',
+      icon: 'pi pi-dollar',
+      command: () => navigateTo(`/vendor/${route.params.id}/financials`)
+    },
+    {
+      label: 'View Analytics',
+      icon: 'pi pi-chart-bar',
+      command: () => navigateTo(`/vendor/${route.params.id}/analytics`)
+    },
+    {
+      label: 'Events',
+      icon: 'pi pi-calendar-plus',
+      command: () => navigateTo(`/vendor/${route.params.id}/events`)
+    },
+    { separator: true },
+    {
+      label: 'Settings',
+      icon: 'pi pi-cog',
+      command: () => navigateToSettings()
+    }
+  ])
 
 // Methods
 const route = useRoute()
