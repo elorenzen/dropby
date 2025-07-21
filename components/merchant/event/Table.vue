@@ -339,6 +339,20 @@ const getStatusLabel = (status: any) => {
             return null;
     }
 };
+const addTimelineEvent = async (timelineObj: any) => {
+    const { error } = await supabase.from('timeline_items').insert({
+      id: v4(),
+      owner_id: timelineObj.ownerId,
+      title: timelineObj.title,
+      description: timelineObj.description,
+      type: timelineObj.type
+    })
+    if (error) {
+        errType.value = 'Timeline Event Creation'
+        errMsg.value = error.message
+        errDialog.value = true
+    }
+  }
 const approveRequest = async (id: any) => {
     if (!user.value?.associated_merchant_id) {
         errType.value = 'Event Approval'
@@ -380,7 +394,12 @@ const approveRequest = async (id: any) => {
                 group: 'main', 
                 life: 6000 
             })
-            
+            await addTimelineEvent({
+              ownerId: user.value.associated_merchant_id,
+              title: 'Event Request Approved',
+              description: `Event request approved by ${user.value.first_name} ${user.value.last_name}`,
+              type: 'event'
+            })
             // Refresh the events list
             const { data: eventData } = await supabase.from('events').select()
             if (eventData) {

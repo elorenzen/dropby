@@ -297,7 +297,12 @@
     const { error } = await supabase.from('events').insert(evtObj)
     if (!error) {
       await resetFields('created')
-      await addTimelineEvent(evtObj)
+      await addTimelineEvent({
+        ownerId: user.value.associated_merchant_id,
+        title: 'Event Created',
+        description: `Event created by ${user.value.first_name} ${user.value.last_name} for ${evtObj.start} - ${evtObj.end}`,
+        type: 'event'
+      })
     } else {
         errType.value = 'Event Creation'
         errMsg.value = error.message
@@ -305,13 +310,13 @@
     }
     loading.value = false
   }
-  const addTimelineEvent = async (event: any) => {
+  const addTimelineEvent = async (timelineObj: any) => {
     const { error } = await supabase.from('timeline_items').insert({
       id: v4(),
-      owner_id: user.value.associated_merchant_id,
-      title: 'Event Created',
-      description: `Event created by ${user.value.first_name} ${user.value.last_name} for ${event.start} - ${event.end}`,
-      type: 'event'
+      owner_id: timelineObj.ownerId,
+      title: timelineObj.title,
+      description: timelineObj.description,
+      type: timelineObj.type
     })
     if (error) {
         errType.value = 'Timeline Event Creation'
@@ -361,9 +366,17 @@
           errType.value = 'Event Approval'
           errMsg.value = dbErr.message
           errDialog.value = true
-      } else await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.value.associated_merchant_id}`)
+      } else {
+        await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.value.associated_merchant_id}`)
+        await addTimelineEvent({
+          ownerId: user.value.associated_merchant_id,
+          title: 'Event Request Approved',
+          description: `Event request approved by ${user.value.first_name} ${user.value.last_name}`,
+          type: 'event'
+        })
+        await resetFields('approved')
+      }
 
-      if (!dbErr) await resetFields('approved')
       loading.value = false
   }
   const onClose = () => {
