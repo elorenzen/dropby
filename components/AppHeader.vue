@@ -131,7 +131,7 @@ const accountMenu = computed(() => [
               const associatedIdKey = `associated_${currentUser.value.type}_id` as keyof typeof currentUser.value
               const userAssociatedId = currentUser.value[associatedIdKey]
               if (userAssociatedId) {
-                router.push(`/${currentUser.value.type}/${userAssociatedId}`)
+                router.push(`/${currentUser.value.type}/${userAssociatedId}/dashboard`)
               }
             }
           }

@@ -75,7 +75,7 @@ export const useAuth = () => {
     const userAssociatedId = currentUserData[associatedIdKey]
     
     if (userAssociatedId) {
-      await router.push(`/${currentUserData.type}/${userAssociatedId}`)
+      await router.push(`/${currentUserData.type}/${userAssociatedId}/dashboard`)
     } else {
       await router.push('/get-started')
     }
