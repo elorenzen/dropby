@@ -220,6 +220,11 @@
       command: () => navigateToSettings()
     },
     {
+      label: 'Ratings & Reviews',
+      icon: 'pi pi-star',
+      command: () => navigateTo(`/merchant/${route.params.id}/ratings-and-reviews`)
+    },
+    {
       label: 'Review Requests',
       icon: 'pi pi-inbox',
       badge: analytics.value.pendingRequests.toString(),
