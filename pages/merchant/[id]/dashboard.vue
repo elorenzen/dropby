@@ -227,30 +227,24 @@
   
   const menuItems = ref([
     {
-      label: 'Schedule New Event',
-      icon: 'pi pi-calendar-plus',
-      command: () => navigateToSettings()
-    },
-    {
       label: 'Ratings & Reviews',
       icon: 'pi pi-star',
       command: () => navigateTo(`/merchant/${route.params.id}/ratings-and-reviews`)
     },
     {
-      label: 'Review Requests',
-      icon: 'pi pi-inbox',
-      badge: analytics.value.pendingRequests.toString(),
-      command: () => navigateToSettings()
-    },
-    {
-      label: 'Update Profile',
-      icon: 'pi pi-user-edit',
-      command: () => navigateToSettings()
+      label: 'Financials',
+      icon: 'pi pi-dollar',
+      command: () => navigateTo(`/merchant/${route.params.id}/financials`)
     },
     {
       label: 'View Analytics',
       icon: 'pi pi-chart-bar',
-      command: () => navigateToSettings()
+      command: () => navigateTo(`/merchant/${route.params.id}/analytics`)
+    },
+    {
+      label: 'Events',
+      icon: 'pi pi-calendar-plus',
+      command: () => navigateTo(`/merchant/${route.params.id}/events`)
     },
     { separator: true },
     {
