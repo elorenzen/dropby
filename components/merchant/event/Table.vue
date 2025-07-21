@@ -208,9 +208,11 @@ onMounted(async () => {
     const evts = events.value
     for (let evt of evts) {
         if (Date.now() > new Date(evt.end).getTime()) {
+            // Check if event has a vendor assigned
+            const status = evt.vendor ? 'completed' : 'closed'
             const updates = {
                 updated_at: new Date(),
-                status: 'closed'
+                status: status
             }
             const { error } = await supabase
                 .from('events')

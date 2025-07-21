@@ -185,18 +185,30 @@
   const route = useRoute()
   const merchantStore = useMerchantStore()
   const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
+
   const timelineStore = useTimelineStore()
   const { data: timelineData, error: timelineError } = await supabase
     .from('timeline_items')
     .select('*')
     .eq('owner_id', route.params.id)
     .order('created_at', { ascending: false })
-  
-  if (timelineError) {
-    console.error('Error loading timeline:', timelineError)
-  }
-  
   await timelineStore.setTimeline(timelineData || [])
+
+  const reviewStore = useReviewStore()
+  const { data: receivedReviews, error: receivedReviewsError } = await supabase
+    .from('reviews')
+    .select('*')
+    .eq('recipient_id', route.params.id)
+    .order('created_at', { ascending: false })
+  await reviewStore.setReceivedReviews(receivedReviews || [])
+
+  const { data: sentReviews, error: sentReviewsError } = await supabase
+    .from('reviews')
+    .select('*')
+    .eq('sender_id', route.params.id)
+    .order('created_at', { ascending: false })
+  await reviewStore.setSentReviews(sentReviews || [])
+
   const menu = ref()
   
   // Analytics data (move above menuItems)
@@ -377,8 +389,7 @@
   
   onMounted(() => {
     loadAnalytics()
-    console.log('Timeline items on mount:', timelineItems.value)
-    console.log('Timeline store state:', timelineStore.timeline)
+
   })
   </script>
   

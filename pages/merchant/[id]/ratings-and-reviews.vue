@@ -90,16 +90,16 @@
         <div v-if="showPendingReviews" class="mt-4 space-y-3">
           <div v-for="event in pendingReviews" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
                 <NuxtImg 
-                  :src="event.vendor_avatar" 
-                  :alt="event.vendor_name" 
+                  :src="getVendorProp(event.vendor, 'avatar_url')" 
+                  :alt="getVendorProp(event.vendor, 'vendor_name')" 
                   class="w-12 h-12 rounded-full"
                 />
-                <div>
-                  <p class="font-semibold">{{ event.vendor_name }}</p>
-                  <p class="text-sm text-text-muted">{{ event.event_title }}</p>
-                  <p class="text-xs text-text-muted">{{ new Date(event.event_date).toLocaleDateString() }}</p>
+                <div class="min-w-0">
+                  <p class="font-semibold truncate">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
+                  <p class="text-sm text-text-muted truncate">Event Date: {{ new Date(event.day_id).toLocaleDateString() }}</p>
+                  <p class="text-xs text-text-muted">Event Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
                 </div>
               </div>
               <Button 
@@ -137,7 +137,7 @@
                   <p class="font-semibold truncate">{{ review.vendor_name }}</p>
                   <p class="text-sm text-text-muted">{{ review.cuisine_type }}</p>
                   <p class="text-sm text-text-muted truncate">Event: {{ review.event_title }}</p>
-                  <p class="text-xs text-text-muted">{{ new Date(review.event_date).toLocaleDateString() }}</p>
+                  <p class="text-xs text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
                 </div>
               </div>
               
@@ -163,7 +163,7 @@
         <h3 class="text-xl font-semibold">Received Reviews</h3>
       </template>
       <template #content>
-        <Tabs v-model:value="activeTabIndex">
+        <Tabs :value="activeTabIndex.toString()">
           <TabList>
             <Tab value="0">Food Truck Reviews</Tab>
             <Tab value="1">User Reviews</Tab>
@@ -184,7 +184,7 @@
                         <p class="font-semibold truncate text-text-main">{{ review.vendor_name }}</p>
                         <p class="text-sm text-text-muted">{{ review.cuisine_type }}</p>
                         <p class="text-sm text-text-muted">Event: {{ review.event_title }}</p>
-                        <p class="text-xs text-text-muted">{{ new Date(review.event_date).toLocaleDateString() }}</p>
+                        <p class="text-xs text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
                       </div>
                     </div>
                     
@@ -216,7 +216,7 @@
                         <p class="font-semibold truncate text-text-main">{{ review.user_name }}</p>
                         <p class="text-sm text-text-muted truncate">{{ review.user_email }}</p>
                         <p class="text-sm text-text-muted">Event: {{ review.event_title }}</p>
-                        <p class="text-xs text-text-muted">{{ new Date(review.event_date).toLocaleDateString() }}</p>
+                        <p class="text-xs text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
                       </div>
                     </div>
                     
@@ -246,9 +246,51 @@ definePageMeta({
   middleware: ['auth']
 })
 
+interface Event {
+  id: string
+  vendor: string
+  day_id: string
+  start: string
+  end: string
+  status: string
+  merchant: string
+}
+
+interface Review {
+  id: string
+  vendor_avatar?: string
+  vendor_name?: string
+  cuisine_type?: string
+  event_title?: string
+  event_date?: string
+  comment?: string
+  rating: number
+  created_at: string
+  event_id?: string
+  author_id?: string
+  sender_id?: string
+  recipient_id?: string
+  content?: string
+  user_name?: string
+  user_email?: string
+}
+
 const route = useRoute()
+const vendorStore = useVendorStore()
 const merchantStore = useMerchantStore()
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
+
+const reviewStore = useReviewStore()
+const receivedReviews = ref<Review[]>(reviewStore.getReceivedReviews)
+const sentReviews = ref<Review[]>(reviewStore.getSentReviews)
+
+const eventStore = useEventStore()
+const events = ref<Event[]>(eventStore.getAllEvents)
+const completedMerchantEvents = ref<Event[]>(events.value.filter((event: Event) => event.merchant === route.params.id && event.status === 'completed'))
+const pendingReviews = ref<Event[]>(completedMerchantEvents.value.filter((event: Event) => {
+  // Check if this event's id is NOT in the sentReviews array
+  return !sentReviews.value.some((review: Review) => review.event_id === event.id)
+}))
 
 // Analytics data
 const analytics = ref({
@@ -259,15 +301,21 @@ const analytics = ref({
 })
 
 // Tab state
-const activeTabIndex = ref('0')
+const activeTabIndex = ref(0)
 
 // Pending reviews state
 const showPendingReviews = ref(false)
 
+const getVendorProp = (vendorId: string, prop: string): string => {
+  const allVendors = vendorStore.getAllVendors
+  const vendor = allVendors.find((v: any) => v.id === vendorId)
+  return vendor?.[prop] || ''
+}
+
 // Hard-coded review data
-const foodTruckReviews = ref([
+const foodTruckReviews = ref<Review[]>([
   {
-    id: 1,
+    id: '1',
     vendor_name: "Taco Truck Deluxe",
     vendor_avatar: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop&crop=center",
     cuisine_type: "Mexican",
@@ -278,7 +326,7 @@ const foodTruckReviews = ref([
     created_at: "2024-01-16"
   },
   {
-    id: 2,
+    id: '2',
     vendor_name: "Burger Barn",
     vendor_avatar: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=100&h=100&fit=crop&crop=center",
     cuisine_type: "American",
@@ -289,7 +337,7 @@ const foodTruckReviews = ref([
     created_at: "2024-01-11"
   },
   {
-    id: 3,
+    id: '3',
     vendor_name: "Pizza Express",
     vendor_avatar: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=100&h=100&fit=crop&crop=center",
     cuisine_type: "Italian",
@@ -301,9 +349,9 @@ const foodTruckReviews = ref([
   }
 ])
 
-const userReviews = ref([
+const userReviews = ref<Review[]>([
   {
-    id: 1,
+    id: '1',
     user_name: "John Smith",
     user_email: "john.smith@email.com",
     rating: 5,
@@ -313,7 +361,7 @@ const userReviews = ref([
     created_at: "2024-01-16"
   },
   {
-    id: 2,
+    id: '2',
     user_name: "Sarah Johnson",
     user_email: "sarah.j@email.com",
     rating: 4,
@@ -323,7 +371,7 @@ const userReviews = ref([
     created_at: "2024-01-11"
   },
   {
-    id: 3,
+    id: '3',
     user_name: "Mike Davis",
     user_email: "mike.davis@email.com",
     rating: 3,
@@ -334,70 +382,20 @@ const userReviews = ref([
   }
 ])
 
-const sentReviews = ref([
-  {
-    id: 1,
-    vendor_name: "Taco Truck Deluxe",
-    vendor_avatar: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop&crop=center",
-    cuisine_type: "Mexican",
-    rating: 5,
-    comment: "Outstanding service and food quality. The team was professional and the food was exceptional.",
-    event_title: "Taco Tuesday Event",
-    event_date: "2024-01-15",
-    created_at: "2024-01-16"
-  },
-  {
-    id: 2,
-    vendor_name: "Burger Barn",
-    vendor_avatar: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=100&h=100&fit=crop&crop=center",
-    cuisine_type: "American",
-    rating: 4,
-    comment: "Great food and reliable service. Would definitely book again for future events.",
-    event_title: "Weekend BBQ Bash",
-    event_date: "2024-01-10",
-    created_at: "2024-01-11"
-  },
-  {
-    id: 3,
-    vendor_name: "Sushi Express",
-    vendor_avatar: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=100&h=100&fit=crop&crop=center",
-    cuisine_type: "Japanese",
-    rating: 4,
-    comment: "Fresh sushi and excellent presentation. The customers loved the variety.",
-    event_title: "Sushi Night Special",
-    event_date: "2024-01-08",
-    created_at: "2024-01-09"
-  }
-])
-
-// Pending reviews data
-const pendingReviews = ref([
-  {
-    id: 1,
-    vendor_name: "Pizza Palace",
-    vendor_avatar: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=100&h=100&fit=crop&crop=center",
-    event_title: "Pizza Party Night",
-    event_date: "2024-01-20"
-  },
-  {
-    id: 2,
-    vendor_name: "Ice Cream Dream",
-    vendor_avatar: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=100&h=100&fit=crop&crop=center",
-    event_title: "Summer Dessert Festival",
-    event_date: "2024-01-18"
-  }
-])
-
 // Methods
 const navigateToDashboard = () => {
   navigateTo(`/merchant/${route.params.id}/dashboard`)
 }
 
-const writeReview = (event: any) => {
+const writeReview = (event: Event) => {
   // TODO: Implement review writing functionality
   console.log('Writing review for event:', event)
   // This could open a modal or navigate to a review form
 }
+
+onMounted(() => {
+  console.log(pendingReviews.value)
+})
 
 useSeoMeta({ title: () => `${merchant.value?.name || 'Merchant'} - Ratings & Reviews` })
 </script>
