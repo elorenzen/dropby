@@ -387,9 +387,28 @@
     }
   }
   
-  onMounted(() => {
+  onMounted(async () => {
     loadAnalytics()
 
+    supabase
+      .channel('reviews')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'reviews' }, 
+        async (payload: any) => {
+          const { data: receivedReviews } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('recipient_id', route.params.id)
+            .order('created_at', { ascending: false })
+          await reviewStore.setReceivedReviews(receivedReviews || [])
+          const { data: sentReviews } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('sender_id', route.params.id)
+            .order('created_at', { ascending: false })
+          await reviewStore.setSentReviews(sentReviews || [])
+        })
+      .subscribe()
   })
   </script>
   
