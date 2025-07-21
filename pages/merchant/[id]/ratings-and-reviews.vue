@@ -161,77 +161,36 @@
         <h3 class="text-xl font-semibold">Received Reviews</h3>
       </template>
       <template #content>
-        <Tabs :value="activeTabIndex.toString()">
-          <TabList>
-            <Tab value="0">Food Truck Reviews</Tab>
-            <Tab value="1">User Reviews</Tab>
-          </TabList>
-          <TabPanels>
-            <TabPanel value="0">
-              <div class="space-y-3">
-                <div v-for="review in foodTruckReviews" :key="review.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                  <div class="flex items-start gap-4">
-                    <!-- Left: Vendor Data -->
-                    <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
-                      <NuxtImg 
-                        :src="review.vendor_avatar" 
-                        :alt="review.vendor_name" 
-                        class="w-12 h-12 rounded-full"
-                      />
-                      <div class="min-w-0">
-                        <p class="font-semibold truncate text-text-main">{{ review.vendor_name }}</p>
-                        <p class="text-sm text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
-                        <p class="text-xs text-text-muted">{{ review.event_id ? getEventTime(review.event_id) : 'N/A' }}</p>
-                      </div>
-                    </div>
-                    
-                    <!-- Middle: Review Content -->
-                    <div class="flex-1 min-w-0 border-l border-r border-gray-200 dark:border-gray-700 px-4">
-                      <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
-                    </div>
-                    
-                    <!-- Right: Review Metadata -->
-                    <div class="flex flex-col items-end gap-2 min-w-0 flex-shrink-0">
-                      <Rating v-model="review.rating" readonly :cancel="false" />
-                      <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
-                    </div>
-                  </div>
+        <div class="space-y-3">
+          <div v-for="review in receivedReviews" :key="review.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-start gap-4">
+              <!-- Left: Reviewer Data -->
+              <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
+                <NuxtImg 
+                  :src="getVendorProp(review.sender_id || '', 'avatar_url')" 
+                  :alt="getVendorProp(review.sender_id || '', 'vendor_name')" 
+                  class="w-12 h-12 rounded-full"
+                />
+                <div class="min-w-0">
+                  <p class="font-semibold truncate text-text-main">{{ getVendorProp(review.sender_id || '', 'vendor_name') }}</p>
+                  <p class="text-sm text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
+                  <p class="text-xs text-text-muted">{{ review.event_id ? getEventTime(review.event_id) : 'N/A' }}</p>
                 </div>
               </div>
-            </TabPanel>
-
-            <TabPanel value="1">
-              <div class="space-y-3">
-                <div v-for="review in userReviews" :key="review.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                  <div class="flex items-start gap-4">
-                    <!-- Left: User Data -->
-                    <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
-                      <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                        <i class="pi pi-user text-gray-600"></i>
-                      </div>
-                      <div class="min-w-0">
-                        <p class="font-semibold truncate text-text-main">{{ review.user_name }}</p>
-                        <p class="text-sm text-text-muted truncate">{{ review.user_email }}</p>
-                        <p class="text-xs text-text-muted">{{ review.event_id ? getEventTime(review.event_id) : 'N/A' }}</p>
-                      </div>
-                    </div>
-                    
-                    <!-- Middle: Review Content -->
-                    <div class="flex-1 min-w-0 border-l border-r border-gray-200 dark:border-gray-700 px-4">
-                      <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
-                    </div>
-                    
-                    <!-- Right: Review Metadata -->
-                    <div class="flex flex-col items-end gap-2 min-w-0 flex-shrink-0">
-                      <Rating v-model="review.rating" readonly :cancel="false" />
-                      <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
-                    </div>
-                  </div>
-                </div>
+              
+              <!-- Middle: Review Content -->
+              <div class="flex-1 min-w-0 border-l border-r border-gray-200 dark:border-gray-700 px-4">
+                <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
               </div>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+              
+              <!-- Right: Review Metadata -->
+              <div class="flex flex-col items-end gap-2 min-w-0 flex-shrink-0">
+                <Rating v-model="review.rating" readonly :cancel="false" />
+                <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </template>
     </Card>
 
@@ -437,7 +396,6 @@ const rating = ref(0)
 const loading = ref(false)
 const showValidation = ref(false)
 
-const activeTabIndex = ref(0)
 const openWriteReviewDialog = ref(false)
 const selectedEvent = ref<Event | null>(null)
 
@@ -461,75 +419,7 @@ const getEventTime = (eventId: string): string => {
   return `${new Date(event.start).toLocaleTimeString()} - ${new Date(event.end).toLocaleTimeString()}`
 }
 
-// Hard-coded review data
-const foodTruckReviews = ref<Review[]>([
-  {
-    id: '1',
-    vendor_name: "Taco Truck Deluxe",
-    vendor_avatar: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop&crop=center",
-    cuisine_type: "Mexican",
-    rating: 5,
-    comment: "Excellent service and delicious food. The tacos were fresh and flavorful. Highly recommend!",
-    event_title: "Taco Tuesday Event",
-    event_date: "2024-01-15",
-    created_at: "2024-01-16"
-  },
-  {
-    id: '2',
-    vendor_name: "Burger Barn",
-    vendor_avatar: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=100&h=100&fit=crop&crop=center",
-    cuisine_type: "American",
-    rating: 4,
-    comment: "Great burgers and friendly staff. The event went smoothly.",
-    event_title: "Weekend BBQ Bash",
-    event_date: "2024-01-10",
-    created_at: "2024-01-11"
-  },
-  {
-    id: '3',
-    vendor_name: "Pizza Express",
-    vendor_avatar: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=100&h=100&fit=crop&crop=center",
-    cuisine_type: "Italian",
-    rating: 4,
-    comment: "Good pizza, but arrived a bit late. Overall satisfied with the service.",
-    event_title: "Pizza Party Night",
-    event_date: "2024-01-05",
-    created_at: "2024-01-06"
-  }
-])
 
-const userReviews = ref<Review[]>([
-  {
-    id: '1',
-    user_name: "John Smith",
-    user_email: "john.smith@email.com",
-    rating: 5,
-    comment: "Amazing venue and great food truck selection! The atmosphere was perfect for our event.",
-    event_title: "Corporate Lunch Event",
-    event_date: "2024-01-15",
-    created_at: "2024-01-16"
-  },
-  {
-    id: '2',
-    user_name: "Sarah Johnson",
-    user_email: "sarah.j@email.com",
-    rating: 4,
-    comment: "Really enjoyed the food truck event. The variety was great and everything tasted delicious.",
-    event_title: "Birthday Celebration",
-    event_date: "2024-01-10",
-    created_at: "2024-01-11"
-  },
-  {
-    id: '3',
-    user_name: "Mike Davis",
-    user_email: "mike.davis@email.com",
-    rating: 3,
-    comment: "The event was okay, but the food trucks were a bit slow with service.",
-    event_title: "Team Building Event",
-    event_date: "2024-01-05",
-    created_at: "2024-01-06"
-  }
-])
 
 // Methods
 const navigateToDashboard = () => {

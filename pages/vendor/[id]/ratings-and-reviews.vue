@@ -91,11 +91,13 @@
           <div v-for="event in pendingReviews" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
-                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <i class="pi pi-building text-gray-600"></i>
-                </div>
+                <NuxtImg 
+                  :src="getMerchantProp(event.merchant, 'avatar_url')" 
+                  :alt="getMerchantProp(event.merchant, 'merchant_name')" 
+                  class="w-12 h-12 rounded-full"
+                />
                 <div class="min-w-0">
-                  <p class="font-semibold truncate">{{ getMerchantProp(event.merchant, 'name') }}</p>
+                  <p class="font-semibold truncate">{{ getMerchantProp(event.merchant, 'merchant_name') }}</p>
                   <p class="text-sm text-text-muted truncate">Event Date: {{ new Date(event.day_id).toLocaleDateString() }}</p>
                   <p class="text-xs text-text-muted">Event Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
                 </div>
@@ -126,11 +128,13 @@
             <div class="flex items-start gap-4">
               <!-- Left: Event Data -->
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
-                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <i class="pi pi-building text-gray-600"></i>
-                </div>
+                <NuxtImg 
+                  :src="getMerchantProp(review.recipient_id || '', 'avatar_url')" 
+                  :alt="getMerchantProp(review.recipient_id || '', 'merchant_name')" 
+                  class="w-12 h-12 rounded-full"
+                />
                 <div class="min-w-0">
-                  <p class="font-semibold truncate">{{ review.merchant_name }}</p>
+                  <p class="font-semibold truncate">{{ getMerchantProp(review.recipient_id || '', 'merchant_name') }}</p>
                   <p class="text-sm text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
                 </div>
               </div>
@@ -215,11 +219,13 @@
             <!-- Event Information -->
             <div v-if="selectedEvent" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                        <i class="pi pi-building text-gray-600"></i>
-                    </div>
+                    <NuxtImg 
+                        :src="getMerchantProp(selectedEvent.merchant, 'avatar_url')" 
+                        :alt="getMerchantProp(selectedEvent.merchant, 'merchant_name')" 
+                        class="w-12 h-12 rounded-full"
+                    />
                     <div class="flex-1">
-                        <h4 class="font-semibold text-text-main">{{ getMerchantProp(selectedEvent.merchant, 'name') }}</h4>
+                        <h4 class="font-semibold text-text-main">{{ getMerchantProp(selectedEvent.merchant, 'merchant_name') }}</h4>
                         <p class="text-sm text-text-muted">Event Date: {{ new Date(selectedEvent.day_id).toLocaleDateString() }}</p>
                         <p class="text-xs text-text-muted">Time: {{ new Date(selectedEvent.start).toLocaleTimeString() }} - {{ new Date(selectedEvent.end).toLocaleTimeString() }}</p>
                     </div>
@@ -316,6 +322,12 @@ const { data: sentReviewsData, error: sentReviewsError } = await supabase
   .order('created_at', { ascending: false })
 await reviewStore.setSentReviews(sentReviewsData || [])
 
+const getMerchantProp = (merchantId: string, prop: string): string => {
+  const allMerchants = merchantStore.getAllMerchants
+  const merchant = allMerchants.find((m: any) => m.id === merchantId)
+  return merchant?.[prop] || ''
+}
+
 // Transform database reviews to display format
 const transformReviewForDisplay = (review: any): Review => {
   // Find the event to get date/time information
@@ -379,8 +391,8 @@ interface Review {
 
 // Analytics data
 const analytics = ref({
-  establishmentRating: 4.2,
-  establishmentReviews: 15,
+  establishmentRating: receivedReviews.value.length > 0 ? receivedReviews.value.reduce((sum, review) => sum + review.rating, 0) / receivedReviews.value.length : 0,
+  establishmentReviews: receivedReviews.value.length,
   userRating: 4.4,
   userReviews: 23
 })
@@ -400,12 +412,6 @@ const showPendingReviews = ref(false)
 const canSubmit = computed(() => {
   return review.value.trim().length > 0 && rating.value > 0
 })
-
-const getMerchantProp = (merchantId: string, prop: string): string => {
-  const allMerchants = merchantStore.getAllMerchants
-  const merchant = allMerchants.find((m: any) => m.id === merchantId)
-  return merchant?.[prop] || ''
-}
 
 const getEventTime = (eventId: string): string => {
   const event = events.value.find((e: Event) => e.id === eventId)
