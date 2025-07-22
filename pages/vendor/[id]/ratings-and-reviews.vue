@@ -419,6 +419,19 @@ const getEventTime = (eventId: string): string => {
   return `${new Date(event.start).toLocaleTimeString()} - ${new Date(event.end).toLocaleTimeString()}`
 }
 
+const addTimelineEvent = async (timelineObj: any) => {
+  const { error } = await supabase.from('timeline_items').insert({
+    id: uuidv4(),
+    owner_id: timelineObj.ownerId,
+    title: timelineObj.title,
+    description: timelineObj.description,
+    type: timelineObj.type
+  })
+  if (error) {
+    console.error('Timeline Event Creation Error:', error.message)
+  }
+}
+
 
 
 // Methods
@@ -462,6 +475,14 @@ const submitReview = async () => {
         if (error) {
             throw error
         }
+        
+        // Add timeline event for successful review submission
+        await addTimelineEvent({
+            ownerId: route.params.id as string,
+            title: 'Review Submitted',
+            description: `Submitted a ${rating.value}-star review for ${getMerchantProp(selectedEvent.value?.merchant || '', 'merchant_name')}`,
+            type: 'rating'
+        })
         
         // The real-time subscription will handle updating the reviews
         // and recalculating pending reviews
