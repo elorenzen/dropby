@@ -172,6 +172,7 @@ const createEvent = async () => {
       severity: 'error',
       summary: 'Validation Error',
       detail: 'Please fill in all required fields',
+      group: 'main',
       life: 3000
     })
     return
@@ -246,6 +247,7 @@ const createEvent = async () => {
       severity: 'success',
       summary: 'Event Created',
       detail: 'Your event has been created successfully',
+      group: 'main',
       life: 3000
     })
   } catch (error) {
@@ -254,6 +256,7 @@ const createEvent = async () => {
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to create event. Please try again.',
+      group: 'main',
       life: 3000
     })
   } finally {

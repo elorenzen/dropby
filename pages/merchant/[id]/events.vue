@@ -244,16 +244,32 @@
           <div v-for="event in filteredPastEvents" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4 min-w-0 flex-1">
-                <NuxtImg 
-                  :src="getVendorProp(event.vendor, 'avatar_url')" 
-                  :alt="getVendorProp(event.vendor, 'vendor_name')" 
-                  class="w-12 h-12 rounded-full"
-                />
-                <div class="min-w-0 flex-1">
-                  <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
-                  <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                  <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                </div>
+                <!-- Show vendor info if event has a vendor -->
+                <template v-if="event.vendor">
+                  <NuxtImg 
+                    :src="getVendorProp(event.vendor, 'avatar_url')" 
+                    :alt="getVendorProp(event.vendor, 'vendor_name')" 
+                    class="w-12 h-12 rounded-full"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
+                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                  </div>
+                </template>
+                
+                <!-- Show no vendor message if event was closed without a vendor -->
+                <template v-else>
+                  <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <i class="pi pi-times-circle text-gray-400 dark:text-gray-500"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
+                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Event was closed without a vendor</p>
+                  </div>
+                </template>
               </div>
               <div class="flex flex-col items-end gap-2">
                 <Tag :value="event.status.toUpperCase()" :severity="event.status === 'completed' ? 'success' : 'secondary'" size="small" />
@@ -266,7 +282,7 @@
                     size="small"
                   />
                   <Button 
-                    v-if="!hasReview(event)"
+                    v-if="!hasReview(event) && event.vendor"
                     @click="writeReview(event)"
                     label="Write Review"
                     severity="warning"
@@ -294,7 +310,7 @@
       </template>
     </Card>
 
-    <Toast group="main" position="bottom-center" />
+    <Toast group="main" position="bottom-center" @close="onClose" />
     
     <!-- Write Review Dialog -->
     <WriteReview
@@ -335,6 +351,14 @@ const reviewStore = useReviewStore()
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const loadingApproval = ref<string | null>(null)
 const loadingRejection = ref<string | null>(null)
+
+// Fetch review data for this merchant
+const { data: sentReviews, error: sentReviewsError } = await supabase
+  .from('reviews')
+  .select('*')
+  .eq('sender_id', route.params.id)
+  .order('created_at', { ascending: false })
+await reviewStore.setSentReviews(sentReviews || [])
 
 // Business hours parsing
 const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
@@ -626,6 +650,11 @@ const onEventCreated = () => {
   // Refresh the events data
   // The real-time subscription will handle updating the events
   console.log('Event created successfully')
+}
+
+const onClose = () => {
+  // Toast closed functionality
+  console.log('Toast closed')
 }
 
 const clearPastEventsFilters = () => {
