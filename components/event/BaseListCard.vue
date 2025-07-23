@@ -30,7 +30,7 @@
         <div class="flex items-center gap-2">
           <slot name="action-buttons">
             <Button 
-              label="View Details"
+              icon="pi pi-eye"
               severity="secondary"
               outlined
               size="small"

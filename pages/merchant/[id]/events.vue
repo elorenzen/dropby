@@ -168,7 +168,7 @@
             <template #action-buttons>
               <Button 
                 @click="viewEventDetails(event)"
-                label="View Details"
+                icon="pi pi-eye"
                 severity="secondary"
                 outlined
                 size="small"
@@ -300,7 +300,7 @@
             <template #action-buttons>
               <Button 
                 @click="viewEventDetails(event)"
-                label="View Details"
+                icon="pi pi-eye"
                 severity="secondary"
                 outlined
                 size="small"
@@ -308,9 +308,10 @@
               <Button 
                 v-if="!hasReview(event) && event.vendor"
                 @click="writeReview(event)"
-                label="Write Review"
-                severity="warning"
+                icon="pi pi-star"
+                severity="secondary"
                 size="small"
+                outlined
               />
             </template>
           </EventBaseListCard>
@@ -353,6 +354,18 @@
       @update:visible="showCreateEventDialog = $event"
       @event-created="onEventCreated"
     />
+
+    <!-- Event Details Dialog -->
+    <EventDetailsCard
+      :visible="showEventDetailsDialog"
+      :event="selectedEventForDetails"
+      :merchant="merchant"
+      :get-vendor-prop="getVendorProp"
+      :get-vendor-cuisines="getVendorCuisines"
+      :has-review="hasReview"
+      @update:visible="showEventDetailsDialog = $event"
+      @write-review="onWriteReviewFromDetails"
+    />
   </div>
 </template>
 
@@ -393,6 +406,10 @@ const selectedEventForReview = ref<Event | null>(null)
 
 // Create event dialog state
 const showCreateEventDialog = ref(false)
+
+// Event details dialog state
+const showEventDetailsDialog = ref(false)
+const selectedEventForDetails = ref<Event | null>(null)
 
 // Define interfaces for type safety
 interface Event {
@@ -654,8 +671,8 @@ const rejectRequest = async (event: Event & { vendor_id: string }) => {
 }
 
 const viewEventDetails = (event: Event) => {
-  // Navigate to event details page or open modal
-  console.log('View event details:', event)
+  selectedEventForDetails.value = event
+  showEventDetailsDialog.value = true
 }
 
 const writeReview = (event: Event) => {
@@ -667,6 +684,13 @@ const onReviewSubmitted = () => {
   // Refresh the reviews data
   // The real-time subscription will handle updating the reviews
   console.log('Review submitted successfully')
+}
+
+const onWriteReviewFromDetails = (event: Event) => {
+  // Close the details dialog and open the review dialog
+  showEventDetailsDialog.value = false
+  selectedEventForReview.value = event
+  showWriteReviewDialog.value = true
 }
 
 const onEventCreated = () => {
