@@ -44,42 +44,46 @@
       </template>
       <template #content>
         <div v-if="pendingRequests.length > 0" class="space-y-4">
-          <div v-for="event in pendingRequests" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4 min-w-0 flex-1">
-                <NuxtImg 
-                  :src="getVendorProp(event.vendor_id || '', 'avatar_url')" 
-                  :alt="getVendorProp(event.vendor_id || '', 'vendor_name')" 
-                  class="w-12 h-12 rounded-full"
-                />
-                <div class="min-w-0 flex-1">
-                  <p class="font-semibold text-text-main truncate">{{ getVendorProp(event.vendor_id || '', 'vendor_name') }}</p>
-                  <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                  <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                  <div class="flex items-center gap-2 mt-1">
-                    <Tag v-for="cuisine in getVendorCuisines(event.vendor_id || '')" :key="cuisine" :value="cuisine" severity="info" size="small" />
-                  </div>
-                </div>
+          <EventBaseListCard 
+            v-for="event in pendingRequests" 
+            :key="event.id"
+            class="border-orange-200 dark:border-orange-800"
+          >
+            <template #vendor-avatar>
+              <NuxtImg 
+                :src="getVendorProp(event.vendor_id || '', 'avatar_url')" 
+                :alt="getVendorProp(event.vendor_id || '', 'vendor_name')" 
+                class="w-12 h-12 rounded-full"
+              />
+            </template>
+            
+            <template #event-content>
+              <p class="font-semibold text-text-main truncate">{{ getVendorProp(event.vendor_id || '', 'vendor_name') }}</p>
+              <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+              <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <Tag v-for="cuisine in getVendorCuisines(event.vendor_id || '')" :key="cuisine" :value="cuisine" severity="info" size="small" />
               </div>
-              <div class="flex items-center gap-2">
-                <Button 
-                  @click="approveRequest(event)"
-                  label="Approve"
-                  severity="success"
-                  size="small"
-                  :loading="loadingApproval === event.id"
-                />
-                <Button 
-                  @click="rejectRequest(event)"
-                  label="Reject"
-                  severity="danger"
-                  outlined
-                  size="small"
-                  :loading="loadingRejection === event.id"
-                />
-              </div>
-            </div>
-          </div>
+            </template>
+            
+            <template #action-buttons>
+              <Button 
+                @click="approveRequest(event)"
+                label="Approve"
+                severity="success"
+                size="small"
+                :loading="loadingApproval === event.id"
+              />
+              <Button 
+                @click="rejectRequest(event)"
+                label="Reject"
+                severity="danger"
+                outlined
+                size="small"
+                :loading="loadingRejection === event.id"
+              />
+            </template>
+          </EventBaseListCard>
         </div>
         <div v-else class="text-center py-8">
           <div class="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900 mx-auto mb-4 flex items-center justify-center">
@@ -115,53 +119,62 @@
       </template>
       <template #content>
         <div v-if="currentUpcomingEvents.length > 0" class="space-y-4">
-          <div v-for="event in currentUpcomingEvents" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4 min-w-0 flex-1">
-                <!-- Show vendor info if event has a vendor -->
-                <template v-if="event.vendor">
-                  <NuxtImg 
-                    :src="getVendorProp(event.vendor, 'avatar_url')" 
-                    :alt="getVendorProp(event.vendor, 'vendor_name')" 
-                    class="w-12 h-12 rounded-full"
-                  />
-                  <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
-                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                    <div class="flex items-center gap-2 mt-1">
-                      <Tag v-for="cuisine in getVendorCuisines(event.vendor)" :key="cuisine" :value="cuisine" severity="info" size="small" />
-                    </div>
-                  </div>
-                </template>
-                
-                <!-- Show no vendor message if event is open -->
-                <template v-else>
-                  <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                    <i class="pi pi-truck text-gray-400 dark:text-gray-500"></i>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
-                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Waiting for food truck requests</p>
-                  </div>
-                </template>
-              </div>
-              <div class="flex flex-col items-end gap-2">
-                <Tag :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" size="small" />
-                <div class="flex items-center gap-2">
-                  <Button 
-                    @click="viewEventDetails(event)"
-                    label="View Details"
-                    severity="secondary"
-                    outlined
-                    size="small"
-                  />
+          <EventBaseListCard 
+            v-for="event in currentUpcomingEvents" 
+            :key="event.id"
+          >
+            <template #vendor-avatar>
+              <!-- Show vendor info if event has a vendor -->
+              <template v-if="event.vendor">
+                <NuxtImg 
+                  :src="getVendorProp(event.vendor, 'avatar_url')" 
+                  :alt="getVendorProp(event.vendor, 'vendor_name')" 
+                  class="w-12 h-12 rounded-full"
+                />
+              </template>
+              
+              <!-- Show no vendor message if event is open -->
+              <template v-else>
+                <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <i class="pi pi-truck text-gray-400 dark:text-gray-500"></i>
                 </div>
-              </div>
-            </div>
-          </div>
+              </template>
+            </template>
+            
+            <template #event-content>
+              <!-- Show vendor info if event has a vendor -->
+              <template v-if="event.vendor">
+                <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
+                <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                <div class="flex items-center gap-2 mt-1">
+                  <Tag v-for="cuisine in getVendorCuisines(event.vendor)" :key="cuisine" :value="cuisine" severity="info" size="small" />
+                </div>
+              </template>
+              
+              <!-- Show no vendor message if event is open -->
+              <template v-else>
+                <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
+                <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Waiting for food truck requests</p>
+              </template>
+            </template>
+            
+            <template #status-badge>
+              <Tag :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" size="small" />
+            </template>
+            
+            <template #action-buttons>
+              <Button 
+                @click="viewEventDetails(event)"
+                label="View Details"
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            </template>
+          </EventBaseListCard>
         </div>
         <div v-else class="text-center py-8">
           <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 mx-auto mb-4 flex items-center justify-center">
@@ -241,57 +254,66 @@
         </div>
 
         <div v-if="filteredPastEvents.length > 0" class="space-y-4">
-          <div v-for="event in filteredPastEvents" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4 min-w-0 flex-1">
-                <!-- Show vendor info if event has a vendor -->
-                <template v-if="event.vendor">
-                  <NuxtImg 
-                    :src="getVendorProp(event.vendor, 'avatar_url')" 
-                    :alt="getVendorProp(event.vendor, 'vendor_name')" 
-                    class="w-12 h-12 rounded-full"
-                  />
-                  <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
-                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                  </div>
-                </template>
-                
-                <!-- Show no vendor message if event was closed without a vendor -->
-                <template v-else>
-                  <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                    <i class="pi pi-times-circle text-gray-400 dark:text-gray-500"></i>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
-                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Event was closed without a vendor</p>
-                  </div>
-                </template>
-              </div>
-              <div class="flex flex-col items-end gap-2">
-                <Tag :value="event.status.toUpperCase()" :severity="event.status === 'completed' ? 'success' : 'secondary'" size="small" />
-                <div class="flex items-center gap-2">
-                  <Button 
-                    @click="viewEventDetails(event)"
-                    label="View Details"
-                    severity="secondary"
-                    outlined
-                    size="small"
-                  />
-                  <Button 
-                    v-if="!hasReview(event) && event.vendor"
-                    @click="writeReview(event)"
-                    label="Write Review"
-                    severity="warning"
-                    size="small"
-                  />
+          <EventBaseListCard 
+            v-for="event in filteredPastEvents" 
+            :key="event.id"
+          >
+            <template #vendor-avatar>
+              <!-- Show vendor info if event has a vendor -->
+              <template v-if="event.vendor">
+                <NuxtImg 
+                  :src="getVendorProp(event.vendor, 'avatar_url')" 
+                  :alt="getVendorProp(event.vendor, 'vendor_name')" 
+                  class="w-12 h-12 rounded-full"
+                />
+              </template>
+              
+              <!-- Show no vendor message if event was closed without a vendor -->
+              <template v-else>
+                <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <i class="pi pi-times-circle text-gray-400 dark:text-gray-500"></i>
                 </div>
-              </div>
-            </div>
-          </div>
+              </template>
+            </template>
+            
+            <template #event-content>
+              <!-- Show vendor info if event has a vendor -->
+              <template v-if="event.vendor">
+                <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
+                <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+              </template>
+              
+              <!-- Show no vendor message if event was closed without a vendor -->
+              <template v-else>
+                <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
+                <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Event was closed without a vendor</p>
+              </template>
+            </template>
+            
+            <template #status-badge>
+              <Tag :value="event.status.toUpperCase()" :severity="event.status === 'completed' ? 'success' : 'secondary'" size="small" />
+            </template>
+            
+            <template #action-buttons>
+              <Button 
+                @click="viewEventDetails(event)"
+                label="View Details"
+                severity="secondary"
+                outlined
+                size="small"
+              />
+              <Button 
+                v-if="!hasReview(event) && event.vendor"
+                @click="writeReview(event)"
+                label="Write Review"
+                severity="warning"
+                size="small"
+              />
+            </template>
+          </EventBaseListCard>
         </div>
         <div v-else-if="pastEvents.length > 0" class="text-center py-8">
           <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
@@ -335,6 +357,7 @@
 </template>
 
 <script setup lang="ts">
+
 const toast = useToast()
 
 definePageMeta({
