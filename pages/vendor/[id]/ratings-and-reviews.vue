@@ -194,98 +194,16 @@
       </template>
     </Card>
 
-    <Dialog 
-        :visible="openWriteReviewDialog" 
-        @update:visible="openWriteReviewDialog = $event"
-        modal 
-        :style="{ width: '90vw', maxWidth: '500px' }"
-        :closable="true"
-        :closeOnEscape="true"
-        class="review-dialog"
-    >
-        <template #header>
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                    <i class="pi pi-star text-orange-600 dark:text-orange-400"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-text-main">Write Review</h3>
-                    <p class="text-sm text-text-muted">Share your experience with this establishment</p>
-                </div>
-            </div>
-        </template>
-
-        <div class="space-y-6">
-            <!-- Event Information -->
-            <div v-if="selectedEvent" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-3">
-                    <NuxtImg 
-                        :src="getMerchantProp(selectedEvent.merchant, 'avatar_url')" 
-                        :alt="getMerchantProp(selectedEvent.merchant, 'merchant_name')" 
-                        class="w-12 h-12 rounded-full"
-                    />
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-text-main">{{ getMerchantProp(selectedEvent.merchant, 'merchant_name') }}</h4>
-                        <p class="text-sm text-text-muted">Event Date: {{ new Date(selectedEvent.day_id).toLocaleDateString() }}</p>
-                        <p class="text-xs text-text-muted">Time: {{ new Date(selectedEvent.start).toLocaleTimeString() }} - {{ new Date(selectedEvent.end).toLocaleTimeString() }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rating Section -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-text-main">Rating *</label>
-                <div class="flex items-center gap-2">
-                    <Rating 
-                        v-model="rating" 
-                        :cancel="false" 
-                        class="text-2xl"
-                        :pt="{
-                            onIcon: { class: 'text-orange-500' },
-                            offIcon: { class: 'text-gray-300 dark:text-gray-600' }
-                        }"
-                    />
-                    <span v-if="rating > 0" class="text-sm text-text-muted ml-2">{{ rating }} star{{ rating > 1 ? 's' : '' }}</span>
-                </div>
-                <p v-if="rating === 0" class="text-xs text-red-500">Please select a rating</p>
-            </div>
-
-            <!-- Review Text -->
-            <div class="space-y-3">
-                <label for="review" class="block text-sm font-medium text-text-main">Review *</label>
-                <Textarea 
-                    id="review" 
-                    v-model="review" 
-                    rows="6" 
-                    placeholder="Share your experience with this establishment. What went well? What could be improved?"
-                    class="w-full resize-none"
-                    :class="{ 'border-red-500': review.length === 0 && showValidation }"
-                />
-                <div class="flex justify-between items-center">
-                    <p v-if="review.length === 0 && showValidation" class="text-xs text-red-500">Please write a review</p>
-                    <p class="text-xs text-text-muted">{{ review.length }}/500 characters</p>
-                </div>
-            </div>
-        </div>
-
-        <template #footer>
-            <div class="flex justify-end gap-3">
-                <Button 
-                    label="Cancel" 
-                    severity="secondary" 
-                    outlined
-                    @click="closeReviewDialog" 
-                />
-                <Button 
-                    label="Submit Review" 
-                    :loading="loading" 
-                    :disabled="!canSubmit"
-                    @click="submitReview"
-                    class="min-w-[120px]"
-                />
-            </div>
-        </template>
-    </Dialog>
+    <!-- Write Review Dialog -->
+    <WriteReview
+      :visible="openWriteReviewDialog"
+      :event="selectedEvent"
+      :is-vendor="true"
+      :sender-id="route.params.id as string"
+      :recipient-id="selectedEvent?.merchant || ''"
+      @update:visible="openWriteReviewDialog = $event"
+      @review-submitted="onReviewSubmitted"
+    />
     <Toast group="main" position="bottom-center" />
   </div>
 </template>
@@ -300,7 +218,6 @@ definePageMeta({
 const route = useRoute()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-import { v4 as uuidv4 } from 'uuid'
 const vendorStore = useVendorStore()
 const merchantStore = useMerchantStore()
 const vendor = ref<any>(await vendorStore.getVendorById(route.params.id))
@@ -397,39 +314,16 @@ const analytics = ref({
   userReviews: 23
 })
 
-const review = ref('')
-const rating = ref(0)
-const loading = ref(false)
-const showValidation = ref(false)
-
 const openWriteReviewDialog = ref(false)
 const selectedEvent = ref<Event | null>(null)
 
 // Pending reviews state
 const showPendingReviews = ref(false)
 
-// Computed properties
-const canSubmit = computed(() => {
-  return review.value.trim().length > 0 && rating.value > 0
-})
-
 const getEventTime = (eventId: string): string => {
-  const event = events.value.find((e: Event) => e.id === eventId)
+  const event = events.value.find((event: Event) => event.id === eventId)
   if (!event) return 'N/A'
   return `${new Date(event.start).toLocaleTimeString()} - ${new Date(event.end).toLocaleTimeString()}`
-}
-
-const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  })
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
-  }
 }
 
 
@@ -439,72 +333,10 @@ const navigateToDashboard = () => {
   navigateTo(`/vendor/${route.params.id}/dashboard`)
 }
 
-const closeReviewDialog = () => {
-    openWriteReviewDialog.value = false
-    review.value = ''
-    rating.value = 0
-    showValidation.value = false
-    selectedEvent.value = null
-}
-
-const submitReview = async () => {
-    showValidation.value = true
-    
-    if (!canSubmit.value) {
-        toast.add({
-            severity: 'error',
-            summary: 'Validation Error',
-            detail: 'Please provide both a rating and review text',
-            life: 3000
-        })
-        return
-    }
-
-    try {
-        loading.value = true
-        const { data, error } = await supabase.from('reviews').insert({
-            id: uuidv4(),
-            created_at: new Date().toISOString(),
-            author_id: user.value?.id,
-            sender_id: route.params.id as string,
-            recipient_id: selectedEvent.value?.merchant,
-            content: review.value,
-            rating: rating.value,
-            event_id: selectedEvent.value?.id,
-        }).select().single() as { data: any, error: any }
-        if (error) {
-            throw error
-        }
-        
-        // Add timeline event for successful review submission
-        await addTimelineEvent({
-            ownerId: route.params.id as string,
-            title: 'Review Submitted',
-            description: `Submitted a ${rating.value}-star review for ${getMerchantProp(selectedEvent.value?.merchant || '', 'merchant_name')}`,
-            type: 'rating'
-        })
-        
-        // The real-time subscription will handle updating the reviews
-        // and recalculating pending reviews
-        
-        closeReviewDialog()
-        toast.add({
-            severity: 'success',
-            summary: 'Review Submitted',
-            detail: 'Your review has been submitted successfully',
-            life: 3000
-        })
-    } catch (error) {
-        console.error('Error submitting review:', error)
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to submit review. Please try again.',
-            life: 3000
-        })
-    } finally {
-        loading.value = false
-    }
+const onReviewSubmitted = () => {
+  // Refresh the reviews data
+  // The real-time subscription will handle updating the reviews
+  console.log('Review submitted successfully')
 }
 
 onMounted(() => {

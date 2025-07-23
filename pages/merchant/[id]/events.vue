@@ -279,6 +279,16 @@
     </Card>
 
     <Toast group="main" position="bottom-center" />
+    
+    <!-- Write Review Dialog -->
+    <WriteReview
+      v-model:visible="showWriteReviewDialog"
+      :event="selectedEventForReview"
+      :is-vendor="false"
+      :sender-id="route.params.id as string"
+      :recipient-id="selectedEventForReview?.vendor || ''"
+      @review-submitted="onReviewSubmitted"
+    />
   </div>
 </template>
 
@@ -299,6 +309,10 @@ const reviewStore = useReviewStore()
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const loadingApproval = ref<string | null>(null)
 const loadingRejection = ref<string | null>(null)
+
+// Review dialog state
+const showWriteReviewDialog = ref(false)
+const selectedEventForReview = ref<Event | null>(null)
 
 // Define interfaces for type safety
 interface Event {
@@ -545,8 +559,14 @@ const viewEventDetails = (event: Event) => {
 }
 
 const writeReview = (event: Event) => {
-  // Navigate to write review page
-  navigateTo(`/merchant/${route.params.id}/ratings-and-reviews`)
+  selectedEventForReview.value = event
+  showWriteReviewDialog.value = true
+}
+
+const onReviewSubmitted = () => {
+  // Refresh the reviews data
+  // The real-time subscription will handle updating the reviews
+  console.log('Review submitted successfully')
 }
 
 const clearPastEventsFilters = () => {
