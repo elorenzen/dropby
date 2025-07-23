@@ -48,16 +48,16 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4 min-w-0 flex-1">
                 <NuxtImg 
-                  :src="getVendorProp(event.vendor_id!, 'avatar_url')" 
-                  :alt="getVendorProp(event.vendor_id!, 'vendor_name')" 
+                  :src="getVendorProp(event.vendor_id || '', 'avatar_url')" 
+                  :alt="getVendorProp(event.vendor_id || '', 'vendor_name')" 
                   class="w-12 h-12 rounded-full"
                 />
                 <div class="min-w-0 flex-1">
-                  <p class="font-semibold text-text-main truncate">{{ getVendorProp(event.vendor_id!, 'vendor_name') }}</p>
+                  <p class="font-semibold text-text-main truncate">{{ getVendorProp(event.vendor_id || '', 'vendor_name') }}</p>
                   <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
                   <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
                   <div class="flex items-center gap-2 mt-1">
-                    <Tag v-for="cuisine in getVendorCuisines(event.vendor_id!)" :key="cuisine" :value="cuisine" severity="info" size="small" />
+                    <Tag v-for="cuisine in getVendorCuisines(event.vendor_id || '')" :key="cuisine" :value="cuisine" severity="info" size="small" />
                   </div>
                 </div>
               </div>
@@ -105,7 +105,7 @@
             </div>
           </div>
           <Button 
-            @click="createEvent"
+            @click="showCreateEventDialog = true"
             label="Create Event"
             severity="success"
             outlined
@@ -118,19 +118,35 @@
           <div v-for="event in currentUpcomingEvents" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4 min-w-0 flex-1">
-                <NuxtImg 
-                  :src="getVendorProp(event.vendor, 'avatar_url')" 
-                  :alt="getVendorProp(event.vendor, 'vendor_name')" 
-                  class="w-12 h-12 rounded-full"
-                />
-                <div class="min-w-0 flex-1">
-                  <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
-                  <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                  <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                  <div class="flex items-center gap-2 mt-1">
-                    <Tag v-for="cuisine in getVendorCuisines(event.vendor)" :key="cuisine" :value="cuisine" severity="info" size="small" />
+                <!-- Show vendor info if event has a vendor -->
+                <template v-if="event.vendor">
+                  <NuxtImg 
+                    :src="getVendorProp(event.vendor, 'avatar_url')" 
+                    :alt="getVendorProp(event.vendor, 'vendor_name')" 
+                    class="w-12 h-12 rounded-full"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
+                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                      <Tag v-for="cuisine in getVendorCuisines(event.vendor)" :key="cuisine" :value="cuisine" severity="info" size="small" />
+                    </div>
                   </div>
-                </div>
+                </template>
+                
+                <!-- Show no vendor message if event is open -->
+                <template v-else>
+                  <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <i class="pi pi-truck text-gray-400 dark:text-gray-500"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
+                    <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+                    <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Waiting for food truck requests</p>
+                  </div>
+                </template>
               </div>
               <div class="flex flex-col items-end gap-2">
                 <Tag :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" size="small" />
@@ -282,12 +298,22 @@
     
     <!-- Write Review Dialog -->
     <WriteReview
-      v-model:visible="showWriteReviewDialog"
+      :visible="showWriteReviewDialog"
       :event="selectedEventForReview"
       :is-vendor="false"
-      :sender-id="route.params.id as string"
+      :sender-id="String(route.params.id)"
       :recipient-id="selectedEventForReview?.vendor || ''"
+      @update:visible="showWriteReviewDialog = $event"
       @review-submitted="onReviewSubmitted"
+    />
+
+    <!-- Create Event Dialog -->
+    <EventCreate
+      :visible="showCreateEventDialog"
+      :merchant="merchant"
+      :business-hours="businessHours"
+      @update:visible="showCreateEventDialog = $event"
+      @event-created="onEventCreated"
     />
   </div>
 </template>
@@ -310,15 +336,22 @@ const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const loadingApproval = ref<string | null>(null)
 const loadingRejection = ref<string | null>(null)
 
+// Business hours parsing
+const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
+businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
+
 // Review dialog state
 const showWriteReviewDialog = ref(false)
 const selectedEventForReview = ref<Event | null>(null)
+
+// Create event dialog state
+const showCreateEventDialog = ref(false)
 
 // Define interfaces for type safety
 interface Event {
   id: string
   merchant: string
-  vendor?: string
+  vendor: string | null
   start: string
   end: string
   status: string
@@ -356,8 +389,8 @@ const sortOptions = ref([
 ])
 
 // Get all events for this merchant
-const allEvents = computed(() => {
-  return eventStore.getAllEvents.filter((event: Event) => event.merchant === route.params.id)
+const allEvents = computed((): Event[] => {
+  return (eventStore.getAllEvents as Event[]).filter((event: Event) => event.merchant === route.params.id)
 })
 
 // Pending requests - events with pending_requests that include vendor IDs
@@ -377,13 +410,11 @@ const pendingRequests = computed(() => {
   }).flat()
 })
 
-// Current and upcoming events - booked events that haven't ended yet
+// Current and upcoming events - all events that haven't ended yet
 const currentUpcomingEvents = computed(() => {
   const now = new Date()
   return allEvents.value.filter((event: Event) => {
-    return event.status === 'booked' && 
-           event.vendor && 
-           new Date(event.end) > now
+    return new Date(event.end) > now
   }).sort((a: Event, b: Event) => new Date(a.start).getTime() - new Date(b.start).getTime())
 })
 
@@ -437,13 +468,15 @@ const filteredPastEvents = computed(() => {
 })
 
 // Helper functions
-const getVendorProp = (vendorId: string, prop: string): string => {
+const getVendorProp = (vendorId: string | null, prop: string): string => {
+  if (!vendorId) return ''
   const allVendors = vendorStore.getAllVendors as Vendor[]
   const vendor = allVendors.find((v: Vendor) => v.id === vendorId)
   return vendor?.[prop as keyof Vendor] as string || ''
 }
 
-const getVendorCuisines = (vendorId: string): string[] => {
+const getVendorCuisines = (vendorId: string | null): string[] => {
+  if (!vendorId) return []
   const allVendors = vendorStore.getAllVendors as Vendor[]
   const vendor = allVendors.find((v: Vendor) => v.id === vendorId)
   return vendor?.cuisine || []
@@ -454,10 +487,20 @@ const getEventStatus = (event: Event): string => {
   const eventStart = new Date(event.start)
   const eventEnd = new Date(event.end)
   
-  if (eventStart <= now && eventEnd > now) {
-    return 'LIVE'
+  if (event.status === 'open') {
+    return 'OPEN'
+  } else if (event.status === 'pending') {
+    return 'PENDING'
+  } else if (event.status === 'booked') {
+    return 'BOOKED'
+  } else if (event.status === 'in-progress') {
+    return 'IN-PROGRESS'
+  } else if (event.status === 'completed') {
+    return 'COMPLETED'
+  } else if (event.status === 'closed') {
+    return 'CLOSED'
   } else {
-    return 'UPCOMING'
+    return event.status.toUpperCase()
   }
 }
 
@@ -466,10 +509,20 @@ const getEventStatusSeverity = (event: Event): string => {
   const eventStart = new Date(event.start)
   const eventEnd = new Date(event.end)
   
-  if (eventStart <= now && eventEnd > now) {
-    return 'danger'
+  if (event.status === 'open') {
+    return 'danger' // Open events - red
+  } else if (event.status === 'pending') {
+    return 'warning' // Pending events - orange
+  } else if (event.status === 'booked') {
+    return 'success' // Booked events - green
+  } else if (event.status === 'in-progress') {
+    return 'success' // In-progress events - green
+  } else if (event.status === 'completed') {
+    return 'info' // Completed events - blue
+  } else if (event.status === 'closed') {
+    return 'secondary' // Closed events - gray
   } else {
-    return 'success'
+    return 'secondary' // Other statuses - gray
   }
 }
 
@@ -567,6 +620,12 @@ const onReviewSubmitted = () => {
   // Refresh the reviews data
   // The real-time subscription will handle updating the reviews
   console.log('Review submitted successfully')
+}
+
+const onEventCreated = () => {
+  // Refresh the events data
+  // The real-time subscription will handle updating the events
+  console.log('Event created successfully')
 }
 
 const clearPastEventsFilters = () => {
