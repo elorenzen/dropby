@@ -343,14 +343,14 @@
         const futureOpenEvents = events.filter((e: any) => e.status === 'open' && new Date(e.start) > now)
         analytics.value.openEvents = futureOpenEvents.length
         
-        // Calculate pending requests for future events with pending status
-        const futurePendingEventsWithRequests = events.filter((e: any) => 
-          e.status === 'pending' && 
+        // Calculate pending requests for future events with open status that have pending requests
+        const futureOpenEventsWithRequests = events.filter((e: any) => 
+          e.status === 'open' && 
           new Date(e.start) > now && 
           e.pending_requests && 
           e.pending_requests.length > 0
         )
-        const totalPendingRequests = futurePendingEventsWithRequests.reduce((total: number, e: any) => {
+        const totalPendingRequests = futureOpenEventsWithRequests.reduce((total: number, e: any) => {
           return total + e.pending_requests.length
         }, 0)
         analytics.value.pendingRequests = totalPendingRequests

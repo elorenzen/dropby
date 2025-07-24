@@ -22,19 +22,14 @@
       <!-- Right Side Actions Slot -->
       <div class="flex flex-col items-end gap-2">
         <!-- Status Badge Slot -->
-        <slot name="status-badge">
+        <slot name="status-badge" v-if="showStatusBadge">
           <Tag value="STATUS" severity="secondary" size="small" />
         </slot>
         
         <!-- Action Buttons Slot -->
         <div class="flex items-center gap-2">
           <slot name="action-buttons">
-            <Button 
-              icon="pi pi-eye"
-              severity="secondary"
-              outlined
-              size="small"
-            />
+
           </slot>
         </div>
       </div>
@@ -43,7 +38,14 @@
 </template>
 
 <script setup lang="ts">
-// No props needed - this is a pure layout component with slots
+interface Props {
+  showStatusBadge?: boolean
+}
+
+const props = defineProps<Props>()
+
+// Default to true if not provided
+const showStatusBadge = props.showStatusBadge ?? true
 </script>
 
 <style scoped>

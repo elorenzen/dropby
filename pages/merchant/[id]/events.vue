@@ -47,6 +47,7 @@
             v-for="event in pendingRequests" 
             :key="event.id"
             class="border-orange-200 dark:border-orange-800"
+            :show-status-badge="false"
           >
             <template #vendor-avatar>
               <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
@@ -138,6 +139,7 @@
           <EventBaseListCard 
             v-for="event in currentUpcomingEvents" 
             :key="event.id"
+            :show-status-badge="true"
           >
             <template #vendor-avatar>
               <!-- Show vendor info if event has a vendor -->
@@ -223,42 +225,49 @@
       <template #content>
         <!-- Filters Section -->
         <div class="mb-6">
-          <div class="flex items-center gap-4">
+          <div class="flex items-end gap-4">
             <!-- Search Bar -->
             <div class="flex-1">
-              <span class="p-input-icon-left w-full">
-                <InputText 
-                  v-model="pastEventsFilters.keyword" 
-                  placeholder="Search by food truck name, cuisine, or location..."
-                  class="w-full"
-                />
-              </span>
+              <FloatLabel>
+                <span class="p-input-icon-left w-full">
+                  <InputText 
+                    id="search-filter"
+                    v-model="pastEventsFilters.keyword" 
+                    class="w-full"
+                  />
+                </span>
+                <label for="search-filter">Search by food truck name, cuisine, or location...</label>
+              </FloatLabel>
             </div>
             
             <!-- Status Filter -->
-            <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-text-main">Status:</label>
-              <Dropdown 
-                v-model="pastEventsFilters.status" 
-                :options="statusOptions" 
-                optionLabel="label" 
-                optionValue="value"
-                placeholder="All Statuses"
-                class="w-40"
-              />
+            <div class="w-40">
+              <FloatLabel>
+                <Dropdown 
+                  id="status-filter"
+                  v-model="pastEventsFilters.status" 
+                  :options="statusOptions" 
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full"
+                />
+                <label for="status-filter">Status</label>
+              </FloatLabel>
             </div>
             
             <!-- Sort By -->
-            <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-text-main">Sort by:</label>
-              <Dropdown 
-                v-model="pastEventsFilters.sortBy" 
-                :options="sortOptions" 
-                optionLabel="label" 
-                optionValue="value"
-                placeholder="Sort by"
-                class="w-48"
-              />
+            <div class="w-48">
+              <FloatLabel>
+                <Dropdown 
+                  id="sort-filter"
+                  v-model="pastEventsFilters.sortBy" 
+                  :options="sortOptions" 
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full"
+                />
+                <label for="sort-filter">Sort by</label>
+              </FloatLabel>
             </div>
             
             <!-- Clear Filters -->
@@ -276,6 +285,7 @@
           <EventBaseListCard 
             v-for="event in filteredPastEvents" 
             :key="event.id"
+            :show-status-badge="true"
           >
             <template #vendor-avatar>
               <!-- Show vendor info if event has a vendor -->
