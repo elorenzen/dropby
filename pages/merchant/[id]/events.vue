@@ -35,11 +35,10 @@
                 Pending Event Requests
               </h3>
               <p class="text-sm text-orange-600 dark:text-orange-400">
-                {{ pendingRequests.length }} request{{ pendingRequests.length !== 1 ? 's' : '' }} awaiting your response
+                {{ pendingRequests.length }} event{{ pendingRequests.length !== 1 ? 's' : '' }} with pending requests
               </p>
             </div>
           </div>
-          <Badge :value="pendingRequests.length" severity="warning" />
         </div>
       </template>
       <template #content>
@@ -50,38 +49,55 @@
             class="border-orange-200 dark:border-orange-800"
           >
             <template #vendor-avatar>
-              <NuxtImg 
-                :src="getVendorProp(event.vendor_id || '', 'avatar_url')" 
-                :alt="getVendorProp(event.vendor_id || '', 'vendor_name')" 
-                class="w-12 h-12 rounded-full"
-              />
+              <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                <i class="pi pi-calendar text-orange-600 dark:text-orange-400"></i>
+              </div>
             </template>
             
             <template #event-content>
-              <p class="font-semibold text-text-main truncate">{{ getVendorProp(event.vendor_id || '', 'vendor_name') }}</p>
-              <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+              <p class="font-semibold text-text-main truncate mb-1">Event on {{ new Date(event.start).toLocaleDateString() }}</p>
               <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-              <div class="flex items-center gap-2 mt-1">
-                <Tag v-for="cuisine in getVendorCuisines(event.vendor_id || '')" :key="cuisine" :value="cuisine" severity="info" size="small" />
+              <p class="text-xs text-text-muted mb-2">Location: {{ event.location_address || 'No address specified' }}</p>
+              
+              <!-- Vendor Requests List -->
+              <div class="space-y-3">
+                <p class="text-sm font-medium text-orange-600 dark:text-orange-400">
+                  {{ event.pending_requests?.length || 0 }} vendor{{ (event.pending_requests?.length || 0) !== 1 ? 's' : '' }} requesting this event:
+                </p>
+                <div v-for="vendorId in event.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <div class="flex items-center gap-3">
+                    <NuxtImg 
+                      :src="getVendorProp(vendorId, 'avatar_url')" 
+                      :alt="getVendorProp(vendorId, 'vendor_name')" 
+                      class="w-10 h-10 rounded-full"
+                    />
+                    <div>
+                      <p class="font-medium text-text-main">{{ getVendorProp(vendorId, 'vendor_name') }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <Button 
+                      @click="rejectRequest(event, vendorId)"
+                      label="Reject"
+                      severity="danger"
+                      outlined
+                      size="small"
+                      :loading="loadingRejection === `${event.id}-${vendorId}`"
+                    />
+                    <Button 
+                      @click="approveRequest(event, vendorId)"
+                      label="Approve"
+                      severity="success"
+                      size="small"
+                      :loading="loadingApproval === `${event.id}-${vendorId}`"
+                    />
+                  </div>
+                </div>
               </div>
             </template>
             
             <template #action-buttons>
-              <Button 
-                @click="approveRequest(event)"
-                label="Approve"
-                severity="success"
-                size="small"
-                :loading="loadingApproval === event.id"
-              />
-              <Button 
-                @click="rejectRequest(event)"
-                label="Reject"
-                severity="danger"
-                outlined
-                size="small"
-                :loading="loadingRejection === event.id"
-              />
+              <!-- No action buttons needed here since they're per vendor -->
             </template>
           </EventBaseListCard>
         </div>
@@ -167,8 +183,11 @@
             
             <template #action-buttons>
               <Button 
-                @click="viewEventDetails(event)"
-                icon="pi pi-eye"
+                type="button" 
+                icon="pi pi-ellipsis-v" 
+                @click="(e) => toggleCurrentUpcomingMenu(e, event)" 
+                aria-haspopup="true" 
+                aria-controls="current_upcoming_menu"
                 severity="secondary"
                 outlined
                 size="small"
@@ -299,19 +318,14 @@
             
             <template #action-buttons>
               <Button 
-                @click="viewEventDetails(event)"
-                icon="pi pi-eye"
+                type="button" 
+                icon="pi pi-ellipsis-v" 
+                @click="(e) => togglePastEventsMenu(e, event)" 
+                aria-haspopup="true" 
+                aria-controls="past_events_menu"
                 severity="secondary"
                 outlined
                 size="small"
-              />
-              <Button 
-                v-if="!hasReview(event) && event.vendor"
-                @click="writeReview(event)"
-                icon="pi pi-star"
-                severity="secondary"
-                size="small"
-                outlined
               />
             </template>
           </EventBaseListCard>
@@ -366,10 +380,15 @@
       @update:visible="showEventDetailsDialog = $event"
       @write-review="onWriteReviewFromDetails"
     />
+
+    <!-- Menu Dropdowns -->
+    <Menu ref="currentUpcomingMenu" id="current_upcoming_menu" :model="getCurrentUpcomingMenuItems(selectedEventForCurrentUpcomingMenu || {})" :popup="true" />
+    <Menu ref="pastEventsMenu" id="past_events_menu" :model="getPastEventsMenuItems(selectedEventForPastEventsMenu || {})" :popup="true" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { v4 as uuidv4 } from 'uuid'
 
 const toast = useToast()
 
@@ -387,6 +406,10 @@ const reviewStore = useReviewStore()
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const loadingApproval = ref<string | null>(null)
 const loadingRejection = ref<string | null>(null)
+
+// Menu refs for dropdown actions
+const currentUpcomingMenu = ref()
+const pastEventsMenu = ref()
 
 // Fetch review data for this merchant
 const { data: sentReviews, error: sentReviewsError } = await supabase
@@ -410,6 +433,10 @@ const showCreateEventDialog = ref(false)
 // Event details dialog state
 const showEventDetailsDialog = ref(false)
 const selectedEventForDetails = ref<Event | null>(null)
+
+// Menu state
+const selectedEventForCurrentUpcomingMenu = ref<Event | null>(null)
+const selectedEventForPastEventsMenu = ref<Event | null>(null)
 
 // Define interfaces for type safety
 interface Event {
@@ -465,13 +492,7 @@ const pendingRequests = computed(() => {
            event.pending_requests && 
            event.pending_requests.length > 0 &&
            new Date(event.start) > now
-  }).map((event: Event) => {
-    // Create separate entries for each pending request
-    return event.pending_requests!.map((vendorId: string) => ({
-      ...event,
-      vendor_id: vendorId
-    }))
-  }).flat()
+  })
 })
 
 // Current and upcoming events - all events that haven't ended yet
@@ -595,30 +616,51 @@ const hasReview = (event: Event): boolean => {
   return sentReviews.some((review: any) => review.event_id === event.id)
 }
 
+const addTimelineEvent = async (timelineObj: any) => {
+  const { error } = await supabase.from('timeline_items').insert({
+    id: uuidv4(),
+    owner_id: timelineObj.ownerId,
+    title: timelineObj.title,
+    description: timelineObj.description,
+    type: timelineObj.type
+  } as any)
+  if (error) {
+    console.error('Timeline Event Creation Error:', error.message)
+  }
+}
+
 // Methods
 const navigateToDashboard = () => {
   navigateTo(`/merchant/${route.params.id}/dashboard`)
 }
 
-const approveRequest = async (event: Event & { vendor_id: string }) => {
-  loadingApproval.value = event.id
+const approveRequest = async (event: Event, vendorId: string) => {
+  loadingApproval.value = `${event.id}-${vendorId}`
   try {
-    const { error } = await supabase
+    const { error } = await (supabase
       .from('events')
       .update({
         status: 'booked',
-        vendor: event.vendor_id,
+        vendor: vendorId,
         pending_requests: null,
         updated_at: new Date().toISOString()
-      } as any)
-      .eq('id', event.id)
+      })
+      .eq('id', event.id) as any)
     
     if (error) throw error
+    
+    // Add timeline event for approved request
+    await addTimelineEvent({
+      ownerId: route.params.id as string,
+      title: 'Event Request Approved',
+      description: `${merchant.value.merchant_name} approved ${getVendorProp(vendorId, 'vendor_name')} for event on ${new Date(event.start).toLocaleDateString()}`,
+      type: 'event'
+    })
     
     toast.add({
       severity: 'success',
       summary: 'Request Approved',
-      detail: `Approved ${getVendorProp(event.vendor_id, 'vendor_name')} for the event`,
+      detail: `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event`,
       life: 3000
     })
   } catch (error) {
@@ -634,12 +676,12 @@ const approveRequest = async (event: Event & { vendor_id: string }) => {
   }
 }
 
-const rejectRequest = async (event: Event & { vendor_id: string }) => {
-  loadingRejection.value = event.id
+const rejectRequest = async (event: Event, vendorId: string) => {
+  loadingRejection.value = `${event.id}-${vendorId}`
   try {
     // Remove the specific vendor from pending_requests
     const currentRequests = event.pending_requests || []
-    const updatedRequests = currentRequests.filter((id: string) => id !== event.vendor_id)
+    const updatedRequests = currentRequests.filter((id: string) => id !== vendorId)
     
     const { error } = await supabase
       .from('events')
@@ -654,7 +696,7 @@ const rejectRequest = async (event: Event & { vendor_id: string }) => {
     toast.add({
       severity: 'info',
       summary: 'Request Rejected',
-      detail: `Rejected ${getVendorProp(event.vendor_id, 'vendor_name')} for the event`,
+      detail: `Rejected ${getVendorProp(vendorId, 'vendor_name')} for the event`,
       life: 3000
     })
   } catch (error) {
@@ -710,6 +752,48 @@ const clearPastEventsFilters = () => {
     status: '',
     sortBy: 'date-desc'
   }
+}
+
+// Menu toggle functions
+const toggleCurrentUpcomingMenu = (event: MouseEvent, selectedEvent: Event) => {
+  selectedEventForCurrentUpcomingMenu.value = selectedEvent
+  currentUpcomingMenu.value?.toggle(event)
+}
+
+const togglePastEventsMenu = (event: MouseEvent, selectedEvent: Event) => {
+  selectedEventForPastEventsMenu.value = selectedEvent
+  pastEventsMenu.value?.toggle(event)
+}
+
+// Menu items for current and upcoming events
+const getCurrentUpcomingMenuItems = (event: Event) => [
+  {
+    label: 'View Details',
+    icon: 'pi pi-eye',
+    command: () => viewEventDetails(event)
+  }
+]
+
+// Menu items for past events
+const getPastEventsMenuItems = (event: Event) => {
+  const items = [
+    {
+      label: 'View Details',
+      icon: 'pi pi-eye',
+      command: () => viewEventDetails(event)
+    }
+  ]
+  
+  // Add review option if no review exists and event has a vendor
+  if (!hasReview(event) && event.vendor) {
+    items.push({
+      label: 'Write Review',
+      icon: 'pi pi-star',
+      command: () => writeReview(event)
+    })
+  }
+  
+  return items
 }
 
 useSeoMeta({ title: () => `${merchant.value?.merchant_name || 'Merchant'} - Events` })
