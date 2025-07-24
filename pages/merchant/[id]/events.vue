@@ -122,7 +122,12 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Current & Upcoming Events</h3>
-              <p class="text-sm text-text-muted">{{ filteredCurrentUpcomingEvents.length }} event{{ filteredCurrentUpcomingEvents.length !== 1 ? 's' : '' }} scheduled</p>
+              <div class="flex items-center gap-2 text-sm">
+                <span class="text-text-muted">Total events: {{ filteredCurrentUpcomingEvents.length }} |</span>
+                <span v-if="openEventsCount > 0" class="text-red-600 dark:text-red-400 font-medium">open: {{ openEventsCount }}</span>
+                <span v-if="openEventsCount > 0 && bookedEventsCount > 0" class="text-text-muted">|</span>
+                <span v-if="bookedEventsCount > 0" class="text-green-600 dark:text-green-400 font-medium">booked: {{ bookedEventsCount }}</span>
+              </div>
             </div>
           </div>
           <Button 
@@ -275,7 +280,12 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Past Events</h3>
-              <p class="text-sm text-text-muted">{{ filteredPastEvents.length }} completed event{{ filteredPastEvents.length !== 1 ? 's' : '' }}</p>
+              <div class="flex items-center gap-2 text-sm">
+                <span class="text-text-muted">Total events: {{ filteredPastEvents.length }} |</span>
+                <span v-if="completedEventsCount > 0" class="text-green-600 dark:text-green-400 font-medium">completed: {{ completedEventsCount }}</span>
+                <span v-if="completedEventsCount > 0 && closedEventsCount > 0" class="text-text-muted">|</span>
+                <span v-if="closedEventsCount > 0" class="text-gray-600 dark:text-gray-400 font-medium">closed: {{ closedEventsCount }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -680,6 +690,24 @@ const filteredCurrentUpcomingEvents = computed(() => {
   })
 
   return filtered
+})
+
+// Event count computed properties for current/upcoming events
+const openEventsCount = computed(() => {
+  return filteredCurrentUpcomingEvents.value.filter((event: Event) => event.status === 'open').length
+})
+
+const bookedEventsCount = computed(() => {
+  return filteredCurrentUpcomingEvents.value.filter((event: Event) => event.status === 'booked').length
+})
+
+// Event count computed properties for past events
+const completedEventsCount = computed(() => {
+  return filteredPastEvents.value.filter((event: Event) => event.status === 'completed').length
+})
+
+const closedEventsCount = computed(() => {
+  return filteredPastEvents.value.filter((event: Event) => event.status === 'closed').length
 })
 
 // Past events - completed or closed events
