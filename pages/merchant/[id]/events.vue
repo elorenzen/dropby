@@ -122,7 +122,7 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Current & Upcoming Events</h3>
-              <p class="text-sm text-text-muted">{{ currentUpcomingEvents.length }} event{{ currentUpcomingEvents.length !== 1 ? 's' : '' }} scheduled</p>
+              <p class="text-sm text-text-muted">{{ filteredCurrentUpcomingEvents.length }} event{{ filteredCurrentUpcomingEvents.length !== 1 ? 's' : '' }} scheduled</p>
             </div>
           </div>
           <Button 
@@ -135,9 +135,67 @@
         </div>
       </template>
       <template #content>
-        <div v-if="currentUpcomingEvents.length > 0" class="space-y-4">
+        <!-- Filters Section -->
+        <div class="mb-6">
+          <div class="flex items-end gap-4">
+            <!-- Search Bar -->
+            <div class="flex-1">
+              <FloatLabel>
+                <span class="p-input-icon-left w-full">
+                  <InputText 
+                    id="current-upcoming-search-filter"
+                    v-model="currentUpcomingFilters.keyword" 
+                    class="w-full"
+                  />
+                </span>
+                <label for="current-upcoming-search-filter">Search by food truck name, cuisine, or location...</label>
+              </FloatLabel>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="w-40">
+              <FloatLabel>
+                <Dropdown 
+                  id="current-upcoming-status-filter"
+                  v-model="currentUpcomingFilters.status" 
+                  :options="currentUpcomingStatusOptions" 
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full"
+                />
+                <label for="current-upcoming-status-filter">Status</label>
+              </FloatLabel>
+            </div>
+            
+            <!-- Sort By -->
+            <div class="w-48">
+              <FloatLabel>
+                <Dropdown 
+                  id="current-upcoming-sort-filter"
+                  v-model="currentUpcomingFilters.sortBy" 
+                  :options="sortOptions" 
+                  optionLabel="label" 
+                  optionValue="value"
+                  class="w-full"
+                />
+                <label for="current-upcoming-sort-filter">Sort by</label>
+              </FloatLabel>
+            </div>
+            
+            <!-- Clear Filters -->
+            <Button 
+              @click="clearCurrentUpcomingFilters"
+              label="Clear Filters"
+              severity="secondary"
+              outlined
+              size="small"
+            />
+          </div>
+        </div>
+
+        <div v-if="filteredCurrentUpcomingEvents.length > 0" class="space-y-4">
           <EventBaseListCard 
-            v-for="event in currentUpcomingEvents" 
+            v-for="event in filteredCurrentUpcomingEvents" 
             :key="event.id"
             :show-status-badge="true"
           >
@@ -243,14 +301,14 @@
             <!-- Status Filter -->
             <div class="w-40">
               <FloatLabel>
-                <Dropdown 
-                  id="status-filter"
-                  v-model="pastEventsFilters.status" 
-                  :options="statusOptions" 
-                  optionLabel="label" 
-                  optionValue="value"
-                  class="w-full"
-                />
+                              <Dropdown 
+                id="status-filter"
+                v-model="pastEventsFilters.status" 
+                :options="pastStatusOptions" 
+                optionLabel="label" 
+                optionValue="value"
+                class="w-full"
+              />
                 <label for="status-filter">Status</label>
               </FloatLabel>
             </div>
@@ -475,11 +533,25 @@ const pastEventsFilters = ref({
   sortBy: 'date-desc'
 })
 
-// Filter options
-const statusOptions = ref([
+// Filter state for current/upcoming events
+const currentUpcomingFilters = ref({
+  keyword: '',
+  status: '',
+  sortBy: 'date-asc'
+})
+
+// Filter options for past events
+const pastStatusOptions = ref([
   { label: 'All Statuses', value: '' },
   { label: 'Completed', value: 'completed' },
   { label: 'Closed', value: 'closed' }
+])
+
+// Filter options for current/upcoming events
+const currentUpcomingStatusOptions = ref([
+  { label: 'All Statuses', value: '' },
+  { label: 'Open', value: 'open' },
+  { label: 'Booked', value: 'booked' }
 ])
 
 const sortOptions = ref([
@@ -511,6 +583,48 @@ const currentUpcomingEvents = computed(() => {
   return allEvents.value.filter((event: Event) => {
     return new Date(event.end) > now
   }).sort((a: Event, b: Event) => new Date(a.start).getTime() - new Date(b.start).getTime())
+})
+
+// Filtered current/upcoming events with search, status filter, and sorting
+const filteredCurrentUpcomingEvents = computed(() => {
+  let filtered = currentUpcomingEvents.value
+
+  // Filter by keyword search
+  if (currentUpcomingFilters.value.keyword) {
+    const keyword = currentUpcomingFilters.value.keyword.toLowerCase()
+    filtered = filtered.filter((event: Event) => {
+      const vendorName = getVendorProp(event.vendor || '', 'vendor_name').toLowerCase()
+      const cuisines = getVendorCuisines(event.vendor || '').join(' ').toLowerCase()
+      const location = event.location_address?.toLowerCase() || ''
+      
+      return vendorName.includes(keyword) || 
+             cuisines.includes(keyword) || 
+             location.includes(keyword)
+    })
+  }
+
+  // Filter by status
+  if (currentUpcomingFilters.value.status) {
+    filtered = filtered.filter((event: Event) => event.status === currentUpcomingFilters.value.status)
+  }
+
+  // Sort events
+  filtered.sort((a: Event, b: Event) => {
+    switch (currentUpcomingFilters.value.sortBy) {
+      case 'date-asc':
+        return new Date(a.start).getTime() - new Date(b.start).getTime()
+      case 'date-desc':
+        return new Date(b.start).getTime() - new Date(a.start).getTime()
+      case 'vendor-asc':
+        return getVendorProp(a.vendor || '', 'vendor_name').localeCompare(getVendorProp(b.vendor || '', 'vendor_name'))
+      case 'vendor-desc':
+        return getVendorProp(b.vendor || '', 'vendor_name').localeCompare(getVendorProp(a.vendor || '', 'vendor_name'))
+      default:
+        return new Date(a.start).getTime() - new Date(b.start).getTime()
+    }
+  })
+
+  return filtered
 })
 
 // Past events - completed or closed events
@@ -761,6 +875,14 @@ const clearPastEventsFilters = () => {
     keyword: '',
     status: '',
     sortBy: 'date-desc'
+  }
+}
+
+const clearCurrentUpcomingFilters = () => {
+  currentUpcomingFilters.value = {
+    keyword: '',
+    status: '',
+    sortBy: 'date-asc'
   }
 }
 
