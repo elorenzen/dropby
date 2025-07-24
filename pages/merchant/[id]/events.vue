@@ -148,7 +148,7 @@
                     class="w-full"
                   />
                 </span>
-                <label for="current-upcoming-search-filter">Search by food truck name, cuisine, or location...</label>
+                <label for="current-upcoming-search-filter">Search by food truck name...</label>
               </FloatLabel>
             </div>
             
@@ -294,7 +294,7 @@
                     class="w-full"
                   />
                 </span>
-                <label for="search-filter">Search by food truck name, cuisine, or location...</label>
+                <label for="search-filter">Search by food truck name...</label>
               </FloatLabel>
             </div>
             
@@ -449,6 +449,56 @@
       @write-review="onWriteReviewFromDetails"
     />
 
+    <!-- Delete Event Dialog -->
+    <Dialog 
+      :visible="showDeleteEventDialog" 
+      @update:visible="showDeleteEventDialog = $event"
+      modal 
+      :style="{ width: '90vw', maxWidth: '400px' }"
+      :closable="true"
+      :closeOnEscape="true"
+    >
+      <template #header>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle text-red-600 dark:text-red-400"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-text-main">Delete Event</h3>
+            <p class="text-sm text-text-muted">Are you sure you want to delete this event?</p>
+          </div>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <p class="text-text-main">
+          This action cannot be undone. The event will be permanently deleted.
+        </p>
+        <div v-if="selectedEventForDelete" class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p class="font-medium text-text-main">Event Details:</p>
+          <p class="text-sm text-text-muted">Date: {{ new Date(selectedEventForDelete.start).toLocaleDateString() }}</p>
+          <p class="text-sm text-text-muted">Time: {{ new Date(selectedEventForDelete.start).toLocaleTimeString() }} - {{ new Date(selectedEventForDelete.end).toLocaleTimeString() }}</p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <Button 
+            label="Cancel" 
+            severity="secondary" 
+            outlined
+            @click="showDeleteEventDialog = false" 
+          />
+          <Button 
+            label="Delete Event" 
+            severity="danger"
+            @click="confirmDeleteEvent"
+            class="min-w-[120px]"
+          />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Menu Dropdowns -->
     <Menu ref="currentUpcomingMenu" id="current_upcoming_menu" :model="getCurrentUpcomingMenuItems(selectedEventForCurrentUpcomingMenu || {})" :popup="true" />
     <Menu ref="pastEventsMenu" id="past_events_menu" :model="getPastEventsMenuItems(selectedEventForPastEventsMenu || {})" :popup="true" />
@@ -470,6 +520,7 @@ const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
 const eventStore = useEventStore()
 const reviewStore = useReviewStore()
+const userStore = useUserStore()
 
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const loadingApproval = ref<string | null>(null)
@@ -501,6 +552,10 @@ const showCreateEventDialog = ref(false)
 // Event details dialog state
 const showEventDetailsDialog = ref(false)
 const selectedEventForDetails = ref<Event | null>(null)
+
+// Delete event dialog state
+const showDeleteEventDialog = ref(false)
+const selectedEventForDelete = ref<Event | null>(null)
 
 // Menu state
 const selectedEventForCurrentUpcomingMenu = ref<Event | null>(null)
@@ -865,6 +920,52 @@ const onEventCreated = () => {
   console.log('Event created successfully')
 }
 
+const deleteEvent = (event: Event) => {
+  selectedEventForDelete.value = event
+  showDeleteEventDialog.value = true
+}
+
+const confirmDeleteEvent = async () => {
+  if (!selectedEventForDelete.value) return
+  
+  try {
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', selectedEventForDelete.value.id)
+    
+    if (error) throw error
+    
+    // Add timeline event for deleted event
+    const user = userStore.getUser
+    const userFullName = user ? `${user.first_name} ${user.last_name}` : 'Unknown User'
+    await addTimelineEvent({
+      ownerId: route.params.id as string,
+      title: 'Event Deleted',
+      description: `${userFullName} deleted event scheduled for ${new Date(selectedEventForDelete.value.start).toLocaleDateString()}`,
+      type: 'event'
+    })
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Event Deleted',
+      detail: 'Event has been successfully deleted',
+      life: 3000
+    })
+  } catch (error) {
+    console.error('Error deleting event:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to delete event. Please try again.',
+      life: 3000
+    })
+  } finally {
+    showDeleteEventDialog.value = false
+    selectedEventForDelete.value = null
+  }
+}
+
 const onClose = () => {
   // Toast closed functionality
   console.log('Toast closed')
@@ -898,13 +999,26 @@ const togglePastEventsMenu = (event: MouseEvent, selectedEvent: Event) => {
 }
 
 // Menu items for current and upcoming events
-const getCurrentUpcomingMenuItems = (event: Event) => [
-  {
-    label: 'View Details',
-    icon: 'pi pi-eye',
-    command: () => viewEventDetails(event)
+const getCurrentUpcomingMenuItems = (event: Event) => {
+  const items = [
+    {
+      label: 'View Details',
+      icon: 'pi pi-eye',
+      command: () => viewEventDetails(event)
+    }
+  ]
+  
+  // Add Delete option for open events
+  if (event.status === 'open') {
+    items.push({
+      label: 'Delete Event',
+      icon: 'pi pi-trash',
+      command: () => deleteEvent(event)
+    })
   }
-]
+  
+  return items
+}
 
 // Menu items for past events
 const getPastEventsMenuItems = (event: Event) => {
