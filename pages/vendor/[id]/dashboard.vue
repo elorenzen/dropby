@@ -51,7 +51,7 @@
               <p class="text-3xl font-bold text-text-main">{{ analytics.upcomingEvents }}</p>
               <p class="text-orange-500 text-sm mt-1">
                 <i class="pi pi-clock mr-1"></i>
-                Next: {{ analytics.nextEventDate }}
+                {{ analytics.upcomingWeek }} in next 7 days
               </p>
             </div>
             <div class="analytics-icon bg-green-100 dark:bg-green-900">
@@ -149,41 +149,6 @@
 
       <!-- Right Column - Activity & Quick Actions -->
       <div class="space-y-6">
-        <!-- Quick Actions -->
-        <Card>
-          <template #title>
-            <h3 class="text-xl font-semibold">Quick Actions</h3>
-          </template>
-          <template #content>
-            <div class="space-y-3">
-              <Button 
-                label="Find Available Events" 
-                icon="pi pi-search" 
-                class="w-full justify-start"
-                @click="navigateToEvents"
-              />
-              <Button 
-                label="Update Menu" 
-                icon="pi pi-list" 
-                class="w-full justify-start"
-                @click="navigateToSettings"
-              />
-              <Button 
-                label="Update Profile" 
-                icon="pi pi-user-edit" 
-                class="w-full justify-start"
-                @click="navigateToSettings"
-              />
-              <Button 
-                label="View Analytics" 
-                icon="pi pi-chart-bar" 
-                class="w-full justify-start"
-                @click="navigateToSettings"
-              />
-            </div>
-          </template>
-        </Card>
-
         <!-- Recent Activity -->
         <Card>
           <template #title>
@@ -269,8 +234,6 @@ definePageMeta({
 })
 
 import { v4 as uuidv4 } from 'uuid'
-
-// Define interfaces for type safety
 interface User {
   id: string
   first_name?: string
@@ -289,9 +252,35 @@ const supabase = useSupabaseClient()
 const userStore = useUserStore()
 const vendorStore = useVendorStore()
 const eventStore = useEventStore()
+const route = useRoute()
 
 const user = ref<User | null>(userStore.user as User | null)
 const vendor = ref<Vendor | null>((await vendorStore.getVendorById(user.value?.associated_vendor_id || '')) as unknown as Vendor | null)
+
+// Load timeline data
+const timelineStore = useTimelineStore()
+const { data: timelineData, error: timelineError } = await supabase
+  .from('timeline_items')
+  .select('*')
+  .eq('owner_id', route.params.id)
+  .order('created_at', { ascending: false })
+await timelineStore.setTimeline(timelineData || [])
+
+// Load review data
+const reviewStore = useReviewStore()
+const { data: receivedReviews, error: receivedReviewsError } = await supabase
+  .from('reviews')
+  .select('*')
+  .eq('recipient_id', route.params.id)
+  .order('created_at', { ascending: false })
+await reviewStore.setReceivedReviews(receivedReviews || [])
+
+const { data: sentReviews, error: sentReviewsError } = await supabase
+  .from('reviews')
+  .select('*')
+  .eq('sender_id', route.params.id)
+  .order('created_at', { ascending: false })
+await reviewStore.setSentReviews(sentReviews || [])
 
 useSeoMeta({ title: () => `${vendor.value?.vendor_name || 'Vendor'} Dashboard` })
 
@@ -310,50 +299,147 @@ const menu = ref<any>(null)
 
 // Analytics data
 const analytics = ref({
-  totalEvents: 18,
-  eventsGrowth: 8,
-  upcomingEvents: 4,
-  nextEventDate: 'Jul 20',
-  pendingRequests: 2,
-  averageRating: 4.5,
-  totalRatings: 12
+  totalEvents: 0,
+  eventsGrowth: 0,
+  upcomingEvents: 0,
+  upcomingWeek: 0,
+  pendingRequests: 0,
+  averageRating: 0,
+  totalRatings: 0
 })
 
-// Recent activity data
-const recentActivity = ref([
-  {
-    id: 1,
-    title: 'Event Request Sent',
-    description: 'Requested to book at Secret Brewing Company',
-    time: '1 hour ago',
-    icon: 'pi pi-send',
-    iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
-  },
-  {
-    id: 2,
-    title: 'Event Approved',
-    description: 'Your request for July 15th was approved',
-    time: '3 hours ago',
-    icon: 'pi pi-check-circle',
-    iconClass: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
-  },
-  {
-    id: 3,
-    title: 'New Rating Received',
-    description: '4.5 stars from Downtown Brewery',
-    time: '1 day ago',
-    icon: 'pi pi-star',
-    iconClass: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
-  },
-  {
-    id: 4,
-    title: 'Menu Updated',
-    description: 'Added 3 new menu items',
-    time: '2 days ago',
-    icon: 'pi pi-list',
-    iconClass: 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400'
+// Helper function to format time ago
+const getTimeAgo = (date: Date): string => {
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`
+  return `${Math.floor(diffInSeconds / 2592000)} months ago`
+}
+
+// Helper function to get merchant properties
+const getMerchantProp = (merchantId: string, prop: string): string => {
+  const merchantStore = useMerchantStore()
+  const allMerchants = merchantStore.getAllMerchants
+  const merchant = allMerchants.find((m: any) => m.id === merchantId)
+  return merchant?.[prop] || ''
+}
+
+// Recent activity data - now computed from timeline with fallback
+const recentActivity = computed(() => {
+  // If we have timeline items, use them
+  if (timelineItems.value.length > 0) {
+    return timelineItems.value.slice(0, 4).map((item: any) => {
+      const timeAgo = getTimeAgo(new Date(item.created_at))
+      
+      // Determine icon and styling based on timeline item type
+      let icon = 'pi pi-info-circle'
+      let iconClass = 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+      
+      switch (item.type) {
+        case 'event_completed':
+          icon = 'pi pi-check-circle'
+          iconClass = 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+          break
+        case 'event':
+          icon = 'pi pi-calendar-plus'
+          iconClass = 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400'
+          break
+        case 'rating':
+          icon = 'pi pi-star'
+          iconClass = 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
+          break
+        case 'profile':
+          icon = 'pi pi-user-edit'
+          iconClass = 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400'
+          break
+      }
+      
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        time: timeAgo,
+        icon,
+        iconClass
+      }
+    })
   }
-])
+  
+  // Fallback activity based on vendor's events and reviews
+  const fallbackActivity = []
+  
+  // Add activity for recent events
+  const recentEvents = events.value.slice(0, 2)
+  recentEvents.forEach((event: any, index: number) => {
+    const eventDate = new Date(event.start)
+    const timeAgo = getTimeAgo(eventDate)
+    
+    let title = ''
+    let description = ''
+    let icon = 'pi pi-calendar'
+    let iconClass = 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+    
+    if (event.status === 'booked') {
+      title = 'Event Confirmed'
+      description = `Event confirmed for ${eventDate.toLocaleDateString()} at ${eventDate.toLocaleTimeString()}`
+      icon = 'pi pi-check-circle'
+      iconClass = 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+    } else if (event.status === 'open' && event.pending_requests?.includes(vendor.value?.id)) {
+      title = 'Event Request Sent'
+      description = `Request sent for event on ${eventDate.toLocaleDateString()}`
+      icon = 'pi pi-send'
+      iconClass = 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400'
+    }
+    
+    if (title) {
+      fallbackActivity.push({
+        id: `event-${event.id}`,
+        title,
+        description,
+        time: timeAgo,
+        icon,
+        iconClass
+      })
+    }
+  })
+  
+  // Add activity for recent reviews
+  const receivedReviewsData = reviewStore.getReceivedReviews
+  if (receivedReviewsData.length > 0) {
+    const latestReview = receivedReviewsData[0]
+    const merchantName = getMerchantProp(latestReview.sender_id || '', 'merchant_name')
+    fallbackActivity.push({
+      id: `review-${latestReview.id}`,
+      title: 'New Rating Received',
+      description: `${latestReview.rating} stars from ${merchantName || 'Establishment'}`,
+      time: getTimeAgo(new Date(latestReview.created_at)),
+      icon: 'pi pi-star',
+      iconClass: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
+    })
+  }
+  
+  // Add welcome activity if no other activity
+  if (fallbackActivity.length === 0) {
+    fallbackActivity.push({
+      id: 'welcome',
+      title: 'Welcome to DropBy!',
+      description: 'Start by browsing available events or updating your profile',
+      time: 'Just now',
+      icon: 'pi pi-info-circle',
+      iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+    })
+  }
+  
+  return fallbackActivity.slice(0, 4)
+})
+
+const timelineItems = computed(() => {
+  return timelineStore.getTimeline
+})
 
 const events = computed(() => {
     return eventStore.allEvents
@@ -427,9 +513,6 @@ const menuItems = ref([
     }
   ])
 
-// Methods
-const route = useRoute()
-
 const navigateToSettings = () => {
   navigateTo(`/settings/${route.params.id}`)
 }
@@ -446,6 +529,19 @@ const goToToday = () => {
 const openDayView = (day: any) => {
   newEventDate.value = day.date
         addEventDialog.value = true
+}
+
+const addTimelineEvent = async (timelineObj: any) => {
+  const { error } = await supabase.from('timeline_items').insert({
+    id: uuidv4(),
+    owner_id: timelineObj.ownerId,
+    title: timelineObj.title,
+    description: timelineObj.description,
+    type: timelineObj.type
+  } as any)
+  if (error) {
+    console.error('Timeline Event Creation Error:', error.message)
+  }
 }
 
 const addEvent = async () => {
@@ -482,6 +578,14 @@ const addEvent = async () => {
         if (error) {
             console.error('Error creating event:', error)
     } else {
+      // Add timeline event for created event
+      await addTimelineEvent({
+        ownerId: vendor.value.id,
+        title: 'Event Created',
+        description: `Created event for ${eventStart.toLocaleDateString()} at ${eventStart.toLocaleTimeString()} - ${eventEnd.toLocaleTimeString()}`,
+        type: 'event'
+      })
+      
       addEventDialog.value = false
       refreshKey.value++
       // Reset form
@@ -511,38 +615,111 @@ const loadAnalytics = async () => {
       const now = new Date()
       const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
       
-      analytics.value.totalEvents = events.length
-      analytics.value.upcomingEvents = events.filter((e: any) => e.status === 'booked' && new Date(e.start) > now).length
-      analytics.value.pendingRequests = events.filter((e: any) => e.status === 'open' && e.pending_requests && e.pending_requests.includes(vendor.value?.id)).length
+      // Only count booked events (those with a merchant)
+      const bookedEvents = events.filter((e: any) => e.merchant && e.status === 'booked')
+      analytics.value.totalEvents = bookedEvents.length
+      analytics.value.upcomingEvents = bookedEvents.filter((e: any) => new Date(e.start) > now).length
       
-      // Find next event date
-      const upcomingEvents = events.filter((e: any) => e.status === 'booked' && new Date(e.start) > now)
-        .sort((a: any, b: any) => new Date(a.start).getTime() - new Date(b.start).getTime())
+      // Get all events where this vendor has pending requests
+      const { data: allEvents } = await supabase
+        .from('events')
+        .select('*')
       
-      if (upcomingEvents.length > 0) {
-        const nextEvent = new Date((upcomingEvents[0] as any).start)
-        analytics.value.nextEventDate = `${nextEvent.getMonth() + 1}/${nextEvent.getDate()}`
-      }
+      // Calculate pending requests for future events with open status that have pending requests
+      const futureOpenEventsWithRequests = allEvents?.filter((e: any) => 
+        e.status === 'open' && 
+        new Date(e.start) > now && 
+        e.pending_requests && 
+        e.pending_requests.includes(vendor.value?.id)
+      ) || []
+      analytics.value.pendingRequests = futureOpenEventsWithRequests.length
       
-      // Calculate events growth (this month vs last month)
-      const thisMonthEvents = events.filter((e: any) => new Date(e.created_at) >= thisMonth).length
+      // Calculate upcoming events in next 7 days
+      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+      analytics.value.upcomingWeek = bookedEvents.filter((e: any) => {
+        const startDate = new Date(e.start)
+        return startDate >= now && startDate <= nextWeek
+      }).length
+      
+      // Calculate events growth (this month vs last month) for booked events only
+      const thisMonthEvents = bookedEvents.filter((e: any) => new Date(e.created_at) >= thisMonth).length
       const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      const lastMonthEvents = events.filter((e: any) => {
+      const lastMonthEvents = bookedEvents.filter((e: any) => {
         const created = new Date(e.created_at)
         return created >= lastMonth && created < thisMonth
       }).length
       
-      analytics.value.eventsGrowth = lastMonthEvents > 0 ? 
-        Math.round(((thisMonthEvents - lastMonthEvents) / lastMonthEvents) * 100) : 0
+      // Calculate growth percentage - handle zero cases
+      if (lastMonthEvents === 0) {
+        analytics.value.eventsGrowth = thisMonthEvents > 0 ? 100 : 0
+      } else {
+        analytics.value.eventsGrowth = Math.round(((thisMonthEvents - lastMonthEvents) / lastMonthEvents) * 100)
+      }
+      
+      // Calculate average rating from received reviews
+      const receivedReviewsData = reviewStore.getReceivedReviews
+      if (receivedReviewsData.length > 0) {
+        const totalRating = receivedReviewsData.reduce((sum: number, review: any) => sum + review.rating, 0)
+        analytics.value.averageRating = Math.round((totalRating / receivedReviewsData.length) * 10) / 10
+        analytics.value.totalRatings = receivedReviewsData.length
+      } else {
+        analytics.value.averageRating = 0
+        analytics.value.totalRatings = 0
+      }
     }
   } catch (error) {
     console.error('Error loading analytics:', error)
   }
 }
 
+// Debug timeline data
+watchEffect(() => {
+  console.log('Timeline items:', timelineItems.value)
+})
+
 // Load data on mount
-onMounted(() => {
+onMounted(async () => {
   loadAnalytics()
+
+  // Subscribe to real-time updates for reviews
+  supabase
+    .channel('reviews')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'reviews' }, 
+      async (payload: any) => {
+        const { data: newReceivedReviews } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('recipient_id', route.params.id)
+          .order('created_at', { ascending: false })
+        await reviewStore.setReceivedReviews(newReceivedReviews || [])
+        const { data: newSentReviews } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('sender_id', route.params.id)
+          .order('created_at', { ascending: false })
+        await reviewStore.setSentReviews(newSentReviews || [])
+        
+        // Reload analytics to update ratings
+        loadAnalytics()
+      })
+    .subscribe()
+
+  // Subscribe to real-time updates for timeline items
+  supabase
+    .channel('timeline')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'timeline_items' }, 
+      async (payload: any) => {
+        // Reload timeline data when there are changes
+        const { data: newTimelineData } = await supabase
+          .from('timeline_items')
+          .select('*')
+          .eq('owner_id', route.params.id)
+          .order('created_at', { ascending: false })
+        await timelineStore.setTimeline(newTimelineData || [])
+      })
+    .subscribe()
 })
 </script>
 

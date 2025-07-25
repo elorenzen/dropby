@@ -103,6 +103,8 @@
 </template>
 
 <script setup lang="ts">
+import { v4 as uuidv4 } from 'uuid'
+
     const supabase      = useSupabaseClient()
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
@@ -150,6 +152,19 @@
         selectedMerchant.value = merchants.find(merchant => merchant.id === event.data.merchant)
         openViewDialog.value = true
     }
+    const addTimelineEvent = async (timelineObj: any) => {
+        const { error } = await supabase.from('timeline_items').insert({
+            id: uuidv4(),
+            owner_id: timelineObj.ownerId,
+            title: timelineObj.title,
+            description: timelineObj.description,
+            type: timelineObj.type
+        })
+        if (error) {
+            console.error('Timeline Event Creation Error:', error.message)
+        }
+    }
+
     const requestEvent = async () => {
         loading.value = true
         try {
@@ -175,6 +190,14 @@
                     console.error('Email notification failed:', emailErr)
                     // Don't fail the whole operation if email fails
                 }
+                
+                // Add timeline event for vendor
+                await addTimelineEvent({
+                    ownerId: vendor.value.id,
+                    title: 'Event Request Sent',
+                    description: `Requested event at ${selectedMerchant.value?.merchant_name || 'Establishment'} for ${new Date(selectedEvt.value.start).toLocaleDateString()}`,
+                    type: 'event'
+                })
                 
                 refreshKey.value++
                 openViewDialog.value = false
@@ -209,6 +232,14 @@
             .eq('id', selectedEvt.value.id)
             
         if (!error) {
+            // Add timeline event for cancelled request
+            await addTimelineEvent({
+                ownerId: vendor.value.id,
+                title: 'Event Request Cancelled',
+                description: `Cancelled request for event at ${selectedMerchant.value?.merchant_name || 'Establishment'} for ${new Date(selectedEvt.value.start).toLocaleDateString()}`,
+                type: 'event'
+            })
+            
             refreshKey.value++
             openViewDialog.value = false
             selectedEvt.value = ''
