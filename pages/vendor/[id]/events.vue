@@ -96,8 +96,7 @@
             <div>
               <h3 class="text-xl font-semibold text-text-main">Open Events</h3>
               <div class="flex items-center gap-2 text-sm">
-                <span class="text-text-muted">Total events: {{ filteredOpenEvents.length }} |</span>
-                <span v-if="openEventsCount > 0" class="text-green-600 dark:text-green-400 font-medium">available: {{ openEventsCount }}</span>
+                <span class="text-text-muted">Total events: {{ filteredOpenEvents.length }}</span>
               </div>
             </div>
           </div>
@@ -166,7 +165,7 @@
           <EventBaseListCard 
             v-for="event in filteredOpenEvents" 
             :key="event.id"
-            :show-status-badge="true"
+            :show-status-badge="false"
           >
             <template #vendor-avatar>
               <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
@@ -175,7 +174,9 @@
             </template>
             
             <template #event-content>
-              <p class="font-semibold text-text-main truncate mb-1">{{ getMerchantProp(event.merchant, 'merchant_name') }}</p>
+              <p class="font-semibold text-text-main truncate mb-1" v-tooltip="'some shit here'">
+                {{ getMerchantProp(event.merchant, 'merchant_name') }}
+              </p>
               <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
               <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
               <p class="text-xs text-text-muted mb-2">Location: {{ event.location_address || 'No address specified' }}</p>
@@ -184,19 +185,24 @@
               </div>
             </template>
             
-            <template #status-badge>
-              <Tag value="OPEN" severity="success" size="small" />
-            </template>
-            
             <template #action-buttons>
-              <Button 
-                @click="requestEvent(event)"
-                label="Request Event"
-                severity="success"
-                size="small"
-                :loading="loadingRequest === event.id"
-                :disabled="hasRequestedEvent(event)"
-              />
+              <div class="flex flex-col gap-2">
+                <Button 
+                  @click="viewOpenEventDetails(event)"
+                  label="View Details"
+                  severity="secondary"
+                  text
+                  size="small"
+                />
+                <Button 
+                  @click="requestEvent(event)"
+                  label="Request Event"
+                  severity="success"
+                  size="small"
+                  :loading="loadingRequest === event.id"
+                  :disabled="hasRequestedEvent(event)"
+                />
+              </div>
             </template>
           </EventBaseListCard>
         </div>
@@ -220,12 +226,6 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Past Events</h3>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-text-muted">Total events: {{ filteredPastEvents.length }} |</span>
-                <span v-if="completedEventsCount > 0" class="text-green-600 dark:text-green-400 font-medium">completed: {{ completedEventsCount }}</span>
-                <span v-if="completedEventsCount > 0 && cancelledEventsCount > 0" class="text-text-muted">|</span>
-                <span v-if="cancelledEventsCount > 0" class="text-red-600 dark:text-red-400 font-medium">cancelled: {{ cancelledEventsCount }}</span>
-              </div>
             </div>
           </div>
         </div>
@@ -248,20 +248,7 @@
               </FloatLabel>
             </div>
             
-            <!-- Status Filter -->
-            <div class="w-40">
-              <FloatLabel>
-                <Dropdown 
-                  id="past-events-status-filter"
-                  v-model="pastEventsFilters.status" 
-                  :options="pastStatusOptions" 
-                  optionLabel="label" 
-                  optionValue="value"
-                  class="w-full"
-                />
-                <label for="past-events-status-filter">Status</label>
-              </FloatLabel>
-            </div>
+
             
             <!-- Sort By -->
             <div class="w-48">
@@ -293,7 +280,7 @@
           <EventBaseListCard 
             v-for="event in filteredPastEvents" 
             :key="event.id"
-            :show-status-badge="true"
+            :show-status-badge="false"
           >
             <template #vendor-avatar>
               <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
@@ -308,9 +295,7 @@
               <p class="text-xs text-text-muted mb-2">Location: {{ event.location_address || 'No address specified' }}</p>
             </template>
             
-            <template #status-badge>
-              <Tag :value="event.status.toUpperCase()" :severity="event.status === 'completed' ? 'success' : 'danger'" size="small" />
-            </template>
+
             
             <template #action-buttons>
               <Button 
@@ -356,6 +341,110 @@
       @update:visible="showEventDetailsDialog = $event"
       @write-review="onWriteReviewFromDetails"
     />
+
+    <!-- Open Event Details Dialog -->
+    <Dialog 
+      :visible="showOpenEventDetailsDialog" 
+      @update:visible="showOpenEventDetailsDialog = $event"
+      modal 
+      :header="`Event Details - ${selectedOpenEventForDetails?.merchant ? getMerchantProp(selectedOpenEventForDetails.merchant, 'merchant_name') : 'Unknown Merchant'}`" 
+      :style="{ width: '50rem' }"
+    >
+      <div v-if="selectedOpenEventForDetails" class="space-y-6">
+        <!-- Event Information -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <h3 class="text-lg font-semibold text-text-main mb-3">Event Information</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm font-medium text-text-muted">Date</p>
+              <p class="text-text-main">{{ new Date(selectedOpenEventForDetails.start).toLocaleDateString() }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-text-muted">Time</p>
+              <p class="text-text-main">{{ new Date(selectedOpenEventForDetails.start).toLocaleTimeString() }} - {{ new Date(selectedOpenEventForDetails.end).toLocaleTimeString() }}</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-sm font-medium text-text-muted">Location</p>
+              <p class="text-text-main">{{ selectedOpenEventForDetails.location_address || 'No address specified' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Merchant Information -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <h3 class="text-lg font-semibold text-text-main mb-3">Merchant Information</h3>
+          <div class="flex items-start gap-4">
+            <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+              <i class="pi pi-building text-green-600 dark:text-green-400 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-text-main text-lg">{{ getMerchantProp(selectedOpenEventForDetails.merchant, 'merchant_name') }}</h4>
+              <div class="flex items-center gap-2 mt-2">
+                <Tag 
+                  v-for="cuisine in getMerchantCuisines(selectedOpenEventForDetails.merchant)" 
+                  :key="cuisine" 
+                  :value="cuisine" 
+                  severity="info" 
+                  size="small" 
+                />
+              </div>
+              <p class="text-sm text-text-muted mt-2">
+                {{ getMerchantProp(selectedOpenEventForDetails.merchant, 'merchant_description') || 'No description available' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Value Information (if available) -->
+        <div v-if="selectedOpenEventForDetails.event_value" class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">Event Value</h3>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-blue-700 dark:text-blue-300">Event Value:</span>
+              <span class="font-semibold text-blue-800 dark:text-blue-200">${{ selectedOpenEventForDetails.event_value }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-blue-700 dark:text-blue-300">Platform Fee (8%):</span>
+              <span class="text-blue-800 dark:text-blue-200">${{ (selectedOpenEventForDetails.event_value * 0.08).toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-blue-700 dark:text-blue-300">Processing Fee:</span>
+              <span class="text-blue-800 dark:text-blue-200">${{ ((selectedOpenEventForDetails.event_value * 0.029) + 0.30).toFixed(2) }}</span>
+            </div>
+            <div class="border-t border-blue-300 dark:border-blue-700 pt-2">
+              <div class="flex justify-between font-semibold">
+                <span class="text-blue-800 dark:text-blue-200">Total (Merchant Pays):</span>
+                <span class="text-blue-800 dark:text-blue-200">${{ ((selectedOpenEventForDetails.event_value * 1.109) + 0.30).toFixed(2) }}</span>
+              </div>
+            </div>
+            <div class="mt-3 p-2 bg-blue-100 dark:bg-blue-900/30 rounded border border-blue-300 dark:border-blue-700">
+              <p class="text-xs text-blue-800 dark:text-blue-200">
+                <i class="pi pi-info-circle mr-1"></i>
+                You will receive the full event value of ${{ selectedOpenEventForDetails.event_value }} after the event is completed.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <Button 
+            @click="showOpenEventDetailsDialog = false"
+            label="Close"
+            severity="secondary"
+            outlined
+          />
+          <Button 
+            @click="requestEventFromDialog"
+            label="Request Event"
+            severity="success"
+            :loading="loadingRequest === selectedOpenEventForDetails?.id"
+            :disabled="selectedOpenEventForDetails ? hasRequestedEvent(selectedOpenEventForDetails) : true"
+          />
+        </div>
+      </template>
+    </Dialog>
 
     <!-- Write Review Dialog -->
     <WriteReview
@@ -409,6 +498,10 @@ await reviewStore.setSentReviews(sentReviews || [])
 const showEventDetailsDialog = ref(false)
 const selectedEventForDetails = ref<Event | null>(null)
 
+// Open event details dialog state
+const showOpenEventDetailsDialog = ref(false)
+const selectedOpenEventForDetails = ref<Event | null>(null)
+
 // Write review dialog state
 const showWriteReviewDialog = ref(false)
 const selectedEventForReview = ref<Event | null>(null)
@@ -426,6 +519,7 @@ interface Event {
   status: string
   pending_requests?: string[]
   location_address?: string
+  event_value?: number
 }
 
 interface Merchant {
@@ -445,7 +539,6 @@ const openEventsFilters = ref({
 // Filter state for past events
 const pastEventsFilters = ref({
   keyword: '',
-  status: '',
   sortBy: 'date-desc'
 })
 
@@ -458,12 +551,7 @@ const dateRangeOptions = ref([
   { label: 'Next 30 Days', value: 'next30' }
 ])
 
-// Filter options for past events
-const pastStatusOptions = ref([
-  { label: 'All Statuses', value: '' },
-  { label: 'Completed', value: 'completed' },
-  { label: 'Cancelled', value: 'cancelled' }
-])
+
 
 const sortOptions = ref([
   { label: 'Date (Newest First)', value: 'date-desc' },
@@ -563,11 +651,10 @@ const openEventsCount = computed(() => {
   return filteredOpenEvents.value.length
 })
 
-// Past events - completed or cancelled events where this vendor was booked
+// Past events - all events where this vendor was assigned
 const pastEvents = computed(() => {
   return allEvents.value.filter((event: Event) => {
-    return event.vendor === route.params.id && 
-           (event.status === 'completed' || event.status === 'cancelled')
+    return event.vendor === route.params.id
   })
 })
 
@@ -587,10 +674,7 @@ const filteredPastEvents = computed(() => {
     })
   }
 
-  // Filter by status
-  if (pastEventsFilters.value.status) {
-    filtered = filtered.filter((event: Event) => event.status === pastEventsFilters.value.status)
-  }
+
 
   // Sort events
   filtered.sort((a: Event, b: Event) => {
@@ -611,14 +695,7 @@ const filteredPastEvents = computed(() => {
   return filtered
 })
 
-// Event count computed properties for past events
-const completedEventsCount = computed(() => {
-  return filteredPastEvents.value.filter((event: Event) => event.status === 'completed').length
-})
 
-const cancelledEventsCount = computed(() => {
-  return filteredPastEvents.value.filter((event: Event) => event.status === 'cancelled').length
-})
 
 // Helper functions
 const getMerchantProp = (merchantId: string | null, prop: string): string => {
@@ -662,6 +739,20 @@ const hasReview = (event: Event): boolean => {
 
 const hasRequestedEvent = (event: Event): boolean => {
   return event.pending_requests?.includes(route.params.id as string) || false
+}
+
+const viewOpenEventDetails = (event: Event) => {
+  console.log('viewOpenEventDetails called with event:', event)
+  selectedOpenEventForDetails.value = event
+  showOpenEventDetailsDialog.value = true
+  console.log('Dialog should now be open:', showOpenEventDetailsDialog.value)
+}
+
+const requestEventFromDialog = async () => {
+  if (selectedOpenEventForDetails.value) {
+    await requestEvent(selectedOpenEventForDetails.value)
+    showOpenEventDetailsDialog.value = false
+  }
 }
 
 const addTimelineEvent = async (timelineObj: any) => {
@@ -801,7 +892,6 @@ const clearOpenEventsFilters = () => {
 const clearPastEventsFilters = () => {
   pastEventsFilters.value = {
     keyword: '',
-    status: '',
     sortBy: 'date-desc'
   }
 }
