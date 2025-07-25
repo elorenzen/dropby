@@ -14,6 +14,14 @@ export const useEventStore = defineStore('event', {
           (Date.now() < new Date(e.start).getTime())
         )
         .sort((a,b) => Date.parse(b.start) - Date.parse(a.start))
+    },
+    getAllOpenEventsForVendors: (state) => {
+      return state.allEvents
+        .filter((e) =>
+          e.status == 'open' &&
+          (Date.now() < new Date(e.start).getTime())
+        )
+        .sort((a,b) => Date.parse(a.start) - Date.parse(b.start))
     }
   },
   actions: {

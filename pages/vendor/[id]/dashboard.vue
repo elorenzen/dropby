@@ -35,6 +35,14 @@
                 <i class="pi pi-arrow-up mr-1"></i>
                 +{{ analytics.eventsGrowth }}% this month
               </p>
+              <Button 
+                @click="navigateToEvents"
+                label="View All Events"
+                severity="secondary"
+                outlined
+                size="small"
+                class="mt-2"
+              />
             </div>
             <div class="analytics-icon bg-blue-100 dark:bg-blue-900">
               <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
@@ -71,6 +79,14 @@
                 <i class="pi pi-clock mr-1"></i>
                 Awaiting approval
               </p>
+              <Button 
+                @click="navigateToEvents"
+                label="View Events"
+                severity="secondary"
+                outlined
+                size="small"
+                class="mt-2"
+              />
             </div>
             <div class="analytics-icon bg-yellow-100 dark:bg-yellow-900">
               <i class="pi pi-clock text-yellow-600 dark:text-yellow-400"></i>
@@ -518,7 +534,7 @@ const navigateToSettings = () => {
 }
 
 const navigateToEvents = () => {
-  navigateTo('/viewer/events')
+  navigateTo(`/vendor/${route.params.id}/events`)
 }
 
 const goToToday = () => {
