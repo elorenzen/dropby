@@ -80,6 +80,9 @@ export default defineEventHandler(async (event) => {
         .eq('id', user.id)
     }
 
+    // Get the base URL for success/cancel URLs
+    const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://dropby-ten.vercel.app'
+    
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
@@ -91,8 +94,8 @@ export default defineEventHandler(async (event) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NUXT_PUBLIC_SITE_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NUXT_PUBLIC_SITE_URL}/subscriptions`,
+      success_url: `${baseUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/subscriptions`,
       metadata: {
         user_id: user.id,
         plan_type: planType

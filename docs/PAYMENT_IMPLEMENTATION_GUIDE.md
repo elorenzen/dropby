@@ -60,7 +60,7 @@ In your Stripe Dashboard, create the following products:
 // Merchant Pro Plan
 {
   name: "Merchant Pro",
-  price: 2900, // $29.00 in cents
+  price: 1900, // $19.00 in cents
   interval: "month",
   currency: "usd"
 }
@@ -68,7 +68,7 @@ In your Stripe Dashboard, create the following products:
 // Merchant Enterprise Plan
 {
   name: "Merchant Enterprise", 
-  price: 9900, // $99.00 in cents
+  price: 4900, // $49.00 in cents
   interval: "month",
   currency: "usd"
 }
@@ -79,7 +79,7 @@ In your Stripe Dashboard, create the following products:
 // Vendor Pro Plan
 {
   name: "Vendor Pro",
-  price: 1900, // $19.00 in cents
+  price: 2900, // $29.00 in cents
   interval: "month", 
   currency: "usd"
 }
@@ -87,7 +87,7 @@ In your Stripe Dashboard, create the following products:
 // Vendor Premium Plan
 {
   name: "Vendor Premium",
-  price: 4900, // $49.00 in cents
+  price: 7900, // $79.00 in cents
   interval: "month",
   currency: "usd"
 }
@@ -396,23 +396,59 @@ stripe listen --forward-to localhost:3000/api/payments/webhook
 - [ ] Create terms of service for payments
 - [ ] Set up proper dispute handling
 
-## Updated Fee Structure Examples
+## Event Pricing Guide & Fee Structure Examples
 
-### Example 1: $500 Event
+### Typical Event Values by Size
+
+#### Micro Events (0-50 people): $100-300
+- **Examples**: Small office lunches, intimate gatherings, family events
+- **Typical Duration**: 2-4 hours
+- **Vendor Requirements**: 1-2 staff members, basic setup
+
+#### Small Events (50-100 people): $200-500
+- **Examples**: Office parties, small corporate events, community gatherings
+- **Typical Duration**: 3-6 hours
+- **Vendor Requirements**: 2-3 staff members, standard setup
+
+#### Medium Events (100-300 people): $500-1,000
+- **Examples**: Company picnics, medium corporate events, festivals
+- **Typical Duration**: 4-8 hours
+- **Vendor Requirements**: 3-5 staff members, expanded setup
+
+#### Large Events (300+ people): $1,000-2,500
+- **Examples**: Large corporate events, community festivals, major celebrations
+- **Typical Duration**: 6-12 hours
+- **Vendor Requirements**: 5+ staff members, full setup with multiple stations
+
+#### Premium Events (corporate, special occasions): $2,500+
+- **Examples**: Executive events, luxury corporate functions, high-end private parties
+- **Typical Duration**: 4-8 hours
+- **Vendor Requirements**: Premium service, custom menus, specialized staff
+
+### Fee Structure Examples
+
+#### Example 1: $200 Event (Small Event)
+- **Event Value**: $200
+- **Platform Fee (8%)**: $16 (our revenue)
+- **Processing Fee**: $6.10 (Stripe fee)
+- **Total Merchant Pays**: $222.10
+- **Vendor Receives**: $200 (full amount)
+
+#### Example 2: $500 Event (Medium Event)
 - **Event Value**: $500
 - **Platform Fee (8%)**: $40 (our revenue)
 - **Processing Fee**: $14.80 (Stripe fee)
 - **Total Merchant Pays**: $554.80
 - **Vendor Receives**: $500 (full amount)
 
-### Example 2: $1,000 Event
+#### Example 3: $1,000 Event (Large Event)
 - **Event Value**: $1,000
 - **Platform Fee (8%)**: $80 (our revenue)
 - **Processing Fee**: $29.30 (Stripe fee)
 - **Total Merchant Pays**: $1,109.30
 - **Vendor Receives**: $1,000 (full amount)
 
-### Example 3: $2,500 Event
+#### Example 4: $2,500 Event (Premium Event)
 - **Event Value**: $2,500
 - **Platform Fee (8%)**: $200 (our revenue)
 - **Processing Fee**: $72.80 (Stripe fee)

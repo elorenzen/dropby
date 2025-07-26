@@ -25,7 +25,7 @@
   
       <!-- Analytics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card class="analytics-card">
+        <Card class="analytics-card clickable-card" @click="navigateToEvents">
           <template #content>
             <div class="flex items-center justify-between">
               <div>
@@ -43,7 +43,7 @@
           </template>
         </Card>
   
-        <Card class="analytics-card">
+        <Card class="analytics-card clickable-card" @click="navigateToEvents">
           <template #content>
             <div class="flex items-center justify-between">
               <div>
@@ -61,7 +61,7 @@
           </template>
         </Card>
   
-        <Card class="analytics-card">
+        <Card class="analytics-card clickable-card" @click="navigateToEvents">
           <template #content>
             <div class="flex items-center justify-between">
               <div>
@@ -79,7 +79,7 @@
           </template>
         </Card>
   
-        <Card class="analytics-card">
+        <Card class="analytics-card clickable-card" @click="navigateToRatings">
           <template #content>
             <div class="flex items-center justify-between">
               <div>
@@ -227,14 +227,14 @@
   
   const menuItems = ref([
     {
+      label: 'Events',
+      icon: 'pi pi-calendar-plus',
+      command: () => navigateTo(`/merchant/${route.params.id}/events`)
+    },
+    {
       label: 'Ratings & Reviews',
       icon: 'pi pi-star',
       command: () => navigateTo(`/merchant/${route.params.id}/ratings-and-reviews`)
-    },
-    {
-      label: 'Financials',
-      icon: 'pi pi-dollar',
-      command: () => navigateTo(`/merchant/${route.params.id}/financials`)
     },
     {
       label: 'View Analytics',
@@ -242,9 +242,9 @@
       command: () => navigateTo(`/merchant/${route.params.id}/analytics`)
     },
     {
-      label: 'Events',
-      icon: 'pi pi-calendar-plus',
-      command: () => navigateTo(`/merchant/${route.params.id}/events`)
+      label: 'Financials',
+      icon: 'pi pi-dollar',
+      command: () => navigateTo(`/merchant/${route.params.id}/financials`)
     },
     { separator: true },
     {
@@ -319,6 +319,14 @@
     navigateTo(`/settings/${route.params.id}`)
   }
   
+  const navigateToEvents = () => {
+    navigateTo(`/merchant/${route.params.id}/events`)
+  }
+  
+  const navigateToRatings = () => {
+    navigateTo(`/merchant/${route.params.id}/ratings-and-reviews`)
+  }
+  
   const toggleMenu = (event: Event) => {
     menu.value?.toggle(event)
   }
@@ -334,9 +342,13 @@
       if (events) {
         const now = new Date()
         const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-        // Only count booked events (those with a vendor)
+        
+        // Count completed events for the "Completed Events" card
+        const completedEvents = events.filter((e: any) => e.status === 'completed')
+        analytics.value.totalEvents = completedEvents.length
+        
+        // Count booked events (those with a vendor) for the "Booked Events" card
         const bookedEvents = events.filter((e: any) => e.vendor && e.status === 'booked')
-        analytics.value.totalEvents = bookedEvents.length
         analytics.value.bookedEvents = bookedEvents.length
         
         // Count future events with open status
@@ -362,10 +374,10 @@
           return startDate >= now && startDate <= nextWeek
         }).length
         
-        // Calculate events growth (this month vs last month) for booked events only
-        const thisMonthEvents = bookedEvents.filter((e: any) => new Date(e.created_at) >= thisMonth).length
+        // Calculate events growth (this month vs last month) for completed events
+        const thisMonthEvents = completedEvents.filter((e: any) => new Date(e.created_at) >= thisMonth).length
         const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        const lastMonthEvents = bookedEvents.filter((e: any) => {
+        const lastMonthEvents = completedEvents.filter((e: any) => {
           const created = new Date(e.created_at)
           return created >= lastMonth && created < thisMonth
         }).length
@@ -417,5 +429,13 @@
   
   .activity-icon {
     @apply w-8 h-8 rounded-full flex items-center justify-center text-sm;
+  }
+  
+  .clickable-card {
+    @apply cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg;
+  }
+  
+  .clickable-card:hover {
+    @apply border-blue-500/50;
   }
   </style>

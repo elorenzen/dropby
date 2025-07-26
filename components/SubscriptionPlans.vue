@@ -143,7 +143,7 @@ const merchantPlans: Plan[] = [
   {
     id: 'merchant-pro',
     name: 'Pro',
-    price: 29,
+    price: 19,
     description: 'For growing businesses',
     features: [
       'Unlimited events',
@@ -154,12 +154,12 @@ const merchantPlans: Plan[] = [
     ],
     buttonText: 'Start Pro Trial',
     featured: true,
-    stripePriceId: 'price_merchant_pro'
+    stripePriceId: 'price_1ABC123...' // Replace with actual Stripe price ID
   },
   {
     id: 'merchant-enterprise',
     name: 'Enterprise',
-    price: 99,
+    price: 49,
     description: 'For large organizations',
     features: [
       'Everything in Pro',
@@ -170,7 +170,7 @@ const merchantPlans: Plan[] = [
     ],
     buttonText: 'Contact Sales',
     featured: false,
-    stripePriceId: 'price_merchant_enterprise'
+    stripePriceId: 'price_1DEF456...' // Replace with actual Stripe price ID
   }
 ]
 
@@ -193,7 +193,7 @@ const vendorPlans: Plan[] = [
   {
     id: 'vendor-pro',
     name: 'Pro',
-    price: 19,
+    price: 29,
     description: 'For active food trucks',
     features: [
       'Unlimited requests',
@@ -204,12 +204,12 @@ const vendorPlans: Plan[] = [
     ],
     buttonText: 'Start Pro Trial',
     featured: true,
-    stripePriceId: 'price_vendor_pro'
+    stripePriceId: 'price_1GHI789...' // Replace with actual Stripe price ID
   },
   {
     id: 'vendor-premium',
     name: 'Premium',
-    price: 49,
+    price: 79,
     description: 'For premium vendors',
     features: [
       'Everything in Pro',
@@ -220,7 +220,7 @@ const vendorPlans: Plan[] = [
     ],
     buttonText: 'Start Premium Trial',
     featured: false,
-    stripePriceId: 'price_vendor_premium'
+    stripePriceId: 'price_1JKL012...' // Replace with actual Stripe price ID
   }
 ]
 

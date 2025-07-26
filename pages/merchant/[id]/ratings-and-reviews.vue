@@ -383,12 +383,24 @@ interface Review {
   user_email?: string
 }
 
-// Analytics data
-const analytics = ref({
-  foodTruckRating: 4.3,
-  foodTruckReviews: 12,
-  userRating: 4.1,
-  userReviews: 8
+// Analytics data - food truck rating from real data, user rating hardcoded
+const analytics = computed(() => {
+  // Calculate food truck rating from received reviews
+  const foodTruckReviews = receivedReviews.value
+  const foodTruckRating = foodTruckReviews.length > 0 
+    ? Math.round((foodTruckReviews.reduce((sum: number, review: any) => sum + review.rating, 0) / foodTruckReviews.length) * 10) / 10
+    : 0
+
+  // Hardcoded user rating data for now
+  const userRating = 4.1
+  const userReviews = 8
+
+  return {
+    foodTruckRating,
+    foodTruckReviews: foodTruckReviews.length,
+    userRating,
+    userReviews
+  }
 })
 
 const review = ref('')

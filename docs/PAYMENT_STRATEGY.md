@@ -15,13 +15,13 @@ Dropby is a marketplace connecting merchants (establishments) with vendors (food
 
 #### Merchant Subscriptions
 - **Free Tier**: 3 events/month, basic features
-- **Pro Tier**: $29/month - Unlimited events, priority support, analytics
-- **Enterprise Tier**: $99/month - Custom integrations, dedicated support
+- **Pro Tier**: $19/month - Unlimited events, priority support, analytics
+- **Enterprise Tier**: $49/month - Custom integrations, dedicated support
 
 #### Vendor Subscriptions  
 - **Free Tier**: 5 event requests/month, basic profile
-- **Pro Tier**: $19/month - Unlimited requests, featured placement, analytics
-- **Premium Tier**: $49/month - Priority booking, custom branding, advanced analytics
+- **Pro Tier**: $29/month - Unlimited requests, featured placement, analytics
+- **Premium Tier**: $79/month - Priority booking, custom branding, advanced analytics
 
 ### 3. **Premium Features (Tertiary Revenue)**
 - **Featured Listings**: $5-10 per featured event
@@ -97,13 +97,13 @@ ALTER TABLE events ADD COLUMN payment_id UUID REFERENCES payments(id);
 
 **Merchant Plans:**
 - **Free**: 3 events/month, basic dashboard
-- **Pro ($29/month)**: Unlimited events, analytics, priority support
-- **Enterprise ($99/month)**: Custom integrations, dedicated support
+- **Pro ($19/month)**: Unlimited events, analytics, priority support
+- **Enterprise ($49/month)**: Custom integrations, dedicated support
 
 **Vendor Plans:**
 - **Free**: 5 requests/month, basic profile
-- **Pro ($19/month)**: Unlimited requests, featured placement
-- **Premium ($49/month)**: Priority booking, custom branding
+- **Pro ($29/month)**: Unlimited requests, featured placement
+- **Premium ($79/month)**: Priority booking, custom branding
 
 ### Phase 3: Advanced Features
 
@@ -186,28 +186,64 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-## Fee Structure Examples
+## Typical Event Values & Pricing Guide
 
-### Example 1: $500 Event
+### Event Size Categories & Suggested Pricing
+
+#### Micro Events (0-50 people): $100-300
+- **Examples**: Small office lunches, intimate gatherings, family events
+- **Typical Duration**: 2-4 hours
+- **Vendor Requirements**: 1-2 staff members, basic setup
+
+#### Small Events (50-100 people): $200-500
+- **Examples**: Office parties, small corporate events, community gatherings
+- **Typical Duration**: 3-6 hours
+- **Vendor Requirements**: 2-3 staff members, standard setup
+
+#### Medium Events (100-300 people): $500-1,000
+- **Examples**: Company picnics, medium corporate events, festivals
+- **Typical Duration**: 4-8 hours
+- **Vendor Requirements**: 3-5 staff members, expanded setup
+
+#### Large Events (300+ people): $1,000-2,500
+- **Examples**: Large corporate events, community festivals, major celebrations
+- **Typical Duration**: 6-12 hours
+- **Vendor Requirements**: 5+ staff members, full setup with multiple stations
+
+#### Premium Events (corporate, special occasions): $2,500+
+- **Examples**: Executive events, luxury corporate functions, high-end private parties
+- **Typical Duration**: 4-8 hours
+- **Vendor Requirements**: Premium service, custom menus, specialized staff
+
+### Fee Structure Examples
+
+#### Example 1: $500 Event (Medium Event)
 - **Event Value**: $500
 - **Platform Fee (8%)**: $40 (our revenue)
 - **Processing Fee**: $14.80 (Stripe fee)
 - **Total Merchant Pays**: $554.80
 - **Vendor Receives**: $500 (full amount)
 
-### Example 2: $1,000 Event
+#### Example 2: $1,000 Event (Large Event)
 - **Event Value**: $1,000
 - **Platform Fee (8%)**: $80 (our revenue)
 - **Processing Fee**: $29.30 (Stripe fee)
 - **Total Merchant Pays**: $1,109.30
 - **Vendor Receives**: $1,000 (full amount)
 
-### Example 3: $2,500 Event
+#### Example 3: $2,500 Event (Premium Event)
 - **Event Value**: $2,500
 - **Platform Fee (8%)**: $200 (our revenue)
 - **Processing Fee**: $72.80 (Stripe fee)
 - **Total Merchant Pays**: $2,772.80
 - **Vendor Receives**: $2,500 (full amount)
+
+#### Example 4: $200 Event (Small Event)
+- **Event Value**: $200
+- **Platform Fee (8%)**: $16 (our revenue)
+- **Processing Fee**: $6.10 (Stripe fee)
+- **Total Merchant Pays**: $222.10
+- **Vendor Receives**: $200 (full amount)
 
 ## Risk Management
 
@@ -231,9 +267,9 @@ $$ LANGUAGE plpgsql;
 - **Conversion Rate** (Free to Paid)
 
 ### Revenue Targets
-- **Year 1**: $50K - $100K ARR
-- **Year 2**: $200K - $500K ARR  
-- **Year 3**: $1M+ ARR
+- **Year 1**: $75K - $150K ARR (adjusted for new pricing strategy)
+- **Year 2**: $300K - $750K ARR (increased merchant adoption)
+- **Year 3**: $1.5M+ ARR (market expansion)
 
 ## Competitive Analysis
 
@@ -256,18 +292,43 @@ $$ LANGUAGE plpgsql;
 - **Control**: Set event values based on their budget
 - **Quality**: Higher values attract better vendors
 - **Fairness**: Pay for the service they receive
+- **Lower Barrier**: Reduced subscription costs encourage adoption
 
 ### For Vendors:
 - **Full Payment**: Receive 100% of the event value they agreed to
 - **No Hidden Fees**: No surprise deductions from their earnings
 - **Predictable Income**: Know exactly what they'll earn
 - **Motivation**: Incentivized to provide excellent service
+- **Higher Value**: Premium subscription reflects lead generation value
 
 ### For the Platform:
 - **Sustainable Revenue**: Clear 8% platform fee
 - **Competitive Advantage**: Vendor-friendly compared to competitors
 - **Market Efficiency**: Helps establish fair market rates
 - **Quality Control**: Higher values correlate with better service
+- **Volume Growth**: Lower merchant fees drive more events and transaction revenue
+
+## Pricing Strategy Rationale
+
+### Merchant Pricing Reduction ($29→$19, $99→$49)
+**Why Lower Merchant Fees:**
+- **Adoption Driver**: Lower barrier to entry increases merchant signups
+- **Volume Strategy**: More merchants = more events = more transaction fees
+- **Competitive Positioning**: More attractive than hiring event coordinators
+- **Revenue Model**: Primary revenue from transaction fees, not subscriptions
+
+### Vendor Pricing Increase ($19→$29, $49→$79)
+**Why Higher Vendor Fees:**
+- **Value Proposition**: Vendors get guaranteed, qualified leads
+- **Revenue Potential**: Vendors can earn $200-2,500+ per event
+- **Quality Filter**: Higher prices attract serious, professional vendors
+- **Market Position**: Vendors willing to pay more for reliable business
+
+### Revenue Model Impact
+- **Transaction Fees**: Primary revenue stream (8% + processing)
+- **Merchant Subscriptions**: Lower pricing drives adoption
+- **Vendor Subscriptions**: Higher pricing reflects value received
+- **Overall Strategy**: Volume-based revenue through transaction fees
 
 ## Conclusion
 

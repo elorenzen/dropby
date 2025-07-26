@@ -163,19 +163,19 @@ const planConfigs = {
   },
   pro: {
     name: 'Pro',
-    price: user.value?.type === 'merchant' ? 29 : 19,
+    price: user.value?.type === 'merchant' ? 19 : 29,
     description: 'For growing businesses',
     limits: { events: 999999, requests: 999999 }
   },
   premium: {
     name: 'Premium',
-    price: user.value?.type === 'merchant' ? 99 : 49,
+    price: user.value?.type === 'merchant' ? 49 : 79,
     description: 'For premium users',
     limits: { events: 999999, requests: 999999 }
   },
   enterprise: {
     name: 'Enterprise',
-    price: 99,
+    price: 49,
     description: 'For large organizations',
     limits: { events: 999999, requests: 999999 }
   }
