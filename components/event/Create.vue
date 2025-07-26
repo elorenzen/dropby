@@ -124,23 +124,33 @@ const canCreateEvent = computed(() => {
 // Helper functions
 const getBusinessHour = (day: number, type: 'open' | 'close'): string => {
   const hours = props.businessHours
+  
+  // Check if business hours exist and are valid
+  if (!hours || !Array.isArray(hours) || hours.length === 0) {
+    // Default to 9am-5pm if no business hours
+    return type === 'open' ? '09:00' : '17:00'
+  }
+  
+  // Ensure we have all 7 days of business hours
+  const safeHours = hours.length >= 7 ? hours : Array(7).fill({ open: '09:00', close: '17:00' })
+  
   switch (day) {
-    case 0:
-      return hours[6][type]
-    case 1:
-      return hours[0][type]
-    case 2:
-      return hours[1][type]
-    case 3:
-      return hours[2][type]
-    case 4:
-      return hours[3][type]
-    case 5:
-      return hours[4][type]
-    case 6:
-      return hours[5][type]
+    case 0: // Sunday
+      return safeHours[6]?.[type] || (type === 'open' ? '09:00' : '17:00')
+    case 1: // Monday
+      return safeHours[0]?.[type] || (type === 'open' ? '09:00' : '17:00')
+    case 2: // Tuesday
+      return safeHours[1]?.[type] || (type === 'open' ? '09:00' : '17:00')
+    case 3: // Wednesday
+      return safeHours[2]?.[type] || (type === 'open' ? '09:00' : '17:00')
+    case 4: // Thursday
+      return safeHours[3]?.[type] || (type === 'open' ? '09:00' : '17:00')
+    case 5: // Friday
+      return safeHours[4]?.[type] || (type === 'open' ? '09:00' : '17:00')
+    case 6: // Saturday
+      return safeHours[5]?.[type] || (type === 'open' ? '09:00' : '17:00')
     default:
-      return '09:00'
+      return type === 'open' ? '09:00' : '17:00'
   }
 }
 
@@ -266,37 +276,27 @@ const createEvent = async () => {
 
 // Watch for date changes to pre-populate business hours
 watch(eventDate, (newDate: Date) => {
-  if (newDate && props.businessHours && props.businessHours.length > 0) {
+  if (newDate) {
     try {
       const dayOfWeek = new Date(newDate).getDay()
       const dayOpen = getBusinessHour(dayOfWeek, 'open')
       const dayClose = getBusinessHour(dayOfWeek, 'close')
       
-      if (dayOpen && dayClose) {
-        const [openHour, openMinute] = dayOpen.split(':').map(Number)
-        const [closeHour, closeMinute] = dayClose.split(':').map(Number)
+      // Parse the time strings safely
+      const [openHour, openMinute] = dayOpen.split(':').map(Number)
+      const [closeHour, closeMinute] = dayClose.split(':').map(Number)
+      
+      // Validate that we got valid numbers
+      if (!isNaN(openHour) && !isNaN(openMinute) && !isNaN(closeHour) && !isNaN(closeMinute)) {
+        const startDate = new Date(newDate)
+        startDate.setHours(openHour, openMinute, 0, 0)
+        eventStart.value = startDate
         
-        // Validate that we got valid numbers
-        if (!isNaN(openHour) && !isNaN(openMinute) && !isNaN(closeHour) && !isNaN(closeMinute)) {
-          const startDate = new Date(newDate)
-          startDate.setHours(openHour, openMinute, 0, 0)
-          eventStart.value = startDate
-          
-          const endDate = new Date(newDate)
-          endDate.setHours(closeHour, closeMinute, 0, 0)
-          eventEnd.value = endDate
-        } else {
-          // Fallback to default times if parsing fails
-          const startDate = new Date(newDate)
-          startDate.setHours(9, 0, 0, 0)
-          eventStart.value = startDate
-          
-          const endDate = new Date(newDate)
-          endDate.setHours(17, 0, 0, 0)
-          eventEnd.value = endDate
-        }
+        const endDate = new Date(newDate)
+        endDate.setHours(closeHour, closeMinute, 0, 0)
+        eventEnd.value = endDate
       } else {
-        // Fallback to default times if business hours are not available
+        // Fallback to default times if parsing fails
         const startDate = new Date(newDate)
         startDate.setHours(9, 0, 0, 0)
         eventStart.value = startDate
@@ -316,15 +316,6 @@ watch(eventDate, (newDate: Date) => {
       endDate.setHours(17, 0, 0, 0)
       eventEnd.value = endDate
     }
-  } else {
-    // Set default times if no business hours
-    const startDate = new Date(newDate)
-    startDate.setHours(9, 0, 0, 0)
-    eventStart.value = startDate
-    
-    const endDate = new Date(newDate)
-    endDate.setHours(17, 0, 0, 0)
-    eventEnd.value = endDate
   }
 }, { immediate: true })
 </script>
