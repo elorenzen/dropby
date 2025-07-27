@@ -223,7 +223,7 @@
     totalRatings: 18
   })
   
-  useSeoMeta({ title: () => `${merchant.value?.name || 'Merchant'} Dashboard` })
+  useSeoMeta({ title: () => `Dashboard | ${merchant.value?.merchant_name || 'Merchant'}` })
   
   const menuItems = ref([
     {

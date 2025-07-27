@@ -20,7 +20,7 @@ const business = ref(
     await merchantStore.getMerchantById(route.params.id) :
     await vendorStore.getVendorById(route.params.id)
 )
-useSeoMeta({ title: () => `${business.value[`${type}_name`]} Settings` })
+useSeoMeta({ title: () => `Settings | ${business.value[`${type}_name`]}` })
 </script>
 
 <style scoped>

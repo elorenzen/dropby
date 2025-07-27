@@ -372,7 +372,7 @@ onMounted(() => {
     .subscribe()
 })
 
-useSeoMeta({ title: () => `${vendor.value?.vendor_name || 'Vendor'} - Ratings & Reviews` })
+useSeoMeta({ title: () => `Ratings & Reviews | ${vendor.value?.vendor_name || 'Vendor'}` })
 </script>
 
 <style scoped>

@@ -1070,7 +1070,7 @@ const getPastEventsMenuItems = (event: Event) => {
   return items
 }
 
-useSeoMeta({ title: () => `${merchant.value?.merchant_name || 'Merchant'} - Events` })
+useSeoMeta({ title: () => `Events | ${merchant.value?.merchant_name || 'Merchant'}` })
 </script>
 
 <style scoped>

@@ -298,7 +298,7 @@ const { data: sentReviews, error: sentReviewsError } = await supabase
   .order('created_at', { ascending: false })
 await reviewStore.setSentReviews(sentReviews || [])
 
-useSeoMeta({ title: () => `${vendor.value?.vendor_name || 'Vendor'} Dashboard` })
+useSeoMeta({ title: () => `Dashboard | ${vendor.value?.vendor_name || 'Vendor'}` })
 
 const refreshKey = ref(0)
 const addEventDialog = ref(false)

@@ -8,6 +8,9 @@
 definePageMeta({
   alias: '/about'
 })
+
+// Set page title
+useSeoMeta({ title: 'About' })
 </script>
 
 <style scoped>

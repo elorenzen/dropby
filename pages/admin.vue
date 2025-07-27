@@ -37,6 +37,10 @@
 definePageMeta({
     middleware: ['auth']
 })
+
+// Set page title
+useSeoMeta({ title: 'Admin' })
+
 const value = ref('0');
 </script>
 

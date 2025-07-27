@@ -496,7 +496,7 @@ onMounted(() => {
 })
 
 // Set page title
-useSeoMeta({ title: () => `${merchant.value?.name || 'Merchant'} Analytics` })
+useSeoMeta({ title: () => `Analytics | ${merchant.value?.merchant_name || 'Merchant'}` })
 </script>
 
 <style scoped>

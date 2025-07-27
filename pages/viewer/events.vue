@@ -610,6 +610,9 @@ const filterEvents = () => {
   console.log('Filtering events...')
 }
 
+// Set page title
+useSeoMeta({ title: 'Events' })
+
 // Load data on mount
 onMounted(() => {
   loadEvents()

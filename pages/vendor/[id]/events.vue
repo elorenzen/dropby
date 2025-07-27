@@ -929,7 +929,7 @@ const getPastEventsMenuItems = (event: Event | {}) => {
   return items
 }
 
-useSeoMeta({ title: () => `${vendor.value?.vendor_name || 'Vendor'} - Events` })
+useSeoMeta({ title: () => `Events | ${vendor.value?.vendor_name || 'Vendor'}` })
 </script>
 
 <style scoped>

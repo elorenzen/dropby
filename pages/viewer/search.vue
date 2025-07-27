@@ -398,6 +398,9 @@ const navigateToSignup = (type) => {
   navigateTo(`/get-started?type=${type}`)
 }
 
+// Set page title
+useSeoMeta({ title: 'Search' })
+
 // Load data on mount
 onMounted(() => {
   loadEvents()

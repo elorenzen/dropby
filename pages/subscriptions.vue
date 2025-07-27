@@ -346,7 +346,7 @@ onMounted(() => {
   loadSubscriptionData()
 })
 
-useSeoMeta({ title: 'Subscription Plans - Dropby' })
+useSeoMeta({ title: 'Subscription Plans' })
 </script>
 
 <style scoped>

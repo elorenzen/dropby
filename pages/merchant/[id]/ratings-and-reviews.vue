@@ -551,7 +551,7 @@ onMounted(() => {
     .subscribe()
 })
 
-useSeoMeta({ title: () => `${merchant.value?.name || 'Merchant'} - Ratings & Reviews` })
+useSeoMeta({ title: () => `Ratings & Reviews | ${merchant.value?.merchant_name || 'Merchant'}` })
 </script>
 
 <style scoped>

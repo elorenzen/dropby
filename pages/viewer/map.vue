@@ -26,6 +26,9 @@
 definePageMeta({
   alias: '/map'
 })
+
+// Set page title
+useSeoMeta({ title: 'Map' })
 </script>
 
 <style scoped>
