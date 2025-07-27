@@ -154,7 +154,7 @@ const merchantPlans: Plan[] = [
     ],
     buttonText: 'Start Pro Trial',
     featured: true,
-    stripePriceId: 'price_1ABC123...' // Replace with actual Stripe price ID
+    stripePriceId: 'price_1RpHqpE5B6laqC9SWeiNDf2U'
   },
   {
     id: 'merchant-enterprise',
@@ -170,7 +170,7 @@ const merchantPlans: Plan[] = [
     ],
     buttonText: 'Contact Sales',
     featured: false,
-    stripePriceId: 'price_1DEF456...' // Replace with actual Stripe price ID
+    stripePriceId: 'price_1RpHrHE5B6laqC9SCChY5dJB'
   }
 ]
 
@@ -204,7 +204,7 @@ const vendorPlans: Plan[] = [
     ],
     buttonText: 'Start Pro Trial',
     featured: true,
-    stripePriceId: 'price_1GHI789...' // Replace with actual Stripe price ID
+    stripePriceId: 'price_1RpHsOE5B6laqC9S2hYZtXdt' // Replace with actual Stripe price ID
   },
   {
     id: 'vendor-premium',
@@ -220,7 +220,7 @@ const vendorPlans: Plan[] = [
     ],
     buttonText: 'Start Premium Trial',
     featured: false,
-    stripePriceId: 'price_1JKL012...' // Replace with actual Stripe price ID
+    stripePriceId: 'price_1RpHsnE5B6laqC9S9FvB3k3E' // Replace with actual Stripe price ID
   }
 ]
 

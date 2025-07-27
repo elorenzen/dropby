@@ -56,6 +56,27 @@
           </div>
         </div>
 
+      <!-- Event Value -->
+      <div class="space-y-3">
+        <FloatLabel variant="on">
+          <InputNumber 
+            v-model="eventValue" 
+            inputId="event-value" 
+            mode="currency" 
+            currency="USD" 
+            locale="en-US"
+            :min="0"
+            :max="10000"
+            :invalid="!!errors.eventValue"
+          />
+          <label for="event-value">Event Value (USD) *</label>
+        </FloatLabel>
+        <p class="text-xs text-text-muted">
+          This is the amount you'll pay to the vendor for this event
+        </p>
+        <small v-if="errors.eventValue" class="text-red-500">{{ errors.eventValue }}</small>
+      </div>
+
       <!-- Notes -->
       <div class="space-y-3">
         <label for="event-notes" class="block text-sm font-medium text-text-main">Notes</label>
@@ -115,10 +136,12 @@ const eventDate = ref(new Date())
 const eventStart = ref<Date | null>(null)
 const eventEnd = ref<Date | null>(null)
 const eventNotes = ref(props.merchant?.notes || '')
+const eventValue = ref(props.merchant?.default_event_value || 150)
+const errors = ref<Record<string, string>>({})
 
 // Computed properties
 const canCreateEvent = computed(() => {
-  return eventDate.value && eventStart.value && eventEnd.value
+  return eventDate.value && eventStart.value && eventEnd.value && eventValue.value && eventValue.value > 0
 })
 
 // Helper functions
@@ -173,15 +196,34 @@ const closeDialog = () => {
   eventStart.value = null
   eventEnd.value = null
   eventNotes.value = props.merchant?.notes || ''
+  eventValue.value = props.merchant?.default_event_value || 150
+  errors.value = {}
   emit('update:visible', false)
 }
 
 const createEvent = async () => {
-  if (!canCreateEvent.value) {
+  // Clear previous errors
+  errors.value = {}
+  
+  // Validate form
+  if (!eventDate.value) {
+    errors.value.date = 'Event date is required'
+  }
+  if (!eventStart.value) {
+    errors.value.start = 'Start time is required'
+  }
+  if (!eventEnd.value) {
+    errors.value.end = 'End time is required'
+  }
+  if (!eventValue.value || eventValue.value <= 0) {
+    errors.value.eventValue = 'Event value must be greater than 0'
+  }
+  
+  if (Object.keys(errors.value).length > 0) {
     toast.add({
       severity: 'error',
       summary: 'Validation Error',
-      detail: 'Please fill in all required fields',
+      detail: 'Please fix the errors above',
       group: 'main',
       life: 3000
     })
@@ -233,7 +275,9 @@ const createEvent = async () => {
       merchant_rating: null,
       vendor_comment: null,
       merchant_comment: null,
-      notes: eventNotes.value !== '' ? eventNotes.value : props.merchant.notes
+      notes: eventNotes.value !== '' ? eventNotes.value : props.merchant.notes,
+      event_value: eventValue.value,
+      payment_status: 'pending'
     }
 
     const { error } = await supabase.from('events').insert(evtObj as any)
