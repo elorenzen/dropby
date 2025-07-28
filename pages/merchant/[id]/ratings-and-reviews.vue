@@ -146,7 +146,17 @@
               
               <!-- Right: Review Metadata -->
               <div class="flex flex-col items-end gap-2 min-w-0 flex-shrink-0">
-                <Rating v-model="review.rating" readonly :cancel="false" />
+                <div class="flex items-center gap-2">
+                  <Rating v-model="review.rating" readonly :cancel="false" />
+                  <Button 
+                    icon="pi pi-trash" 
+                    severity="danger" 
+                    text 
+                    size="small"
+                    @click="openDeleteDialog(review)"
+                    class="text-red-500 hover:text-red-700"
+                  />
+                </div>
                 <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
               </div>
             </div>
@@ -287,6 +297,14 @@
         </template>
     </Dialog>
     <Toast group="main" position="bottom-center" />
+    
+    <!-- Delete Review Dialog -->
+    <DeleteDialog
+      :visible="showDeleteDialog"
+      item-type="Review"
+      @delete-cancel="closeDeleteDialog"
+      @delete-confirm="confirmDeleteReview"
+    />
   </div>
 </template>
 
@@ -414,6 +432,10 @@ const selectedEvent = ref<Event | null>(null)
 // Pending reviews state
 const showPendingReviews = ref(false)
 
+// Delete review state
+const showDeleteDialog = ref(false)
+const selectedReviewForDelete = ref<Review | null>(null)
+
 // Computed properties
 const canSubmit = computed(() => {
   return review.value.trim().length > 0 && rating.value > 0
@@ -456,6 +478,61 @@ const closeReviewDialog = () => {
     rating.value = 0
     showValidation.value = false
     selectedEvent.value = null
+}
+
+const openDeleteDialog = (review: Review) => {
+    selectedReviewForDelete.value = review
+    showDeleteDialog.value = true
+}
+
+const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    selectedReviewForDelete.value = null
+}
+
+const confirmDeleteReview = async () => {
+    if (!selectedReviewForDelete.value) return
+    
+    try {
+        loading.value = true
+        
+        // Delete the review from the database
+        const { error } = await supabase
+            .from('reviews')
+            .delete()
+            .eq('id', selectedReviewForDelete.value.id)
+        
+        if (error) {
+            throw error
+        }
+        
+        // Add timeline event for successful review deletion
+        await addTimelineEvent({
+            ownerId: route.params.id as string,
+            title: 'Review Deleted',
+            description: `Deleted a ${selectedReviewForDelete.value.rating}-star review`,
+            type: 'rating'
+        })
+        
+        closeDeleteDialog()
+        toast.add({
+            severity: 'success',
+            summary: 'Review Deleted',
+            detail: 'Your review has been deleted successfully',
+            life: 3000
+        })
+        
+    } catch (error: any) {
+        console.error('Error deleting review:', error)
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete review. Please try again.',
+            life: 3000
+        })
+    } finally {
+        loading.value = false
+    }
 }
 
 const submitReview = async () => {
