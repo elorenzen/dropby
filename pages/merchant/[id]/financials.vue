@@ -22,8 +22,26 @@
         </div>
       </div>
 
+      <!-- Subscription Status Check -->
+      <div v-if="!hasActiveSubscription" class="mb-8">
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+              <i class="pi pi-star text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold">Upgrade Your Plan</h3>
+              <p class="text-orange-100">Get unlimited events and premium features</p>
+            </div>
+          </div>
+          <p class="text-orange-100 mb-4">
+            You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and priority support.
+          </p>
+        </div>
+      </div>
+
       <!-- Main Content -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div v-if="hasActiveSubscription" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Payment Settings Card -->
         <div class="lg:col-span-2">
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -198,6 +216,14 @@
         </div>
       </div>
 
+      <!-- Subscription Plans Section (shown when no active subscription) -->
+      <div v-if="!hasActiveSubscription" class="mt-8">
+        <SubscriptionPlans 
+          :userTypeProp="'merchant'"
+          @plan-selected="handlePlanSelection" 
+        />
+      </div>
+
       <!-- Success/Error Messages -->
       <Toast group="main" position="bottom-center" />
       <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
@@ -209,7 +235,12 @@ const route = useRoute()
 const supabase = useSupabaseClient()
 const toast = useToast()
 const merchantStore = useMerchantStore()
+const { currentUser } = useAuth()
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
+
+// Subscription status
+const hasActiveSubscription = ref(false)
+const currentSubscription = ref<any>(null)
 
 // Payment settings state
 const paymentSettings = ref({
@@ -226,6 +257,31 @@ const errors = ref<Record<string, string>>({})
 const errDialog = ref(false)
 const errType = ref('')
 const errMsg = ref('')
+
+// Check subscription status
+const checkSubscriptionStatus = async () => {
+  if (!currentUser.value) return
+
+  try {
+    // Get the merchant ID from the route
+    const merchantId = route.params.id as string
+    
+    // Check for business subscription (not user subscription)
+    const { data: subscriptionData } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('business_id', merchantId)
+      .eq('business_type', 'merchant')
+      .eq('status', 'active')
+      .single()
+
+    currentSubscription.value = subscriptionData
+    hasActiveSubscription.value = !!subscriptionData
+  } catch (error) {
+    console.error('Error checking subscription status:', error)
+    hasActiveSubscription.value = false
+  }
+}
 
 // Calculate default event value based on seating capacity
 const calculateDefaultEventValue = (capacity: number): number => {
@@ -286,8 +342,8 @@ const savePaymentSettings = async () => {
     
     const { error } = await supabase
       .from('merchants')
-      .update(updates)
-      .eq('id', route.params.id)
+      .update(updates as any)
+      .eq('id', route.params.id as string)
     
     if (error) {
       throw error
@@ -314,9 +370,82 @@ const savePaymentSettings = async () => {
   }
 }
 
+// Handle plan selection
+const handlePlanSelection = async (plan: any) => {
+  if (plan.price === 0) {
+    // Handle free plan
+    await setFreePlan()
+  } else {
+    // Handle paid plan
+    await createSubscription(plan)
+  }
+}
+
+const setFreePlan = async () => {
+  try {
+    // Update user to free plan
+    if (currentUser.value?.id) {
+      await supabase
+        .from('users')
+        .update({ current_plan: 'free' } as any)
+        .eq('id', currentUser.value.id)
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: 'Plan Updated',
+      detail: 'Your plan has been updated to Free',
+      group: 'main',
+      life: 3000
+    })
+
+    await checkSubscriptionStatus()
+  } catch (error) {
+    console.error('Error setting free plan:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to update plan',
+      group: 'main',
+      life: 3000
+    })
+  }
+}
+
+const createSubscription = async (plan: any) => {
+  try {
+    const response = await $fetch('/api/subscriptions/create', {
+      method: 'POST',
+      body: {
+        planType: plan.id,
+        stripePriceId: plan.stripePriceId
+      }
+    })
+    
+    // Redirect to Stripe checkout
+    const responseData = response as { checkoutUrl: string }
+    window.location.href = responseData.checkoutUrl
+    
+  } catch (error) {
+    console.error('Subscription creation failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to create subscription',
+      group: 'main',
+      life: 3000
+    })
+  }
+}
+
 const navigateToDashboard = () => {
   navigateTo(`/merchant/${route.params.id}/dashboard`)
 }
+
+// Load subscription status on mount
+onMounted(() => {
+  checkSubscriptionStatus()
+})
 
 // Set page title
 useSeoMeta({ title: () => `Financials | ${merchant.value?.merchant_name || 'Merchant'}` })

@@ -43,41 +43,69 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Check if user already has an active subscription
+    // Get the associated business (merchant or vendor)
+    const businessType = userData.type // 'merchant' or 'vendor'
+    const businessIdKey = `associated_${businessType}_id`
+    const businessId = userData[businessIdKey]
+
+    if (!businessId) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'User is not associated with a business'
+      })
+    }
+
+    // Get business details
+    const { data: businessData, error: businessError } = await client
+      .from(`${businessType}s`)
+      .select('*')
+      .eq('id', businessId)
+      .single()
+    
+    if (businessError || !businessData) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Business not found'
+      })
+    }
+
+    // Check if business already has an active subscription
     const { data: existingSubscription } = await client
       .from('subscriptions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('business_id', businessId)
+      .eq('business_type', businessType)
       .eq('status', 'active')
       .single()
 
     if (existingSubscription) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'User already has an active subscription'
+        statusMessage: 'Business already has an active subscription'
       })
     }
 
-    // Create or get Stripe customer
-    let stripeCustomerId = userData.stripe_customer_id
+    // Create or get Stripe customer for the business
+    let stripeCustomerId = businessData.stripe_customer_id
     
     if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
-        email: userData.email,
-        name: `${userData.first_name} ${userData.last_name}`,
+        email: businessData.email || userData.email,
+        name: businessData[`${businessType}_name`],
         metadata: {
-          user_id: user.id,
-          user_type: userData.type
+          business_id: businessId,
+          business_type: businessType,
+          user_id: user.id
         }
       })
       
       stripeCustomerId = customer.id
       
-      // Update user with Stripe customer ID
+      // Update business with Stripe customer ID
       await client
-        .from('users')
+        .from(`${businessType}s`)
         .update({ stripe_customer_id: stripeCustomerId })
-        .eq('id', user.id)
+        .eq('id', businessId)
     }
 
     // Get the base URL for success/cancel URLs
@@ -97,6 +125,8 @@ export default defineEventHandler(async (event) => {
       success_url: `${baseUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/subscriptions`,
       metadata: {
+        business_id: businessId,
+        business_type: businessType,
         user_id: user.id,
         plan_type: planType
       }
@@ -106,7 +136,9 @@ export default defineEventHandler(async (event) => {
     const { error: subscriptionError } = await client
       .from('subscriptions')
       .insert({
-        user_id: user.id,
+        business_id: businessId,
+        business_type: businessType,
+        user_id: user.id, // The user who initiated the subscription
         plan_type: planType,
         status: 'pending',
         stripe_customer_id: stripeCustomerId,
@@ -125,7 +157,7 @@ export default defineEventHandler(async (event) => {
       sessionId: session.id
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Subscription creation error:', error)
     throw createError({
       statusCode: 500,

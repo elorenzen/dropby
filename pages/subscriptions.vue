@@ -186,21 +186,34 @@ const loadSubscriptionData = async () => {
   if (!user.value) return
 
   try {
-    // Load current subscription
+    // Get user's associated business
+    const userData = user.value
+    const businessType = userData.type // 'merchant' or 'vendor'
+    const businessIdKey = `associated_${businessType}_id`
+    const businessId = userData[businessIdKey]
+
+    if (!businessId) {
+      console.log('User not associated with a business')
+      return
+    }
+
+    // Load current subscription for the business
     const { data: subscriptionData } = await supabase
       .from('subscriptions')
       .select('*')
-      .eq('user_id', user.value.id)
+      .eq('business_id', businessId)
+      .eq('business_type', businessType)
       .eq('status', 'active')
       .single()
 
     currentSubscription.value = subscriptionData
 
-    // Load current usage
+    // Load current usage for the business
     const { data: usageData } = await supabase
       .from('usage_tracking')
       .select('usage_type, usage_count')
-      .eq('user_id', user.value.id)
+      .eq('business_id', businessId)
+      .eq('business_type', businessType)
       .gte('period_start', new Date().toISOString().slice(0, 7) + '-01')
 
     if (usageData) {
