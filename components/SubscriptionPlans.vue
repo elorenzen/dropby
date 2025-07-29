@@ -6,8 +6,8 @@
       <p class="text-text-muted">Select the perfect plan for your business needs</p>
     </div>
 
-    <!-- Plan Toggle -->
-    <div class="flex justify-center">
+    <!-- Plan Toggle - Only show if no specific user type is provided -->
+    <div v-if="!userTypeProp" class="flex justify-center">
       <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
         <button
           @click="userType = 'merchant'"
@@ -122,7 +122,17 @@ interface Plan {
   stripePriceId: string
 }
 
-const userType = ref<'merchant' | 'vendor'>('merchant')
+// Props
+const props = defineProps(['userTypeProp'])
+
+const userType = ref<'merchant' | 'vendor'>(props.userTypeProp || 'merchant')
+
+// Watch for prop changes
+watch(() => props.userTypeProp, (newValue: 'merchant' | 'vendor' | undefined) => {
+  if (newValue) {
+    userType.value = newValue
+  }
+})
 
 const merchantPlans: Plan[] = [
   {

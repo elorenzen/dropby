@@ -170,9 +170,12 @@ body {
 
 /* Gallery carousel item spacing and sizing */
 .gallery-carousel-item {
-  width: 340px;
+  width: 380px;
   margin-right: 2rem;
   flex-shrink: 0;
+  height: 480px;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Remove right margin for last visible card in carousel (PrimeVue uses inline style for last, so this is a fallback) */
@@ -182,8 +185,17 @@ body {
 
 @media (max-width: 900px) {
   .gallery-carousel-item {
-    width: 90vw;
+    width: 320px;
     margin-right: 1rem;
+    height: 440px;
+  }
+}
+
+@media (max-width: 600px) {
+  .gallery-carousel-item {
+    width: 280px;
+    margin-right: 0.75rem;
+    height: 400px;
   }
 }
 
@@ -196,6 +208,9 @@ body {
 .p-carousel-item {
   margin-right: 2rem !important;
   margin-bottom: 2rem !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: transform 0.3s ease !important;
 }
 .p-carousel-item:last-child {
   margin-right: 0 !important;
@@ -222,6 +237,8 @@ body {
   min-height: 420px;
   margin-right: 0 !important;
   transition: box-shadow 0.18s, transform 0.18s;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .gallery-carousel-item:hover {
@@ -236,6 +253,21 @@ body {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure carousel container doesn't hide items */
+.p-carousel {
+  overflow: visible !important;
+}
+
+.p-carousel .p-carousel-container {
+  overflow: visible !important;
+}
+
+.p-carousel .p-carousel-items-container {
+  overflow: visible !important;
 }
 
 /* Secondary color outlined buttons */
