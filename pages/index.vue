@@ -23,16 +23,6 @@
                         </template>
                     </Button>
                 </NuxtLink>
-                <NuxtLink to="/viewer/search">
-                    <Button 
-                        label="Search Food Trucks" 
-                        outlined
-                    >
-                        <template #icon>
-                            <BaseIcon name="search" color="#ff9800" size="20" />
-                        </template>
-                    </Button>
-                </NuxtLink>
             </div>
         </div>
         <div class="section">

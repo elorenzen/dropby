@@ -8,12 +8,7 @@
         <div class="image-overlay"></div>
       </div>
       
-      <!-- Business Type Badge -->
-      <div class="business-type-badge">
-        <slot name="business-type">
-          <Badge value="Business" severity="secondary" />
-        </slot>
-      </div>
+
     </div>
 
     <!-- Card Content -->
@@ -38,19 +33,6 @@
         <p class="description-text">
           <slot name="description" />
         </p>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <slot name="actions">
-          <Button 
-            label="View Details" 
-            icon="pi pi-external-link"
-            outlined
-            size="small"
-            class="view-button"
-          />
-        </slot>
       </div>
     </div>
   </div>
@@ -111,13 +93,6 @@
   height: 60px;
   background: linear-gradient(transparent, rgba(0,0,0,0.7));
   pointer-events: none;
-}
-
-.business-type-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 10;
 }
 
 /* Card Content */
