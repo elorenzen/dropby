@@ -5,8 +5,32 @@
       <p class="page-subtitle">Discover amazing food trucks in your area</p>
     </div>
 
+    <!-- Search Filter -->
+    <div class="search-filter">
+      <div class="search-input-wrapper">
+        <i class="pi pi-search search-icon"></i>
+        <InputText
+          v-model="searchQuery"
+          placeholder="Search by vendor name..."
+          class="search-input"
+          @input="onSearchInput"
+        />
+        <Button
+          v-if="searchQuery"
+          icon="pi pi-times"
+          text
+          size="small"
+          class="clear-button"
+          @click="clearSearch"
+        />
+      </div>
+      <p v-if="searchQuery" class="search-results-info">
+        Showing {{ filteredVendors.length }} of {{ vendors.length }} vendors
+      </p>
+    </div>
+
     <div class="vendors-grid">
-      <div v-for="vendor in vendors" :key="vendor.id" class="vendor-card">
+      <div v-for="vendor in filteredVendors" :key="vendor.id" class="vendor-card">
         <GalleryCard>
           <template #title>{{ vendor.vendor_name }}</template>
           <template #description>{{ vendor.vendor_description }}</template>
@@ -105,6 +129,27 @@ const vendors = vendorStore.getAllVendors
 const vendorDialogVisible = ref(false)
 const selectedVendor = ref<any>(null)
 
+// Search state
+const searchQuery = ref('')
+const filteredVendors = computed(() => {
+  if (!searchQuery.value) {
+    return vendors || []
+  }
+  return (vendors || []).filter((vendor: any) => 
+    vendor.vendor_name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
+
+// Search functions
+const onSearchInput = () => {
+  // This function is not used in the current template,
+  // but it's part of the search filter structure.
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+}
+
 // Navigation functions
 const viewVendorDetails = (vendor: any) => {
   selectedVendor.value = vendor
@@ -135,6 +180,67 @@ const viewVendorDetails = (vendor: any) => {
   font-size: 1.125rem;
   color: var(--text-color-secondary);
   margin: 0;
+}
+
+.search-filter {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: var(--text-color-secondary);
+  font-size: 1rem;
+}
+
+.search-input {
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  width: 100%;
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: var(--input-background);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-light);
+}
+
+.clear-button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background-color: var(--input-background);
+  border: none;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.clear-button:hover {
+  background-color: var(--border-color);
+}
+
+.search-results-info {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  margin-top: 0.5rem;
 }
 
 .vendors-grid {
