@@ -383,12 +383,42 @@ const handlePlanSelection = async (plan: any) => {
 
 const setFreePlan = async () => {
   try {
-    // Update user to free plan
-    if (currentUser.value?.id) {
-      await supabase
-        .from('users')
-        .update({ current_plan: 'free' } as any)
-        .eq('id', currentUser.value.id)
+    // Get the merchant ID from the route
+    const merchantId = route.params.id as string
+    
+    // Check if subscription already exists
+    const { data: existingSubscription } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('business_id', merchantId)
+      .eq('business_type', 'merchant')
+      .single()
+
+    if (existingSubscription) {
+      // Update existing subscription
+      const { error: updateError } = await supabase
+        .from('subscriptions')
+        .update({
+          plan_type: 'free',
+          status: 'active',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
+          updated_at: new Date().toISOString()
+        } as any)
+        .eq('business_id', merchantId)
+        .eq('business_type', 'merchant')
+
+      if (updateError) {
+        throw updateError
+      }
+    } else {
+      // Create new subscription using the composable
+      const { createFreeSubscription } = useSubscription()
+      const { error: insertError } = await createFreeSubscription(merchantId, 'merchant', currentUser.value?.id || '')
+
+      if (insertError) {
+        throw insertError
+      }
     }
 
     toast.add({

@@ -490,6 +490,42 @@ const submit = async () => {
             return
         }
 
+        // Get the business's stripe_customer_id if it exists
+        let stripeCustomerId: string | null = null
+        try {
+            const { data: businessData } = await supabase
+                .from(`${type.value}s`)
+                .select('stripe_customer_id')
+                .eq('id', typeId)
+                .single()
+
+            stripeCustomerId = businessData?.stripe_customer_id || null
+        } catch (error: any) {
+            console.error('Error getting business stripe_customer_id:', error)
+            // Continue without Stripe customer ID for free subscription
+        }
+
+        // Create free subscription for the new business
+        const { createFreeSubscription } = useSubscription()
+        const { data: subscriptionData, error: subscriptionErr } = await createFreeSubscription(
+            typeId, 
+            type.value, 
+            userId, 
+            stripeCustomerId || undefined
+        )
+
+        if (subscriptionErr) {
+            console.error('Failed to create free subscription:', subscriptionErr)
+            // Don't fail the whole operation if subscription creation fails
+            // The business was created successfully
+        } else if (subscriptionData?.id) {
+            // Update business with subscription ID
+            await supabase
+                .from(`${type.value}s`)
+                .update({ subscription_id: subscriptionData.id } as any)
+                .eq('id', typeId)
+        }
+
         // Success
             snackbar.value = true
             snacktext.value = `${type.value} Created! An email confirmation has been sent. You will now be redirected.`
