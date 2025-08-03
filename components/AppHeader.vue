@@ -109,13 +109,6 @@ const viewerMenu = ref([
           router.push('/viewer/map')
         }
       },
-      {
-        label: 'Search',
-        icon: () => h(BaseIcon, { name: 'search', color: '#ff9800', size: 20 }),
-        command: () => {
-          router.push('/viewer/search')
-        }
-      },
     ]
   }
 ])
