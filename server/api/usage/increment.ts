@@ -60,12 +60,7 @@ export default defineEventHandler(async (event) => {
       planType = (subscriptionData as any).plan_type
     }
 
-    // Skip usage limit check since it was already checked in event creation
-    console.log('Skipping usage limit check - already verified in event creation')
-
     // Increment usage
-    console.log('Incrementing usage for:', { businessId, businessType, usageType, incrementAmount })
-    
     const { data: incrementResult, error: incrementError } = await client
       .rpc('increment_usage', {
         business_id_param: businessId,
@@ -74,18 +69,8 @@ export default defineEventHandler(async (event) => {
         increment_amount: incrementAmount
       } as any)
 
-    console.log('Increment result:', { incrementResult, incrementError })
-
-    // Check if the function exists
     if (incrementError) {
-      console.error('Increment function error:', incrementError)
-      console.log('This might mean the increment_usage function does not exist in the database')
-    }
-
-    if (incrementError) {
-      console.error('Increment error:', incrementError)
       // Don't fail the event creation if increment fails
-      console.log('Increment failed, but continuing with event creation')
       return {
         success: true,
         message: 'Event created, but usage tracking failed',
@@ -97,7 +82,6 @@ export default defineEventHandler(async (event) => {
     }
 
     if (!incrementResult) {
-      console.log('Increment returned false, but continuing with event creation')
       return {
         success: true,
         message: 'Event created, but usage limit reached',
@@ -126,7 +110,6 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error: any) {
-    console.error('Usage increment error:', error)
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage: error.statusMessage || error.message || 'Failed to increment usage'

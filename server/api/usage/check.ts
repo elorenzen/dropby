@@ -61,8 +61,6 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check usage limit
-    console.log('Checking usage limit for:', { businessId, businessType, usageType, requiredAmount })
-    
     const { data: canProceed, error: limitError } = await client
       .rpc('check_usage_limit', {
         business_id_param: businessId,
@@ -71,10 +69,7 @@ export default defineEventHandler(async (event) => {
         required_amount: requiredAmount
       } as any)
 
-    console.log('Usage limit check result:', { canProceed, limitError })
-
     if (limitError) {
-      console.error('Usage limit check error:', limitError)
       throw createError({
         statusCode: 500,
         statusMessage: 'Failed to check usage limit'
@@ -84,13 +79,10 @@ export default defineEventHandler(async (event) => {
     // If canProceed is null, assume it's allowed (fallback)
     let finalCanProceed = canProceed as boolean
     if (canProceed === null) {
-      console.log('Usage limit returned null, assuming allowed')
       finalCanProceed = true
     }
 
     // Get current usage and limit for response
-    console.log('Getting current usage for:', { businessId, businessType, usageType })
-    
     const { data: currentUsage, error: currentUsageError } = await client
       .rpc('get_current_usage', {
         business_id_param: businessId,
@@ -98,27 +90,11 @@ export default defineEventHandler(async (event) => {
         usage_type_param: usageType
       } as any)
 
-    console.log('Current usage result:', { currentUsage, currentUsageError })
-
-    console.log('Getting usage limit for:', { planType, usageType })
-    
     const { data: usageLimit, error: usageLimitError } = await client
       .rpc('get_usage_limit', {
         plan_type_param: planType,
         usage_type_param: usageType
       } as any)
-
-    console.log('Usage limit result:', { usageLimit, usageLimitError })
-
-    console.log('Usage check response:', {
-      businessId,
-      businessType,
-      usageType,
-      canProceed,
-      currentUsage: currentUsage || 0,
-      usageLimit: usageLimit || 0,
-      planType
-    })
 
     return {
       success: true,

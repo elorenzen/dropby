@@ -234,8 +234,6 @@ const createEvent = async () => {
     loading.value = true
     
     // Check usage limits before creating event
-    console.log('Checking usage for merchant:', props.merchant.id)
-    
     const usageCheck = await $fetch('/api/usage/check', {
       method: 'POST',
       body: {
@@ -246,10 +244,7 @@ const createEvent = async () => {
       }
     }) as any
 
-    console.log('Usage check response:', usageCheck)
-
     if (!usageCheck?.allowed) {
-      console.log('Usage limit exceeded:', usageCheck)
       toast.add({
         severity: 'warn',
         summary: 'Usage Limit Reached',
@@ -315,8 +310,7 @@ const createEvent = async () => {
 
     // Increment usage after successful event creation
     try {
-      console.log('Incrementing usage for event creation...')
-      const incrementResponse = await $fetch('/api/usage/increment', {
+      await $fetch('/api/usage/increment', {
         method: 'POST',
         body: {
           businessId: props.merchant.id,
@@ -325,9 +319,7 @@ const createEvent = async () => {
           incrementAmount: 1
         }
       })
-      console.log('Increment response:', incrementResponse)
     } catch (usageError) {
-      console.error('Failed to increment usage:', usageError)
       // Don't fail the event creation if usage tracking fails
     }
 
