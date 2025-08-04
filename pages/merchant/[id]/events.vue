@@ -512,6 +512,19 @@
     <!-- Menu Dropdowns -->
     <Menu ref="currentUpcomingMenu" id="current_upcoming_menu" :model="getCurrentUpcomingMenuItems(selectedEventForCurrentUpcomingMenu || {})" :popup="true" />
     <Menu ref="pastEventsMenu" id="past_events_menu" :model="getPastEventsMenuItems(selectedEventForPastEventsMenu || {})" :popup="true" />
+
+    <!-- Payment Dialog -->
+    <PaymentDialog
+      v-if="selectedEventForPayment && selectedVendorForPayment"
+      :visible="showPaymentDialog"
+      :event="selectedEventForPayment"
+      :vendor-id="selectedVendorForPayment.id"
+      :vendor-name="selectedVendorForPayment.name"
+      :merchant-id="String(route.params.id)"
+      @update:visible="showPaymentDialog = $event"
+      @payment-success="handlePaymentSuccess"
+      @payment-error="handlePaymentError"
+    />
   </div>
 </template>
 
@@ -519,6 +532,16 @@
 import { v4 as uuidv4 } from 'uuid'
 
 const toast = useToast()
+
+// Reusable toast method
+const showToast = (severity: 'success' | 'error' | 'info' | 'warn', summary: string, detail: string, life: number = 3000) => {
+  toast.add({
+    severity,
+    summary,
+    detail,
+    life
+  })
+}
 
 definePageMeta({
   middleware: ['auth']
@@ -571,6 +594,11 @@ const selectedEventForDelete = ref<Event | null>(null)
 const selectedEventForCurrentUpcomingMenu = ref<Event | null>(null)
 const selectedEventForPastEventsMenu = ref<Event | null>(null)
 
+// Payment dialog state
+const showPaymentDialog = ref(false)
+const selectedEventForPayment = ref<Event | null>(null)
+const selectedVendorForPayment = ref<{ id: string; name: string } | null>(null)
+
 // Define interfaces for type safety
 interface Event {
   id: string
@@ -582,6 +610,7 @@ interface Event {
   pending_requests?: string[]
   vendor_id?: string
   location_address?: string
+  event_value?: number
 }
 
 interface Vendor {
@@ -843,8 +872,16 @@ const navigateToDashboard = () => {
 
 const approveRequest = async (event: Event, vendorId: string) => {
   loadingApproval.value = `${event.id}-${vendorId}`
+  
   try {
-    const { error } = await (supabase
+    // Check if event has a value set
+    if (!event.event_value || event.event_value <= 0) {
+      showToast('error', 'Event Value Required', 'Please set an event value before approving vendors.', 5000)
+      return
+    }
+
+    // First, update the event status to booked
+    const { error } = await supabase
       .from('events')
       .update({
         status: 'booked',
@@ -852,7 +889,7 @@ const approveRequest = async (event: Event, vendorId: string) => {
         pending_requests: null,
         updated_at: new Date().toISOString()
       })
-      .eq('id', event.id) as any)
+      .eq('id', event.id)
     
     if (error) throw error
     
@@ -864,20 +901,18 @@ const approveRequest = async (event: Event, vendorId: string) => {
       type: 'event'
     })
     
-    toast.add({
-      severity: 'success',
-      summary: 'Request Approved',
-      detail: `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event`,
-      life: 3000
-    })
+    // Show payment dialog for the approved event
+    selectedEventForPayment.value = event
+    selectedVendorForPayment.value = {
+      id: vendorId,
+      name: getVendorProp(vendorId, 'vendor_name')
+    }
+    showPaymentDialog.value = true
+    
+    showToast('success', 'Request Approved', `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event. Please complete payment.`)
   } catch (error) {
     console.error('Error approving request:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to approve request. Please try again.',
-      life: 3000
-    })
+    showToast('error', 'Error', 'Failed to approve request. Please try again.')
   } finally {
     loadingApproval.value = null
   }
@@ -900,20 +935,10 @@ const rejectRequest = async (event: Event, vendorId: string) => {
     
     if (error) throw error
     
-    toast.add({
-      severity: 'info',
-      summary: 'Request Rejected',
-      detail: `Rejected ${getVendorProp(vendorId, 'vendor_name')} for the event`,
-      life: 3000
-    })
+    showToast('info', 'Request Rejected', `Rejected ${getVendorProp(vendorId, 'vendor_name')} for the event`)
   } catch (error) {
     console.error('Error rejecting request:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to reject request. Please try again.',
-      life: 3000
-    })
+    showToast('error', 'Error', 'Failed to reject request. Please try again.')
   } finally {
     loadingRejection.value = null
   }
@@ -948,6 +973,28 @@ const onEventCreated = () => {
   console.log('Event created successfully')
 }
 
+const handlePaymentSuccess = (paymentData: any) => {
+  // Refresh events data after successful payment
+  console.log('Payment successful:', paymentData)
+  
+  // Reset payment dialog state
+  showPaymentDialog.value = false
+  selectedEventForPayment.value = null
+  selectedVendorForPayment.value = null
+  
+  // The real-time subscription will handle updating the events
+  showToast('success', 'Payment Complete', 'Event has been booked and payment processed successfully!', 5000)
+}
+
+const handlePaymentError = (error: Error) => {
+  console.error('Payment failed:', error)
+  
+  // Reset payment dialog state
+  showPaymentDialog.value = false
+  selectedEventForPayment.value = null
+  selectedVendorForPayment.value = null
+}
+
 const deleteEvent = (event: Event) => {
   selectedEventForDelete.value = event
   showDeleteEventDialog.value = true
@@ -974,20 +1021,10 @@ const confirmDeleteEvent = async () => {
       type: 'event'
     })
     
-    toast.add({
-      severity: 'success',
-      summary: 'Event Deleted',
-      detail: 'Event has been successfully deleted',
-      life: 3000
-    })
+    showToast('success', 'Event Deleted', 'Event has been successfully deleted')
   } catch (error) {
     console.error('Error deleting event:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to delete event. Please try again.',
-      life: 3000
-    })
+    showToast('error', 'Error', 'Failed to delete event. Please try again.')
   } finally {
     showDeleteEventDialog.value = false
     selectedEventForDelete.value = null

@@ -45,10 +45,19 @@
       <!-- Payment Information Card -->
       <div class="lg:col-span-1">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 class="text-2xl font-semibold text-text-main mb-6 flex items-center gap-3">
-            <i class="pi pi-credit-card text-green-600"></i>
-            Payment Information
-          </h2>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-semibold text-text-main flex items-center gap-3">
+              <i class="pi pi-credit-card text-green-600"></i>
+              Payment Information
+            </h2>
+            <Button
+              label="Change Plan"
+              icon="pi pi-credit-card"
+              severity="secondary"
+              outlined
+              @click="openSubscriptionModal"
+            />
+          </div>
           
           <div class="space-y-6">
             <!-- Current Plan -->
@@ -149,6 +158,8 @@
     <div v-if="!hasActiveSubscription" class="mt-8">
       <SubscriptionPlans 
         :userTypeProp="'vendor'"
+        :currentPlanId="currentSubscription?.plan_type || 'free'"
+        :loading="subscriptionLoading"
         @plan-selected="handlePlanSelection" 
       />
     </div>
@@ -156,6 +167,23 @@
     <!-- Success/Error Messages -->
     <Toast group="main" position="bottom-center" />
     <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+    
+    <Dialog
+      :visible="showSubscriptionPlans"
+      @update:visible="showSubscriptionPlans = $event"
+      modal
+      header="Change Subscription Plan"
+      :style="{ width: '90vw', maxWidth: '800px' }"
+      :closable="true"
+      :dismissable-mask="true"
+    >
+      <SubscriptionPlans 
+        :userTypeProp="'vendor'"
+        :currentPlanId="currentSubscription?.plan_type || 'free'"
+        :loading="subscriptionLoading"
+        @plan-selected="handlePlanSelection" 
+      />
+    </Dialog>
   </div>
 </template>
 
@@ -182,6 +210,8 @@ const pendingEvents = ref(0)
 const errDialog = ref(false)
 const errType = ref('')
 const errMsg = ref('')
+const showSubscriptionPlans = ref(false)
+const subscriptionLoading = ref(false)
 
 // Check subscription status
 const checkSubscriptionStatus = async () => {
@@ -261,48 +291,20 @@ const loadEarningsData = async () => {
 }
 
 // Handle plan selection
-const handlePlanSelection = async (plan: any) => {
-  if (plan.price === 0) {
-    // Handle free plan
-    await setFreePlan()
-  } else {
-    // Handle paid plan
-    await createSubscription(plan)
-  }
-}
-
-const setFreePlan = async () => {
+const handlePlanSelection = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string }) => {
+  subscriptionLoading.value = true
+  
   try {
-    // Update user to free plan
-    if (currentUser.value?.id) {
-      await supabase
-        .from('users')
-        .update({ current_plan: 'free' } as any)
-        .eq('id', currentUser.value.id)
-    }
-
-    toast.add({
-      severity: 'success',
-      summary: 'Plan Updated',
-      detail: 'Your plan has been updated to Free',
-      group: 'main',
-      life: 3000
-    })
-
-    await checkSubscriptionStatus()
+    await createSubscription(plan)
+    showSubscriptionPlans.value = false
   } catch (error) {
-    console.error('Error setting free plan:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to update plan',
-      group: 'main',
-      life: 3000
-    })
+    console.error('Error handling plan selection:', error)
+  } finally {
+    subscriptionLoading.value = false
   }
 }
 
-const createSubscription = async (plan: any) => {
+const createSubscription = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string }) => {
   try {
     const response = await $fetch('/api/subscriptions/create', {
       method: 'POST',
@@ -312,9 +314,27 @@ const createSubscription = async (plan: any) => {
       }
     })
     
-    // Redirect to Stripe checkout
-    const responseData = response as { checkoutUrl: string }
-    window.location.href = responseData.checkoutUrl
+    const responseData = response as { checkoutUrl?: string; message?: string }
+    
+    // If it's a free plan, show success message and refresh
+    if (responseData.message) {
+      toast.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: responseData.message,
+        group: 'main',
+        life: 3000
+      })
+      
+      // Refresh subscription status
+      await checkSubscriptionStatus()
+      return
+    }
+    
+    // For paid plans, redirect to Stripe checkout
+    if (responseData.checkoutUrl) {
+      window.location.href = responseData.checkoutUrl
+    }
     
   } catch (error) {
     console.error('Subscription creation failed:', error)
@@ -330,6 +350,12 @@ const createSubscription = async (plan: any) => {
 
 const navigateToDashboard = () => {
   navigateTo(`/vendor/${route.params.id}/dashboard`)
+}
+
+const openSubscriptionModal = () => {
+  console.log('Opening subscription modal, current value:', showSubscriptionPlans.value)
+  showSubscriptionPlans.value = true
+  console.log('After setting to true:', showSubscriptionPlans.value)
 }
 
 // Load data on mount
