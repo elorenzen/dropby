@@ -55,6 +55,16 @@
             Most Popular
           </span>
         </div>
+        
+        <!-- Current Plan Badge -->
+        <div
+          v-if="isCurrentPlan(plan.id)"
+          class="absolute -top-3 left-1/2 transform -translate-x-1/2"
+        >
+          <span class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+            Current Plan
+          </span>
+        </div>
 
         <!-- Plan Header -->
         <div class="text-center mb-6">
@@ -81,14 +91,20 @@
         <!-- Action Button -->
         <button
           @click="selectPlan(plan)"
+          :disabled="isCurrentPlan(plan.id) || props.loading"
           :class="[
-            'w-full py-3 px-4 rounded-lg font-medium transition-colors',
-            plan.featured
-              ? 'bg-primary-500 text-white hover:bg-primary-600'
-              : 'bg-gray-100 dark:bg-gray-700 text-text-main hover:bg-gray-200 dark:hover:bg-gray-600'
+            'w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2',
+            isCurrentPlan(plan.id)
+              ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              : props.loading
+                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                : plan.featured
+                  ? 'bg-primary-500 text-white hover:bg-primary-600'
+                  : 'bg-gray-100 dark:bg-gray-700 text-text-main hover:bg-gray-200 dark:hover:bg-gray-600'
           ]"
         >
-          {{ plan.buttonText }}
+          <i v-if="props.loading" class="pi pi-spinner animate-spin"></i>
+          {{ isCurrentPlan(plan.id) ? 'Current Plan' : props.loading ? 'Processing...' : plan.buttonText }}
         </button>
       </div>
     </div>
@@ -123,7 +139,11 @@ interface Plan {
 }
 
 // Props
-const props = defineProps(['userTypeProp'])
+const props = defineProps<{
+  userTypeProp?: 'merchant' | 'vendor'
+  currentPlanId?: string
+  loading?: boolean
+}>()
 
 const userType = ref<'merchant' | 'vendor'>(props.userTypeProp || 'merchant')
 
@@ -238,6 +258,38 @@ const currentPlans = computed(() => {
   return userType.value === 'merchant' ? merchantPlans : vendorPlans
 })
 
+// Map plan type to plan ID
+const getCurrentPlanId = computed(() => {
+  if (!props.currentPlanId) return null
+  
+  const planType = props.currentPlanId
+  const prefix = userType.value === 'merchant' ? 'merchant-' : 'vendor-'
+  
+  // Handle special cases
+  if (planType === 'free') return `${prefix}free`
+  if (planType === 'pro') return `${prefix}pro`
+  if (planType === 'premium') return `${prefix}premium`
+  if (planType === 'enterprise') return `${prefix}enterprise`
+  
+  // If it's already a full plan ID, return as is
+  if (planType.startsWith('merchant-') || planType.startsWith('vendor-')) {
+    return planType
+  }
+  
+  return null
+})
+
+// Check if a plan is the current plan
+const isCurrentPlan = (planId: string) => {
+  const isCurrent = getCurrentPlanId.value === planId
+  console.log(`Checking plan ${planId}:`, {
+    currentPlanId: props.currentPlanId,
+    mappedPlanId: getCurrentPlanId.value,
+    isCurrent
+  })
+  return isCurrent
+}
+
 const faqs = [
   {
     question: 'Can I change my plan anytime?',
@@ -262,6 +314,10 @@ const emit = defineEmits<{
 }>()
 
 const selectPlan = (plan: Plan) => {
+  // Don't emit if this is the current plan
+  if (isCurrentPlan(plan.id)) {
+    return
+  }
   emit('plan-selected', plan)
 }
 </script>

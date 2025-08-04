@@ -5,6 +5,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil'
 })
 
+interface Subscription {
+  id: string
+  business_id: string
+  business_type: string
+  user_id: string
+  plan_type: string
+  status: string
+  stripe_customer_id?: string
+  stripe_subscription_id?: string
+  created_at: string
+  updated_at?: string
+}
+
+interface BusinessData {
+  id: string
+  email?: string
+  stripe_customer_id?: string
+  [key: string]: any
+}
+
 export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
@@ -78,11 +98,79 @@ export default defineEventHandler(async (event) => {
       .eq('status', 'active')
       .single()
 
+    // Extract plan type from plan ID (e.g., 'merchant-pro' -> 'pro')
+    const extractPlanType = (planId: string) => {
+      const parts = planId.split('-')
+      return parts[parts.length - 1] // Get the last part
+    }
+    
+    const actualPlanType = extractPlanType(planType)
+
+    // Handle free plan upgrade/downgrade
+    if (actualPlanType === 'free') {
+      // If upgrading to free, cancel any existing paid subscriptions
+      if (existingSubscription) {
+        const subscription = existingSubscription as Subscription
+        // Cancel existing Stripe subscription if it exists
+        if (subscription.stripe_subscription_id) {
+          try {
+            await stripe.subscriptions.cancel(subscription.stripe_subscription_id)
+          } catch (error) {
+            console.error('Error canceling Stripe subscription:', error)
+          }
+        }
+        
+        // Update existing subscription to free
+        await client
+          .from('subscriptions')
+          .update({
+            plan_type: 'free',
+            status: 'active',
+            stripe_subscription_id: null,
+            updated_at: new Date().toISOString()
+          } as any)
+          .eq('id', subscription.id)
+      } else {
+        // Create new free subscription
+        await client
+          .from('subscriptions')
+          .insert({
+            business_id: businessId,
+            business_type: businessType,
+            user_id: user.id,
+            plan_type: 'free',
+            status: 'active',
+            created_at: new Date().toISOString()
+          } as any)
+      }
+
+      return {
+        success: true,
+        message: 'Plan updated to free successfully'
+      }
+    }
+
+    // Handle paid plan upgrades
+    // Cancel existing subscription if it exists
     if (existingSubscription) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Business already has an active subscription'
-      })
+      const subscription = existingSubscription as Subscription
+      // Cancel existing Stripe subscription if it exists
+      if (subscription.stripe_subscription_id) {
+        try {
+          await stripe.subscriptions.cancel(subscription.stripe_subscription_id)
+        } catch (error) {
+          console.error('Error canceling existing Stripe subscription:', error)
+        }
+      }
+      
+      // Update existing subscription to canceled
+      await client
+        .from('subscriptions')
+        .update({
+          status: 'canceled',
+          updated_at: new Date().toISOString()
+        } as any)
+        .eq('id', subscription.id)
     }
 
     // Create or get Stripe customer for the business
@@ -108,53 +196,86 @@ export default defineEventHandler(async (event) => {
         .eq('id', businessId)
     }
 
-    // Get the base URL for success/cancel URLs
-    const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://dropby-ten.vercel.app'
-    
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create Stripe subscription directly
+    const stripeSubscription = await stripe.subscriptions.create({
       customer: stripeCustomerId,
-      payment_method_types: ['card'],
-      line_items: [
+      items: [
         {
           price: stripePriceId,
-          quantity: 1,
         },
       ],
-      mode: 'subscription',
-      success_url: `${baseUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/subscriptions`,
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
       metadata: {
         business_id: businessId,
         business_type: businessType,
         user_id: user.id,
-        plan_type: planType
+        plan_type: actualPlanType
       }
     })
 
-    // Create subscription record in database
-    const { error: subscriptionError } = await client
+    // Handle date conversion safely
+    const getCurrentPeriodStart = () => {
+      const subscription = stripeSubscription as any
+      if (subscription.current_period_start) {
+        return new Date(subscription.current_period_start * 1000).toISOString()
+      }
+      // For incomplete subscriptions, use current time
+      return new Date().toISOString()
+    }
+
+    const getCurrentPeriodEnd = () => {
+      const subscription = stripeSubscription as any
+      if (subscription.current_period_end) {
+        return new Date(subscription.current_period_end * 1000).toISOString()
+      }
+      // For incomplete subscriptions, estimate 30 days from now
+      return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    }
+
+    // Create Supabase subscription record with both customer and subscription IDs
+    const { data: newSubscription, error: subscriptionError } = await client
       .from('subscriptions')
       .insert({
         business_id: businessId,
         business_type: businessType,
-        user_id: user.id, // The user who initiated the subscription
-        plan_type: planType,
-        status: 'pending',
+        user_id: user.id,
+        plan_type: actualPlanType,
+        status: 'active',
         stripe_customer_id: stripeCustomerId,
-        created_at: new Date().toISOString()
+        stripe_subscription_id: stripeSubscription.id,
+        current_period_start: getCurrentPeriodStart(),
+        current_period_end: getCurrentPeriodEnd(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       } as any)
+      .select()
+      .single()
 
     if (subscriptionError) {
-      console.error('Failed to create subscription record:', subscriptionError)
-      // Don't fail the whole operation if database insert fails
-      // The webhook will handle updating the subscription status
+      // If Supabase subscription creation fails, cancel the Stripe subscription
+      try {
+        await stripe.subscriptions.cancel(stripeSubscription.id)
+      } catch (error) {
+        console.error('Error canceling Stripe subscription after Supabase failure:', error)
+      }
+      
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Failed to create subscription record'
+      })
     }
 
     return {
       success: true,
-      checkoutUrl: session.url,
-      sessionId: session.id
+      subscription: {
+        id: newSubscription.id,
+        stripeSubscriptionId: stripeSubscription.id,
+        stripeCustomerId: stripeCustomerId,
+        planType: actualPlanType,
+        status: stripeSubscription.status
+      }
     }
 
   } catch (error: any) {

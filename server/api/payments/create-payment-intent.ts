@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
         processing_fee: processingFee,
         vendor_payout: vendorPayout,
         status: 'pending'
-      })
+      } as any)
       .select()
       .single()
 
@@ -74,16 +74,17 @@ export default defineEventHandler(async (event) => {
         vendorId
       },
       application_fee_amount: Math.round(platformFee * 100), // Only platform fee
-      transfer_data: {
-        destination: vendorId, // Vendor's Stripe account ID
-        amount: Math.round(vendorPayout * 100), // Full event value to vendor
-      },
+      // Remove transfer_data since vendors don't have Stripe Connect accounts yet
+      // transfer_data: {
+      //   destination: vendorId, // Vendor's Stripe account ID
+      //   amount: Math.round(vendorPayout * 100), // Full event value to vendor
+      // },
     })
 
     // Update payment record with Stripe payment intent ID
     await client
       .from('payments')
-      .update({ stripe_payment_intent_id: paymentIntent.id })
+      .update({ stripe_payment_intent_id: paymentIntent.id } as any)
       .eq('id', paymentData.id)
 
     // Update event payment status
@@ -93,7 +94,7 @@ export default defineEventHandler(async (event) => {
         payment_status: 'pending',
         payment_id: paymentData.id,
         event_value: amount
-      })
+      } as any)
       .eq('id', eventId)
 
     return {
@@ -109,7 +110,7 @@ export default defineEventHandler(async (event) => {
       paymentId: paymentData.id
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Payment intent creation error:', error)
     throw createError({
       statusCode: 500,

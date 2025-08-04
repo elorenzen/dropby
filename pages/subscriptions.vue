@@ -79,7 +79,11 @@
       </div>
 
       <!-- Available Plans -->
-      <SubscriptionPlans @plan-selected="handlePlanSelection" />
+      <SubscriptionPlans 
+        :currentPlanId="currentSubscription?.plan_type || 'free'"
+        :loading="subscriptionLoading"
+        @plan-selected="handlePlanSelection" 
+      />
 
       <!-- Cancel Subscription Dialog -->
       <Dialog 
@@ -145,6 +149,7 @@ definePageMeta({
 
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const userStore = useUserStore()
 const toast = useToast()
 
 // Reactive data
@@ -152,6 +157,7 @@ const currentSubscription = ref<any>(null)
 const currentUsage = ref({ events: 0, requests: 0 })
 const showCancelDialog = ref(false)
 const canceling = ref(false)
+const subscriptionLoading = ref(false)
 
 // Plan configurations
 const planConfigs = {
@@ -163,13 +169,13 @@ const planConfigs = {
   },
   pro: {
     name: 'Pro',
-    price: user.value?.type === 'merchant' ? 19 : 29,
+    price: userStore.userType === 'merchant' ? 19 : 29,
     description: 'For growing businesses',
     limits: { events: 999999, requests: 999999 }
   },
   premium: {
     name: 'Premium',
-    price: user.value?.type === 'merchant' ? 49 : 79,
+    price: userStore.userType === 'merchant' ? 49 : 79,
     description: 'For premium users',
     limits: { events: 999999, requests: 999999 }
   },
@@ -187,7 +193,12 @@ const loadSubscriptionData = async () => {
 
   try {
     // Get user's associated business
-    const userData = user.value
+    const userData = userStore.getUser
+    if (!userData || !userData.type) {
+      console.log('User not associated with a business')
+      return
+    }
+    
     const businessType = userData.type // 'merchant' or 'vendor'
     const businessIdKey = `associated_${businessType}_id`
     const businessId = userData[businessIdKey]
@@ -217,8 +228,8 @@ const loadSubscriptionData = async () => {
       .gte('period_start', new Date().toISOString().slice(0, 7) + '-01')
 
     if (usageData) {
-      const eventsUsage = usageData.find(u => u.usage_type === 'events')
-      const requestsUsage = usageData.find(u => u.usage_type === 'requests')
+      const eventsUsage = usageData.find((u: any) => u.usage_type === 'events')
+      const requestsUsage = usageData.find((u: any) => u.usage_type === 'requests')
       
       currentUsage.value = {
         events: eventsUsage?.usage_count || 0,
@@ -230,14 +241,21 @@ const loadSubscriptionData = async () => {
   }
 }
 
-// Plan selection handler
 const handlePlanSelection = async (plan: any) => {
-  if (plan.price === 0) {
-    // Handle free plan
-    await setFreePlan()
-  } else {
-    // Handle paid plan
-    await createSubscription(plan)
+  subscriptionLoading.value = true
+  
+  try {
+    if (plan.price === 0) {
+      // Handle free plan
+      await setFreePlan()
+    } else {
+      // Handle paid plan
+      await createSubscription(plan)
+    }
+  } catch (error) {
+    console.error('Error handling plan selection:', error)
+  } finally {
+    subscriptionLoading.value = false
   }
 }
 
@@ -276,17 +294,28 @@ const createSubscription = async (plan: any) => {
         planType: plan.id,
         stripePriceId: plan.stripePriceId
       }
-    })
+    }) as any
     
-    // Redirect to Stripe checkout
-    window.location.href = response.checkoutUrl
+    if (response.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Subscription Created',
+        detail: `Your ${plan.name} subscription has been created successfully!`,
+        life: 5000
+      })
+      
+      // Reload subscription data
+      await loadSubscriptionData()
+    } else {
+      throw new Error('Subscription creation failed')
+    }
     
   } catch (error) {
     console.error('Subscription creation failed:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'Failed to create subscription',
+      detail: 'Failed to create subscription. Please try again.',
       life: 3000
     })
   }

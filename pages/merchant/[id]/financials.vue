@@ -45,10 +45,19 @@
         <!-- Payment Settings Card -->
         <div class="lg:col-span-2">
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 class="text-2xl font-semibold text-text-main mb-6 flex items-center gap-3">
-              <i class="pi pi-credit-card text-green-600"></i>
-              Event Pricing Configuration
-            </h2>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-semibold text-text-main flex items-center gap-3">
+                <i class="pi pi-credit-card text-green-600"></i>
+                Event Pricing Configuration
+              </h2>
+              <Button
+                label="Change Plan"
+                icon="pi pi-credit-card"
+                severity="secondary"
+                outlined
+                @click="openSubscriptionModal"
+              />
+            </div>
             
             <form @submit.prevent="savePaymentSettings" class="space-y-6">
               <!-- Seating Capacity -->
@@ -220,6 +229,8 @@
       <div v-if="!hasActiveSubscription" class="mt-8">
         <SubscriptionPlans 
           :userTypeProp="'merchant'"
+          :currentPlanId="currentSubscription?.plan_type || 'free'"
+          :loading="subscriptionLoading"
           @plan-selected="handlePlanSelection" 
         />
       </div>
@@ -227,6 +238,26 @@
       <!-- Success/Error Messages -->
       <Toast group="main" position="bottom-center" />
       <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+      
+      <!-- Subscription Plans Modal -->
+      <Dialog
+        :visible="showSubscriptionPlans"
+        @update:visible="showSubscriptionPlans = $event"
+        modal
+        header="Change Subscription Plan"
+        :style="{ width: '90vw', maxWidth: '800px' }"
+        :closable="true"
+        :dismissable-mask="true"
+      >
+        <SubscriptionPlans 
+          :userTypeProp="'merchant'"
+          :currentPlanId="currentSubscription?.plan_type || 'free'"
+          :loading="subscriptionLoading"
+          @plan-selected="handlePlanSelection" 
+        />
+      </Dialog>
+      
+
     </div>
 </template>
 
@@ -257,6 +288,8 @@ const errors = ref<Record<string, string>>({})
 const errDialog = ref(false)
 const errType = ref('')
 const errMsg = ref('')
+const showSubscriptionPlans = ref(false)
+const subscriptionLoading = ref(false)
 
 // Check subscription status
 const checkSubscriptionStatus = async () => {
@@ -371,78 +404,25 @@ const savePaymentSettings = async () => {
 }
 
 // Handle plan selection
-const handlePlanSelection = async (plan: any) => {
-  if (plan.price === 0) {
-    // Handle free plan
-    await setFreePlan()
-  } else {
-    // Handle paid plan
-    await createSubscription(plan)
-  }
-}
-
-const setFreePlan = async () => {
+const handlePlanSelection = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string }) => {
+  subscriptionLoading.value = true
+  
   try {
-    // Get the merchant ID from the route
-    const merchantId = route.params.id as string
+    // Handle all plans through the API
+    await createSubscription(plan)
     
-    // Check if subscription already exists
-    const { data: existingSubscription } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('business_id', merchantId)
-      .eq('business_type', 'merchant')
-      .single()
-
-    if (existingSubscription) {
-      // Update existing subscription
-      const { error: updateError } = await supabase
-        .from('subscriptions')
-        .update({
-          plan_type: 'free',
-          status: 'active',
-          current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
-          updated_at: new Date().toISOString()
-        } as any)
-        .eq('business_id', merchantId)
-        .eq('business_type', 'merchant')
-
-      if (updateError) {
-        throw updateError
-      }
-    } else {
-      // Create new subscription using the composable
-      const { createFreeSubscription } = useSubscription()
-      const { error: insertError } = await createFreeSubscription(merchantId, 'merchant', currentUser.value?.id || '')
-
-      if (insertError) {
-        throw insertError
-      }
-    }
-
-    toast.add({
-      severity: 'success',
-      summary: 'Plan Updated',
-      detail: 'Your plan has been updated to Free',
-      group: 'main',
-      life: 3000
-    })
-
-    await checkSubscriptionStatus()
+    // Close the modal after plan selection
+    showSubscriptionPlans.value = false
   } catch (error) {
-    console.error('Error setting free plan:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to update plan',
-      group: 'main',
-      life: 3000
-    })
+    console.error('Error handling plan selection:', error)
+  } finally {
+    subscriptionLoading.value = false
   }
 }
 
-const createSubscription = async (plan: any) => {
+
+
+const createSubscription = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string }) => {
   try {
     const response = await $fetch('/api/subscriptions/create', {
       method: 'POST',
@@ -452,9 +432,27 @@ const createSubscription = async (plan: any) => {
       }
     })
     
-    // Redirect to Stripe checkout
-    const responseData = response as { checkoutUrl: string }
-    window.location.href = responseData.checkoutUrl
+    const responseData = response as { checkoutUrl?: string; message?: string }
+    
+    // If it's a free plan, show success message and refresh
+    if (responseData.message) {
+      toast.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: responseData.message,
+        group: 'main',
+        life: 3000
+      })
+      
+      // Refresh subscription status
+      await checkSubscriptionStatus()
+      return
+    }
+    
+    // For paid plans, redirect to Stripe checkout
+    if (responseData.checkoutUrl) {
+      window.location.href = responseData.checkoutUrl
+    }
     
   } catch (error) {
     console.error('Subscription creation failed:', error)
@@ -470,6 +468,10 @@ const createSubscription = async (plan: any) => {
 
 const navigateToDashboard = () => {
   navigateTo(`/merchant/${route.params.id}/dashboard`)
+}
+
+const openSubscriptionModal = () => {
+  showSubscriptionPlans.value = true
 }
 
 // Load subscription status on mount
