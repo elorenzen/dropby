@@ -233,6 +233,33 @@ const createEvent = async () => {
   try {
     loading.value = true
     
+    // Check usage limits before creating event
+    console.log('Checking usage for merchant:', props.merchant.id)
+    
+    const usageCheck = await $fetch('/api/usage/check', {
+      method: 'POST',
+      body: {
+        businessId: props.merchant.id,
+        businessType: 'merchant',
+        usageType: 'events',
+        requiredAmount: 1
+      }
+    }) as any
+
+    console.log('Usage check response:', usageCheck)
+
+    if (!usageCheck?.allowed) {
+      console.log('Usage limit exceeded:', usageCheck)
+      toast.add({
+        severity: 'warn',
+        summary: 'Usage Limit Reached',
+        detail: usageCheck?.message || 'You have reached your event limit for this month. Please upgrade your plan to continue.',
+        group: 'main',
+        life: 5000
+      })
+      return
+    }
+    
     // Get business hours for the selected day
     const dayOfWeek = new Date(eventDate.value).getDay()
     const dayOpen = getBusinessHour(dayOfWeek, 'open')
@@ -284,6 +311,24 @@ const createEvent = async () => {
     
     if (error) {
       throw error
+    }
+
+    // Increment usage after successful event creation
+    try {
+      console.log('Incrementing usage for event creation...')
+      const incrementResponse = await $fetch('/api/usage/increment', {
+        method: 'POST',
+        body: {
+          businessId: props.merchant.id,
+          businessType: 'merchant',
+          usageType: 'events',
+          incrementAmount: 1
+        }
+      })
+      console.log('Increment response:', incrementResponse)
+    } catch (usageError) {
+      console.error('Failed to increment usage:', usageError)
+      // Don't fail the event creation if usage tracking fails
     }
 
     // Add timeline event

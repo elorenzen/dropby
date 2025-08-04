@@ -143,7 +143,7 @@ export default defineEventHandler(async (event) => {
         status: 'pending',
         stripe_customer_id: stripeCustomerId,
         created_at: new Date().toISOString()
-      })
+      } as any)
 
     if (subscriptionError) {
       console.error('Failed to create subscription record:', subscriptionError)
