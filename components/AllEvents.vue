@@ -74,6 +74,7 @@
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
+    const toast         = useToast()
     const events        = eventStore.getAllOpenEvents
     const merchants     = merchantStore.getAllMerchants
     const user          = userStore.getUser
@@ -121,31 +122,70 @@
     }
     const requestEvent = async () => {
         loading.value = true
-        let reqArr =
-            selectedEvt.value.pending_requests ?
-            selectedEvt.value.pending_requests : []
+        try {
+            // Check usage limit before allowing request
+            const usageCheck = await $fetch('/api/usage/check', {
+                method: 'POST',
+                body: {
+                    businessId: vendor.value,
+                    businessType: 'vendor',
+                    usageType: 'requests',
+                    requiredAmount: 1
+                }
+            }) as any
 
-        reqArr.push(vendor.value)
-        const updates = {
-            updated_at: new Date(),
-            pending_requests: reqArr
-        }
-        const { error } = await supabase
-            .from('events')
-            .update(updates)
-            .eq('id', selectedEvt.value.id)
-        
-        if (!error) {
-            openViewDialog.value = false
-            selectedEvt.value = ''
-            selectedMerchant.value = ''
-            snacktext.value = 'Event requested!'
-            snackbar.value = true
-        } else {
+            if (!usageCheck.allowed) {
+                toast.add({
+                    severity: 'warn',
+                    summary: 'Usage Limit Reached',
+                    detail: `You've reached your monthly limit of ${usageCheck.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
+                    life: 5000
+                })
+                return
+            }
+
+            let reqArr =
+                selectedEvt.value.pending_requests ?
+                selectedEvt.value.pending_requests : []
+
+            reqArr.push(vendor.value)
+            const updates = {
+                updated_at: new Date(),
+                pending_requests: reqArr
+            }
+            const { error } = await supabase
+                .from('events')
+                .update(updates)
+                .eq('id', selectedEvt.value.id)
+            
+            if (!error) {
+                // Increment usage after successful request
+                await $fetch('/api/usage/increment', {
+                    method: 'POST',
+                    body: {
+                        businessId: vendor.value,
+                        businessType: 'vendor',
+                        usageType: 'requests',
+                        incrementAmount: 1
+                    }
+                })
+
+                openViewDialog.value = false
+                selectedEvt.value = ''
+                selectedMerchant.value = ''
+                snacktext.value = 'Event requested!'
+                snackbar.value = true
+            } else {
+                errDialog.value = true
+                errMsg.value = error.message
+            }
+        } catch (error) {
+            console.error('Error requesting event:', error)
             errDialog.value = true
-            errMsg.value = error.message
+            errMsg.value = 'An unexpected error occurred'
+        } finally {
+            loading.value = false
         }
-        loading.value = false
     }
 </script>
 

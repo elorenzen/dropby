@@ -112,6 +112,38 @@
           </div>
         </template>
       </Card>
+
+      <!-- Usage Tracking Card -->
+      <Card class="analytics-card">
+        <template #content>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-text-muted text-sm font-medium">Event Requests</p>
+              <p class="text-3xl font-bold text-text-main">{{ usage.currentRequests }}/{{ usage.maxRequests }}</p>
+              <div class="flex items-center mt-1">
+                <ProgressBar 
+                  :value="(usage.currentRequests / usage.maxRequests) * 100" 
+                  :show-value="false"
+                  class="flex-1 mr-2"
+                  :class="usage.currentRequests >= usage.maxRequests ? 'bg-red-200' : 'bg-green-200'"
+                />
+                <span class="text-text-muted text-sm">{{ usage.remainingRequests }} left</span>
+              </div>
+              <Button 
+                v-if="usage.currentRequests >= usage.maxRequests"
+                @click="navigateToFinancials"
+                label="Upgrade Plan"
+                severity="warning"
+                size="small"
+                class="mt-2"
+              />
+            </div>
+            <div class="analytics-icon bg-orange-100 dark:bg-orange-900">
+              <i class="pi pi-send text-orange-600 dark:text-orange-400"></i>
+            </div>
+          </div>
+        </template>
+      </Card>
     </div>
 
     <!-- Main Content Grid -->
@@ -322,6 +354,13 @@ const analytics = ref({
   pendingRequests: 0,
   averageRating: 0,
   totalRatings: 0
+})
+
+// Usage tracking data
+const usage = ref({
+  currentRequests: 0,
+  maxRequests: 5,
+  remainingRequests: 5
 })
 
 // Helper function to format time ago
@@ -682,6 +721,29 @@ const loadAnalytics = async () => {
         analytics.value.averageRating = 0
         analytics.value.totalRatings = 0
       }
+    }
+
+    // Load usage data
+    try {
+      const usageCheck = await $fetch('/api/usage/check', {
+        method: 'POST',
+        body: {
+          businessId: route.params.id as string,
+          businessType: 'vendor',
+          usageType: 'requests',
+          requiredAmount: 0
+        }
+      }) as any
+
+      usage.value.currentRequests = usageCheck.currentUsage || 0
+      usage.value.maxRequests = usageCheck.usageLimit || 5
+      usage.value.remainingRequests = Math.max(0, usage.value.maxRequests - usage.value.currentRequests)
+    } catch (usageError) {
+      console.error('Error loading usage data:', usageError)
+      // Set default values if usage check fails
+      usage.value.currentRequests = 0
+      usage.value.maxRequests = 5
+      usage.value.remainingRequests = 5
     }
   } catch (error) {
     console.error('Error loading analytics:', error)

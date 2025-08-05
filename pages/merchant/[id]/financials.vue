@@ -419,35 +419,6 @@ const handlePlanSelection = async (plan: { id: string; name: string; price: numb
   }
 }
 
-const createSubscription = async (paymentData: any) => {
-  try {
-    // This function should not be called directly anymore
-    // The PaymentModal handles subscription creation
-    console.log('createSubscription called with payment data:', paymentData)
-    
-    // Refresh subscription status
-    await checkSubscriptionStatus()
-    
-    toast.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Payment completed successfully!',
-      group: 'main',
-      life: 3000
-    })
-    
-  } catch (error: any) {
-    console.error('Subscription creation failed:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to create subscription. Please try again.',
-      group: 'main',
-      life: 3000
-    })
-  }
-}
-
 const navigateToDashboard = () => {
   navigateTo(`/merchant/${route.params.id}/dashboard`)
 }

@@ -168,6 +168,27 @@ import { v4 as uuidv4 } from 'uuid'
     const requestEvent = async () => {
         loading.value = true
         try {
+            // Check usage limit before allowing request
+            const usageCheck = await $fetch('/api/usage/check', {
+                method: 'POST',
+                body: {
+                    businessId: vendor.value.id,
+                    businessType: 'vendor',
+                    usageType: 'requests',
+                    requiredAmount: 1
+                }
+            }) as any
+
+            if (!usageCheck.allowed) {
+                toast.add({
+                    severity: 'warn',
+                    summary: 'Usage Limit Reached',
+                    detail: `You've reached your monthly limit of ${usageCheck.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
+                    life: 5000
+                })
+                return
+            }
+
             let reqArr =
                 selectedEvt.value.pending_requests ?
                 selectedEvt.value.pending_requests : []
@@ -183,6 +204,17 @@ import { v4 as uuidv4 } from 'uuid'
                 .eq('id', selectedEvt.value.id)
             
             if (!error) {
+                // Increment usage after successful request
+                await $fetch('/api/usage/increment', {
+                    method: 'POST',
+                    body: {
+                        businessId: vendor.value.id,
+                        businessType: 'vendor',
+                        usageType: 'requests',
+                        incrementAmount: 1
+                    }
+                })
+
                 // Send notification to merchant
                 try {
                     await $fetch(`/api/sendEventRequestNotification?eventId=${selectedEvt.value.id}&vendorId=${vendor.value.id}&merchantId=${selectedEvt.value.merchant}`)

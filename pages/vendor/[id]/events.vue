@@ -776,6 +776,29 @@ const navigateToDashboard = () => {
 const requestEvent = async (event: Event) => {
   loadingRequest.value = event.id
   try {
+    // Check usage limit before allowing request
+    const usageCheck = await $fetch('/api/usage/check', {
+      method: 'POST',
+      body: {
+        businessId: route.params.id as string,
+        businessType: 'vendor',
+        usageType: 'requests',
+        requiredAmount: 1
+      }
+    }) as any
+    console.log('Usage check:', usageCheck)
+
+    if (!usageCheck.allowed) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Usage Limit Reached',
+        detail: `You've reached your monthly limit of ${usageCheck.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
+        group: 'main',
+        life: 5000
+      })
+      return
+    }
+
     // Add this vendor to the pending_requests array
     const currentRequests = event.pending_requests || []
     const updatedRequests = [...currentRequests, route.params.id as string]
@@ -789,6 +812,17 @@ const requestEvent = async (event: Event) => {
       .eq('id', event.id)
     
     if (error) throw error
+
+    // Increment usage after successful request
+    await $fetch('/api/usage/increment', {
+      method: 'POST',
+      body: {
+        businessId: route.params.id as string,
+        businessType: 'vendor',
+        usageType: 'requests',
+        incrementAmount: 1
+      }
+    })
     
     // Add timeline event for event request
     await addTimelineEvent({
@@ -802,6 +836,7 @@ const requestEvent = async (event: Event) => {
       severity: 'success',
       summary: 'Request Sent',
       detail: `Request sent to ${getMerchantProp(event.merchant, 'merchant_name')}`,
+      group: 'main',
       life: 3000
     })
   } catch (error) {
@@ -810,6 +845,7 @@ const requestEvent = async (event: Event) => {
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to send request. Please try again.',
+      group: 'main',
       life: 3000
     })
   } finally {
@@ -838,6 +874,7 @@ const withdrawRequest = async (event: Event) => {
       severity: 'info',
       summary: 'Request Withdrawn',
       detail: `Request withdrawn from ${getMerchantProp(event.merchant, 'merchant_name')}`,
+      group: 'main',
       life: 3000
     })
   } catch (error) {
@@ -846,6 +883,7 @@ const withdrawRequest = async (event: Event) => {
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to withdraw request. Please try again.',
+      group: 'main',
       life: 3000
     })
   } finally {
