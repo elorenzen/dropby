@@ -25,7 +25,7 @@
 
     <!-- Analytics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <Card class="analytics-card">
+      <Card class="analytics-card clickable-card" @click="navigateToEvents">
         <template #content>
           <div class="flex items-center justify-between">
             <div>
@@ -35,14 +35,6 @@
                 <i class="pi pi-arrow-up mr-1"></i>
                 +{{ analytics.eventsGrowth }}% this month
               </p>
-              <Button 
-                @click="navigateToEvents"
-                label="View All Events"
-                severity="secondary"
-                outlined
-                size="small"
-                class="mt-2"
-              />
             </div>
             <div class="analytics-icon bg-blue-100 dark:bg-blue-900">
               <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
@@ -51,7 +43,7 @@
         </template>
       </Card>
 
-      <Card class="analytics-card">
+      <Card class="analytics-card clickable-card" @click="navigateToEvents">
         <template #content>
           <div class="flex items-center justify-between">
             <div>
@@ -69,7 +61,7 @@
         </template>
       </Card>
 
-      <Card class="analytics-card">
+      <Card class="analytics-card clickable-card" @click="navigateToEvents">
         <template #content>
           <div class="flex items-center justify-between">
             <div>
@@ -79,14 +71,6 @@
                 <i class="pi pi-clock mr-1"></i>
                 Awaiting approval
               </p>
-              <Button 
-                @click="navigateToEvents"
-                label="View Events"
-                severity="secondary"
-                outlined
-                size="small"
-                class="mt-2"
-              />
             </div>
             <div class="analytics-icon bg-yellow-100 dark:bg-yellow-900">
               <i class="pi pi-clock text-yellow-600 dark:text-yellow-400"></i>
@@ -95,7 +79,7 @@
         </template>
       </Card>
 
-      <Card class="analytics-card">
+      <Card class="analytics-card clickable-card" @click="navigateToRatings">
         <template #content>
           <div class="flex items-center justify-between">
             <div>
@@ -113,8 +97,8 @@
         </template>
       </Card>
 
-      <!-- Usage Tracking Card -->
-      <Card class="analytics-card">
+      <!-- Usage Tracking Card - Only show for non-premium plans -->
+      <Card v-if="!isPremiumPlan" class="analytics-card">
         <template #content>
           <div class="flex items-center justify-between">
             <div>
@@ -363,6 +347,16 @@ const usage = ref({
   remainingRequests: 5
 })
 
+// Subscription data
+const subscription = ref<any>(null)
+
+// Computed property to determine if plan is premium (unlimited requests)
+const isPremiumPlan = computed(() => {
+  if (!subscription.value) return false
+  const premiumPlans = ['pro', 'premium', 'enterprise']
+  return premiumPlans.includes(subscription.value.planType)
+})
+
 // Helper function to format time ago
 const getTimeAgo = (date: Date): string => {
   const now = new Date()
@@ -576,6 +570,10 @@ const navigateToEvents = () => {
   navigateTo(`/vendor/${route.params.id}/events`)
 }
 
+const navigateToRatings = () => {
+  navigateTo(`/vendor/${route.params.id}/ratings-and-reviews`)
+}
+
 const goToToday = () => {
   // Implementation for going to today's date in calendar
   console.log('Go to today')
@@ -723,7 +721,7 @@ const loadAnalytics = async () => {
       }
     }
 
-    // Load usage data
+    // Load usage data and subscription info
     try {
       const usageCheck = await $fetch('/api/usage/check', {
         method: 'POST',
@@ -738,16 +736,24 @@ const loadAnalytics = async () => {
       usage.value.currentRequests = usageCheck.currentUsage || 0
       usage.value.maxRequests = usageCheck.usageLimit || 5
       usage.value.remainingRequests = Math.max(0, usage.value.maxRequests - usage.value.currentRequests)
+
+      subscription.value = usageCheck.subscription || null
     } catch (usageError) {
       console.error('Error loading usage data:', usageError)
       // Set default values if usage check fails
       usage.value.currentRequests = 0
       usage.value.maxRequests = 5
       usage.value.remainingRequests = 5
+      subscription.value = null
     }
   } catch (error) {
     console.error('Error loading analytics:', error)
   }
+}
+
+// Navigation methods
+const navigateToFinancials = () => {
+  navigateTo(`/vendor/${route.params.id}/financials`)
 }
 
 // Debug timeline data
@@ -812,5 +818,13 @@ onMounted(async () => {
 
 .activity-icon {
   @apply w-8 h-8 rounded-full flex items-center justify-center text-sm;
+}
+
+.clickable-card {
+  @apply cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg;
+}
+
+.clickable-card:hover {
+  @apply border-blue-500/50;
 }
 </style>
