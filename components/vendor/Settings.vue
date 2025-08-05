@@ -1,196 +1,279 @@
 <template>
-  <div class="min-h-screen bg-background py-12 flex flex-col items-center">
-    <div class="w-full max-w-5xl bg-white/5 backdrop-blur rounded-3xl shadow-xl p-10 flex flex-col gap-12">
-      <Tabs value="0">
-        <TabList>
-          <Tab value="0">General Information</Tab>
-          <Tab value="1">Business Hours</Tab>
-          <Tab value="2">Menu</Tab>
-          <Tab value="3">Associated Users</Tab>
-        </TabList>
-        <TabPanels>
-          <!-- GENERAL INFORMATION SETTINGS -->
-          <TabPanel value="0">
-            <form class="flex flex-col md:flex-row gap-12 items-start w-full relative">
-              <div class="w-full md:w-1/3 flex flex-col items-center gap-6">
-                <div class="rounded-2xl overflow-hidden shadow-lg w-full mb-2">
-                  <NuxtImg :src="imageUrl" alt="Image" class="w-full object-cover" style="height: 256px;" />
-                </div>
-                <FileUpload
-                  class="my-2"
-                  mode="basic"
-                  accept="image/*"
-                  :maxFileSize="1000000"
-                  @upload="updateImage($event)"
-                  :auto="true"
-                  chooseLabel="Upload New Image"
+  <div class="min-h-screen" style="background: var(--surface-ground); color: var(--text-color);">
+    <!-- Header -->
+    <div class="border-b px-8 py-6" style="border-color: var(--surface-border);">
+      <h1 class="text-3xl font-bold mb-1" style="color: var(--text-color);">Vendor Settings</h1>
+      <p class="text-sm" style="color: var(--text-color-secondary);">Manage your business profile, hours, menu, and associated users</p>
+    </div>
+
+    <div class="flex">
+      <!-- Sidebar Navigation -->
+      <div class="w-64 border-r min-h-screen" style="border-color: var(--surface-border);">
+        <nav class="p-6">
+          <ul class="space-y-2">
+            <li v-for="(tab, index) in tabs" :key="index">
+              <button
+                @click="activeTab = index"
+                class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-left"
+                :class="activeTab === index 
+                  ? 'text-white' 
+                  : 'hover:text-white hover:bg-opacity-80'"
+                :style="activeTab === index 
+                  ? 'background: var(--primary-color); color: var(--primary-color-text);' 
+                  : 'color: var(--text-color-secondary); background: transparent;'"
+              >
+                <i :class="tab.icon" class="text-lg"></i>
+                <span class="font-medium">{{ tab.label }}</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 p-8">
+        <!-- GENERAL INFORMATION TAB -->
+        <div v-if="activeTab === 0" class="space-y-6">
+          <h2 class="text-2xl font-bold text-text-main mb-6">General Information</h2>
+          
+          <div class="flex gap-8">
+            <!-- Image Upload Section -->
+            <div class="w-1/3">
+              <div class="bg-white rounded-lg p-4 mb-4">
+                <NuxtImg 
+                  :src="imageUrl || '/placeholder-vendor.jpg'" 
+                  alt="Vendor Image" 
+                  class="w-full h-64 object-cover rounded-lg" 
                 />
-                <div v-if="uploading" class="flex justify-center mt-4">
-                  <ProgressSpinner class="p-progress-spinner-circle" />
+              </div>
+              <FileUpload
+                ref="fileUpload"
+                mode="basic"
+                accept="image/*"
+                :maxFileSize="1000000"
+                @upload="updateImage($event)"
+                :auto="true"
+                chooseLabel="Upload New Image"
+                class="hidden"
+              />
+              <div v-if="uploading" class="flex justify-center mt-4">
+                <ProgressSpinner />
+              </div>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="w-2/3 space-y-6">
+              <div class="grid grid-cols-2 gap-6">
+                <!-- Name -->
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">Name</label>
+                  <InputText 
+                    v-model="vendor.vendor_name" 
+                    class="w-full bg-background border border-surface text-text-main rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent" 
+                    placeholder="Enter vendor name"
+                  />
+                </div>
+
+                <!-- Cuisine -->
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">Cuisine</label>
+                  <MultiSelect
+                    v-model="vendor.cuisine"
+                    :options="cuisines"
+                    display="chip"
+                    filter
+                    placeholder="Select cuisine(s)"
+                    :maxSelectedLabels="3"
+                    class="w-full"
+                  />
+                </div>
+
+                <!-- Address -->
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-text-muted mb-2">Base Address</label>
+                  <div class="relative">
+                    <i class="pi pi-map-marker absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted"></i>
+                    <input
+                      ref="streetRef"
+                      class="w-full bg-background border border-surface text-text-main rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent"
+                      :placeholder="vendor.formatted_address || 'Enter address'"
+                    />
+                  </div>
+                </div>
+
+                <!-- Service Radius -->
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">Service Radius</label>
+                  <InputNumber 
+                    v-model="radius" 
+                    suffix=" mi" 
+                    class="w-full bg-background border border-surface text-text-main rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent" 
+                  />
+                </div>
+
+                <!-- Phone -->
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">Phone</label>
+                  <div class="relative">
+                    <i class="pi pi-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted"></i>
+                    <InputText 
+                      v-model="vendor.phone" 
+                      class="w-full bg-background border border-surface text-text-main rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent" 
+                      placeholder="Phone number"
+                    />
+                  </div>
+                </div>
+
+                <!-- Website -->
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">Website</label>
+                  <div class="relative">
+                    <i class="pi pi-link absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted"></i>
+                    <InputText 
+                      v-model="vendor.website" 
+                      class="w-full bg-background border border-surface text-text-main rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent" 
+                      placeholder="Website URL"
+                    />
+                  </div>
+                </div>
+
+                <!-- Instagram -->
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">Instagram</label>
+                  <div class="relative">
+                    <i class="pi pi-instagram absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted"></i>
+                    <InputText 
+                      v-model="vendor.instagram" 
+                      class="w-full bg-background border border-surface text-text-main rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent" 
+                      placeholder="Instagram handle"
+                    />
+                  </div>
+                </div>
+
+                <!-- Email -->
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">Email</label>
+                  <div class="relative">
+                    <i class="pi pi-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted"></i>
+                    <InputText 
+                      v-model="vendor.email" 
+                      class="w-full bg-background border border-surface text-text-main rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent" 
+                      placeholder="Email address"
+                    />
+                  </div>
                 </div>
               </div>
-              <div class="w-full md:w-2/3 relative flex flex-col gap-8">
-                <span class="text-3xl font-extrabold mb-2 block text-accent">Vendor Information</span>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <!-- NAME -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <InputText id="name" v-model="vendor.vendor_name" class="bg-white/10 border-none rounded-2xl px-4 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted" />
-                      <label for="name" class="text-lg text-text-muted font-semibold">Name</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- CUISINE -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <MultiSelect
-                        id="cuisine"
-                        v-model="vendor.cuisine"
-                        display="chip"
-                        :options="cuisines"
-                        filter
-                        placeholder="Select Cuisine(s)"
-                        :maxSelectedLabels="3"
-                        class="bg-white/10 border-none rounded-2xl px-2 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted"
-                      />
-                      <label for="cuisine" class="text-lg text-text-muted font-semibold">Cuisine</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- ADDRESS -->
-                  <div class="md:col-span-2">
-                    <FloatLabel variant="on">
-                      <div class="p-iconfield">
-                        <span class="p-inputicon pi pi-map-marker"></span>
-                        <input
-                          class="p-inputtext p-component p-filled w-full bg-white/10 border-none rounded-2xl px-4 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition placeholder:text-text-muted"
-                          id="address"
-                          ref="streetRef"
-                          :placeholder="vendor.formatted_address ? vendor.formatted_address : 'Enter address'"
-                        />
-                      </div>
-                      <label for="address" class="text-lg text-text-muted font-semibold">Base Address</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- RADIUS -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <InputNumber id="radius" v-model="radius" suffix=" mi" class="bg-white/10 border-none rounded-2xl px-4 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted" />
-                      <label for="radius" class="text-lg text-text-muted font-semibold">Service Radius</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- DESCRIPTION -->
-                  <div class="md:col-span-2">
-                    <FloatLabel variant="on">
-                      <Textarea id="desc" v-model="vendor.vendor_description" rows="5" class="bg-white/10 border-none rounded-2xl px-4 py-3 min-h-[3rem] text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted" />
-                      <label for="desc" class="text-lg text-text-muted font-semibold">Description</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- PHONE -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <IconField>
-                        <InputIcon class="pi pi-phone" />
-                        <InputText id="phone" v-model="vendor.phone" placeholder="Phone" class="bg-white/10 border-none rounded-2xl px-4 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted" />
-                      </IconField>
-                      <label for="phone" class="text-lg text-text-muted font-semibold">Phone</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- WEBSITE -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <IconField>
-                        <InputIcon class="pi pi-link" />
-                        <InputText id="website" v-model="vendor.website" placeholder="Website" class="bg-white/10 border-none rounded-2xl px-4 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted" />
-                      </IconField>
-                      <label for="website" class="text-lg text-text-muted font-semibold">Website</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- INSTAGRAM -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <IconField>
-                        <InputIcon class="pi pi-instagram" />
-                        <InputText id="ig" v-model="vendor.instagram" placeholder="Instagram" class="bg-white/10 border-none rounded-2xl px-4 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted" />
-                      </IconField>
-                      <label for="ig" class="text-lg text-text-muted font-semibold">Instagram</label>
-                    </FloatLabel>
-                  </div>
-                  <!-- EMAIL -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <IconField>
-                        <InputIcon class="pi pi-envelope" />
-                        <InputText id="email" v-model="vendor.email" placeholder="Email" class="bg-white/10 border-none rounded-2xl px-4 h-12 text-lg text-text-main focus:ring-2 focus:ring-accent shadow-none outline-none transition w-full placeholder:text-text-muted" />
-                      </IconField>
-                      <label for="email" class="text-lg text-text-muted font-semibold">Email</label>
-                    </FloatLabel>
-                  </div>
-                </div>
-                <div class="flex justify-end mt-8">
-                  <Button class="bg-gradient-to-r from-orange-400 to-accent text-background rounded-full px-10 py-3 text-lg font-bold shadow-lg hover:from-orange-300 hover:to-accent-dark transition fixed md:static bottom-8 right-8 md:bottom-auto md:right-auto w-full md:w-auto z-10" size="large" type="button" label="Save Edits" @click="saveEdits" :loading="loading"></Button>
-                </div>
+
+              <!-- Description -->
+              <div>
+                <label class="block text-sm font-medium text-text-muted mb-2">Description</label>
+                <Textarea 
+                  v-model="vendor.vendor_description" 
+                  rows="5" 
+                  class="w-full bg-background border border-surface text-text-main rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-accent" 
+                  placeholder="Describe your business..."
+                />
               </div>
-            </form>
-          </TabPanel>
-          <!-- BUSINESS HOURS SETTINGS -->
-          <TabPanel value="1">
-            <Fluid v-for="(day, index) in businessHours" :key="index">
-              <div class="grid grid-cols-3 gap-8">
+
+              <!-- Save Button -->
+              <div class="flex justify-end pt-6">
+                <Button 
+                  class="bg-accent text-background border-accent hover:bg-accent-dark px-8 py-3 font-semibold rounded-lg" 
+                  label="Update Profile" 
+                  @click="saveEdits" 
+                  :loading="loading"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUSINESS HOURS TAB -->
+        <div v-if="activeTab === 1" class="space-y-6">
+          <h2 class="text-2xl font-bold text-text-main mb-6">Business Hours</h2>
+          
+          <div class="space-y-4">
+            <div v-for="(day, index) in businessHours" :key="index" class="border-b border-surface-light pb-4 last:border-b-0">
+              <div class="grid grid-cols-3 gap-6 items-center">
                 <div class="text-lg font-semibold text-text-main">{{ day.name }}</div>
                 <div>
-                  <FloatLabel variant="on">
-                    <DatePicker :id="`open-${index}`" v-model="day.open" hour-format="12" timeOnly fluid @blur="setFormattedOpen($event, index)" />
-                    <Label :for="`open-${index}`" class="text-lg text-text-muted font-semibold">{{ day.name }} Open</Label>
-                  </FloatLabel>
+                  <label class="block text-sm font-medium text-text-muted mb-2">{{ day.name }} Open</label>
+                  <Calendar 
+                    v-model="day.open" 
+                    timeOnly 
+                    hourFormat="12"
+                    class="w-full"
+                    :showIcon="false"
+                  />
                 </div>
                 <div>
-                  <FloatLabel variant="on">
-                    <DatePicker :id="`close-${index}`" v-model="day.close" hour-format="12" timeOnly fluid @blur="setFormattedClose($event, index)" />
-                    <Label :for="`close-${index}`" class="text-lg text-text-muted font-semibold">{{ day.name }} Close</Label>
-                  </FloatLabel>
+                  <label class="block text-sm font-medium text-text-muted mb-2">{{ day.name }} Close</label>
+                  <Calendar 
+                    v-model="day.close" 
+                    timeOnly 
+                    hourFormat="12"
+                    class="w-full"
+                    :showIcon="false"
+                  />
                 </div>
               </div>
-              <Divider />
-            </Fluid>
-          </TabPanel>
-          <TabPanel value="2">
-            <MenuTable />
-          </TabPanel>
-          <TabPanel value="3">
-            <AssociatedUsers />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
-      <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
-      <Toast group="main" position="bottom-center" @close="onClose" />
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-6">
+            <Button 
+              class="bg-accent text-background border-accent hover:bg-accent-dark px-8 py-3 font-semibold rounded-lg" 
+              label="Save Hours" 
+              @click="saveEdits" 
+              :loading="loading"
+            />
+          </div>
+        </div>
+
+        <!-- MENU TAB -->
+        <div v-if="activeTab === 2" class="space-y-6">
+          <h2 class="text-2xl font-bold text-text-main mb-6">Menu Management</h2>
+          <MenuTable />
+        </div>
+
+        <!-- USER MANAGEMENT TAB -->
+        <div v-if="activeTab === 3" class="space-y-6">
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">User Management</h2>
+          <AssociatedUsers />
+        </div>
+      </div>
     </div>
+
+    <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+    <Toast group="main" position="bottom-center" @close="onClose" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
-import { Loader } from '@googlemaps/js-api-loader'
-import { useToast } from 'primevue/usetoast'
+
 const toast = useToast()
-const supabase      = useSupabaseClient()
-const vendorStore   = useVendorStore()
-const userStore     = useUserStore()
-const user:any      = userStore.getUser
-const assocId       = user[`associated_${user.type}_id`]
-const vendor:any    = ref(await vendorStore.getVendorById(assocId))
+const supabase = useSupabaseClient()
+const vendorStore = useVendorStore()
+const userStore = useUserStore()
+const user: any = userStore.getUser
+const assocId = user[`associated_${user.type}_id`]
+const vendor: any = ref(await vendorStore.getVendorById(assocId))
 
-const editDialog    = ref(false)
-const uploading     = ref(false)
-const loading       = ref(false)
+const editDialog = ref(false)
+const uploading = ref(false)
+const loading = ref(false)
+const activeTab = ref(0)
 
-const errType       = ref()
-const errMsg        = ref()
-const errDialog     = ref(false)
-const imageUrl      = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
-const radius        = ref(vendor.value.service_radius ? vendor.value.service_radius : 10)
-const streetRef     = ref()
-const baseLat       = ref()
-const baseLng       = ref()
-const forattedAddr  = ref()
+const errType = ref()
+const errMsg = ref()
+const errDialog = ref(false)
+const imageUrl = ref(vendor.value.avatar_url ? vendor.value.avatar_url : '')
+const radius = ref(vendor.value.service_radius ? vendor.value.service_radius : 10)
+const streetRef = ref()
+const baseLat = ref()
+const baseLng = ref()
+const forattedAddr = ref()
 const businessHours = ref(
   vendor.value.business_hours ?
   JSON.parse(JSON.stringify(vendor.value.business_hours)) :
@@ -231,28 +314,37 @@ const businessHours = ref(
   }]
 )
 
-const cuisines    = ref([
-    'Alcohol',
-    'American',
-    'Asian fusion',
-    'Bakery',
-    'Breaksfast',
-    'Coffee',
-    'Comfort food',
-    'Dessert',
-    'Healthy food',
-    'Ice cream',
-    'Italian',
-    'Latin',
-    'Mediterranean',
-    'Mexican',
-    'Pizza',
-    'Sandwich',
-    'Seafood',
-    'Snacks',
-    'Tacos',
-    'Vegan'
+const cuisines = ref([
+  'Alcohol',
+  'American',
+  'Asian fusion',
+  'Bakery',
+  'Breaksfast',
+  'Coffee',
+  'Comfort food',
+  'Dessert',
+  'Healthy food',
+  'Ice cream',
+  'Italian',
+  'Latin',
+  'Mediterranean',
+  'Mexican',
+  'Pizza',
+  'Sandwich',
+  'Seafood',
+  'Snacks',
+  'Tacos',
+  'Vegan'
 ])
+
+// Tab configuration
+const tabs = [
+  { label: 'General Information', icon: 'pi pi-info-circle' },
+  { label: 'Business Hours', icon: 'pi pi-clock' },
+  { label: 'Menu', icon: 'pi pi-list' },
+  { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
+  { label: 'User Management', icon: 'pi pi-users' }
+]
 
 onMounted(async () => {
   await sdkInit()
@@ -261,36 +353,52 @@ onMounted(async () => {
 const sdkInit = async () => {
   //initialize google sdk
   const config = useRuntimeConfig()
-  const loader = new Loader({
-    apiKey: config.public.gMapKey,
-    version: 'beta',
-    libraries: ['places'],
-  })
-  loader.load().then((google) => {
-    const options = {
-      componentRestrictions: { country: 'us' },
-      fields: ['geometry/location', 'name', 'formatted_address', 'types'],
-      strictBounds: false,
-    }
-    // attaches it to the input field with this ref
-    const autocomplete = new google.maps.places.Autocomplete(
-      streetRef.value,
-      options
-    )
-    autocomplete.addListener('place_changed', () => {
-      const placeResponse = autocomplete.getPlace()
-      baseLat.value = placeResponse.geometry.location.lat()
-      baseLng.value = placeResponse.geometry.location.lng()
-
-      forattedAddr.value = placeResponse
-        ? placeResponse.formatted_address
-        : ''
+  
+  try {
+    // Dynamic import to avoid SSR issues
+    const { Loader } = await import('@googlemaps/js-api-loader')
+    
+    const loader = new Loader({
+      apiKey: config.public.gMapKey,
+      version: 'beta',
+      libraries: ['places'],
     })
-  })
+    
+    loader.load().then((google: any) => {
+      const options = {
+        componentRestrictions: { country: 'us' },
+        fields: ['geometry/location', 'name', 'formatted_address', 'types'],
+        strictBounds: false,
+      }
+      
+      if (streetRef.value) {
+        const autocomplete = new google.maps.places.Autocomplete(
+          streetRef.value,
+          options
+        )
+        autocomplete.addListener('place_changed', () => {
+          const placeResponse = autocomplete.getPlace()
+          if (placeResponse.geometry?.location) {
+            baseLat.value = placeResponse.geometry.location.lat()
+            baseLng.value = placeResponse.geometry.location.lng()
+          }
+
+          forattedAddr.value = placeResponse
+            ? placeResponse.formatted_address
+            : ''
+        })
+      }
+    })
+  } catch (error) {
+    console.warn('Google Maps API not available:', error)
+  }
 }
 
 const saveEdits = async () => {
+  if (!vendor.value) return
+  
   loading.value = true
+  
   const updates = {
     updated_at: new Date(),
     vendor_name: vendor.value.vendor_name,
@@ -307,15 +415,20 @@ const saveEdits = async () => {
     formatted_address: forattedAddr.value
   }
 
-  const { error } = await supabase.from('vendors').update(updates).eq('id', vendor.value.id)
+  const { error } = await supabase
+    .from('vendors')
+    .update(updates)
+    .eq('id', vendor.value.id)
+    
   if (!error) {
-      editDialog.value = false
-      toast.add({ severity: 'success', summary: 'Success', detail: 'Information Updated!', group: 'main', life: 6000 })
+    editDialog.value = false
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Information Updated!', group: 'main', life: 6000 })
   } else {
     errType.value = "Settings Update(s)"
     errMsg.value = error.message
     errDialog.value = true
   }
+  
   loading.value = false
 }
 
@@ -327,13 +440,97 @@ const setFormattedClose = (e: any, i: any) => {
 }
 
 const updateImage = async (e: any) => {
-    uploading.value = true
-    const file = e.files[0]
+  uploading.value = true
+  const file = e.files[0]
 
-    if (file) {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${v4()}.${fileExt}`
-        const filePath = `${fileName}`
-    }
+  if (file) {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${v4()}.${fileExt}`
+    const filePath = `${fileName}`
+  }
+}
+
+const onClose = () => {
+  // Toast close handler
 }
 </script>
+
+<style scoped>
+:deep(.p-calendar) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-calendar input) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-multiselect) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-multiselect-label) {
+  color: var(--text-color) !important;
+}
+
+:deep(.p-multiselect-trigger) {
+  color: var(--text-color-secondary) !important;
+}
+
+:deep(.p-inputnumber) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-inputnumber-input) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-dropdown) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-dropdown-label) {
+  color: var(--text-color) !important;
+}
+
+:deep(.p-dropdown-trigger) {
+  color: var(--text-color-secondary) !important;
+}
+
+:deep(.p-fileupload) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+}
+
+:deep(.p-fileupload-choose) {
+  background: var(--surface-overlay) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-fileupload-choose:hover) {
+  background: var(--surface-section) !important;
+}
+
+:deep(.p-toast) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+}
+
+:deep(.p-toast-message) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+</style>

@@ -1,416 +1,394 @@
 <template>
-  <div class="min-h-screen bg-background py-12 flex flex-col items-center">
-    <div class="w-full max-w-6xl">
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-text-main mb-2">Merchant Settings</h1>
-        <p class="text-text-muted">Manage your business profile, hours, payments, and compliance</p>
+  <div class="min-h-screen" style="background: var(--surface-ground); color: var(--text-color);">
+    <!-- Header -->
+    <div class="border-b px-8 py-6" style="border-color: var(--surface-border);">
+      <h1 class="text-3xl font-bold mb-1" style="color: var(--text-color);">Merchant Settings</h1>
+      <p class="text-sm" style="color: var(--text-color-secondary);">Manage your business profile, hours, payments, and compliance</p>
+    </div>
+
+    <div class="flex">
+      <!-- Sidebar Navigation -->
+      <div class="w-64 border-r min-h-screen" style="border-color: var(--surface-border);">
+        <nav class="p-6">
+          <ul class="space-y-2">
+            <li v-for="(tab, index) in tabs" :key="index">
+              <button
+                @click="activeTab = index"
+                class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-left"
+                :class="activeTab === index 
+                  ? 'text-white' 
+                  : 'hover:text-white hover:bg-opacity-80'"
+                :style="activeTab === index 
+                  ? 'background: var(--primary-color); color: var(--primary-color-text);' 
+                  : 'color: var(--text-color-secondary); background: transparent;'"
+              >
+                <i :class="tab.icon" class="text-lg"></i>
+                <span class="font-medium">{{ tab.label }}</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
 
-      <!-- Tab Navigation -->
-      <Tabs value="0" class="w-full">
-        <TabList class="flex space-x-1 rounded-lg p-1 mb-8">
-          <Tab 
-            v-for="(tab, index) in tabs" 
-            :key="index"
-            :value="String(index)"
-            class="flex-1 px-4 py-3 text-center rounded-md transition-all duration-200"
-            :class="activeTab === index 
-              ? 'bg-accent text-background font-semibold shadow-sm' 
-              : 'text-text-muted hover:text-text-main hover:bg-surface-light'"
-          >
-            <div class="flex items-center justify-center space-x-2">
-              <i :class="tab.icon" class="text-lg"></i>
-              <span class="hidden sm:inline">{{ tab.label }}</span>
+      <!-- Main Content -->
+      <div class="flex-1 p-8">
+        <!-- GENERAL INFORMATION TAB -->
+        <div v-if="activeTab === 0" class="space-y-6">
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">General Information</h2>
+          
+          <div class="flex gap-8">
+            <!-- Image Upload Section -->
+            <div class="w-1/3">
+              <div class="bg-white rounded-lg p-4 mb-4">
+                <NuxtImg 
+                  :src="imageUrl || '/placeholder-business.jpg'" 
+                  alt="Business Image" 
+                  class="w-full h-64 object-cover rounded-lg" 
+                />
+              </div>
+              <FileUpload
+                ref="fileUpload"
+                mode="basic"
+                accept="image/*"
+                :maxFileSize="1000000"
+                @upload="updateImage($event)"
+                :auto="true"
+                chooseLabel="Upload New Image"
+                class="hidden"
+              />
+              <div v-if="uploading" class="flex justify-center mt-4">
+                <ProgressSpinner />
+              </div>
             </div>
-          </Tab>
-        </TabList>
 
-        <TabPanels style="background-color: transparent;">
-          <!-- GENERAL INFORMATION TAB -->
-          <TabPanel value="0" class="space-y-6">
-            <div class="rounded-xl p-8 shadow-sm">
-              <h2 class="text-2xl font-bold text-text-main mb-6">General Information</h2>
-              
-              <form class="flex flex-col lg:flex-row gap-8 items-start w-full">
-                <!-- Image Upload Section -->
-                <div class="w-full lg:w-1/3 flex flex-col items-center">
-                  <div class="rounded-2xl overflow-hidden shadow-lg w-full mb-6 bg-surface-light">
-                    <NuxtImg 
-                      :src="imageUrl || '/placeholder-business.jpg'" 
-                      alt="Business Image" 
-                      class="w-full object-cover" 
-                      style="height: 256px;" 
-                    />
-                  </div>
-                  <FileUpload
-                    class="my-2"
-                    mode="basic"
-                    accept="image/*"
-                    :maxFileSize="1000000"
-                    @upload="updateImage($event)"
-                    :auto="true"
-                    chooseLabel="Upload New Image"
+            <!-- Form Fields -->
+            <div class="w-2/3 space-y-6">
+              <div class="grid grid-cols-2 gap-6">
+                <!-- Business Name -->
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Business Name</label>
+                  <InputText 
+                    v-model="merchant.merchant_name" 
+                    class="w-full rounded-lg px-4 py-3 focus:ring-2" 
+                    style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                    placeholder="Enter business name"
                   />
-                  <div v-if="uploading" class="flex justify-center mt-4">
-                    <ProgressSpinner class="p-progress-spinner-circle" />
-                  </div>
                 </div>
 
-                <!-- Form Fields -->
-                <div class="w-full lg:w-2/3 space-y-6">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Business Name -->
-                    <div>
-                      <FloatLabel variant="on">
-                        <InputText 
-                          id="name" 
-                          v-model="merchant.merchant_name" 
-                          class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" 
-                        />
-                        <label for="name" class="text-lg text-text-muted font-semibold">Business Name</label>
-                      </FloatLabel>
-                    </div>
-
-                    <!-- Address -->
-                    <div>
-                      <FloatLabel variant="on">
-                        <div class="p-iconfield">
-                          <span class="p-inputicon pi pi-map-marker"></span>
-                          <input
-                            class="p-inputtext p-component p-filled w-full bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition"
-                            id="address"
-                            ref="streetRef"
-                            :placeholder="merchant.formatted_address || 'Enter address'"
-                          />
-                        </div>
-                        <label for="address" class="text-lg text-text-muted font-semibold">Location Address</label>
-                      </FloatLabel>
-                    </div>
-
-                    <!-- Phone -->
-                    <div>
-                      <FloatLabel variant="on">
-                        <IconField>
-                          <InputIcon class="pi pi-phone" />
-                          <InputText 
-                            id="phone" 
-                            v-model="merchant.phone" 
-                            placeholder="Phone" 
-                            class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" 
-                          />
-                        </IconField>
-                        <label for="phone" class="text-lg text-text-muted font-semibold">Phone</label>
-                      </FloatLabel>
-                    </div>
-
-                    <!-- Email -->
-                    <div>
-                      <FloatLabel variant="on">
-                        <IconField>
-                          <InputIcon class="pi pi-envelope" />
-                          <InputText 
-                            id="email" 
-                            v-model="merchant.email" 
-                            placeholder="Email" 
-                            class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" 
-                          />
-                        </IconField>
-                        <label for="email" class="text-lg text-text-muted font-semibold">Email</label>
-                      </FloatLabel>
-                    </div>
-
-                    <!-- Website -->
-                    <div>
-                      <FloatLabel variant="on">
-                        <IconField>
-                          <InputIcon class="pi pi-link" />
-                          <InputText 
-                            id="website" 
-                            v-model="merchant.website" 
-                            placeholder="Website" 
-                            class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" 
-                          />
-                        </IconField>
-                        <label for="website" class="text-lg text-text-muted font-semibold">Website</label>
-                      </FloatLabel>
-                    </div>
-
-                    <!-- Instagram -->
-                    <div>
-                      <FloatLabel variant="on">
-                        <IconField>
-                          <InputIcon class="pi pi-instagram" />
-                          <InputText 
-                            id="ig" 
-                            v-model="merchant.instagram" 
-                            placeholder="Instagram" 
-                            class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" 
-                          />
-                        </IconField>
-                        <label for="ig" class="text-lg text-text-muted font-semibold">Instagram</label>
-                      </FloatLabel>
-                    </div>
-                  </div>
-
-                  <!-- Description -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <Textarea 
-                        id="desc" 
-                        v-model="merchant.merchant_description" 
-                        rows="4" 
-                        class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" 
-                      />
-                      <label for="desc" class="text-lg text-text-muted font-semibold">Business Description</label>
-                    </FloatLabel>
-                  </div>
-
-                  <!-- Vendor Notes -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <Textarea 
-                        id="notes" 
-                        v-model="merchant.notes" 
-                        rows="4" 
-                        class="bg-background border border-surface rounded-lg px-4 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full" 
-                      />
-                      <label for="notes" class="text-lg text-text-muted font-semibold">Directions/Notes for Vendors</label>
-                    </FloatLabel>
-                  </div>
-
-                  <!-- Preferred Vendors -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <MultiSelect
-                        id="vendors"
-                        v-model="merchant.preferred_vendors"
-                        display="chip"
-                        optionLabel="vendor_name"
-                        :options="vendors"
-                        filter
-                        :maxSelectedLabels="3"
-                        class="bg-background border border-surface rounded-lg px-2 py-3 text-lg text-text-main focus:ring-2 focus:ring-accent outline-none transition w-full"
-                      />
-                      <label for="vendors" class="text-lg text-text-muted font-semibold">Preferred Vendor(s)</label>
-                    </FloatLabel>
-                  </div>
-
-                  <!-- Save Button -->
-                  <div class="flex justify-end pt-4">
-                    <Button 
-                      class="bg-accent text-background rounded-full px-8 py-3 text-lg font-bold shadow-lg hover:bg-accent-dark transition" 
-                      size="large" 
-                      type="button" 
-                      label="Save Changes" 
-                      @click="saveEdits" 
-                      :loading="loading"
+                <!-- Address -->
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Location Address</label>
+                  <div class="relative">
+                    <i class="pi pi-map-marker absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--text-color-secondary);"></i>
+                    <input
+                      ref="streetRef"
+                      class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2"
+                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      :placeholder="merchant.formatted_address || 'Enter address'"
                     />
                   </div>
                 </div>
-              </form>
-            </div>
-          </TabPanel>
 
-          <!-- BUSINESS HOURS TAB -->
-          <TabPanel value="1" class="space-y-6">
-            <div class="rounded-xl p-8 shadow-sm">
-              <h2 class="text-2xl font-bold text-text-main mb-6">Business Hours</h2>
-              
-              <div class="space-y-4">
-                <div v-for="(day, index) in businessHours" :key="index" class="border-b border-surface-light pb-4 last:border-b-0">
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                    <div class="text-lg font-semibold text-text-main">{{ day.name }}</div>
-                    <div>
-                      <FloatLabel variant="on">
-                        <DatePicker 
-                          :id="`open-${index}`" 
-                          v-model="day.open" 
-                          hour-format="12" 
-                          timeOnly 
-                          fluid 
-                          @blur="setFormattedOpen($event, index)" 
-                        />
-                        <Label :for="`open-${index}`" class="text-lg text-text-muted font-semibold">{{ day.name }} Open</Label>
-                      </FloatLabel>
-                    </div>
-                    <div>
-                      <FloatLabel variant="on">
-                        <DatePicker 
-                          :id="`close-${index}`" 
-                          v-model="day.close" 
-                          hour-format="12" 
-                          timeOnly 
-                          fluid 
-                          @blur="setFormattedClose($event, index)" 
-                        />
-                        <Label :for="`close-${index}`" class="text-lg text-text-muted font-semibold">{{ day.name }} Close</Label>
-                      </FloatLabel>
-                    </div>
+                <!-- Phone -->
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Phone</label>
+                  <div class="relative">
+                    <i class="pi pi-phone absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--text-color-secondary);"></i>
+                    <InputText 
+                      v-model="merchant.phone" 
+                      class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
+                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      placeholder="Phone number"
+                    />
+                  </div>
+                </div>
+
+                <!-- Email -->
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Email</label>
+                  <div class="relative">
+                    <i class="pi pi-envelope absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--text-color-secondary);"></i>
+                    <InputText 
+                      v-model="merchant.email" 
+                      class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
+                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      placeholder="Email address"
+                    />
+                  </div>
+                </div>
+
+                <!-- Website -->
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Website</label>
+                  <div class="relative">
+                    <i class="pi pi-link absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--text-color-secondary);"></i>
+                    <InputText 
+                      v-model="merchant.website" 
+                      class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
+                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      placeholder="Website URL"
+                    />
+                  </div>
+                </div>
+
+                <!-- Instagram -->
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Instagram</label>
+                  <div class="relative">
+                    <i class="pi pi-instagram absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--text-color-secondary);"></i>
+                    <InputText 
+                      v-model="merchant.instagram" 
+                      class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
+                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      placeholder="Instagram handle"
+                    />
                   </div>
                 </div>
               </div>
 
+              <!-- Description -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Business Description</label>
+                <Textarea 
+                  v-model="merchant.merchant_description" 
+                  rows="4" 
+                  class="w-full rounded-lg px-4 py-3 focus:ring-2" 
+                  style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                  placeholder="Describe your business..."
+                />
+              </div>
+
+              <!-- Vendor Notes -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Directions/Notes for Vendors</label>
+                <Textarea 
+                  v-model="merchant.notes" 
+                  rows="4" 
+                  class="w-full rounded-lg px-4 py-3 focus:ring-2" 
+                  style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                  placeholder="Instructions for vendors..."
+                />
+              </div>
+
+              <!-- Preferred Vendors -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">Preferred Vendor(s)</label>
+                <MultiSelect
+                  v-model="merchant.preferred_vendors"
+                  :options="vendors"
+                  optionLabel="vendor_name"
+                  display="chip"
+                  filter
+                  :maxSelectedLabels="3"
+                  class="w-full"
+                  placeholder="Select preferred vendors"
+                />
+              </div>
+
+              <!-- Save Button -->
               <div class="flex justify-end pt-6">
                 <Button 
-                  class="bg-accent text-background rounded-full px-8 py-3 text-lg font-bold shadow-lg hover:bg-accent-dark transition" 
-                  size="large" 
-                  type="button" 
-                  label="Save Hours" 
-                  @click="saveBusinessHours" 
+                  class="px-8 py-3 font-semibold rounded-lg" 
+                  style="background: var(--primary-color); border-color: var(--primary-color); color: var(--primary-color-text);"
+                  label="Update Profile" 
+                  @click="saveEdits" 
                   :loading="loading"
                 />
               </div>
             </div>
-          </TabPanel>
+          </div>
+        </div>
 
-          <!-- PAYMENTS & FINANCIAL TAB -->
-          <TabPanel value="2" class="space-y-6">
-            <div class="rounded-xl p-8 shadow-sm">
-              <h2 class="text-2xl font-bold text-text-main mb-6">Payments & Financial</h2>
-              
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Payment Methods -->
-                <div class="space-y-6">
-                  <h3 class="text-xl font-semibold text-text-main">Payment Methods</h3>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg">
-                      <div class="flex items-center space-x-3">
-                        <i class="pi pi-credit-card text-2xl text-accent"></i>
-                        <div>
-                          <p class="font-semibold text-text-main">Credit Card</p>
-                          <p class="text-sm text-text-muted">**** **** **** 1234</p>
-                        </div>
-                      </div>
-                      <Button icon="pi pi-pencil" class="p-button-text" />
-                    </div>
-                    
-                    <Button 
-                      icon="pi pi-plus" 
-                      label="Add Payment Method" 
-                      class="w-full p-button-outlined"
-                    />
-                  </div>
+        <!-- BUSINESS HOURS TAB -->
+        <div v-if="activeTab === 1" class="space-y-6">
+          <h2 class="text-2xl font-bold text-text-main mb-6">Business Hours</h2>
+          
+          <div class="space-y-4">
+            <div v-for="(day, index) in businessHours" :key="index" class="border-b border-surface-light pb-4 last:border-b-0">
+              <div class="grid grid-cols-3 gap-6 items-center">
+                <div class="text-lg font-semibold text-text-main">{{ day.name }}</div>
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">{{ day.name }} Open</label>
+                  <Calendar 
+                    v-model="day.open" 
+                    timeOnly 
+                    hourFormat="12"
+                    class="w-full"
+                    :showIcon="false"
+                  />
                 </div>
-
-                <!-- Financial Summary -->
-                <div class="space-y-6">
-                  <h3 class="text-xl font-semibold text-text-main">Financial Summary</h3>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-surface-light rounded-lg p-4">
-                      <p class="text-sm text-text-muted">This Month</p>
-                      <p class="text-2xl font-bold text-text-main">$12,450</p>
-                    </div>
-                    <div class="bg-surface-light rounded-lg p-4">
-                      <p class="text-sm text-text-muted">Last Month</p>
-                      <p class="text-2xl font-bold text-text-main">$11,200</p>
-                    </div>
-                  </div>
-                  
-                  <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                      <span class="text-text-muted">Platform Fee</span>
-                      <span class="font-semibold text-text-main">5%</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="text-text-muted">Processing Fee</span>
-                      <span class="font-semibold text-text-main">2.9% + $0.30</span>
-                    </div>
-                  </div>
+                <div>
+                  <label class="block text-sm font-medium text-text-muted mb-2">{{ day.name }} Close</label>
+                  <Calendar 
+                    v-model="day.close" 
+                    timeOnly 
+                    hourFormat="12"
+                    class="w-full"
+                    :showIcon="false"
+                  />
                 </div>
               </div>
             </div>
-          </TabPanel>
+          </div>
 
-          <!-- COMPLIANCE & DOCUMENTS TAB -->
-          <TabPanel value="3" class="space-y-6">
-            <div class="rounded-xl p-8 shadow-sm">
-              <h2 class="text-2xl font-bold text-text-main mb-6">Compliance & Documents</h2>
-              
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Business Documents -->
-                <div class="space-y-6">
-                  <h3 class="text-xl font-semibold text-text-main">Business Documents</h3>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg">
-                      <div class="flex items-center space-x-3">
-                        <i class="pi pi-file-pdf text-2xl text-red-500"></i>
-                        <div>
-                          <p class="font-semibold text-text-main">Business License</p>
-                          <p class="text-sm text-text-muted">Uploaded 2 months ago</p>
-                        </div>
-                      </div>
-                      <div class="flex space-x-2">
-                        <Button icon="pi pi-eye" class="p-button-text" />
-                        <Button icon="pi pi-download" class="p-button-text" />
-                      </div>
+          <div class="flex justify-end pt-6">
+            <Button 
+              class="bg-accent text-background border-accent hover:bg-accent-dark px-8 py-3 font-semibold rounded-lg" 
+              label="Save Hours" 
+              @click="saveBusinessHours" 
+              :loading="loading"
+            />
+          </div>
+        </div>
+
+        <!-- PAYMENTS & FINANCIAL TAB -->
+        <div v-if="activeTab === 2" class="space-y-6">
+          <h2 class="text-2xl font-bold text-text-main mb-6">Payments & Financial</h2>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Payment Methods -->
+            <div class="space-y-6">
+              <h3 class="text-xl font-semibold text-text-main">Payment Methods</h3>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg bg-surface-light">
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-credit-card text-2xl text-accent"></i>
+                    <div>
+                      <p class="font-semibold text-text-main">Credit Card</p>
+                      <p class="text-sm text-text-muted">**** **** **** 1234</p>
                     </div>
-                    
-                    <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg">
-                      <div class="flex items-center space-x-3">
-                        <i class="pi pi-file-pdf text-2xl text-red-500"></i>
-                        <div>
-                          <p class="font-semibold text-text-main">Health Permit</p>
-                          <p class="text-sm text-text-muted">Uploaded 1 month ago</p>
-                        </div>
-                      </div>
-                      <div class="flex space-x-2">
-                        <Button icon="pi pi-eye" class="p-button-text" />
-                        <Button icon="pi pi-download" class="p-button-text" />
-                      </div>
-                    </div>
-                    
-                    <FileUpload
-                      mode="basic"
-                      accept=".pdf,.doc,.docx"
-                      :maxFileSize="5000000"
-                      chooseLabel="Upload Document"
-                      class="w-full"
-                    />
                   </div>
+                  <Button icon="pi pi-pencil" class="p-button-text text-text-muted" />
                 </div>
+                
+                <Button 
+                  icon="pi pi-plus" 
+                  label="Add Payment Method" 
+                  class="w-full p-button-outlined border-surface text-text-muted"
+                />
+              </div>
+            </div>
 
-                <!-- Compliance Status -->
-                <div class="space-y-6">
-                  <h3 class="text-xl font-semibold text-text-main">Compliance Status</h3>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 border border-green-200 bg-green-50 rounded-lg">
-                      <div class="flex items-center space-x-3">
-                        <i class="pi pi-check-circle text-2xl text-green-600"></i>
-                        <div>
-                          <p class="font-semibold text-text-main">Business License</p>
-                          <p class="text-sm text-green-600">Valid until Dec 2024</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-4 border border-green-200 bg-green-50 rounded-lg">
-                      <div class="flex items-center space-x-3">
-                        <i class="pi pi-check-circle text-2xl text-green-600"></i>
-                        <div>
-                          <p class="font-semibold text-text-main">Health Permit</p>
-                          <p class="text-sm text-green-600">Valid until Mar 2025</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
-                      <div class="flex items-center space-x-3">
-                        <i class="pi pi-exclamation-triangle text-2xl text-yellow-600"></i>
-                        <div>
-                          <p class="font-semibold text-text-main">Insurance Certificate</p>
-                          <p class="text-sm text-yellow-600">Expires in 30 days</p>
-                        </div>
-                      </div>
-                      <Button label="Renew" class="p-button-sm p-button-warning" />
-                    </div>
-                  </div>
+            <!-- Financial Summary -->
+            <div class="space-y-6">
+              <h3 class="text-xl font-semibold text-text-main">Financial Summary</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-surface-light rounded-lg p-4">
+                  <p class="text-sm text-text-muted">This Month</p>
+                  <p class="text-2xl font-bold text-text-main">$12,450</p>
+                </div>
+                <div class="bg-surface-light rounded-lg p-4">
+                  <p class="text-sm text-text-muted">Last Month</p>
+                  <p class="text-2xl font-bold text-text-main">$11,200</p>
+                </div>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-text-muted">Platform Fee</span>
+                  <span class="font-semibold text-text-main">5%</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-text-muted">Processing Fee</span>
+                  <span class="font-semibold text-text-main">2.9% + $0.30</span>
                 </div>
               </div>
             </div>
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+          </div>
+        </div>
+
+        <!-- COMPLIANCE & DOCUMENTS TAB -->
+        <div v-if="activeTab === 3" class="space-y-6">
+          <h2 class="text-2xl font-bold text-text-main mb-6">Compliance & Documents</h2>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Business Documents -->
+            <div class="space-y-6">
+              <h3 class="text-xl font-semibold text-text-main">Business Documents</h3>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg bg-surface-light">
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-file-pdf text-2xl text-red-500"></i>
+                    <div>
+                      <p class="font-semibold text-text-main">Business License</p>
+                      <p class="text-sm text-text-muted">Uploaded 2 months ago</p>
+                    </div>
+                  </div>
+                  <div class="flex space-x-2">
+                    <Button icon="pi pi-eye" class="p-button-text text-text-muted" />
+                    <Button icon="pi pi-download" class="p-button-text text-text-muted" />
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg bg-surface-light">
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-file-pdf text-2xl text-red-500"></i>
+                    <div>
+                      <p class="font-semibold text-text-main">Health Permit</p>
+                      <p class="text-sm text-text-muted">Uploaded 1 month ago</p>
+                    </div>
+                  </div>
+                  <div class="flex space-x-2">
+                    <Button icon="pi pi-eye" class="p-button-text text-text-muted" />
+                    <Button icon="pi pi-download" class="p-button-text text-text-muted" />
+                  </div>
+                </div>
+                
+                <FileUpload
+                  mode="basic"
+                  accept=".pdf,.doc,.docx"
+                  :maxFileSize="5000000"
+                  chooseLabel="Upload Document"
+                  class="w-full"
+                />
+              </div>
+            </div>
+
+            <!-- Compliance Status -->
+            <div class="space-y-6">
+              <h3 class="text-xl font-semibold text-text-main">Compliance Status</h3>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 border border-green-200 bg-green-50 rounded-lg">
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-check-circle text-2xl text-green-600"></i>
+                    <div>
+                      <p class="font-semibold text-text-main">Business License</p>
+                      <p class="text-sm text-green-600">Valid until Dec 2024</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 border border-green-200 bg-green-50 rounded-lg">
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-check-circle text-2xl text-green-600"></i>
+                    <div>
+                      <p class="font-semibold text-text-main">Health Permit</p>
+                      <p class="text-sm text-green-600">Valid until Mar 2025</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-exclamation-triangle text-2xl text-yellow-600"></i>
+                    <div>
+                      <p class="font-semibold text-text-main">Insurance Certificate</p>
+                      <p class="text-sm text-yellow-600">Expires in 30 days</p>
+                    </div>
+                  </div>
+                  <Button label="Renew" class="p-button-sm p-button-warning" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- USER MANAGEMENT TAB -->
+        <div v-if="activeTab === 4" class="space-y-6">
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">User Management</h2>
+          <AssociatedUsers />
+        </div>
+      </div>
     </div>
 
     <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
@@ -462,7 +440,8 @@ const tabs = [
   { label: 'General Information', icon: 'pi pi-info-circle' },
   { label: 'Business Hours', icon: 'pi pi-clock' },
   { label: 'Payments & Financial', icon: 'pi pi-credit-card' },
-  { label: 'Compliance & Documents', icon: 'pi pi-shield-check' }
+  { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
+  { label: 'User Management', icon: 'pi pi-users' }
 ]
 
 // Google Maps initialization
@@ -643,7 +622,69 @@ const onClose = () => {
 </script>
 
 <style scoped>
-:deep(.p-tabpanel) {
-  background: transparent !important;
+:deep(.p-calendar) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-calendar input) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-multiselect) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-multiselect-label) {
+  color: var(--text-color) !important;
+}
+
+:deep(.p-multiselect-trigger) {
+  color: var(--text-color-secondary) !important;
+}
+
+:deep(.p-dropdown) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-dropdown-label) {
+  color: var(--text-color) !important;
+}
+
+:deep(.p-dropdown-trigger) {
+  color: var(--text-color-secondary) !important;
+}
+
+:deep(.p-fileupload) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+}
+
+:deep(.p-fileupload-choose) {
+  background: var(--surface-overlay) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.p-fileupload-choose:hover) {
+  background: var(--surface-section) !important;
+}
+
+:deep(.p-toast) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+}
+
+:deep(.p-toast-message) {
+  background: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-color) !important;
 }
 </style>
