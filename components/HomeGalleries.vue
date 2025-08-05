@@ -31,7 +31,12 @@
                             <Rating class="mt-2" :model-value="data.average_vendor_rating" />
                         </template>
                         <template #misc>
-                            <p>{{ data.formatted_address ? data.formatted_address : 'Location not specified' }}</p>
+                            <div class="location-info">
+                                <p>{{ data.formatted_address ? data.formatted_address : 'Location not specified' }}</p>
+                                <div v-if="data.distance" class="distance-badge">
+                                    <Badge :value="`${data.distance} miles away`" severity="info" size="small" />
+                                </div>
+                            </div>
                         </template>
                     </GalleryCard>
                 </template>
@@ -68,15 +73,20 @@
                             <Rating class="mt-2" :model-value="data.average_merchant_rating" />
                         </template>
                         <template #misc>
-                            <div class="cuisine-badges">
-                                <Badge
-                                    class="mx-1 mb-1"
-                                    v-for="(cuisine, index) in data.cuisine"
-                                    :key="`${cuisine}-${index}`"
-                                    :value="cuisine"
-                                    severity="secondary"
-                                    size="small"
-                                />
+                            <div class="vendor-info">
+                                <div class="cuisine-badges">
+                                    <Badge
+                                        class="mx-1 mb-1"
+                                        v-for="(cuisine, index) in data.cuisine"
+                                        :key="`${cuisine}-${index}`"
+                                        :value="cuisine"
+                                        severity="secondary"
+                                        size="small"
+                                    />
+                                </div>
+                                <div v-if="data.specialties" class="specialties">
+                                    <p class="specialty-text">{{ data.specialties }}</p>
+                                </div>
                             </div>
                         </template>
                     </GalleryCard>
@@ -242,25 +252,6 @@ const merchantsWithDistance = computed(() => {
   })
 })
 
-// Navigation functions - show dialogs
-const viewMerchantDetails = (merchant: any) => {
-    selectedMerchant.value = merchant
-    merchantDialogVisible.value = true
-}
-
-const viewVendorDetails = (vendor: any) => {
-    selectedVendor.value = vendor
-    vendorDialogVisible.value = true
-}
-
-// Navigation functions for dashboard access
-const navigateToMerchant = (merchant: any) => {
-    navigateTo(`/merchant/${merchant.id}/dashboard`)
-}
-
-const navigateToVendor = (vendor: any) => {
-    navigateTo(`/vendor/${vendor.id}/dashboard`)
-}
 </script>
 
 <style scoped>
@@ -268,6 +259,7 @@ const navigateToVendor = (vendor: any) => {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
+    margin-bottom: 0.75rem;
 }
 
 .cuisine-badges :deep(.p-badge) {
@@ -298,15 +290,14 @@ const navigateToVendor = (vendor: any) => {
 
 .merchant-description,
 .vendor-description,
-.vendor-cuisine {
-    margin-bottom: 1.5rem;
-}
+.vendor-cuisine,
 
 .merchant-actions,
 .vendor-actions {
     display: flex;
     gap: 0.5rem;
     justify-content: flex-end;
+    margin-top: 1.5rem;
 }
 
 .section-header {

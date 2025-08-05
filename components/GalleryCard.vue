@@ -34,6 +34,11 @@
           <slot name="description" />
         </p>
       </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <slot name="actions" />
+      </div>
     </div>
   </div>
 </template>
@@ -170,7 +175,7 @@
 }
 
 .view-button {
-  flex: 1;
+  width: 100%;
 }
 
 /* Responsive adjustments */
