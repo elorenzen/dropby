@@ -12,12 +12,7 @@
           </p>
         </div>
         <div class="flex items-center gap-4">
-          <Button 
-            icon="pi pi-arrow-left" 
-            @click="navigateToDashboard"
-            outlined 
-            label="Back to Dashboard"
-          />
+          <!-- Quick action buttons can go here if needed -->
         </div>
       </div>
     </div>

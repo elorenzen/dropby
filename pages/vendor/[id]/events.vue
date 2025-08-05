@@ -12,12 +12,7 @@
           </p>
         </div>
         <div class="flex items-center gap-4">
-          <Button 
-            icon="pi pi-arrow-left" 
-            @click="navigateToDashboard"
-            outlined 
-            label="Back to Dashboard"
-          />
+          <!-- Quick action buttons can go here if needed -->
         </div>
       </div>
     </div>
@@ -679,10 +674,6 @@ const addTimelineEvent = async (timelineObj: any) => {
 }
 
 // Methods
-const navigateToDashboard = () => {
-  navigateTo(`/vendor/${route.params.id}/dashboard`)
-}
-
 const requestEvent = async (event: Event) => {
   loadingRequest.value = event.id
   try {

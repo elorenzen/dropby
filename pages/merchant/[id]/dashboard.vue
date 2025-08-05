@@ -12,12 +12,11 @@
             </p>
           </div>
           <div class="flex items-center gap-4">
-            <Menu ref="menu" :model="menuItems" :popup="true" />
             <Button 
-              icon="pi pi-bars" 
-              @click="toggleMenu"
+              icon="pi pi-arrow-left" 
+              @click="navigateToEvents"
               outlined 
-              aria-label="Menu"
+              label="View Events"
             />
           </div>
         </div>
