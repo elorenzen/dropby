@@ -452,6 +452,7 @@
       :visible="showEventDetailsDialog"
       :event="selectedEventForDetails"
       :merchant="merchant"
+      :business-type="'merchant'"
       :get-vendor-prop="getVendorProp"
       :get-vendor-cuisines="getVendorCuisines"
       :has-review="hasReview"

@@ -174,7 +174,7 @@
             </template>
             
             <template #event-content>
-              <p class="font-semibold text-text-main truncate mb-1" v-tooltip="'some shit here'">
+              <p class="font-semibold text-text-main truncate mb-1">
                 {{ getMerchantProp(event.merchant, 'merchant_name') }}
               </p>
               <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
@@ -330,11 +330,12 @@
 
     <Toast group="main" position="bottom-center" @close="onClose" />
 
-    <!-- Event Details Dialog -->
+    <!-- Past Event Details Dialog -->
     <EventDetailsCard
       :visible="showEventDetailsDialog"
       :event="selectedEventForDetails"
-      :merchant="getMerchantById(selectedEventForDetails?.merchant)"
+      :merchant="getMerchantById(selectedEventForDetails?.merchant || null)"
+      :business-type="'vendor'"
       :get-vendor-prop="getVendorProp"
       :get-vendor-cuisines="getVendorCuisines"
       :has-review="hasReview"
@@ -343,108 +344,17 @@
     />
 
     <!-- Open Event Details Dialog -->
-    <Dialog 
-      :visible="showOpenEventDetailsDialog" 
+    <EventDetailsCard
+      :visible="showOpenEventDetailsDialog"
+      :event="selectedOpenEventForDetails"
+      :merchant="getMerchantById(selectedOpenEventForDetails?.merchant || null)"
+      :business-type="'vendor'"
+      :get-vendor-prop="getVendorProp"
+      :get-vendor-cuisines="getVendorCuisines"
+      :has-review="hasReview"
       @update:visible="showOpenEventDetailsDialog = $event"
-      modal 
-      :header="`Event Details - ${selectedOpenEventForDetails?.merchant ? getMerchantProp(selectedOpenEventForDetails.merchant, 'merchant_name') : 'Unknown Merchant'}`" 
-      :style="{ width: '50rem' }"
-    >
-      <div v-if="selectedOpenEventForDetails" class="space-y-6">
-        <!-- Event Information -->
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          <h3 class="text-lg font-semibold text-text-main mb-3">Event Information</h3>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-sm font-medium text-text-muted">Date</p>
-              <p class="text-text-main">{{ new Date(selectedOpenEventForDetails.start).toLocaleDateString() }}</p>
-            </div>
-            <div>
-              <p class="text-sm font-medium text-text-muted">Time</p>
-              <p class="text-text-main">{{ new Date(selectedOpenEventForDetails.start).toLocaleTimeString() }} - {{ new Date(selectedOpenEventForDetails.end).toLocaleTimeString() }}</p>
-            </div>
-            <div class="col-span-2">
-              <p class="text-sm font-medium text-text-muted">Location</p>
-              <p class="text-text-main">{{ selectedOpenEventForDetails.location_address || 'No address specified' }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Merchant Information -->
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          <h3 class="text-lg font-semibold text-text-main mb-3">Merchant Information</h3>
-          <div class="flex items-start gap-4">
-            <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-              <i class="pi pi-building text-green-600 dark:text-green-400 text-xl"></i>
-            </div>
-            <div class="flex-1">
-              <h4 class="font-semibold text-text-main text-lg">{{ getMerchantProp(selectedOpenEventForDetails.merchant, 'merchant_name') }}</h4>
-              <div class="flex items-center gap-2 mt-2">
-                <Tag 
-                  v-for="cuisine in getMerchantCuisines(selectedOpenEventForDetails.merchant)" 
-                  :key="cuisine" 
-                  :value="cuisine" 
-                  severity="info" 
-                  size="small" 
-                />
-              </div>
-              <p class="text-sm text-text-muted mt-2">
-                {{ getMerchantProp(selectedOpenEventForDetails.merchant, 'merchant_description') || 'No description available' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Event Value Information (if available) -->
-        <div v-if="selectedOpenEventForDetails.event_value" class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-          <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">Event Value</h3>
-          <div class="space-y-2">
-            <div class="flex justify-between">
-              <span class="text-blue-700 dark:text-blue-300">Event Value:</span>
-              <span class="font-semibold text-blue-800 dark:text-blue-200">${{ selectedOpenEventForDetails.event_value }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-blue-700 dark:text-blue-300">Platform Fee (8%):</span>
-              <span class="text-blue-800 dark:text-blue-200">${{ (selectedOpenEventForDetails.event_value * 0.08).toFixed(2) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-blue-700 dark:text-blue-300">Processing Fee:</span>
-              <span class="text-blue-800 dark:text-blue-200">${{ ((selectedOpenEventForDetails.event_value * 0.029) + 0.30).toFixed(2) }}</span>
-            </div>
-            <div class="border-t border-blue-300 dark:border-blue-700 pt-2">
-              <div class="flex justify-between font-semibold">
-                <span class="text-blue-800 dark:text-blue-200">Total (Merchant Pays):</span>
-                <span class="text-blue-800 dark:text-blue-200">${{ ((selectedOpenEventForDetails.event_value * 1.109) + 0.30).toFixed(2) }}</span>
-              </div>
-            </div>
-            <div class="mt-3 p-2 bg-blue-100 dark:bg-blue-900/30 rounded border border-blue-300 dark:border-blue-700">
-              <p class="text-xs text-blue-800 dark:text-blue-200">
-                <i class="pi pi-info-circle mr-1"></i>
-                You will receive the full event value of ${{ selectedOpenEventForDetails.event_value }} after the event is completed.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <Button 
-            @click="showOpenEventDetailsDialog = false"
-            label="Close"
-            severity="secondary"
-            outlined
-          />
-          <Button 
-            @click="requestEventFromDialog"
-            label="Request Event"
-            severity="success"
-            :loading="loadingRequest === selectedOpenEventForDetails?.id"
-            :disabled="selectedOpenEventForDetails ? hasRequestedEvent(selectedOpenEventForDetails) : true"
-          />
-        </div>
-      </template>
-    </Dialog>
+      @request-event="requestEventFromDialog"
+    />
 
     <!-- Write Review Dialog -->
     <WriteReview
@@ -806,7 +716,7 @@ const requestEvent = async (event: Event) => {
     const { error } = await supabase
       .from('events')
       .update({
-        pending_requests: updatedRequests,
+        pending_requests: updatedRequests as string[],
         updated_at: new Date().toISOString()
       })
       .eq('id', event.id)
@@ -863,7 +773,7 @@ const withdrawRequest = async (event: Event) => {
     const { error } = await supabase
       .from('events')
       .update({
-        pending_requests: updatedRequests.length > 0 ? updatedRequests : null,
+        pending_requests: updatedRequests.length > 0 ? updatedRequests as string[] : null,
         updated_at: new Date().toISOString()
       })
       .eq('id', event.id)
