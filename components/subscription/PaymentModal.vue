@@ -127,6 +127,7 @@ const stripe = ref<any>(null)
 const elements = ref<any>(null)
 const cardElement = ref<any>(null)
 const currentSubscriptionData = ref<any>(null)
+const toast = useToast()
 
 // Computed
 const visible = computed({
@@ -302,6 +303,14 @@ const handlePayment = async () => {
     if (subscriptionResponse) {
       paymentComplete.value = true
       emit('payment-complete', { paymentMethodId: paymentMethod.id })
+      
+      // Show success toast
+      toast.add({
+        severity: 'success',
+        summary: 'Subscription Created',
+        detail: `Your ${props.planName} subscription has been successfully activated!`,
+        life: 5000
+      })
     }
   } catch (err) {
     console.error('Payment error:', err)
