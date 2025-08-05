@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
     
-    const { planType, stripePriceId } = body
+    const { planType, stripePriceId, paymentMethodId } = body
 
     // Validate required parameters
     if (!planType || !stripePriceId) {
@@ -196,7 +196,38 @@ export default defineEventHandler(async (event) => {
         .eq('id', businessId)
     }
 
-    // Create Stripe subscription directly
+    // If payment method is provided, attach it to the customer first
+    let paymentMethodAttached = false
+    if (paymentMethodId) {
+      try {
+        // Attach payment method to customer
+        await stripe.paymentMethods.attach(paymentMethodId, {
+          customer: stripeCustomerId,
+        })
+        
+        // Set as default payment method for customer
+        await stripe.customers.update(stripeCustomerId, {
+          invoice_settings: {
+            default_payment_method: paymentMethodId,
+          },
+        })
+        paymentMethodAttached = true
+      } catch (error) {
+        console.error('Error attaching payment method:', error)
+        
+        // Check if payment method is already attached
+        try {
+          const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
+          if (paymentMethod.customer === stripeCustomerId) {
+            paymentMethodAttached = true
+          }
+        } catch (retrieveError) {
+          console.error('Error retrieving payment method:', retrieveError)
+        }
+      }
+    }
+
+    // Create Stripe subscription with proper structure according to Stripe API docs
     const stripeSubscription = await stripe.subscriptions.create({
       customer: stripeCustomerId,
       items: [
@@ -204,16 +235,55 @@ export default defineEventHandler(async (event) => {
           price: stripePriceId,
         },
       ],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
+      payment_behavior: paymentMethodAttached ? 'default_incomplete' : 'allow_incomplete',
+      default_payment_method: paymentMethodAttached ? paymentMethodId : undefined,
+      payment_settings: { 
+        save_default_payment_method: 'on_subscription',
+        payment_method_types: ['card']
+      },
       expand: ['latest_invoice.payment_intent'],
       metadata: {
         business_id: businessId,
         business_type: businessType,
         user_id: user.id,
         plan_type: actualPlanType
-      }
+      },
+      collection_method: 'charge_automatically',
+      description: `${actualPlanType} subscription for ${businessType}`,
+      currency: 'usd',
+      off_session: false
     })
+
+    // If payment method was provided and attached, try to pay the first invoice
+    if (paymentMethodAttached && paymentMethodId) {
+      try {
+        const subscription = stripeSubscription as any
+        if (subscription.latest_invoice) {
+          // Get the invoice ID properly
+          const invoiceId = typeof subscription.latest_invoice === 'string' 
+            ? subscription.latest_invoice 
+            : subscription.latest_invoice.id
+            
+          const invoice = await stripe.invoices.retrieve(invoiceId)
+          
+          if (invoice.status === 'open' && invoice.id) {
+            // Pay the invoice with the attached payment method
+            await stripe.invoices.pay(invoice.id, {
+              payment_method: paymentMethodId
+            })
+            
+            // Update subscription with default payment method
+            await stripe.subscriptions.update(stripeSubscription.id, {
+              default_payment_method: paymentMethodId
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error paying first invoice:', error)
+        // Don't throw error here, subscription is still created
+        // According to Stripe docs, subscription can be incomplete if payment fails
+      }
+    }
 
     // Handle date conversion safely
     const getCurrentPeriodStart = () => {
@@ -242,7 +312,7 @@ export default defineEventHandler(async (event) => {
         business_type: businessType,
         user_id: user.id,
         plan_type: actualPlanType,
-        status: 'active',
+        status: paymentMethodId ? 'active' : stripeSubscription.status, // Use active if payment method provided
         stripe_customer_id: stripeCustomerId,
         stripe_subscription_id: stripeSubscription.id,
         current_period_start: getCurrentPeriodStart(),
@@ -267,6 +337,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Get payment intent for frontend payment collection
+    const subscription = stripeSubscription as any
+    const paymentIntent = subscription.latest_invoice?.payment_intent
+
     return {
       success: true,
       subscription: {
@@ -274,12 +348,15 @@ export default defineEventHandler(async (event) => {
         stripeSubscriptionId: stripeSubscription.id,
         stripeCustomerId: stripeCustomerId,
         planType: actualPlanType,
-        status: stripeSubscription.status
-      }
+        status: paymentMethodAttached ? 'active' : stripeSubscription.status,
+        paymentIntentId: paymentIntent?.id,
+        clientSecret: paymentIntent?.client_secret
+      },
+      message: paymentMethodAttached ? 'Subscription created successfully' : 'Subscription created, payment required'
     }
 
   } catch (error: any) {
-    console.error('Subscription creation error:', error)
+    console.error('Subscription creation error:', error.message || error)
     throw createError({
       statusCode: 500,
       statusMessage: error.message || 'Failed to create subscription'

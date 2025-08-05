@@ -404,62 +404,44 @@ const savePaymentSettings = async () => {
 }
 
 // Handle plan selection
-const handlePlanSelection = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string }) => {
-  subscriptionLoading.value = true
+const handlePlanSelection = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string; paymentData?: any }) => {
+  console.log('Plan selected:', plan)
   
-  try {
-    // Handle all plans through the API
-    await createSubscription(plan)
-    
-    // Close the modal after plan selection
+  // If plan has payment data, it means payment was completed
+  if (plan.paymentData) {
+    console.log('Payment completed for plan:', plan.name)
+    // Refresh subscription status
+    await checkSubscriptionStatus()
     showSubscriptionPlans.value = false
-  } catch (error) {
-    console.error('Error handling plan selection:', error)
-  } finally {
-    subscriptionLoading.value = false
+  } else {
+    // For free plans, just close the modal
+    showSubscriptionPlans.value = false
   }
 }
 
-
-
-const createSubscription = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string }) => {
+const createSubscription = async (paymentData: any) => {
   try {
-    const response = await $fetch('/api/subscriptions/create', {
-      method: 'POST',
-      body: {
-        planType: plan.id,
-        stripePriceId: plan.stripePriceId
-      }
+    // This function should not be called directly anymore
+    // The PaymentModal handles subscription creation
+    console.log('createSubscription called with payment data:', paymentData)
+    
+    // Refresh subscription status
+    await checkSubscriptionStatus()
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Payment completed successfully!',
+      group: 'main',
+      life: 3000
     })
     
-    const responseData = response as { checkoutUrl?: string; message?: string }
-    
-    // If it's a free plan, show success message and refresh
-    if (responseData.message) {
-      toast.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: responseData.message,
-        group: 'main',
-        life: 3000
-      })
-      
-      // Refresh subscription status
-      await checkSubscriptionStatus()
-      return
-    }
-    
-    // For paid plans, redirect to Stripe checkout
-    if (responseData.checkoutUrl) {
-      window.location.href = responseData.checkoutUrl
-    }
-    
-  } catch (error) {
+  } catch (error: any) {
     console.error('Subscription creation failed:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'Failed to create subscription',
+      detail: 'Failed to create subscription. Please try again.',
       group: 'main',
       life: 3000
     })

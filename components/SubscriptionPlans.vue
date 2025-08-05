@@ -123,6 +123,17 @@
         </div>
       </div>
     </div>
+
+    <!-- Payment Modal -->
+    <SubscriptionPaymentModal
+      :visible="showPaymentModal"
+      @update:visible="showPaymentModal = $event"
+      :plan-name="selectedPlan?.name || ''"
+      :plan-data="selectedPlan"
+      :subscription-data="subscriptionData"
+      @payment-complete="handlePaymentComplete"
+      @retry-subscription="handleRetrySubscription"
+    />
   </div>
 </template>
 
@@ -137,6 +148,11 @@ interface Plan {
   featured: boolean
   stripePriceId: string
 }
+
+// Reactive data for payment modal
+const showPaymentModal = ref(false)
+const selectedPlan = ref<any>(null)
+const subscriptionData = ref<any>(null)
 
 // Props
 const props = defineProps<{
@@ -282,11 +298,6 @@ const getCurrentPlanId = computed(() => {
 // Check if a plan is the current plan
 const isCurrentPlan = (planId: string) => {
   const isCurrent = getCurrentPlanId.value === planId
-  console.log(`Checking plan ${planId}:`, {
-    currentPlanId: props.currentPlanId,
-    mappedPlanId: getCurrentPlanId.value,
-    isCurrent
-  })
   return isCurrent
 }
 
@@ -318,7 +329,41 @@ const selectPlan = (plan: Plan) => {
   if (isCurrentPlan(plan.id)) {
     return
   }
-  emit('plan-selected', plan)
+  
+  // For paid plans, open payment modal with plan data
+  if (plan.price > 0) {
+    console.log('Selected plan:', plan)
+    console.log('Plan stripePriceId:', plan.stripePriceId)
+    selectedPlan.value = plan
+    showPaymentModal.value = true
+  } else {
+    // For free plans, emit the plan selection
+    emit('plan-selected', plan)
+  }
+}
+
+const handlePaymentComplete = async (paymentData: any) => {
+  try {
+    // Emit the plan selection with payment data
+    emit('plan-selected', { ...selectedPlan.value, paymentData })
+    
+    // Close payment modal
+    showPaymentModal.value = false
+    selectedPlan.value = null
+    subscriptionData.value = null
+  } catch (error) {
+    console.error('Error handling payment completion:', error)
+  }
+}
+
+const handleRetrySubscription = async () => {
+  try {
+    if (!selectedPlan.value) return
+    // Re-emit the plan selection to retry
+    emit('plan-selected', selectedPlan.value)
+  } catch (error) {
+    console.error('Error retrying subscription:', error)
+  }
 }
 </script>
 
