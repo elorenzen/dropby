@@ -876,28 +876,8 @@ const approveRequest = async (event: Event, vendorId: string) => {
       return
     }
 
-    // First, update the event status to booked
-    const { error } = await supabase
-      .from('events')
-      .update({
-        status: 'booked',
-        vendor: vendorId,
-        pending_requests: null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', event.id)
-    
-    if (error) throw error
-    
-    // Add timeline event for approved request
-    await addTimelineEvent({
-      ownerId: route.params.id as string,
-      title: 'Event Request Approved',
-      description: `${merchant.value.merchant_name} approved ${getVendorProp(vendorId, 'vendor_name')} for event on ${new Date(event.start).toLocaleDateString()}`,
-      type: 'event'
-    })
-    
-    // Show payment dialog for the approved event
+    // Store the vendor selection for payment processing
+    // Don't update event status yet - wait for payment completion
     selectedEventForPayment.value = event
     selectedVendorForPayment.value = {
       id: vendorId,
@@ -905,7 +885,7 @@ const approveRequest = async (event: Event, vendorId: string) => {
     }
     showPaymentDialog.value = true
     
-    showToast('success', 'Request Approved', `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event. Please complete payment.`)
+    showToast('success', 'Request Approved', `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event. Please complete payment to finalize booking.`)
   } catch (error) {
     console.error('Error approving request:', error)
     showToast('error', 'Error', 'Failed to approve request. Please try again.')
@@ -969,9 +949,39 @@ const onEventCreated = () => {
   console.log('Event created successfully')
 }
 
-const handlePaymentSuccess = (paymentData: any) => {
+const handlePaymentSuccess = async (paymentData: any) => {
   // Refresh events data after successful payment
   console.log('Payment successful:', paymentData)
+  
+  try {
+    // Now that payment is successful, update the event status to booked
+    if (selectedEventForPayment.value && selectedVendorForPayment.value) {
+              const { error } = await supabase
+          .from('events')
+          .update({
+            status: 'booked',
+            vendor: selectedVendorForPayment.value.id,
+            pending_requests: null,
+            payment_status: 'paid',
+            payment_id: paymentData.paymentId,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', selectedEventForPayment.value.id)
+      
+      if (error) throw error
+      
+      // Add timeline event for successful booking
+      await addTimelineEvent({
+        ownerId: route.params.id as string,
+        title: 'Event Booked',
+        description: `${merchant.value.merchant_name} successfully booked ${selectedVendorForPayment.value.name} for event on ${new Date(selectedEventForPayment.value.start).toLocaleDateString()}. Payment of $${paymentData.totalAmount.toFixed(2)} completed.`,
+        type: 'event'
+      })
+    }
+  } catch (error) {
+    console.error('Error updating event status after payment:', error)
+    showToast('error', 'Payment Complete but Status Update Failed', 'Payment was successful but there was an issue updating the event status. Please contact support.')
+  }
   
   // Reset payment dialog state
   showPaymentDialog.value = false
@@ -980,7 +990,11 @@ const handlePaymentSuccess = (paymentData: any) => {
   
   // The real-time subscription will handle updating the events
   showToast('success', 'Payment Complete', 'Event has been booked and payment processed successfully!', 5000)
+  
+  // Payment completed successfully
 }
+
+
 
 const handlePaymentError = (error: Error) => {
   console.error('Payment failed:', error)
@@ -989,6 +1003,9 @@ const handlePaymentError = (error: Error) => {
   showPaymentDialog.value = false
   selectedEventForPayment.value = null
   selectedVendorForPayment.value = null
+  
+  // Show error message to user
+  showToast('error', 'Payment Failed', 'Payment was not completed. The vendor request remains pending. You can try again or select a different vendor.')
 }
 
 const deleteEvent = (event: Event) => {

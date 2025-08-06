@@ -236,8 +236,16 @@
           <MenuTable />
         </div>
 
-        <!-- USER MANAGEMENT TAB -->
+        <!-- COMPLIANCE & DOCUMENTS TAB -->
         <div v-if="activeTab === 3" class="space-y-6">
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">Compliance & Documents</h2>
+          <ComplianceUpload :business-id="vendor.id" business-type="vendor" />
+        </div>
+
+
+
+        <!-- USER MANAGEMENT TAB -->
+        <div v-if="activeTab === 5" class="space-y-6">
           <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">User Management</h2>
           <AssociatedUsers />
         </div>

@@ -97,18 +97,14 @@
               </div>
             </div>
 
-            <!-- Bank Account Information -->
+            <!-- Automatic Payouts Setup -->
             <div class="space-y-4">
-              <h3 class="font-medium text-text-main">Bank Account</h3>
-              <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <p class="text-sm text-text-muted mb-2">Add your bank account to receive payments</p>
-                <Button 
-                  label="Add Bank Account" 
-                  icon="pi pi-plus"
-                  severity="secondary"
-                  outlined
-                />
-              </div>
+              <h3 class="font-medium text-text-main">Automatic Payouts</h3>
+              <StripeConnectSetup 
+                :vendorId="vendor.id"
+                :vendorEmail="vendor.email"
+                :vendorName="vendor.vendor_name"
+              />
             </div>
           </div>
         </div>

@@ -365,49 +365,27 @@ const approveRequest = async (id: any) => {
 
     loading.value = true
     try {
-        const updates = {
-            updated_at: new Date(),
-            status: 'booked',
-            vendor: id,
-            pending_requests: [] // Clear pending requests after approval
-        }
-        const { error: dbErr } = await supabase
-            .from('events')
-            .update(updates)
-            .eq('id', selectedEvt.value.id)
-
-        if (dbErr) {
-            errType.value = 'Event Approval'
-            errMsg.value = dbErr.message
-            errDialog.value = true
-        } else {
-            // Send booking confirmation email
-            try {
-                await $fetch(`/api/sendBookingConfirmation?eventId=${selectedEvt.value.id}&vendorId=${id}&merchantId=${user.value.associated_merchant_id}`)
-            } catch (emailErr) {
-                console.error('Email notification failed:', emailErr)
-                // Don't fail the whole operation if email fails
-            }
-            
-            toast.add({ 
-                severity: 'success', 
-                summary: 'Success', 
-                detail: 'Event approved and vendor notified!', 
-                group: 'main', 
-                life: 6000 
-            })
-            await addTimelineEvent({
-              ownerId: user.value.associated_merchant_id,
-              title: 'Event Request Approved',
-              description: `Event request approved by ${user.value.first_name} ${user.value.last_name}`,
-              type: 'event'
-            })
-            // Refresh the events list
-            const { data: eventData } = await supabase.from('events').select()
-            if (eventData) {
-                await eventStore.setAllEvents(eventData)
-            }
-        }
+        // Don't update event status yet - wait for payment completion
+        // Just store the approval for payment processing
+        toast.add({ 
+            severity: 'info', 
+            summary: 'Request Approved', 
+            detail: 'Vendor request approved. Payment required to complete booking.', 
+            group: 'main', 
+            life: 6000 
+        })
+        
+        // Add timeline event for approved request (but not booked yet)
+        await addTimelineEvent({
+          ownerId: user.value.associated_merchant_id,
+          title: 'Event Request Approved',
+          description: `Event request approved by ${user.value.first_name} ${user.value.last_name}. Payment pending to complete booking.`,
+          type: 'event'
+        })
+        
+        // Close the dialog - payment will be handled by the parent component
+        openRequestDialog.value = false
+        requestedVendors.value = []
     } catch (err) {
         console.error('Approval error:', err)
         errType.value = 'Event Approval'
@@ -415,8 +393,6 @@ const approveRequest = async (id: any) => {
         errDialog.value = true
     } finally {
         loading.value = false
-        openRequestDialog.value = false
-        requestedVendors.value = []
     }
 }
 const alreadyBooked = (id: any) => {

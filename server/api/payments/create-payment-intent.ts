@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Calculate fees - MERCHANT PAYS ALL FEES
-    const platformFee = amount * 0.08 // 8% platform fee (our revenue)
+    const platformFee = amount * 0.08 // 8% platform fee (your revenue)
     const processingFee = (amount * 0.029) + 0.30 // Stripe fee (merchant pays this)
     const totalAmount = amount + platformFee + processingFee // Total merchant pays
     const vendorPayout = amount // Vendor receives full event value
@@ -63,7 +63,8 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Create Stripe payment intent
+    // Create Stripe payment intent - SINGLE TRANSACTION
+    // This captures the platform fee immediately and holds vendor payment in escrow
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(totalAmount * 100), // Convert to cents
       currency: 'usd',
@@ -71,14 +72,12 @@ export default defineEventHandler(async (event) => {
         eventId,
         paymentId: paymentData.id,
         merchantId,
-        vendorId
+        vendorId,
+        platformFee: platformFee.toString(),
+        vendorPayout: vendorPayout.toString()
       },
-      application_fee_amount: Math.round(platformFee * 100), // Only platform fee
-      // Remove transfer_data since vendors don't have Stripe Connect accounts yet
-      // transfer_data: {
-      //   destination: vendorId, // Vendor's Stripe account ID
-      //   amount: Math.round(vendorPayout * 100), // Full event value to vendor
-      // },
+      // NO transfer_data - we'll handle vendor payout separately after event completion
+      // This keeps all money in your account initially
     })
 
     // Update payment record with Stripe payment intent ID
@@ -87,11 +86,11 @@ export default defineEventHandler(async (event) => {
       .update({ stripe_payment_intent_id: paymentIntent.id } as any)
       .eq('id', paymentData.id)
 
-    // Update event payment status
+    // Update event payment status to escrow
     await client
       .from('events')
       .update({ 
-        payment_status: 'pending',
+        payment_status: 'paid_escrow', // New status: paid but held in escrow
         payment_id: paymentData.id,
         event_value: amount
       } as any)
@@ -105,7 +104,8 @@ export default defineEventHandler(async (event) => {
         amount: totalAmount,
         platformFee,
         processingFee,
-        vendorPayout
+        vendorPayout,
+        escrowAmount: vendorPayout // Amount held for vendor
       },
       paymentId: paymentData.id
     }

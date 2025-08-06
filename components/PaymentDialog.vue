@@ -1,141 +1,177 @@
 <template>
-  <Dialog 
-    :visible="visible" 
-    @update:visible="$emit('update:visible', $event)"
-    modal 
-    :style="{ width: '90vw', maxWidth: '500px' }"
-    :closable="!processing"
-    :closeOnEscape="!processing"
-    class="payment-dialog"
-  >
-    <template #header>
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-          <i class="pi pi-credit-card text-blue-600 dark:text-blue-400"></i>
-        </div>
-        <div>
-          <h3 class="text-xl font-semibold text-text-main">Complete Payment</h3>
-          <p class="text-sm text-text-muted">Secure payment for event booking</p>
-        </div>
-      </div>
-    </template>
-
-    <div v-if="!processing && !paymentSuccess" class="space-y-6">
-      <!-- Payment Summary -->
-      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h4 class="font-semibold text-text-main mb-3">Payment Summary</h4>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-text-muted">Event Value:</span>
-            <span class="font-medium">${{ eventValue.toFixed(2) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-text-muted">Platform Fee (8%):</span>
-            <span class="font-medium">${{ platformFee.toFixed(2) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-text-muted">Processing Fee:</span>
-            <span class="font-medium">${{ processingFee.toFixed(2) }}</span>
-          </div>
-          <div class="border-t pt-2 mt-2">
-            <div class="flex justify-between font-semibold">
-              <span>Total Amount:</span>
-              <span class="text-lg">${{ totalAmount.toFixed(2) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Event Details -->
-      <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
-        <h4 class="font-semibold text-text-main mb-2">Event Details</h4>
-        <div class="space-y-1 text-sm">
-          <div><span class="text-text-muted">Date:</span> {{ formatDate(event.start) }}</div>
-          <div><span class="text-text-muted">Time:</span> {{ formatTime(event.start) }} - {{ formatTime(event.end) }}</div>
-          <div><span class="text-text-muted">Vendor:</span> {{ vendorName }}</div>
-          <div><span class="text-text-muted">Location:</span> {{ event.location_address || 'TBD' }}</div>
-        </div>
-      </div>
-
-      <!-- Payment Method -->
-      <div class="space-y-3">
-        <label class="block text-sm font-medium text-text-main">Payment Method</label>
-        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+  <Teleport to="body">
+    <div v-if="visible" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+      <div class="modal-content" style="background: #1f2937; border: 1px solid #374151; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 20px 20px 0 20px;">
           <div class="flex items-center gap-3">
-            <i class="pi pi-credit-card text-2xl text-blue-600"></i>
+            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+              <i class="pi pi-credit-card text-blue-600 dark:text-blue-400"></i>
+            </div>
             <div>
-              <p class="font-medium">Credit/Debit Card</p>
-              <p class="text-sm text-text-muted">Secure payment via Stripe</p>
+              <h3 class="text-xl font-semibold text-gray-100">Complete Payment</h3>
+              <p class="text-sm text-gray-400">Secure payment for event booking</p>
             </div>
           </div>
+          <button @click="closeDialog" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #9ca3af; transition: color 0.2s;" onmouseover="this.style.color='#f9fafb'" onmouseout="this.style.color='#9ca3af'">×</button>
         </div>
-      </div>
+        
+        <div class="payment-form" style="padding: 0 20px 20px 20px;">
+          <div v-if="!processing && !paymentSuccess" class="space-y-6">
+            <!-- Payment Summary -->
+            <div class="bg-gray-800 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-100 mb-3">Payment Summary</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Event Value:</span>
+                  <span class="font-medium text-gray-100">${{ eventValue.toFixed(2) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Platform Fee (8%):</span>
+                  <span class="font-medium text-gray-100">${{ platformFee.toFixed(2) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Processing Fee:</span>
+                  <span class="font-medium text-gray-100">${{ processingFee.toFixed(2) }}</span>
+                </div>
+                <div class="border-t border-gray-600 pt-2 mt-2">
+                  <div class="flex justify-between font-semibold">
+                    <span class="text-gray-100">Total Amount:</span>
+                    <span class="text-lg text-gray-100">${{ totalAmount.toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      <!-- Terms and Conditions -->
-      <div class="space-y-3">
-        <div class="flex items-start gap-2">
-          <Checkbox 
-            v-model="acceptedTerms" 
-            :binary="true" 
-            :invalid="showTermsError"
-          />
-          <div class="text-sm">
-            <p>I agree to the <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a></p>
-            <p class="text-text-muted mt-1">By completing this payment, you agree to pay the total amount shown above.</p>
+            <!-- Event Details -->
+            <div class="bg-blue-900/30 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-100 mb-2">Event Details</h4>
+              <div class="space-y-1 text-sm">
+                <div><span class="text-gray-400">Date:</span> <span class="text-gray-100">{{ formatDate(event.start) }}</span></div>
+                <div><span class="text-gray-400">Time:</span> <span class="text-gray-100">{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span></div>
+                <div><span class="text-gray-400">Vendor:</span> <span class="text-gray-100">{{ vendorName }}</span></div>
+                <div><span class="text-gray-400">Location:</span> <span class="text-gray-100">{{ event.location_address || 'TBD' }}</span></div>
+              </div>
+            </div>
+
+            <!-- Stripe Elements Card Input -->
+            <div class="space-y-3">
+              <label class="block text-sm font-medium text-gray-100">Payment Method</label>
+              <div id="card-element" class="p-4 border border-gray-600 rounded-lg bg-gray-800 min-h-[60px]"></div>
+              
+              <!-- Debug info -->
+              <div class="text-xs text-gray-500">
+                Stripe loaded: {{ !!stripe.value }}, Elements: {{ !!elements.value }}, Card Element: {{ !!cardElement.value }}
+              </div>
+              
+              <!-- Fallback input if Stripe fails -->
+              <div v-if="cardError" class="p-4 border border-red-600 rounded-lg bg-red-900/20">
+                <p class="text-red-400 text-sm mb-2">Stripe Elements failed to load. Please check console for details.</p>
+                <input 
+                  type="text" 
+                  placeholder="Card number (test: 4242 4242 4242 4242)"
+                  class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                  disabled
+                />
+              </div>
+              
+              <!-- Error Message -->
+              <div v-if="cardError" class="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg">
+                {{ cardError }}
+              </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="space-y-3">
+              <div class="flex items-start gap-2">
+                <input type="checkbox" v-model="acceptedTerms" class="mt-1" />
+                <div class="text-sm">
+                  <p class="text-gray-100">I agree to the <a href="#" class="text-blue-400 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-400 hover:underline">Privacy Policy</a></p>
+                  <p class="text-gray-400 mt-1">By completing this payment, you agree to pay the total amount shown above.</p>
+                </div>
+              </div>
+              <small v-if="showTermsError" class="text-red-500">Please accept the terms and conditions to continue</small>
+            </div>
+          </div>
+
+          <!-- Processing State -->
+          <div v-if="processing" class="text-center py-8">
+            <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p class="mt-4 text-gray-400">Processing your payment...</p>
+            <p class="text-sm text-gray-400 mt-2">Please do not close this window</p>
+          </div>
+
+          <!-- Success State -->
+          <div v-if="paymentSuccess" class="text-center py-8">
+            <div class="w-16 h-16 rounded-full bg-green-900/20 flex items-center justify-center mx-auto mb-4">
+              <i class="pi pi-check text-2xl text-green-400"></i>
+            </div>
+            <h4 class="text-xl font-semibold text-gray-100 mb-2">Payment Successful!</h4>
+            <p class="text-gray-400 mb-4">Your event has been booked and payment is held securely.</p>
+            <div class="bg-green-900/30 rounded-lg p-4 text-sm">
+              <p class="font-medium mb-2 text-gray-100">Payment Breakdown:</p>
+              <div class="space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Event Value:</span>
+                  <span class="text-gray-100">${{ eventValue.toFixed(2) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Platform Fee (8%):</span>
+                  <span class="text-gray-100">${{ platformFee.toFixed(2) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Processing Fee:</span>
+                  <span class="text-gray-100">${{ processingFee.toFixed(2) }}</span>
+                </div>
+                <div class="border-t border-gray-600 pt-1 mt-1">
+                  <div class="flex justify-between font-semibold">
+                    <span class="text-gray-100">Total Paid:</span>
+                    <span class="text-gray-100">${{ totalAmount.toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-3 p-2 bg-blue-900/20 rounded border border-blue-800">
+                <p class="text-xs text-blue-300">
+                  <i class="pi pi-info-circle mr-1"></i>
+                  <strong>${{ eventValue.toFixed(2) }}</strong> will be released to the vendor after event completion
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div v-if="!processing && !paymentSuccess" class="flex gap-3 pt-6">
+            <button 
+              @click="closeDialog"
+              :disabled="processing"
+              class="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button 
+              @click="handlePayment"
+              :disabled="!acceptedTerms || !stripe.value || processing"
+              :class="processing ? 'opacity-50' : ''"
+              class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
+            >
+              Complete Payment
+            </button>
+          </div>
+          <div v-if="paymentSuccess" class="flex justify-end pt-6">
+            <button 
+              @click="closeDialog"
+              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Done
+            </button>
           </div>
         </div>
-        <small v-if="showTermsError" class="text-red-500">Please accept the terms and conditions to continue</small>
       </div>
     </div>
-
-    <!-- Processing State -->
-    <div v-if="processing" class="text-center py-8">
-      <ProgressSpinner size="large" />
-      <p class="mt-4 text-text-muted">Processing your payment...</p>
-      <p class="text-sm text-text-muted mt-2">Please do not close this window</p>
-    </div>
-
-    <!-- Success State -->
-    <div v-if="paymentSuccess" class="text-center py-8">
-      <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
-        <i class="pi pi-check text-2xl text-green-600 dark:text-green-400"></i>
-      </div>
-      <h4 class="text-xl font-semibold text-text-main mb-2">Payment Successful!</h4>
-      <p class="text-text-muted mb-4">Your event has been booked and confirmed.</p>
-      <div class="bg-green-50 dark:bg-green-900/30 rounded-lg p-4 text-sm">
-        <p class="font-medium mb-1">Confirmation Details:</p>
-        <p>Event: {{ formatDate(event.start) }} at {{ formatTime(event.start) }}</p>
-        <p>Vendor: {{ vendorName }}</p>
-        <p>Amount Paid: ${{ totalAmount.toFixed(2) }}</p>
-      </div>
-    </div>
-
-    <template #footer>
-      <div v-if="!processing && !paymentSuccess" class="flex justify-end gap-3">
-        <Button 
-          label="Cancel" 
-          severity="secondary" 
-          outlined
-          @click="closeDialog" 
-        />
-        <Button 
-          label="Complete Payment" 
-          @click="processPayment"
-          :disabled="!acceptedTerms"
-          :loading="processing"
-        />
-      </div>
-      <div v-if="paymentSuccess" class="flex justify-end">
-        <Button 
-          label="Done" 
-          @click="closeDialog" 
-        />
-      </div>
-    </template>
-  </Dialog>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
+import { loadStripe } from '@stripe/stripe-js'
 import { v4 as uuidv4 } from 'uuid'
 
 interface Event {
@@ -172,6 +208,12 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// Computed
+const visible = computed({
+  get: () => props.visible,
+  set: (value: boolean) => emit('update:visible', value)
+})
+
 const supabase = useSupabaseClient()
 const toast = useToast()
 
@@ -180,6 +222,7 @@ const processing = ref(false)
 const paymentSuccess = ref(false)
 const acceptedTerms = ref(false)
 const showTermsError = ref(false)
+const cardError = ref('')
 
 // Calculate fees
 const eventValue = computed(() => props.event.event_value || 0)
@@ -196,24 +239,153 @@ const formatTime = (dateString: string) => {
   return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-const closeDialog = () => {
-  if (!processing.value) {
-    emit('update:visible', false)
-    // Reset state
-    paymentSuccess.value = false
-    acceptedTerms.value = false
-    showTermsError.value = false
+// Stripe Elements
+const stripe = ref<any>(null)
+const elements = ref<any>(null)
+const cardElement = ref<any>(null)
+
+// Initialize Stripe
+onMounted(async () => {
+  console.log('PaymentDialog mounted')
+  if (process.client) {
+    const config = useRuntimeConfig()
+    const stripeKey = config.public.stripePublishableKey
+    console.log('Stripe key available:', !!stripeKey)
+    if (stripeKey) {
+      try {
+        stripe.value = await loadStripe(stripeKey)
+        console.log('Stripe loaded:', !!stripe.value)
+      } catch (error) {
+        console.error('Failed to load Stripe:', error)
+        cardError.value = 'Payment system temporarily unavailable'
+      }
+    } else {
+      console.error('No Stripe key found!')
+    }
+  }
+})
+
+// Watch for modal visibility
+watch(() => props.visible, async (newValue: boolean) => {
+  if (newValue && props.event) {
+    console.log('Modal opened, initializing payment form...')
+    // Wait for modal to be fully rendered
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 200))
+    
+    // Initialize payment form when modal opens
+    await initializePaymentForm()
+  } else if (!newValue) {
+    // Clean up when modal closes
+    if (cardElement.value) {
+      cardElement.value.destroy()
+      cardElement.value = null
+    }
+  }
+})
+
+// Initialize payment form
+const initializePaymentForm = async () => {
+  console.log('initializePaymentForm called')
+  console.log('stripe.value:', !!stripe.value)
+  
+  if (!stripe.value) {
+    console.error('Stripe not loaded!')
+    cardError.value = 'Stripe not loaded'
+    return
+  }
+  
+  try {
+    console.log('Creating elements instance')
+    
+    // Destroy existing elements if they exist
+    if (cardElement.value) {
+      cardElement.value.destroy()
+      cardElement.value = null
+    }
+    
+    // Create elements instance
+    elements.value = stripe.value.elements()
+    console.log('elements created:', !!elements.value)
+    
+    // Wait a moment for the container to be ready
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Create card element
+    cardElement.value = elements.value.create('card', {
+      style: {
+        base: {
+          fontSize: '16px',
+          color: '#f9fafb',
+          backgroundColor: 'transparent',
+          '::placeholder': {
+            color: '#9ca3af',
+          },
+        },
+        invalid: {
+          color: '#ef4444',
+        },
+      },
+    })
+    
+    console.log('card element created:', !!cardElement.value)
+    
+    // Mount card element
+    console.log('Mounting card element to #card-element')
+    const cardElementContainer = document.getElementById('card-element')
+    console.log('Card element container found:', !!cardElementContainer)
+    
+    if (cardElementContainer) {
+      cardElement.value.mount('#card-element')
+      console.log('Card element mounted successfully')
+    } else {
+      console.error('Card element container not found!')
+      cardError.value = 'Payment form container not found'
+      return
+    }
+    
+    console.log('Payment form initialized successfully')
+    cardError.value = ''
+  } catch (err) {
+    console.error('Error initializing payment form:', err)
+    cardError.value = 'Failed to initialize payment form'
   }
 }
 
-const processPayment = async () => {
+const closeDialog = () => {
+  if (!processing.value) {
+    visible.value = false
+    resetForm()
+  }
+}
+
+// Reset form
+const resetForm = () => {
+  paymentSuccess.value = false
+  acceptedTerms.value = false
+  showTermsError.value = false
+  cardError.value = ''
+  if (cardElement.value) {
+    cardElement.value.destroy()
+    cardElement.value = null
+  }
+}
+
+const handlePayment = async () => {
   if (!acceptedTerms.value) {
     showTermsError.value = true
     return
   }
 
+  if (!stripe.value || !cardElement.value) {
+    cardError.value = 'Payment form not ready. Please try again.'
+    return
+  }
+
   showTermsError.value = false
   processing.value = true
+  cardError.value = ''
 
   try {
     // Create payment intent
@@ -231,55 +403,55 @@ const processPayment = async () => {
       throw new Error('Failed to create payment intent')
     }
 
-    // Simulate payment processing (in real implementation, this would use Stripe Elements)
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Create payment method using Stripe Elements
+    const { error: paymentMethodError, paymentMethod } = await stripe.value.createPaymentMethod({
+      type: 'card',
+      card: cardElement.value,
+    })
 
-    // Update event status to paid
-    const { error: updateError } = await supabase
-      .from('events')
-      .update({
-        status: 'booked',
-        vendor: props.vendorId,
-        pending_requests: null,
-        payment_status: 'paid',
-        payment_id: response.paymentId,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', props.event.id)
-
-    if (updateError) {
-      throw new Error('Failed to update event status')
+    if (paymentMethodError) {
+      throw new Error(paymentMethodError.message || 'Payment method creation failed')
     }
 
-    // Add timeline event
-    await addTimelineEvent({
-      ownerId: props.merchantId,
-      title: 'Payment Completed',
-      description: `Payment of $${totalAmount.value.toFixed(2)} completed for event with ${props.vendorName}`,
-      type: 'event'
-    })
+    // Confirm payment with Stripe
+    const { error: paymentError, paymentIntent } = await stripe.value.confirmCardPayment(
+      response.paymentIntent.client_secret,
+      {
+        payment_method: paymentMethod.id,
+      }
+    )
 
-    paymentSuccess.value = true
-    emit('payment-success', {
-      paymentId: response.paymentId,
-      amount: eventValue.value,
-      platformFee: platformFee.value,
-      processingFee: processingFee.value,
-      totalAmount: totalAmount.value
-    })
+    if (paymentError) {
+      throw new Error(paymentError.message || 'Payment failed')
+    }
 
-    toast.add({
-      severity: 'success',
-      summary: 'Payment Successful',
-      detail: 'Your event has been booked and confirmed!',
-      life: 5000
-    })
+    if (paymentIntent.status === 'succeeded') {
+      // Payment successful
+      paymentSuccess.value = true
+      emit('payment-success', {
+        paymentId: response.paymentId,
+        amount: eventValue.value,
+        platformFee: platformFee.value,
+        processingFee: processingFee.value,
+        totalAmount: totalAmount.value
+      })
 
-  } catch (error) {
+      toast.add({
+        severity: 'success',
+        summary: 'Payment Successful',
+        detail: 'Your event has been booked! Payment will be automatically released to vendor when the event ends.',
+        life: 5000
+      })
+    } else {
+      throw new Error('Payment was not successful')
+    }
+
+  } catch (error: any) {
     console.error('Payment error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Failed to process payment. Please try again.'
     emit('payment-error', new Error(errorMessage))
     
+    cardError.value = errorMessage
     toast.add({
       severity: 'error',
       summary: 'Payment Failed',
@@ -308,5 +480,9 @@ const addTimelineEvent = async (timelineObj: any) => {
 <style scoped>
 .payment-dialog {
   @apply bg-white dark:bg-gray-900;
+}
+
+#card-element {
+  min-height: 60px;
 }
 </style> 
