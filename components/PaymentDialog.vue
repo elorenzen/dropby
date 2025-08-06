@@ -58,11 +58,6 @@
               <label class="block text-sm font-medium text-gray-100">Payment Method</label>
               <div id="card-element" class="p-4 border border-gray-600 rounded-lg bg-gray-800 min-h-[60px]"></div>
               
-              <!-- Debug info -->
-              <div class="text-xs text-gray-500">
-                Stripe loaded: {{ !!stripe.value }}, Elements: {{ !!elements.value }}, Card Element: {{ !!cardElement.value }}
-              </div>
-              
               <!-- Fallback input if Stripe fails -->
               <div v-if="cardError" class="p-4 border border-red-600 rounded-lg bg-red-900/20">
                 <p class="text-red-400 text-sm mb-2">Stripe Elements failed to load. Please check console for details.</p>
@@ -149,7 +144,7 @@
             </button>
             <button 
               @click="handlePayment"
-              :disabled="!acceptedTerms || !stripe.value || processing"
+              :disabled="!acceptedTerms || processing"
               :class="processing ? 'opacity-50' : ''"
               class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
             >
@@ -246,19 +241,11 @@ const cardElement = ref<any>(null)
 
 // Initialize Stripe
 onMounted(async () => {
-  console.log('PaymentDialog mounted')
   if (process.client) {
     const config = useRuntimeConfig()
     const stripeKey = config.public.stripePublishableKey
-    console.log('Stripe key available:', !!stripeKey)
     if (stripeKey) {
-      try {
-        stripe.value = await loadStripe(stripeKey)
-        console.log('Stripe loaded:', !!stripe.value)
-      } catch (error) {
-        console.error('Failed to load Stripe:', error)
-        cardError.value = 'Payment system temporarily unavailable'
-      }
+      stripe.value = await loadStripe(stripeKey)
     } else {
       console.error('No Stripe key found!')
     }
@@ -268,10 +255,9 @@ onMounted(async () => {
 // Watch for modal visibility
 watch(() => props.visible, async (newValue: boolean) => {
   if (newValue && props.event) {
-    console.log('Modal opened, initializing payment form...')
     // Wait for modal to be fully rendered
     await nextTick()
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise(resolve => setTimeout(resolve, 100))
     
     // Initialize payment form when modal opens
     await initializePaymentForm()
@@ -286,18 +272,12 @@ watch(() => props.visible, async (newValue: boolean) => {
 
 // Initialize payment form
 const initializePaymentForm = async () => {
-  console.log('initializePaymentForm called')
-  console.log('stripe.value:', !!stripe.value)
-  
   if (!stripe.value) {
-    console.error('Stripe not loaded!')
     cardError.value = 'Stripe not loaded'
     return
   }
   
   try {
-    console.log('Creating elements instance')
-    
     // Destroy existing elements if they exist
     if (cardElement.value) {
       cardElement.value.destroy()
@@ -306,11 +286,9 @@ const initializePaymentForm = async () => {
     
     // Create elements instance
     elements.value = stripe.value.elements()
-    console.log('elements created:', !!elements.value)
     
     // Wait a moment for the container to be ready
     await nextTick()
-    await new Promise(resolve => setTimeout(resolve, 100))
     
     // Create card element
     cardElement.value = elements.value.create('card', {
@@ -329,26 +307,18 @@ const initializePaymentForm = async () => {
       },
     })
     
-    console.log('card element created:', !!cardElement.value)
-    
     // Mount card element
-    console.log('Mounting card element to #card-element')
     const cardElementContainer = document.getElementById('card-element')
-    console.log('Card element container found:', !!cardElementContainer)
     
     if (cardElementContainer) {
       cardElement.value.mount('#card-element')
-      console.log('Card element mounted successfully')
     } else {
-      console.error('Card element container not found!')
       cardError.value = 'Payment form container not found'
       return
     }
     
-    console.log('Payment form initialized successfully')
     cardError.value = ''
   } catch (err) {
-    console.error('Error initializing payment form:', err)
     cardError.value = 'Failed to initialize payment form'
   }
 }
@@ -382,20 +352,46 @@ const handlePayment = async () => {
     cardError.value = 'Payment form not ready. Please try again.'
     return
   }
-
+  
   showTermsError.value = false
   processing.value = true
   cardError.value = ''
-
+  
   try {
-    // Create payment intent
+    let paymentMethod: any = null
+    
+    try {
+      // Create payment method
+      const { error: paymentMethodError, paymentMethod: pm } = await stripe.value.createPaymentMethod({
+        type: 'card',
+        card: cardElement.value,
+      })
+      
+      if (paymentMethodError) {
+        cardError.value = paymentMethodError.message || 'Payment method creation failed'
+        return
+      }
+      
+      if (!pm) {
+        cardError.value = 'Failed to create payment method'
+        return
+      }
+      
+      paymentMethod = pm
+    } catch (error) {
+      cardError.value = 'Failed to create payment method. Please check your card details.'
+      return
+    }
+    
+    // Create payment intent with the payment method
     const response = await $fetch('/api/payments/create-payment-intent', {
       method: 'POST',
       body: {
         eventId: props.event.id,
         amount: eventValue.value,
         merchantId: props.merchantId,
-        vendorId: props.vendorId
+        vendorId: props.vendorId,
+        paymentMethodId: paymentMethod.id
       }
     }) as { success: boolean; paymentIntent: any; paymentId: string }
 
@@ -403,29 +399,8 @@ const handlePayment = async () => {
       throw new Error('Failed to create payment intent')
     }
 
-    // Create payment method using Stripe Elements
-    const { error: paymentMethodError, paymentMethod } = await stripe.value.createPaymentMethod({
-      type: 'card',
-      card: cardElement.value,
-    })
-
-    if (paymentMethodError) {
-      throw new Error(paymentMethodError.message || 'Payment method creation failed')
-    }
-
-    // Confirm payment with Stripe
-    const { error: paymentError, paymentIntent } = await stripe.value.confirmCardPayment(
-      response.paymentIntent.client_secret,
-      {
-        payment_method: paymentMethod.id,
-      }
-    )
-
-    if (paymentError) {
-      throw new Error(paymentError.message || 'Payment failed')
-    }
-
-    if (paymentIntent.status === 'succeeded') {
+    // Check if payment was successful
+    if (response.paymentIntent.status === 'succeeded' || response.success) {
       // Payment successful
       paymentSuccess.value = true
       emit('payment-success', {
@@ -443,7 +418,7 @@ const handlePayment = async () => {
         life: 5000
       })
     } else {
-      throw new Error('Payment was not successful')
+      throw new Error(`Payment was not successful. Status: ${response.paymentIntent.status}`)
     }
 
   } catch (error: any) {
@@ -460,19 +435,6 @@ const handlePayment = async () => {
     })
   } finally {
     processing.value = false
-  }
-}
-
-const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  } as any)
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
   }
 }
 </script>

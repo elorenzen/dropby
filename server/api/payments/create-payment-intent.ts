@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
     
-    const { eventId, amount, merchantId, vendorId } = body
+    const { eventId, amount, merchantId, vendorId, paymentMethodId } = body
 
     // Validate required parameters
     if (!eventId || !amount || !merchantId || !vendorId) {
@@ -68,6 +68,12 @@ export default defineEventHandler(async (event) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(totalAmount * 100), // Convert to cents
       currency: 'usd',
+      payment_method: paymentMethodId,
+      confirm: true, // Confirm the payment immediately
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never'
+      },
       metadata: {
         eventId,
         paymentId: paymentData.id,

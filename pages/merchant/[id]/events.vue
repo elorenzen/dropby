@@ -511,11 +511,10 @@
 
     <!-- Payment Dialog -->
     <PaymentDialog
-      v-if="selectedEventForPayment && selectedVendorForPayment"
       :visible="showPaymentDialog"
-      :event="selectedEventForPayment"
-      :vendor-id="selectedVendorForPayment.id"
-      :vendor-name="selectedVendorForPayment.name"
+      :event="selectedEventForPayment || {}"
+      :vendor-id="selectedVendorForPayment?.id || ''"
+      :vendor-name="selectedVendorForPayment?.name || ''"
       :merchant-id="String(route.params.id)"
       @update:visible="showPaymentDialog = $event"
       @payment-success="handlePaymentSuccess"
@@ -950,23 +949,20 @@ const onEventCreated = () => {
 }
 
 const handlePaymentSuccess = async (paymentData: any) => {
-  // Refresh events data after successful payment
-  console.log('Payment successful:', paymentData)
-  
   try {
     // Now that payment is successful, update the event status to booked
     if (selectedEventForPayment.value && selectedVendorForPayment.value) {
-              const { error } = await supabase
-          .from('events')
-          .update({
-            status: 'booked',
-            vendor: selectedVendorForPayment.value.id,
-            pending_requests: null,
-            payment_status: 'paid',
-            payment_id: paymentData.paymentId,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', selectedEventForPayment.value.id)
+      const { error } = await supabase
+        .from('events')
+        .update({
+          status: 'booked',
+          vendor: selectedVendorForPayment.value.id,
+          pending_requests: null,
+          payment_status: 'paid',
+          payment_id: paymentData.paymentId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedEventForPayment.value.id)
       
       if (error) throw error
       
