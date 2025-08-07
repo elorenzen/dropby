@@ -2,23 +2,27 @@
 
 Welcome to the ultimate event platform for food trucks and drinking establishments! Good drinks belong with good eats, and every food truck should have a spot to serve a hungry crowd. With DropBy, businesses can find each other and book events, increasing sales for both, and improving the overall experience for a shared customer base.
 
-![Landing](assets/readme/landing-new.png)
+![Landing](assets/readme/homepage.png)
 
 
 ## For Businesses
 Worry no more about finding a food truck to feed your patrons. Easily schedule events and approve food trucks in the area to work during business.
 
-![Merchant Profile](assets/readme/merchant_profile-1.png)
+![Merchant Dashboard](assets/readme/merchant_dashboard.png)
 
-![Merchant Settings](assets/readme/new_merchant_settings.png)
+![Merchant Analytics](assets/readme/merchant_analytics.png)
 
-![Event Scheduling](assets/readme/event_scheduling-1.png)
+![Merchant Settings](assets/readme/new_merchant_setting.png)
+
+![Event Scheduling](assets/readme/event_creation.png)
+
+![Subscriptions](assets/readme/vendor_financial.png)
 
 
 ## For Food Trucks
 Need a place to park your vehicle? With our app, you can find available events in your area and work with breweries and other establishments to increase your sales for the evening.
 
-![Vendor Profile](assets/readme/vendor_profile.png)
+![Vendor Profile](assets/readme/vendor_setting.png)
 
 ![Menu](assets/readme/menu.png)
 
@@ -28,7 +32,7 @@ Need a place to park your vehicle? With our app, you can find available events i
 ## For Everyone Else
 Use our map to follow your favorite food trucks to new locations, or see what food is being served at your local brewery.
 
-![Everyone Else](assets/readme/everyone_else.png)
+![Everyone Else](assets/readme/view_events.png)
 
 ## Setup
 
