@@ -24,12 +24,6 @@
             >
               Events
             </NuxtLink>
-            <NuxtLink 
-              to="/viewer/map" 
-              class="text-text-muted hover:text-accent transition-colors"
-            >
-              Map View
-            </NuxtLink>
           </div>
           <InputText placeholder="Email" v-model="email" type="text" class="w-32 sm:w-auto" />
           <Password placeholder="Password" v-model="password" class="w-32 sm:w-auto" />

@@ -131,184 +131,187 @@
     <div v-if="filteredEvents.length > 0" class="space-y-6">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-semibold text-text-main">Events Near You</h2>
-        <div class="flex gap-2">
-          <Button 
-            :icon="viewMode === 'grid' ? 'pi pi-list' : 'pi pi-th-large'"
-            @click="toggleViewMode"
-            outlined
-            size="small"
-            :label="viewMode === 'grid' ? 'List View' : 'Grid View'"
-          />
-        </div>
       </div>
 
-      <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card 
-          v-for="event in filteredEvents" 
-          :key="event.id" 
-          class="event-card hover:shadow-lg transition-all duration-200 cursor-pointer"
-          @click="openEventDetails(event)"
-        >
-          <template #content>
-            <div class="relative">
-              <div class="relative mb-4">
-                <div class="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-                  <NuxtImg
-                    :src="getMerchantImage(event.merchant)"
-                    :alt="getMerchantName(event.merchant)"
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                  />
+      <!-- Map and Events Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        <!-- Map Section (70% width) -->
+        <div class="lg:col-span-7">
+          <div class="relative">
+            <!-- Map Container -->
+            <div 
+              ref="mapContainer" 
+              class="w-full h-96 md:h-[600px] rounded-lg border border-gray-200 dark:border-gray-700"
+            ></div>
+            
+            <!-- Map Controls Overlay -->
+            <div class="absolute top-4 right-4 z-10">
+              <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 space-y-2">
+                <Button 
+                  icon="pi pi-plus"
+                  size="small"
+                  text
+                  @click="zoomIn"
+                  class="w-8 h-8"
+                />
+                <Button 
+                  icon="pi pi-minus"
+                  size="small"
+                  text
+                  @click="zoomOut"
+                  class="w-8 h-8"
+                />
+              </div>
+            </div>
+            
+            <!-- Event Info Panel -->
+            <div 
+              v-if="selectedMapEvent"
+              class="absolute bottom-4 left-4 right-4 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4"
+            >
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <h4 class="font-semibold text-text-main">{{ getMerchantName(selectedMapEvent.merchant) }}</h4>
+                  <p class="text-sm text-text-muted">{{ getVendorName(selectedMapEvent.vendor) }}</p>
                 </div>
-                <div class="absolute top-3 right-3">
-                  <Badge :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" />
+                <Button 
+                  icon="pi pi-times"
+                  size="small"
+                  text
+                  @click="selectedMapEvent = null"
+                />
+              </div>
+              
+              <div class="space-y-2 text-sm">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-gray-400"></i>
+                  <span>{{ formatDate(selectedMapEvent.start) }}</span>
                 </div>
-                <div class="absolute -bottom-4 -right-4">
-                  <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full border-4 border-white dark:border-gray-800 overflow-hidden">
-                    <NuxtImg
-                      :src="getVendorImage(event.vendor)"
-                      :alt="getVendorName(event.vendor)"
-                      class="w-full h-full object-cover"
-                      loading="lazy"
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-gray-400"></i>
+                  <span>{{ formatTime(selectedMapEvent.start) }} - {{ formatTime(selectedMapEvent.end) }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-gray-400"></i>
+                  <span>{{ selectedMapEvent.location_address || 'Location TBD' }}</span>
+                </div>
+              </div>
+              
+              <div class="flex gap-2 mt-3">
+                <Button 
+                  label="View Details" 
+                  size="small"
+                  @click="openEventDetails(selectedMapEvent)"
+                />
+                <Button 
+                  label="Get Directions" 
+                  size="small"
+                  outlined
+                  @click="getDirections(selectedMapEvent)"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <!-- Map Legend -->
+          <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div class="flex flex-wrap gap-4 text-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                <span>Available Events</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
+                <span>Booked Events</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+                <span>Completed Events</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events List Section (30% width) -->
+        <div class="lg:col-span-3">
+          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-text-main">Events List</h3>
+              <p class="text-sm text-text-muted">{{ filteredEvents.length }} events found</p>
+            </div>
+            
+            <div class="h-[600px] overflow-y-auto">
+              <div 
+                v-for="event in filteredEvents" 
+                :key="event.id" 
+                class="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                :class="{ 'bg-orange-50 dark:bg-orange-900/20': selectedMapEvent?.id === event.id }"
+                @click="selectEventOnMap(event)"
+              >
+                <div class="space-y-2">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <h4 class="font-medium text-text-main text-sm">{{ getMerchantName(event.merchant) }}</h4>
+                      <p class="text-xs text-text-muted">{{ getVendorName(event.vendor) }}</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                      <Badge :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" size="small" />
+                      <div class="flex items-center gap-1 text-xs text-text-muted">
+                        <i class="pi pi-eye"></i>
+                        <span>{{ event.view_count || 0 }} views</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="space-y-1 text-xs text-text-muted">
+                    <div class="flex items-center gap-1">
+                      <i class="pi pi-calendar"></i>
+                      <span>{{ formatDate(event.start) }}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="pi pi-clock"></i>
+                      <span>{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="pi pi-map-marker"></i>
+                      <span class="truncate">{{ event.location_address || 'Location TBD' }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex flex-wrap gap-1">
+                    <Tag 
+                      v-for="cuisine in getVendorCuisines(event.vendor).slice(0, 2)" 
+                      :key="cuisine" 
+                      :value="cuisine" 
+                      severity="info" 
+                      size="small"
+                    />
+                    <span v-if="getVendorCuisines(event.vendor).length > 2" class="text-xs text-text-muted">
+                      +{{ getVendorCuisines(event.vendor).length - 2 }} more
+                    </span>
+                  </div>
+                  
+                  <div class="flex gap-2 pt-2">
+                    <Button 
+                      label="Details" 
+                      size="small"
+                      outlined
+                      @click.stop="openEventDetails(event)"
+                      class="flex-1"
+                    />
+                    <Button 
+                      label="Directions" 
+                      icon="pi pi-map" 
+                      size="small"
+                      outlined
+                      @click.stop="getDirections(event)"
                     />
                   </div>
                 </div>
               </div>
-
-              <div class="space-y-3">
-                <div>
-                  <h3 class="font-semibold text-lg text-text-main mb-1">
-                    {{ getMerchantName(event.merchant) }}
-                  </h3>
-                  <p class="text-text-muted text-sm">{{ getVendorName(event.vendor) }}</p>
-                </div>
-
-                <div class="space-y-2 text-sm">
-                  <div class="flex items-center gap-2">
-                    <i class="pi pi-calendar text-gray-400"></i>
-                    <span>{{ formatDate(event.start) }}</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <i class="pi pi-clock text-gray-400"></i>
-                    <span>{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <i class="pi pi-map-marker text-gray-400"></i>
-                    <span>{{ event.location_address || 'Location TBD' }}</span>
-                  </div>
-                </div>
-
-                <div class="flex flex-wrap gap-1">
-                  <Tag 
-                    v-for="cuisine in getVendorCuisines(event.vendor)" 
-                    :key="cuisine" 
-                    :value="cuisine" 
-                    severity="info" 
-                    size="small"
-                  />
-                </div>
-
-                <div class="flex gap-2 pt-2">
-                  <Button 
-                    label="Details" 
-                    outlined 
-                    size="small"
-                    @click.stop="openEventDetails(event)"
-                    class="flex-1"
-                  />
-                  <Button 
-                    label="Directions" 
-                    icon="pi pi-map" 
-                    outlined 
-                    size="small"
-                    @click.stop="openEventDetails(event)"
-                  />
-                </div>
-              </div>
             </div>
-          </template>
-        </Card>
-      </div>
-
-      <div v-else class="space-y-4">
-        <Card 
-          v-for="event in filteredEvents" 
-          :key="event.id" 
-          class="event-card hover:shadow-lg transition-all duration-200"
-        >
-          <template #content>
-            <div class="flex flex-col md:flex-row gap-4">
-              <div class="relative md:w-1/3">
-                <div class="w-full h-48 md:h-64 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-                  <NuxtImg
-                    :src="getMerchantImage(event.merchant)"
-                    :alt="getMerchantName(event.merchant)"
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div class="absolute top-3 right-3">
-                  <Badge :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" />
-                </div>
-              </div>
-
-              <div class="flex-1 space-y-4">
-                <div>
-                  <h3 class="font-semibold text-xl text-text-main mb-2">
-                    {{ getMerchantName(event.merchant) }} | {{ getVendorName(event.vendor) }}
-                  </h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-text-muted">
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-calendar"></i>
-                      <span>{{ formatDate(event.start) }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-clock"></i>
-                      <span>{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-map-marker"></i>
-                      <span>{{ event.location_address || 'Location TBD' }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-star"></i>
-                      <span>4.5 ★ (24 reviews)</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flex flex-wrap gap-2">
-                  <Tag 
-                    v-for="cuisine in getVendorCuisines(event.vendor)" 
-                    :key="cuisine" 
-                    :value="cuisine" 
-                    severity="info"
-                  />
-                </div>
-
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <Button 
-                    label="View Details" 
-                    @click="openEventDetails(event)"
-                    class="flex-1"
-                  />
-                  <Button 
-                    label="Get Directions" 
-                    icon="pi pi-map" 
-                    outlined
-                    @click="openEventDetails(event)"
-                  />
-                  <Button 
-                    label="Share Event" 
-                    icon="pi pi-share-alt" 
-                    outlined
-                    @click="openEventDetails(event)"
-                  />
-                </div>
-              </div>
-            </div>
-          </template>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -352,6 +355,7 @@ interface Event {
   location_address?: string
   location_coordinates?: string
   notes?: string
+  view_count?: number
 }
 
 interface Merchant {
@@ -392,8 +396,14 @@ const selectedEvent = ref<Event | null>(null)
 const selectedMerchant = ref<Merchant | null>(null)
 const selectedVendor = ref<Vendor | null>(null)
 const userLocation = ref<UserLocation | null>(null)
+const selectedMapEvent = ref<Event | null>(null)
 
-const viewMode = ref<'grid' | 'list'>('grid')
+// Map state
+const mapContainer = ref<HTMLElement>()
+const map = ref<any>()
+const markers = ref<any[]>([])
+
+const viewMode = ref<'grid' | 'list' | 'map'>('grid')
 
 const filters = ref({
   keyword: '',
@@ -412,6 +422,7 @@ const cuisineOptions = ref([
 ])
 
 const sortOptions = ref([
+  { label: 'Most Viewed', value: 'views' },
   { label: 'Distance (Closest)', value: 'distance' },
   { label: 'Establishment Name (A-Z)', value: 'merchant' },
   { label: 'Food Truck Name (A-Z)', value: 'vendor' },
@@ -472,6 +483,8 @@ const filteredEvents = computed(() => {
   // Sort events
   filtered.sort((a: Event, b: Event) => {
     switch (filters.value.sortBy) {
+      case 'views':
+        return (b.view_count || 0) - (a.view_count || 0)
       case 'date':
         return new Date(a.start).getTime() - new Date(b.start).getTime()
       case 'date-desc':
@@ -666,8 +679,33 @@ const hasActiveFilters = computed(() => {
          filters.value.distance
 })
 
-const toggleViewMode = () => {
-  viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid'
+const getDirections = (event: Event) => {
+  if (event.location_address) {
+    const address = encodeURIComponent(event.location_address)
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank')
+  }
+}
+
+const showAllEvents = () => {
+  // Clear filters to show all events
+  clearFilters()
+}
+
+const selectEventOnMap = (event: Event) => {
+  selectedMapEvent.value = event
+  
+  // Center map on the selected event if it has coordinates
+  if (event.location_coordinates && map.value) {
+    try {
+      const coordinates = JSON.parse(event.location_coordinates)
+      if (coordinates.lat && coordinates.lng) {
+        map.value.setCenter({ lat: coordinates.lat, lng: coordinates.lng })
+        map.value.setZoom(15)
+      }
+    } catch (error) {
+      console.error('Invalid coordinates for event:', event.id)
+    }
+  }
 }
 
 const saveSearch = () => {
@@ -702,11 +740,152 @@ const filterEvents = () => {
 // Set page title
 useSeoMeta({ title: 'Events' })
 
-// Load data on mount
-onMounted(() => {
-  loadEvents()
+// Map methods
+const initializeMap = async () => {
+  if (!mapContainer.value) {
+    console.error('Map container not found!')
+    return
+  }
+  
+  try {
+    const { Loader } = await import('@googlemaps/js-api-loader')
+    const loader = new Loader({
+      apiKey: useRuntimeConfig().public.gMapKey,
+      version: 'weekly',
+      libraries: ['places']
+    })
+    
+    const google = await loader.load()
+    
+    // Create map
+    map.value = new google.maps.Map(mapContainer.value, {
+      center: { lat: 34.0522, lng: -118.2437 }, // Default to Los Angeles
+      zoom: 10,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false
+    })
+    
+    // Add event markers
+    addEventMarkers()
+    
+    // Fit map to show all events
+    if (filteredEvents.value.length > 0) {
+      fitAllEvents()
+    }
+    
+  } catch (error) {
+    console.error('Failed to load Google Maps:', error)
+  }
+}
+
+const addEventMarkers = () => {
+  if (!map.value) return
+  
+  // Clear existing markers
+  markers.value.forEach(marker => marker.setMap(null))
+  markers.value = []
+  
+  filteredEvents.value.forEach(event => {
+    // Get coordinates from event location_coordinates
+    let coordinates = null
+    
+    if (event.location_coordinates) {
+      try {
+        coordinates = JSON.parse(event.location_coordinates)
+      } catch (error) {
+        console.error('Invalid coordinates for event:', event.id)
+        return
+      }
+    }
+    
+    // If no coordinates, skip this event
+    if (!coordinates || !coordinates.lat || !coordinates.lng) {
+      console.log('No coordinates for event:', event.id)
+      return
+    }
+    
+    const marker = new google.maps.Marker({
+      position: { lat: coordinates.lat, lng: coordinates.lng },
+      map: map.value,
+      title: getMerchantName(event.merchant),
+      icon: getMarkerIcon(event.status),
+      animation: google.maps.Animation.DROP
+    })
+    
+    // Add click listener
+    marker.addListener('click', () => {
+      selectedMapEvent.value = event
+    })
+    
+    markers.value.push(marker)
+  })
+}
+
+const getMarkerIcon = (status: string) => {
+  const colors = {
+    open: '#10B981', // green
+    booked: '#F59E0B', // orange
+    completed: '#EF4444' // red
+  }
+  
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: 10,
+    fillColor: colors[status as keyof typeof colors] || '#6B7280',
+    fillOpacity: 0.8,
+    strokeColor: '#FFFFFF',
+    strokeWeight: 2
+  }
+}
+
+const zoomIn = () => {
+  if (map.value) {
+    map.value.setZoom((map.value.getZoom() || 10) + 1)
+  }
+}
+
+const zoomOut = () => {
+  if (map.value) {
+    map.value.setZoom((map.value.getZoom() || 10) - 1)
+  }
+}
+
+const fitAllEvents = () => {
+  if (!map.value || filteredEvents.value.length === 0) return
+  
+  const bounds = new google.maps.LatLngBounds()
+  
+  filteredEvents.value.forEach(event => {
+    if (event.location_coordinates) {
+      try {
+        const coordinates = JSON.parse(event.location_coordinates)
+        if (coordinates.lat && coordinates.lng) {
+          bounds.extend({ lat: coordinates.lat, lng: coordinates.lng })
+        }
+      } catch (error) {
+        console.error('Invalid coordinates for event:', event.id)
+      }
+    }
+  })
+  
+  if (!bounds.isEmpty()) {
+    map.value.fitBounds(bounds)
+  }
+}
+
+onMounted(async () => {
+  await loadEvents()
   getUserLocation()
+  
+  await nextTick()
+  
+  setTimeout(() => {
+    initializeMap()
+  }, 100)
 })
+
+
 </script> 
 
 <style scoped>
