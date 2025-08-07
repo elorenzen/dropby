@@ -530,8 +530,8 @@ const submit = async () => {
             snackbar.value = true
             snacktext.value = `${type.value} Created! An email confirmation has been sent. You will now be redirected.`
         
-        // Redirect to business page
-        await navigateTo(`/${type.value}/${typeId}`)
+        // Redirect to business dashboard
+        await navigateTo(`/${type.value}/${typeId}/dashboard`)
         
     } catch (err) {
         console.error('Submission error:', err)

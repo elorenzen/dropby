@@ -82,8 +82,8 @@ export default defineEventHandler(async (event) => {
     // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${process.env.NUXT_PUBLIC_SITE_URL}/vendor/onboarding/complete`,
-      return_url: `${process.env.NUXT_PUBLIC_SITE_URL}/vendor/onboarding/complete`,
+      refresh_url: `${process.env.NUXT_PUBLIC_SITE_URL}/vendor/${vendorId}/dashboard`,
+      return_url: `${process.env.NUXT_PUBLIC_SITE_URL}/vendor/${vendorId}/dashboard`,
       type: 'account_onboarding',
     })
 
