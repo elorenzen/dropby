@@ -155,8 +155,8 @@
             </div>
           </template>
           <template #content>
-            <BaseCalendar :attributes="attributes" :refresh="refreshKey" @dayclick="openDayView" />
-            </template>
+            <BaseCalendar :attributes="attributes" :refresh="refreshKey" />
+          </template>
         </Card>
 
         <!-- Recent Events Table -->
@@ -218,44 +218,7 @@
       </div>
     </div>
 
-    <!-- Add Event Dialog -->
-        <Dialog v-model="addEventDialog" modal :header="`Add Event for ${newEventDate.toLocaleDateString()}`" :style="{ width: '45rem' }">
-            <EventBaseDialog>
-                <template #content>
-                    <Fluid>
-                        <div class="col-span-full">
-                            <FloatLabel variant="on" class="my-4">
-                            <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid hourFormat="12" />
-                <label for="new-event-start" class="block mb-2">Start Time</label>
-                            </FloatLabel>
-                        </div>
-                        <div class="col-span-full">
-                            <FloatLabel variant="on" class="my-4">
-                <label for="new-event-end" class="block mb-2">End Time</label>
-                            <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid hourFormat="12" />
-                            </FloatLabel>
-                        </div>
-                        <div class="col-span-full">
-                            <FloatLabel variant="on" class="my-4">
-                                <Textarea id="notes" v-model="notes" rows="3" />
-                <label for="notes">Notes</label>
-                            </FloatLabel>
-                        </div>
-                    </Fluid>
-                </template>
-                <template #footer>
-                    <div class="flex gap-4 mt-1">
-                        <Button
-                            @click="addEvent"
-              :disabled="!newEventStart || !newEventEnd || new Date(newEventStart).getTime() < new Date().getTime()"
-                            label="Add Event"
-                            class="w-full"
-                            :loading="loading"
-            />
-                    </div>
-                </template>
-            </EventBaseDialog>
-        </Dialog>
+
     </div>
 </template>
 
@@ -264,7 +227,6 @@ definePageMeta({
     middleware: ['auth']
 })
 
-import { v4 as uuidv4 } from 'uuid'
 interface User {
   id: string
   first_name?: string
@@ -316,16 +278,10 @@ await reviewStore.setSentReviews(sentReviews || [])
 useSeoMeta({ title: () => `Dashboard | ${vendor.value?.vendor_name || 'Vendor'}` })
 
 const refreshKey = ref(0)
-const addEventDialog = ref(false)
 const allEvents = ref(eventStore.getAllOpenEvents)
 const bookedEvents = ref(await eventStore.getBookedEventsByVendorId(vendor.value?.id || ''))
 const pendingEvents = ref(await eventStore.getPendingEventsByVendorId(vendor.value?.id || ''))
-const newEventDate = ref(new Date())
-const newEventStart = ref(new Date())
-const newEventEnd = ref(new Date())
-const notes = ref('')
 const loading = ref(false)
-const dayId = ref()
 
 // Analytics data
 const analytics = ref({
@@ -540,85 +496,9 @@ const navigateToRatings = () => {
 }
 
 const goToToday = () => {
-  // Implementation for going to today's date in calendar
   console.log('Go to today')
 }
 
-const openDayView = (day: any) => {
-  newEventDate.value = day.date
-        addEventDialog.value = true
-}
-
-const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  } as any)
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
-  }
-}
-
-const addEvent = async () => {
-    if (!vendor.value?.id) {
-        console.error('Vendor not found')
-        return
-    }
-
-    loading.value = true
-    const startHours = new Date(newEventStart.value).getHours()
-    const endHours = new Date(newEventEnd.value).getHours()
-    const day = new Date(newEventDate.value)
-    const eventStart = new Date(day.setHours(startHours))
-    const eventEnd = new Date(day.setHours(endHours))
-
-    const evtObj = {
-        id: uuidv4(),
-        created_at: new Date().toISOString(),
-        merchant: null,
-        vendor: vendor.value.id,
-        start: eventStart.toISOString(),
-        end: eventEnd.toISOString(),
-        day_id: dayId.value,
-        status: 'booked',
-        vendor_rating: null,
-        merchant_rating: null,
-        vendor_comment: null,
-        merchant_comment: null,
-        notes: notes.value
-    }
-    
-    try {
-        const { error } = await supabase.from('events').insert(evtObj as any)
-        if (error) {
-            console.error('Error creating event:', error)
-    } else {
-      // Add timeline event for created event
-      await addTimelineEvent({
-        ownerId: vendor.value.id,
-        title: 'Event Created',
-        description: `Created event for ${eventStart.toLocaleDateString()} at ${eventStart.toLocaleTimeString()} - ${eventEnd.toLocaleTimeString()}`,
-        type: 'event'
-      })
-      
-      addEventDialog.value = false
-      refreshKey.value++
-      // Reset form
-      newEventStart.value = new Date()
-      newEventEnd.value = new Date()
-      notes.value = ''
-        }
-    } catch (err) {
-        console.error('Error inserting event:', err)
-    }
-    
-    loading.value = false
-  }
-
-// Load real analytics data
 const loadAnalytics = async () => {
   try {
     // Get events for this vendor
