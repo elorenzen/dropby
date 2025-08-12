@@ -1,23 +1,5 @@
 import { defineStore } from 'pinia'
-
-// Define proper interfaces
-export interface User {
-  id: string
-  created_at: string
-  is_admin: boolean
-  first_name: string | null
-  last_name: string | null
-  phone: string | null
-  email: string | null
-  type: string | null
-  available_to_contact: boolean
-  associated_merchant_id: string | null
-  associated_vendor_id: string | null
-  avatar_url: string | null
-  updated_at: string | null
-  stripe_customer_id: string | null
-  current_plan: 'free' | 'pro' | 'premium' | 'enterprise'
-}
+import type { User } from '~/types'
 
 export const useUserStore = defineStore('user', {
   state: () => ({

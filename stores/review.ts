@@ -1,15 +1,5 @@
 import { defineStore } from 'pinia'
-
-export interface Review {
-  id: string
-  created_at: string
-  event_id: string
-  author_id: string
-  sender_id: string
-  recipient_id: string
-  rating: number
-  content: string
-}
+import type { Review } from '~/types'
 
 export const useReviewStore = defineStore('review', {
   state: () => ({

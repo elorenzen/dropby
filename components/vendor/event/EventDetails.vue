@@ -95,26 +95,7 @@
 </template>
 
 <script setup lang="ts">
-interface Event {
-    id: string
-    start: string
-    end: string
-    status: string
-    location_address?: string
-    notes?: string
-    merchant: string
-    pending_requests?: string[]
-    [key: string]: any
-}
-
-interface Merchant {
-    id: string
-    merchant_name: string
-    merchant_description?: string
-    phone?: string
-    email?: string
-    [key: string]: any
-}
+import type { Event, Merchant } from '~/types'
 
 const props = defineProps<{
     event: Event

@@ -1,25 +1,5 @@
 import { defineStore } from 'pinia'
-
-export interface Vendor {
-  id: string
-  vendor_name: string
-  vendor_description: string
-  cuisine: string[]
-  phone: string
-  email: string
-  website: string
-  instagram: string
-  avatar_url: string
-  formatted_address: string
-  coordinates: { lat: number; lng: number }
-  service_radius: number
-  average_merchant_rating: number
-  total_events: number
-  compliance_verified: boolean
-  compliance_score: number
-  created_at: string
-  updated_at: string
-}
+import type { Vendor } from '~/types'
 
 export const useVendorStore = defineStore('vendor', {
   state: () => ({

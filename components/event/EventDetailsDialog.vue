@@ -151,38 +151,7 @@
 </template>
 
 <script setup lang="ts">
-interface Event {
-  id: string
-  merchant: string
-  vendor: string
-  start: string
-  end: string
-  status: string
-  location_address?: string
-  location_coordinates?: string
-  notes?: string
-}
-
-interface Merchant {
-  id: string
-  merchant_name: string
-  merchant_description?: string
-  avatar_url?: string
-  phone?: string
-  email?: string
-  website?: string
-}
-
-interface Vendor {
-  id: string
-  vendor_name: string
-  vendor_description?: string
-  avatar_url?: string
-  phone?: string
-  email?: string
-  website?: string
-  cuisines?: string[]
-}
+import type { Event, Merchant, Vendor } from '~/types'
 
 // Props
 interface Props {

@@ -96,9 +96,11 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 
+import type { Event } from '~/types'
+
 interface Props {
   visible: boolean
-  event: any
+  event: Event
   isVendor?: boolean
   senderId: string
   recipientId: string

@@ -414,25 +414,7 @@ const selectedEventForReview = ref<Event | null>(null)
 // Menu state
 const selectedEventForPastEventsMenu = ref<Event | null>(null)
 
-// Define interfaces for type safety
-interface Event {
-  id: string
-  merchant: string
-  vendor: string | null
-  start: string
-  end: string
-  status: string
-  pending_requests?: string[]
-  location_address?: string
-  event_value?: number
-}
-
-interface Merchant {
-  id: string
-  merchant_name?: string
-  avatar_url?: string
-  cuisine?: string[]
-}
+import type { Event, Merchant } from '~/types'
 
 // Filter state for open events
 const openEventsFilters = ref({

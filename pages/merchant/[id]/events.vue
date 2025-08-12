@@ -594,26 +594,7 @@ const showPaymentDialog = ref(false)
 const selectedEventForPayment = ref<Event | null>(null)
 const selectedVendorForPayment = ref<{ id: string; name: string } | null>(null)
 
-// Define interfaces for type safety
-interface Event {
-  id: string
-  merchant: string
-  vendor: string | null
-  start: string
-  end: string
-  status: string
-  pending_requests?: string[]
-  vendor_id?: string
-  location_address?: string
-  event_value?: number
-}
-
-interface Vendor {
-  id: string
-  vendor_name?: string
-  avatar_url?: string
-  cuisine?: string[]
-}
+import type { Event, Vendor } from '~/types'
 
 // Filter state for past events
 const pastEventsFilters = ref({

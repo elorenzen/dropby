@@ -1,38 +1,5 @@
 import { defineStore } from 'pinia'
-
-export interface Event {
-  id: string
-  created_at: string
-  vendor: string | null
-  merchant: string | null
-  start: string
-  end: string
-  location_coordinates: string
-  status: string
-  vendor_rating: number | null
-  merchant_rating: number | null
-  vendor_comment: string | null
-  merchant_comment: string | null
-  updated_at: string
-  pending_requests: any[]
-  location_url: string | null
-  location_address: string | null
-  notes: string | null
-  day_id: string | null
-  event_value: number | null
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded'
-  payment_id: string | null
-}
-
-export interface TimelineItem {
-  id: string
-  created_at: string
-  owner_id: string
-  other_ids: any[]
-  title: string
-  description: string | null
-  type: string
-}
+import type { Event, TimelineItem } from '~/types'
 
 export const useEventStore = defineStore('event', {
   state: () => ({

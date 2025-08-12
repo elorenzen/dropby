@@ -226,36 +226,7 @@
 </template>
 
 <script setup lang="ts">
-interface Event {
-  id: string
-  merchant: string
-  vendor: string | null
-  start: string
-  end: string
-  status: string
-  notes?: string
-  location_address?: string
-  pending_requests?: string[]
-  event_value?: number
-}
-
-interface Merchant {
-  id: string
-  merchant_name?: string
-  merchant_description?: string
-  phone?: string
-  email?: string
-  website?: string
-  instagram?: string
-  formatted_address?: string
-  address_components?: any
-  coordinates?: string
-  address_url?: string
-  business_hours?: any
-  notes?: string
-  preferred_vendors?: string[]
-  avatar_url?: string
-}
+import type { Event, Merchant } from '~/types'
 
 interface Props {
   visible: boolean

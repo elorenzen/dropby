@@ -295,34 +295,7 @@ const pendingReviews = computed(() => completedVendorEvents.value.filter((event:
   return !sentReviews.value.some((review: Review) => review.event_id === event.id)
 }))
 
-interface Event {
-  id: string
-  vendor: string
-  day_id: string
-  start: string
-  end: string
-  status: string
-  merchant: string
-}
-
-interface Review {
-  id: string
-  merchant_avatar?: string
-  merchant_name?: string
-  cuisine_type?: string
-  event_title?: string
-  event_date?: string
-  comment?: string
-  rating: number
-  created_at: string
-  event_id?: string
-  author_id?: string
-  sender_id?: string
-  recipient_id?: string
-  content?: string
-  user_name?: string
-  user_email?: string
-}
+import type { Event, Review } from '~/types'
 
 // Analytics data
 const analytics = ref({

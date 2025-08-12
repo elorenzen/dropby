@@ -1,24 +1,5 @@
 import { defineStore } from 'pinia'
-
-export interface Merchant {
-  id: string
-  merchant_name: string
-  merchant_description: string
-  formatted_address: string
-  coordinates: { lat: number; lng: number }
-  address_url: string
-  phone: string
-  email: string
-  website: string
-  instagram: string
-  business_hours: any[]
-  notes: string
-  default_event_value: number
-  compliance_verified: boolean
-  compliance_score: number
-  created_at: string
-  updated_at: string
-}
+import type { Merchant } from '~/types'
 
 export const useMerchantStore = defineStore('merchant', {
   state: () => ({

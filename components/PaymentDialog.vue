@@ -169,14 +169,7 @@
 import { loadStripe } from '@stripe/stripe-js'
 import { v4 as uuidv4 } from 'uuid'
 
-interface Event {
-  id: string
-  start: string
-  end: string
-  location_address?: string
-  event_value?: number
-  [key: string]: any
-}
+import type { Event } from '~/types'
 
 interface PaymentData {
   paymentId: string

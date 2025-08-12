@@ -138,6 +138,7 @@
 </template>
 
 <script setup lang="ts">
+// Plan interface for subscription plans display
 interface Plan {
   id: string
   name: string

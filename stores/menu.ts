@@ -1,19 +1,5 @@
 import { defineStore } from 'pinia'
-
-export interface MenuItem {
-  id: string
-  name: string
-  description: string
-  price: number
-  type: string
-  vendor_id: string
-  creator_id: string
-  image_url?: string
-  image_name?: string
-  special: boolean
-  created_at: string
-  updated_at: string
-}
+import type { MenuItem } from '~/types'
 
 export const useMenuStore = defineStore('menu', {
   state: () => ({

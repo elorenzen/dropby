@@ -260,15 +260,7 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 
-interface DocumentCategory {
-  id: string
-  title: string
-  description: string
-  required: boolean
-  category: string
-  business_type: 'merchant' | 'vendor'
-  order_index: number
-}
+import type { ComplianceRequirement } from '~/types'
 
 interface DocumentInfo {
   type: string
@@ -309,7 +301,7 @@ const loadComplianceRequirements = async () => {
 
 // Upload state
 const showUploadDialog = ref(false)
-const selectedCategory = ref<DocumentCategory | null>(null)
+const selectedCategory = ref<ComplianceRequirement | null>(null)
 const uploadedFile = ref<File | null>(null)
 const uploading = ref(false)
 const documentInfo = ref<DocumentInfo>({
@@ -388,7 +380,7 @@ const verifiedDocuments = computed(() => {
 })
 
 // Dialog functions
-const openUploadDialog = (category: DocumentCategory) => {
+const openUploadDialog = (category: ComplianceRequirement) => {
   selectedCategory.value = category
   documentInfo.value.type = category.title
   showUploadDialog.value = true

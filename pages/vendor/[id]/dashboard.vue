@@ -227,19 +227,7 @@ definePageMeta({
     middleware: ['auth']
 })
 
-interface User {
-  id: string
-  first_name?: string
-  last_name?: string
-  associated_vendor_id?: string
-  [key: string]: any
-}
-
-interface Vendor {
-  id: string
-  vendor_name?: string
-  [key: string]: any
-}
+import type { User, Vendor } from '~/types'
 
 const supabase = useSupabaseClient()
 const userStore = useUserStore()
