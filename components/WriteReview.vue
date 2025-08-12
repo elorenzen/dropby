@@ -115,11 +115,12 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const toast = useToast()
 const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
+const reviewStore = useReviewStore()
+const timelineStore = useTimelineStore()
 
 // Reactive data
 const review = ref('')
@@ -158,15 +159,16 @@ const getRecipientAvatar = (): string => {
 }
 
 const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  } as any)
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
+  try {
+    await timelineStore.createTimelineItem({
+      id: uuidv4(),
+      owner_id: timelineObj.ownerId,
+      title: timelineObj.title,
+      description: timelineObj.description,
+      type: timelineObj.type
+    })
+  } catch (error) {
+    console.error('Timeline Event Creation Error:', error)
   }
 }
 
@@ -193,7 +195,7 @@ const submitReview = async () => {
 
   try {
     loading.value = true
-    const { data, error } = await supabase.from('reviews').insert({
+    await reviewStore.createReview({
       id: uuidv4(),
       created_at: new Date().toISOString(),
       author_id: user.value?.id,
@@ -202,11 +204,7 @@ const submitReview = async () => {
       content: review.value,
       rating: rating.value,
       event_id: props.event?.id,
-    } as any).select().single() as { data: any, error: any }
-    
-    if (error) {
-      throw error
-    }
+    })
     
     // Add timeline event for successful review submission
     await addTimelineEvent({

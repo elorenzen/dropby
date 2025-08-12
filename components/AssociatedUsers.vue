@@ -91,7 +91,6 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
-const supabase        = useSupabaseClient()
 const store           = useUserStore()
 const user:any        = store.getUser
 const assocId         = user[`associated_${user.type}_id`]
@@ -142,8 +141,8 @@ const addUser = async () => {
         associated_merchant_id: user.type == 'merchant' ? user[`associated_${user.type}_id`] : null,
         associated_vendor_id: user.type == 'vendor' ? user[`associated_${user.type}_id`] : null,
     }
-    const { error } = await supabase.from('users').insert(userObj)
-    if (!error) {
+    try {
+        await store.createUser(userObj)
         snackbar.value = true
         snacktext.value = 'New user added!'
 
@@ -151,9 +150,9 @@ const addUser = async () => {
 
         getAssociatedUsers()
         openDialog.value = false
-    } else {
+    } catch (error: any) {
         errType.value = 'User Creation'
-        errMsg.value = error.message
+        errMsg.value = error.message || 'Failed to create user'
         errDialog.value = true
     }
 }
@@ -184,21 +183,17 @@ const submitEdits = async () => {
         phone: phone.value
     }
 
-    const { error } = await supabase
-        .from('users')
-        .update(userObj)
-        .eq('id', editId.value)
-
-    if (!error) {
+    try {
+        await store.updateUser(editId.value, userObj)
         snackbar.value = true
-        snacktext.value = 'Menu item edited!'
+        snacktext.value = 'User updated!'
 
         resetFields()
         getAssociatedUsers()
         openDialog.value = false
-    } else {
+    } catch (error: any) {
         errType.value = 'User Update(s)'
-        errMsg.value = error.message
+        errMsg.value = error.message || 'Failed to update user'
         errDialog.value = true
     }
 }
@@ -216,21 +211,17 @@ const promptDeletion = (item: any) => {
     deleteDialog.value = true
 }
 const confirmDelete = async () => {
-    const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userToDelete.value.id)
-
-    if (!error) {
+    try {
+        await store.deleteUser(userToDelete.value.id)
         snackbar.value = true
         snacktext.value = 'User deleted.'
 
         getAssociatedUsers()
         deleteDialog.value = false
         userToDelete.value = null
-    } else {
+    } catch (error: any) {
         errType.value = 'User Deletion'
-        errMsg.value = error.message
+        errMsg.value = error.message || 'Failed to delete user'
         errDialog.value = true
     }
 }

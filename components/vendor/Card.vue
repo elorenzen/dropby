@@ -68,13 +68,8 @@
 <script setup lang="ts">
 const props    = defineProps(['id']);
 const idParam = ref(props.id)
-const supabase = useSupabaseClient()
 const menuStore = useMenuStore()
-const { data: menuData } = await supabase
-    .from('menu_items')
-    .select()
-    .eq('vendor_id', idParam.value)
-await menuStore.setMenuItems(menuData)
+await menuStore.loadMenuItems(idParam.value)
 const menuItems = menuStore.getMenuItems
 
 const vendorStore = useVendorStore()

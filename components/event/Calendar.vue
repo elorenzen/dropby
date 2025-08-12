@@ -59,45 +59,12 @@
         </template>
       </Card>
       <!-- NEW EVENT -->
-      <Card v-else style="overflow: hidden">
-        <template #content>
-          <Fluid>
-              <div class="col-span-full">
-                <FloatLabel variant="on" class="my-4">
-                  <DatePicker id="new-event-start" v-model="newEventStart" timeOnly fluid hourFormat="12" />
-                  <label for="new-event-start" class="block mb-2"> Start Time</label>
-                </FloatLabel>
-              </div>
-              <div class="col-span-full">
-                <FloatLabel variant="on" class="my-4">
-                  <label for="new-event-end" class="block mb-2"> End Time</label>
-                  <DatePicker id="new-event-end" v-model="newEventEnd" timeOnly fluid hourFormat="12" />
-                </FloatLabel>
-              </div>
-              <div class="col-span-full">
-                  <FloatLabel variant="on" class="my-4">
-                      <Textarea id="notes" v-model="notes" rows="3" />
-                      <label for="notes">Notes for Vendor</label>
-                  </FloatLabel>
-              </div>
-          </Fluid>
-        </template>
-        <template #footer>
-            <div class="flex gap-4 mt-1">
-                <Button
-                  @click="addEvent"
-                  :disabled="
-                    !newEventStart ||
-                    !newEventEnd ||
-                    new Date(newEventStart.value).getTime() < new Date().getTime()
-                  "
-                  label="Add Event"
-                  class="w-full"
-                  :loading="loading"
-                ></Button>
-            </div>
-        </template>
-      </Card>
+      <EventCreate 
+        v-model:visible="showCreateDialog"
+        :merchant="merchant"
+        :business-hours="businessHours"
+        @event-created="onEventCreated"
+      />
     </Dialog>
 
     <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
@@ -141,8 +108,7 @@
   const deleteDialog  = ref(false)
   const loading       = ref(false)
 
-  const newEventStart = ref()
-  const newEventEnd   = ref()
+  const showCreateDialog = ref(false)
   const refresh       = ref(0)
 
   const allOpenDates = computed(() => {
@@ -158,10 +124,7 @@
     return allPendingEvents.map((e: any) => new Date(e.start))
   })
 
-  watch(newEventStart, (newVal) => {
-    console.log(new Date(newVal).getTime())
-    console.log(new Date().getTime())
-  })
+
 
   const attributes = ref([
     {
@@ -213,11 +176,7 @@
       (new Date(day.date).getTime() > new Date().getTime()) &&
       businessHours.value.length > 0
     ) {
-      const dayOfWeek = new Date(day.date).getDay()
-      const dayOpen = getBusinessHour(dayOfWeek, 'open')
-      const dayClose = getBusinessHour(dayOfWeek, 'close')
-      newEventStart.value = new Date(`${day.id} ${dayOpen}`)
-      newEventEnd.value = new Date(`${day.id} ${dayClose}`)
+      showCreateDialog.value = true
     }
     dayViewDialog.value = true
   }
@@ -268,47 +227,9 @@
               return null;
       }
   };
-  const addEvent = async () => {
-    loading.value    = true
-    const startHours = new Date(newEventStart.value).getHours()
-    const endHours   = new Date(newEventEnd.value).getHours()
-    const day        = dayDate.value
-    const eventStart = day.setHours(startHours)
-    const eventEnd   = day.setHours(endHours)
-
-    const evtObj = {
-        id: v4(),
-        created_at: new Date(),
-        merchant: merchant.value.id,
-        vendor: null,
-        start: new Date(eventStart),
-        end: new Date(eventEnd),
-        day_id: dayId.value,
-        location_coordinates: merchant.value.coordinates,
-        location_address: merchant.value.formatted_address,
-        location_url: merchant.value.address_url,
-        status: 'open',
-        vendor_rating: null,
-        merchant_rating: null,
-        vendor_comment: null,
-        merchant_comment: null,
-        notes: notes.value !== '' ? notes.value : merchant.value.notes
-    }
-    const { error } = await supabase.from('events').insert(evtObj)
-    if (!error) {
-      await resetFields('created')
-      await addTimelineEvent({
-        ownerId: user.value.associated_merchant_id,
-        title: 'Event Created',
-        description: `Event created by ${user.value.first_name} ${user.value.last_name} for ${evtObj.start} - ${evtObj.end}`,
-        type: 'event'
-      })
-    } else {
-        errType.value = 'Event Creation'
-        errMsg.value = error.message
-        errDialog.value = true
-    }
-    loading.value = false
+  const onEventCreated = () => {
+    refresh.value++
+    dayViewDialog.value = false
   }
   const addTimelineEvent = async (timelineObj: any) => {
     const { error } = await supabase.from('timeline_items').insert({
@@ -341,8 +262,6 @@
   const resetFields = async (action: any) => {
       dayViewDialog.value = false
       toast.add({ severity: 'success', summary: 'Success', detail: `Event ${action}!`, group: 'main', life: 6000 })
-      newEventStart.value = ''
-      newEventEnd.value = ''
       notes.value = ''
       refresh.value++
   }

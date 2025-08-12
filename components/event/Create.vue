@@ -127,8 +127,9 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const supabase = useSupabaseClient()
 const toast = useToast()
+const eventStore = useEventStore()
+const timelineStore = useTimelineStore()
 
 // Reactive data
 const loading = ref(false)
@@ -174,19 +175,6 @@ const getBusinessHour = (day: number, type: 'open' | 'close'): string => {
       return safeHours[5]?.[type] || (type === 'open' ? '09:00' : '17:00')
     default:
       return type === 'open' ? '09:00' : '17:00'
-  }
-}
-
-const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  } as any)
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
   }
 }
 
@@ -283,16 +271,16 @@ const createEvent = async () => {
 
     const evtObj = {
       id: uuidv4(),
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
       merchant: props.merchant.id,
-      vendor: null,
-      start: new Date(eventStartTime),
-      end: new Date(eventEndTime),
+      vendor: undefined,
+      start: new Date(eventStartTime).toISOString(),
+      end: new Date(eventEndTime).toISOString(),
       day_id: new Date(eventDate.value).toISOString().split('T')[0],
       location_coordinates: props.merchant.coordinates,
       location_address: props.merchant.formatted_address,
       location_url: props.merchant.address_url,
-      status: 'open',
+      status: 'open' as const,
       vendor_rating: null,
       merchant_rating: null,
       vendor_comment: null,
@@ -302,12 +290,9 @@ const createEvent = async () => {
       payment_status: 'pending'
     }
 
-    const { error } = await supabase.from('events').insert(evtObj as any)
+    // Use Event Store to create event
+    await eventStore.createEvent(evtObj)
     
-    if (error) {
-      throw error
-    }
-
     // Increment usage after successful event creation
     try {
       await $fetch('/api/usage/increment', {
@@ -323,9 +308,10 @@ const createEvent = async () => {
       // Don't fail the event creation if usage tracking fails
     }
 
-    // Add timeline event
-    await addTimelineEvent({
-      ownerId: props.merchant.id,
+    // Add timeline event using Timeline Store
+    await timelineStore.createTimelineItem({
+      id: uuidv4(),
+      owner_id: props.merchant.id,
       title: 'Event Created',
       description: `Event created for ${new Date(eventStartTime).toLocaleDateString()} ${new Date(eventStartTime).toLocaleTimeString()} - ${new Date(eventEndTime).toLocaleTimeString()}`,
       type: 'event'

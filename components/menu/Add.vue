@@ -85,9 +85,9 @@
 
 <script setup lang="ts">
     import { v4 } from 'uuid'
-    const supabase    = useSupabaseClient()
     const props       = defineProps(['id', 'vendor'])
     const emit        = defineEmits(['created', 'errored'])
+    const menuStore   = useMenuStore()
     const name        = ref()
     const description = ref()
     const type        = ref()
@@ -119,9 +119,12 @@
             price: price.value,
             special: special.value // default: FALSE, set to TRUE if item is seasonal/limited edition
         }
-        const { error } = await supabase.from('menu_items').insert(itemObj)
-        if (!error) emit('created', 'Created')
-        else emit('errored', error.message)
+        try {
+            await menuStore.createMenuItem(itemObj)
+            emit('created', 'Created')
+        } catch (error: any) {
+            emit('errored', error.message || 'Failed to create menu item')
+        }
         loading.value = false
     }
     const addImage = async (e: any) => {

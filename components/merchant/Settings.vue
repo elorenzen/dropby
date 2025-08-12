@@ -299,88 +299,10 @@
 
         <!-- COMPLIANCE & DOCUMENTS TAB -->
         <div v-if="activeTab === 3" class="space-y-6">
-          <h2 class="text-2xl font-bold text-text-main mb-6">Compliance & Documents</h2>
-          
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Business Documents -->
-            <div class="space-y-6">
-              <h3 class="text-xl font-semibold text-text-main">Business Documents</h3>
-              <div class="space-y-4">
-                <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg bg-surface-light">
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-file-pdf text-2xl text-red-500"></i>
-                    <div>
-                      <p class="font-semibold text-text-main">Business License</p>
-                      <p class="text-sm text-text-muted">Uploaded 2 months ago</p>
-                    </div>
-                  </div>
-                  <div class="flex space-x-2">
-                    <Button icon="pi pi-eye" class="p-button-text text-text-muted" />
-                    <Button icon="pi pi-download" class="p-button-text text-text-muted" />
-                  </div>
-                </div>
-                
-                <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg bg-surface-light">
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-file-pdf text-2xl text-red-500"></i>
-                    <div>
-                      <p class="font-semibold text-text-main">Health Permit</p>
-                      <p class="text-sm text-text-muted">Uploaded 1 month ago</p>
-                    </div>
-                  </div>
-                  <div class="flex space-x-2">
-                    <Button icon="pi pi-eye" class="p-button-text text-text-muted" />
-                    <Button icon="pi pi-download" class="p-button-text text-text-muted" />
-                  </div>
-                </div>
-                
-                <FileUpload
-                  mode="basic"
-                  accept=".pdf,.doc,.docx"
-                  :maxFileSize="5000000"
-                  chooseLabel="Upload Document"
-                  class="w-full"
-                />
-              </div>
-            </div>
-
-            <!-- Compliance Status -->
-            <div class="space-y-6">
-              <h3 class="text-xl font-semibold text-text-main">Compliance Status</h3>
-              <div class="space-y-4">
-                <div class="flex items-center justify-between p-4 border border-green-200 bg-green-50 rounded-lg">
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-check-circle text-2xl text-green-600"></i>
-                    <div>
-                      <p class="font-semibold text-text-main">Business License</p>
-                      <p class="text-sm text-green-600">Valid until Dec 2024</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="flex items-center justify-between p-4 border border-green-200 bg-green-50 rounded-lg">
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-check-circle text-2xl text-green-600"></i>
-                    <div>
-                      <p class="font-semibold text-text-main">Health Permit</p>
-                      <p class="text-sm text-green-600">Valid until Mar 2025</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="flex items-center justify-between p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-exclamation-triangle text-2xl text-yellow-600"></i>
-                    <div>
-                      <p class="font-semibold text-text-main">Insurance Certificate</p>
-                      <p class="text-sm text-yellow-600">Expires in 30 days</p>
-                    </div>
-                  </div>
-                  <Button label="Renew" class="p-button-sm p-button-warning" />
-                </div>
-              </div>
-            </div>
-          </div>
+            <ComplianceUpload 
+              :business-id="merchant.id" 
+              business-type="merchant" 
+            />
         </div>
 
         <!-- USER MANAGEMENT TAB -->
@@ -389,10 +311,10 @@
           <AssociatedUsers />
         </div>
       </div>
+      
+      <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
+      <Toast group="main" position="bottom-center" @close="onClose" />
     </div>
-
-    <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
-    <Toast group="main" position="bottom-center" @close="onClose" />
   </div>
 </template>
 

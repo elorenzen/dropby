@@ -73,9 +73,9 @@
 
 <script setup lang="ts">
     import { v4 } from 'uuid'
-    const supabase    = useSupabaseClient()
     const props       = defineProps(['item', 'vendor'])
     const emit        = defineEmits(['edited', 'errored'])
+    const menuStore   = useMenuStore()
     const item         = ref(props.item)
     const errDialog    = ref(false)
     const errType      = ref()
@@ -98,13 +98,14 @@
             status: item.value.status
         }
 
-        const { error } = await supabase
-            .from('menu_items')
-            .update(itemObj)
-            .eq('id', item.value.id)
-        loading.value = false
-        if (!error) emit('edited', 'Edited')
-        else emit('errored', error.message)
+        try {
+            await menuStore.updateMenuItem(item.value.id, itemObj)
+            emit('edited', 'Edited')
+        } catch (error: any) {
+            emit('errored', error.message || 'Failed to update menu item')
+        } finally {
+            loading.value = false
+        }
     }
 
     const updateImage = async (e: any, prevFile: any) => {

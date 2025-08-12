@@ -105,11 +105,11 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 
-    const supabase      = useSupabaseClient()
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
     const vendorStore   = useVendorStore()
+    const timelineStore = useTimelineStore()
     const events        = ref(eventStore.getAllOpenEvents)
     const merchants     = merchantStore.getAllMerchants
     const user          = ref(userStore.user)
@@ -153,15 +153,16 @@ import { v4 as uuidv4 } from 'uuid'
         openViewDialog.value = true
     }
     const addTimelineEvent = async (timelineObj: any) => {
-        const { error } = await supabase.from('timeline_items').insert({
-            id: uuidv4(),
-            owner_id: timelineObj.ownerId,
-            title: timelineObj.title,
-            description: timelineObj.description,
-            type: timelineObj.type
-        })
-        if (error) {
-            console.error('Timeline Event Creation Error:', error.message)
+        try {
+            await timelineStore.createTimelineItem({
+                id: uuidv4(),
+                owner_id: timelineObj.ownerId,
+                title: timelineObj.title,
+                description: timelineObj.description,
+                type: timelineObj.type
+            })
+        } catch (error) {
+            console.error('Timeline Event Creation Error:', error)
         }
     }
 
@@ -198,12 +199,9 @@ import { v4 as uuidv4 } from 'uuid'
                 updated_at: new Date(),
                 pending_requests: reqArr
             }
-            const { error } = await supabase
-                .from('events')
-                .update(updates)
-                .eq('id', selectedEvt.value.id)
-            
-            if (!error) {
+            try {
+                await eventStore.updateEvent(selectedEvt.value.id, updates)
+                
                 // Increment usage after successful request
                 await $fetch('/api/usage/increment', {
                     method: 'POST',
@@ -236,9 +234,9 @@ import { v4 as uuidv4 } from 'uuid'
                 selectedEvt.value = ''
                 selectedMerchant.value = ''
                 toast.add({ severity: 'success', summary: 'Success', detail: 'Event requested! Merchant has been notified.', group: 'main', life: 6000 })
-            } else {
+            } catch (error: any) {
                 errDialog.value = true
-                errMsg.value = error.message
+                errMsg.value = error.message || 'Failed to update event'
             }
         } catch (err) {
             console.error('Request event error:', err)
@@ -258,12 +256,9 @@ import { v4 as uuidv4 } from 'uuid'
             updated_at: new Date(),
             pending_requests: reqArr
         }
-        const { error } = await supabase
-            .from('events')
-            .update(updates)
-            .eq('id', selectedEvt.value.id)
+        try {
+            await eventStore.updateEvent(selectedEvt.value.id, updates)
             
-        if (!error) {
             // Add timeline event for cancelled request
             await addTimelineEvent({
                 ownerId: vendor.value.id,
@@ -277,9 +272,9 @@ import { v4 as uuidv4 } from 'uuid'
             selectedEvt.value = ''
             selectedMerchant.value = ''
             toast.add({ severity: 'success', summary: 'Success', detail: 'Request cancelled!', group: 'main', life: 6000 })
-        } else {
+        } catch (error: any) {
             errDialog.value = true
-            errMsg.value = error.message
+            errMsg.value = error.message || 'Failed to update event'
         }
         loading.value = false
     }

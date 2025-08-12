@@ -119,17 +119,24 @@ const promptDeletion = (item:any) => {
     deleteDialog.value = true
 }
 const confirmDelete = async () => {
-    const { error: itemErr } = await supabase
-        .from('menu_items')
-        .delete()
-        .eq('id', itemToDelete.value.id)
-    const { error: imgErr } = await supabase
-        .storage
-        .from('menu_images')
-        .remove([itemToDelete.value.image_name])
-    
-    if (!itemErr && !imgErr) await resetFields('Deleted')
-    else throwErr('Item Deletion', itemErr ? itemErr.message : imgErr?.message)
+    try {
+        // Delete from database using store
+        await store.deleteMenuItem(itemToDelete.value.id)
+        
+        // Delete image from storage
+        const { error: imgErr } = await supabase
+            .storage
+            .from('menu_images')
+            .remove([itemToDelete.value.image_name])
+        
+        if (imgErr) {
+            console.warn('Image deletion failed:', imgErr.message)
+        }
+        
+        await resetFields('Deleted')
+    } catch (error: any) {
+        throwErr('Item Deletion', error.message || 'Failed to delete menu item')
+    }
 }
 const cancelDelete = () => {
     deleteDialog.value = false

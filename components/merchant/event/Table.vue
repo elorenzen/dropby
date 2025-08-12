@@ -117,42 +117,12 @@
             </DataView>
         </Dialog>
 
-        <Dialog v-model:visible="openAddDialog" modal header="Add Event" :style="{ width: '25rem' }">
-            <Card style="overflow: hidden;">
-                <template #content>
-                    <Fluid>
-                        <div class="col-span-full">
-                            <FloatLabel variant="on" class="mb-4">
-                                <DatePicker v-model="evtStart" inputId="evt_start" showTime hourFormat="12" showIcon iconDisplay="input" />
-                                <label for="evt_start">Event Start</label>
-                            </FloatLabel>
-                        </div>
-                        <div class="col-span-full">
-                            <FloatLabel variant="on" class="mb-4">
-                                <DatePicker v-model="evtEnd" inputId="evt_end" showTime hourFormat="12" showIcon iconDisplay="input" />
-                                <label for="evt_end">Event End</label>
-                            </FloatLabel>
-                        </div>
-                        <div class="col-span-full">
-                            <FloatLabel variant="on" class="mb-4">
-                                <Textarea id="notes" v-model="notes" rows="3" />
-                                <label for="notes">Notes for Vendor</label>
-                            </FloatLabel>
-                        </div>
-                    </Fluid>
-                </template>
-                <template #footer>
-                    <div class="flex justify-end gap-2 ma-4">
-                        <Button
-                            class="w-full"
-                            @click="addItem"
-                            :disabled="evtStart == '' || evtEnd == ''"
-                            :loading="loading"
-                        >Save</Button>
-                    </div>  
-                </template>
-            </Card>
-        </Dialog>
+        <EventCreate 
+          v-model:visible="openAddDialog"
+          :merchant="merchant"
+          :business-hours="merchant?.business_hours || []"
+          @event-created="onEventCreated"
+        />
 
         <DeleteDialog v-if="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
@@ -191,10 +161,12 @@ const openRequestDialog = ref(false)
 const deleteDialog      = ref(false)
 
 
-// EVENT DATA
-const evtStart = ref('')
-const evtEnd = ref('')
-const notes = ref('')
+// Event handler
+const onEventCreated = () => {
+  openAddDialog.value = false
+  // Refresh events list
+  eventStore.loadEvents()
+}
 
 const errDialog = ref(false)
 const errMsg = ref()
@@ -222,46 +194,7 @@ onMounted(async () => {
     }
 })
 
-const addEvent = async () => {
-    loading.value = true
-    if (user) {
-        // date funcs for formatting 'day_id' val
-        const start = evtStart.value
-        const year = (new Date(start).getFullYear()).toString()
-        let month = ((new Date(start).getMonth()) + 1).toString()
-        if (month.length < 2) month = '0' + month
-        let day = (new Date(start).getDate()).toString()
-        if (day.length < 2) day = '0' + day
 
-        const evtObj = {
-            id: v4(),
-            created_at: new Date(),
-            merchant: user.value?.associated_merchant_id,
-            vendor: null,
-            start: evtStart.value,
-            end: evtEnd.value,
-            day_id: `${year}-${month}-${day}`,
-            location_coordinates: merchant.value?.coordinates,
-            location_address: merchant.value?.formatted_address,
-            location_url: merchant.value?.address_url,
-            status: 'open',
-            vendor_rating: null,
-            merchant_rating: null,
-            vendor_comment: null,
-            merchant_comment: null,
-            notes: notes.value !== '' ? notes.value : merchant.value?.notes
-        }
-        const { error } = await supabase.from('events').insert(evtObj)
-
-        if (!error) await resetFields('created')
-        else {
-            errType.value = 'Event Creation'
-            errMsg.value = error.message
-            errDialog.value = true
-        }
-    }
-    loading.value = false
-}
 const selectRow = (event: any) => {
     selectedEvt.value = event.data
 
@@ -320,8 +253,6 @@ const resetFields = async (action: any) => {
     selectedEvt.value = null
     openEditDialog.value = false
     openAddDialog.value = false
-    evtStart.value = ''
-    evtEnd.value = ''
 }
 const getStatusLabel = (status: any) => {
     switch (status) {

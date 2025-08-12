@@ -25,10 +25,10 @@
               <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3">
                   <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <i :class="category.icon" class="text-gray-600 dark:text-gray-400"></i>
+                    <i class="pi pi-file-pdf text-gray-600 dark:text-gray-400"></i>
                   </div>
                   <div>
-                    <h4 class="font-medium text-text-main">{{ category.name }}</h4>
+                    <h4 class="font-medium text-text-main">{{ category.title }}</h4>
                     <p class="text-sm text-text-muted">{{ category.description }}</p>
                     <div class="flex items-center gap-2 mt-2">
                       <Tag 
@@ -59,30 +59,81 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div class="text-center">
                 <div class="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {{ completedDocuments }}
+                  {{ complianceStore.complianceScore }}%
                 </div>
-                <div class="text-text-muted">Completed</div>
+                <div class="text-text-muted">Compliance Score</div>
               </div>
               <div class="text-center">
                 <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  {{ pendingDocuments }}
+                  {{ complianceStore.pendingDocuments.length }}
                 </div>
                 <div class="text-text-muted">Pending</div>
               </div>
               <div class="text-center">
                 <div class="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {{ expiredDocuments }}
+                  {{ complianceStore.expiredDocuments.length }}
                 </div>
                 <div class="text-text-muted">Expired</div>
               </div>
               <div class="text-center">
                 <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {{ verifiedDocuments }}
+                  {{ complianceStore.verifiedDocuments.length }}
                 </div>
                 <div class="text-text-muted">Verified</div>
               </div>
             </div>
+            
+            <!-- Operation Status -->
+            <div class="mt-4 p-3 rounded-lg" :class="complianceStore.canBusinessOperate ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'">
+              <div class="flex items-center gap-2">
+                <i :class="complianceStore.canBusinessOperate ? 'pi pi-check-circle text-green-600' : 'pi pi-times-circle text-red-600'"></i>
+                <span class="font-medium" :class="complianceStore.canBusinessOperate ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'">
+                  {{ complianceStore.canBusinessOperate ? 'Business Can Operate' : 'Business Cannot Operate' }}
+                </span>
+              </div>
+              <p class="text-sm mt-1" :class="complianceStore.canBusinessOperate ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'">
+                {{ complianceStore.canBusinessOperate ? 'All required documents are valid and verified' : 'Some required documents are missing, expired, or unverified' }}
+              </p>
+            </div>
           </div>
+
+          <!-- Expiry Notifications -->
+          <div v-if="complianceStore.getExpiryNotifications(props.businessId).length > 0" class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+            <h4 class="font-medium text-text-main mb-3">⚠️ Document Expiry Alerts</h4>
+            <div class="space-y-2">
+              <div 
+                v-for="notification in complianceStore.getExpiryNotifications(props.businessId)" 
+                :key="notification.documentId"
+                class="flex items-center justify-between p-3 rounded-lg"
+                :class="{
+                  'bg-red-100 dark:bg-red-900/30': notification.severity === 'expired',
+                  'bg-orange-100 dark:bg-orange-900/30': notification.severity === 'urgent',
+                  'bg-yellow-100 dark:bg-yellow-900/30': notification.severity === 'warning'
+                }"
+              >
+                <div class="flex items-center gap-3">
+                  <i :class="{
+                    'pi pi-exclamation-triangle text-red-600': notification.severity === 'expired',
+                    'pi pi-exclamation-circle text-orange-600': notification.severity === 'urgent',
+                    'pi pi-info-circle text-yellow-600': notification.severity === 'warning'
+                  }"></i>
+                  <div>
+                    <div class="font-medium text-text-main">{{ notification.documentTitle }}</div>
+                    <div class="text-sm text-text-muted">
+                      {{ notification.isExpired ? 'Expired' : `Expires in ${notification.daysUntilExpiry} days` }}
+                    </div>
+                  </div>
+                </div>
+                <Tag 
+                  :value="notification.severity === 'expired' ? 'EXPIRED' : notification.severity === 'urgent' ? 'URGENT' : 'WARNING'"
+                  :severity="notification.severity === 'expired' ? 'danger' : notification.severity === 'urgent' ? 'warning' : 'info'"
+                  size="small"
+                />
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </template>
     </Card>
@@ -100,8 +151,8 @@
             <i class="pi pi-upload text-blue-600 dark:text-blue-400"></i>
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-text-main">Upload {{ selectedCategory?.name }}</h3>
-            <p class="text-sm text-text-muted">Upload your {{ selectedCategory?.name.toLowerCase() }} document</p>
+            <h3 class="text-xl font-semibold text-text-main">Upload {{ selectedCategory?.title }}</h3>
+            <p class="text-sm text-text-muted">Upload your {{ selectedCategory?.title.toLowerCase() }} document</p>
           </div>
         </div>
       </template>
@@ -113,7 +164,7 @@
             <label class="block text-sm font-medium text-text-main mb-2">Document Type</label>
             <InputText 
               v-model="documentInfo.type" 
-              :placeholder="selectedCategory?.name"
+              :placeholder="selectedCategory?.title"
               class="w-full"
             />
           </div>
@@ -140,7 +191,7 @@
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Document Number</label>
             <InputText 
-              v-model="documentInfo.number" 
+              v-model="documentInfo.document_number" 
               placeholder="e.g., LICENSE-12345"
               class="w-full"
             />
@@ -149,7 +200,7 @@
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Issuing Authority</label>
             <InputText 
-              v-model="documentInfo.authority" 
+              v-model="documentInfo.issuing_authority" 
               placeholder="e.g., City Health Department"
               class="w-full"
             />
@@ -167,6 +218,7 @@
             :auto="true"
             chooseLabel="Choose File"
             class="w-full"
+            @select="onFileSelect"
           />
           <p class="text-xs text-text-muted">
             Accepted formats: PDF, JPG, PNG (max 5MB)
@@ -197,7 +249,7 @@
             label="Upload Document" 
             @click="uploadDocument"
             :loading="uploading"
-            :disabled="!uploadedFile || !documentInfo.type"
+            :disabled="!uploadedFile"
           />
         </div>
       </template>
@@ -210,18 +262,26 @@ import { v4 as uuidv4 } from 'uuid'
 
 interface DocumentCategory {
   id: string
-  name: string
+  title: string
   description: string
-  icon: string
   required: boolean
+  category: string
+  business_type: 'merchant' | 'vendor'
+  order_index: number
 }
 
 interface DocumentInfo {
   type: string
+  document_number: string
+  certificate_id: string
+  license_id: string
+  permit_id: string
+  issuing_authority: string
+  authority_contact: string
+  authority_website: string
   issueDate: Date | null
   expiryDate: Date | null
-  number: string
-  authority: string
+  renewalDate: Date | null
   notes: string
 }
 
@@ -235,51 +295,17 @@ const props = defineProps<Props>()
 const supabase = useSupabaseClient()
 const toast = useToast()
 
-// Document categories
-const documentCategories = ref<DocumentCategory[]>([
-  {
-    id: 'health_permit',
-    name: 'Health Permit',
-    description: 'Food service health permit or license',
-    icon: 'pi pi-certificate',
-    required: true
-  },
-  {
-    id: 'business_license',
-    name: 'Business License',
-    description: 'General business license or registration',
-    icon: 'pi pi-briefcase',
-    required: true
-  },
-  {
-    id: 'insurance',
-    name: 'Insurance Certificate',
-    description: 'General liability insurance certificate',
-    icon: 'pi pi-shield',
-    required: true
-  },
-  {
-    id: 'food_handler',
-    name: 'Food Handler Certificate',
-    description: 'Food safety certification for staff',
-    icon: 'pi pi-user',
-    required: false
-  },
-  {
-    id: 'vehicle_license',
-    name: 'Vehicle License',
-    description: 'Food truck vehicle license and registration',
-    icon: 'pi pi-truck',
-    required: props.businessType === 'vendor'
-  },
-  {
-    id: 'tax_id',
-    name: 'Tax ID/EIN',
-    description: 'Employer Identification Number',
-    icon: 'pi pi-id-card',
-    required: true
-  }
-])
+// Use compliance store
+const complianceStore = useComplianceStore()
+
+// Document categories from store
+const documentCategories = computed(() => complianceStore.requirements)
+const loadingCategories = computed(() => complianceStore.loading)
+
+// Load compliance requirements for business type
+const loadComplianceRequirements = async () => {
+  await complianceStore.loadRequirements(props.businessType)
+}
 
 // Upload state
 const showUploadDialog = ref(false)
@@ -288,10 +314,16 @@ const uploadedFile = ref<File | null>(null)
 const uploading = ref(false)
 const documentInfo = ref<DocumentInfo>({
   type: '',
+  document_number: '',
+  certificate_id: '',
+  license_id: '',
+  permit_id: '',
+  issuing_authority: '',
+  authority_contact: '',
+  authority_website: '',
   issueDate: null,
   expiryDate: null,
-  number: '',
-  authority: '',
+  renewalDate: null,
   notes: ''
 })
 
@@ -358,7 +390,7 @@ const verifiedDocuments = computed(() => {
 // Dialog functions
 const openUploadDialog = (category: DocumentCategory) => {
   selectedCategory.value = category
-  documentInfo.value.type = category.name
+  documentInfo.value.type = category.title
   showUploadDialog.value = true
 }
 
@@ -368,56 +400,59 @@ const closeUploadDialog = () => {
   uploadedFile.value = null
   documentInfo.value = {
     type: '',
+    document_number: '',
+    certificate_id: '',
+    license_id: '',
+    permit_id: '',
+    issuing_authority: '',
+    authority_contact: '',
+    authority_website: '',
     issueDate: null,
     expiryDate: null,
-    number: '',
-    authority: '',
+    renewalDate: null,
     notes: ''
+  }
+}
+
+const onFileSelect = (event: any) => {
+  console.log('File selected:', event)
+  if (event.files && event.files.length > 0) {
+    uploadedFile.value = event.files[0]
+    console.log('Uploaded file set to:', uploadedFile.value)
   }
 }
 
 const uploadDocument = async () => {
   if (!uploadedFile.value || !selectedCategory.value) return
 
-  uploading.value = true
-
   try {
-    // Upload file to storage
-    const fileName = `${props.businessId}/${selectedCategory.value.id}_${Date.now()}.pdf`
-    const { data: fileData, error: fileError } = await supabase.storage
-      .from('compliance-documents')
-      .upload(fileName, uploadedFile.value)
-
-    if (fileError) throw fileError
-
-    // Create document record
-    const { error: dbError } = await supabase
-      .from('compliance_documents')
-      .insert({
-        id: uuidv4(),
-        business_id: props.businessId,
-        business_type: props.businessType,
-        category: selectedCategory.value.id,
+    await complianceStore.uploadDocument(
+      props.businessId,
+      props.businessType,
+      selectedCategory.value.id,
+      selectedCategory.value.title,
+      uploadedFile.value,
+      {
         document_type: documentInfo.value.type,
-        document_number: documentInfo.value.number,
-        issuing_authority: documentInfo.value.authority,
+        document_number: documentInfo.value.document_number,
+        certificate_id: documentInfo.value.certificate_id,
+        license_id: documentInfo.value.license_id,
+        permit_id: documentInfo.value.permit_id,
+        issuing_authority: documentInfo.value.issuing_authority,
+        authority_contact: documentInfo.value.authority_contact,
+        authority_website: documentInfo.value.authority_website,
         issue_date: documentInfo.value.issueDate?.toISOString(),
         expiry_date: documentInfo.value.expiryDate?.toISOString(),
-        file_path: fileData.path,
+        renewal_date: documentInfo.value.renewalDate?.toISOString(),
         notes: documentInfo.value.notes,
-        status: 'pending',
-        verified: false
-      })
 
-    if (dbError) throw dbError
-
-    // Reload documents
-    await loadDocuments()
+      }
+    )
 
     toast.add({
       severity: 'success',
       summary: 'Document Uploaded',
-      detail: `${selectedCategory.value.name} has been uploaded successfully`,
+      detail: `${selectedCategory.value.title} has been uploaded successfully`,
       life: 3000
     })
 
@@ -431,15 +466,40 @@ const uploadDocument = async () => {
       detail: 'Failed to upload document. Please try again.',
       life: 3000
     })
-  } finally {
-    uploading.value = false
   }
 }
 
-// Load documents on mount
-onMounted(() => {
+// Load documents and requirements on mount
+onMounted(async () => {
+  // Clear any existing documents for testing
+  await clearTestData()
+  
+  loadComplianceRequirements()
   loadDocuments()
 })
+
+// Function to clear test data (for development/testing only)
+const clearTestData = async () => {
+  try {
+    // Clear any existing compliance documents for this business
+    const { error } = await supabase
+      .from('compliance_documents')
+      .delete()
+      .eq('business_id', props.businessId)
+      .eq('business_type', props.businessType)
+    
+    if (error) {
+      console.log('No existing documents to clear or error:', error)
+    } else {
+      console.log('Cleared existing test documents')
+    }
+    
+    // Reset local state
+    existingDocuments.value = []
+  } catch (error) {
+    console.log('Error clearing test data:', error)
+  }
+}
 </script>
 
 <style scoped>

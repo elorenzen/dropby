@@ -150,15 +150,13 @@
 
             reqArr.push(vendor.value)
             const updates = {
-                updated_at: new Date(),
+                updated_at: new Date().toISOString(),
                 pending_requests: reqArr
             }
-            const { error } = await supabase
-                .from('events')
-                .update(updates)
-                .eq('id', selectedEvt.value.id)
             
-            if (!error) {
+            try {
+                await eventStore.updateEvent(selectedEvt.value.id, updates)
+                
                 // Increment usage after successful request
                 await $fetch('/api/usage/increment', {
                     method: 'POST',
@@ -175,9 +173,9 @@
                 selectedMerchant.value = ''
                 snacktext.value = 'Event requested!'
                 snackbar.value = true
-            } else {
+            } catch (updateError: any) {
                 errDialog.value = true
-                errMsg.value = error.message
+                errMsg.value = updateError.message || 'Failed to update event'
             }
         } catch (error) {
             console.error('Error requesting event:', error)
