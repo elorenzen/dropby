@@ -642,18 +642,7 @@ const requestEventFromDialog = async () => {
   }
 }
 
-const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  } as any)
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
-  }
-}
+
 
 // Methods
 const requestEvent = async (event: Event) => {
@@ -682,19 +671,13 @@ const requestEvent = async (event: Event) => {
       return
     }
 
-    // Add this vendor to the pending_requests array
     const currentRequests = event.pending_requests || []
     const updatedRequests = [...currentRequests, route.params.id as string]
     
-    const { error } = await supabase
-      .from('events')
-      .update({
-        pending_requests: updatedRequests as string[],
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', event.id)
-    
-    if (error) throw error
+    const eventStore = useEventStore()
+    await eventStore.updateEvent(event.id, {
+      pending_requests: updatedRequests
+    })
 
     // Increment usage after successful request
     await $fetch('/api/usage/increment', {
@@ -705,14 +688,6 @@ const requestEvent = async (event: Event) => {
         usageType: 'requests',
         incrementAmount: 1
       }
-    })
-    
-    // Add timeline event for event request
-    await addTimelineEvent({
-      ownerId: route.params.id as string,
-      title: 'Event Request Sent',
-      description: `${vendor.value.vendor_name} requested event at ${getMerchantProp(event.merchant, 'merchant_name')} on ${new Date(event.start).toLocaleDateString()}`,
-      type: 'event'
     })
     
     toast.add({

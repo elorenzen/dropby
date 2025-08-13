@@ -33,7 +33,6 @@ export const useUserStore = defineStore('user', {
   },
   
   actions: {
-    // Existing actions
     async setUser(userParam: User | null) {
       if (userParam) {
         this.user = userParam
@@ -54,7 +53,6 @@ export const useUserStore = defineStore('user', {
       this.user = null
     },
 
-    // New actions to replace direct Supabase calls
     async createUser(userData: Partial<User>) {
       this.loading = true
       try {
@@ -68,8 +66,16 @@ export const useUserStore = defineStore('user', {
 
         if (error) throw error
 
-        // Add to local state
         this.users.push(data)
+        
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data.id,
+          other_ids: [data.id],
+          title: 'User Created',
+          description: `New user account created`,
+          type: 'user_created'
+        })
         
         return data
       } catch (error) {
@@ -94,7 +100,6 @@ export const useUserStore = defineStore('user', {
 
         if (error) throw error
 
-        // Update local state
         const index = this.users.findIndex(user => user.id === userId)
         if (index !== -1) {
           this.users[index] = { ...this.users[index], ...data }
@@ -104,6 +109,15 @@ export const useUserStore = defineStore('user', {
         if (this.user && this.user.id === userId) {
           this.user = { ...this.user, ...data }
         }
+        
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data.id,
+          other_ids: [data.id],
+          title: 'User Updated',
+          description: `User profile updated`,
+          type: 'user_updated'
+        })
         
         return data
       } catch (error) {
@@ -132,6 +146,16 @@ export const useUserStore = defineStore('user', {
         if (this.user && this.user.id === userId) {
           this.user = null
         }
+        
+        // Create timeline item for user deletion
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: userId,
+          other_ids: [userId],
+          title: 'User Deleted',
+          description: `User account deleted`,
+          type: 'user_deleted'
+        })
         
         return true
       } catch (error) {

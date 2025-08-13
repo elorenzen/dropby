@@ -52,12 +52,20 @@ export const useReviewStore = defineStore('review', {
 
         if (error) throw error
 
-        // Add to local state based on the review type
         if (data.sender_id === data.author_id) {
           this.sentReviews.unshift(data)
         } else {
           this.receivedReviews.unshift(data)
         }
+        
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data.sender_id,
+          other_ids: [data.id, data.recipient_id, data.event_id],
+          title: 'Review Submitted',
+          description: `Submitted ${data.rating}-star review for event`,
+          type: 'review_submitted'
+        })
         
         return data
       } catch (error) {
@@ -91,6 +99,15 @@ export const useReviewStore = defineStore('review', {
         } else if (receivedIndex !== -1) {
           this.receivedReviews[receivedIndex] = { ...this.receivedReviews[receivedIndex], ...data }
         }
+
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data.sender_id,
+          other_ids: [data.id, data.recipient_id, data.event_id],
+          title: 'Review Updated',
+          description: `Review updated`,
+          type: 'review_updated'
+        })
         
         return data
       } catch (error) {
@@ -103,6 +120,11 @@ export const useReviewStore = defineStore('review', {
 
     async deleteReview(reviewId: string) {
       try {
+        // Get sender_id before deletion
+        const reviewToDelete = this.sentReviews.find(r => r.id === reviewId) || 
+                              this.receivedReviews.find(r => r.id === reviewId)
+        const senderId = reviewToDelete?.sender_id || ''
+        
         const supabase = useSupabaseClient()
         
         const { error } = await supabase
@@ -112,9 +134,17 @@ export const useReviewStore = defineStore('review', {
 
         if (error) throw error
 
-        // Remove from local state
         this.sentReviews = this.sentReviews.filter(r => r.id !== reviewId)
         this.receivedReviews = this.receivedReviews.filter(r => r.id !== reviewId)
+        
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: senderId,
+          other_ids: [reviewId],
+          title: 'Review Deleted',
+          description: `Review deleted`,
+          type: 'review_deleted'
+        })
         
         return true
       } catch (error) {

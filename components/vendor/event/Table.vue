@@ -152,19 +152,6 @@ import { v4 as uuidv4 } from 'uuid'
         selectedMerchant.value = merchants.find(merchant => merchant.id === event.data.merchant)
         openViewDialog.value = true
     }
-    const addTimelineEvent = async (timelineObj: any) => {
-        try {
-            await timelineStore.createTimelineItem({
-                id: uuidv4(),
-                owner_id: timelineObj.ownerId,
-                title: timelineObj.title,
-                description: timelineObj.description,
-                type: timelineObj.type
-            })
-        } catch (error) {
-            console.error('Timeline Event Creation Error:', error)
-        }
-    }
 
     const requestEvent = async () => {
         loading.value = true
@@ -221,14 +208,6 @@ import { v4 as uuidv4 } from 'uuid'
                     // Don't fail the whole operation if email fails
                 }
                 
-                // Add timeline event for vendor
-                await addTimelineEvent({
-                    ownerId: vendor.value.id,
-                    title: 'Event Request Sent',
-                    description: `Requested event at ${selectedMerchant.value?.merchant_name || 'Establishment'} for ${new Date(selectedEvt.value.start).toLocaleDateString()}`,
-                    type: 'event'
-                })
-                
                 refreshKey.value++
                 openViewDialog.value = false
                 selectedEvt.value = ''
@@ -258,14 +237,6 @@ import { v4 as uuidv4 } from 'uuid'
         }
         try {
             await eventStore.updateEvent(selectedEvt.value.id, updates)
-            
-            // Add timeline event for cancelled request
-            await addTimelineEvent({
-                ownerId: vendor.value.id,
-                title: 'Event Request Cancelled',
-                description: `Cancelled request for event at ${selectedMerchant.value?.merchant_name || 'Establishment'} for ${new Date(selectedEvt.value.start).toLocaleDateString()}`,
-                type: 'event'
-            })
             
             refreshKey.value++
             openViewDialog.value = false

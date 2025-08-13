@@ -69,6 +69,18 @@ export const useEventStore = defineStore('event', {
         // Add to local state
         this.allEvents.push(data)
         
+        // Create timeline item for event creation
+        if (data.merchant) {
+          const timelineStore = useTimelineStore()
+          await timelineStore.createTimelineItem({
+            owner_id: data.merchant,
+            other_ids: [data.id],
+            title: 'Event Created',
+            description: `New event scheduled for ${new Date(data.start).toLocaleDateString()} at ${new Date(data.start).toLocaleTimeString()}`,
+            type: 'event_created'
+          })
+        }
+        
         return data
       } catch (error) {
         console.error('Error creating event:', error)
@@ -96,6 +108,73 @@ export const useEventStore = defineStore('event', {
         const index = this.allEvents.findIndex(e => e.id === eventId)
         if (index !== -1) {
           this.allEvents[index] = { ...this.allEvents[index], ...data }
+        }
+        
+        // Create timeline items for status changes
+        const timelineStore = useTimelineStore()
+        const originalEvent = this.allEvents[index]
+        
+        if (originalEvent && updates.status && updates.status !== originalEvent.status) {
+          switch (updates.status) {
+            case 'booked':
+              if (updates.vendor && originalEvent.vendor !== updates.vendor) {
+                await timelineStore.createTimelineItem({
+                  owner_id: updates.vendor,
+                  other_ids: [eventId],
+                  title: 'Event Confirmed',
+                  description: `Confirmed for event on ${new Date(data.start).toLocaleDateString()}`,
+                  type: 'vendor_booked'
+                })
+              }
+              break
+            case 'completed':
+              if (data.merchant && data.vendor) {
+                // Create timeline items for both merchant and vendor
+                await Promise.all([
+                  timelineStore.createTimelineItem({
+                    owner_id: data.merchant,
+                    other_ids: [eventId, data.vendor],
+                    title: 'Event Completed',
+                    description: `Event completed successfully on ${new Date(data.start).toLocaleDateString()}`,
+                    type: 'event_completed'
+                  }),
+                  timelineStore.createTimelineItem({
+                    owner_id: data.vendor,
+                    other_ids: [eventId, data.merchant],
+                    title: 'Event Completed',
+                    description: `Event completed successfully on ${new Date(data.start).toLocaleDateString()}`,
+                    type: 'event_completed'
+                  })
+                ])
+              }
+              break
+            case 'cancelled':
+              // Create timeline items for merchant and vendor if exists
+              const timelineItems = [
+                timelineStore.createTimelineItem({
+                  owner_id: data.merchant || '',
+                  other_ids: [eventId],
+                  title: 'Event Cancelled',
+                  description: `Event cancelled for ${new Date(data.start).toLocaleDateString()}`,
+                  type: 'event_cancelled'
+                })
+              ]
+
+              if (data.vendor) {
+                timelineItems.push(
+                  timelineStore.createTimelineItem({
+                    owner_id: data.vendor,
+                    other_ids: [eventId],
+                    title: 'Event Cancelled',
+                    description: `Event cancelled for ${new Date(data.start).toLocaleDateString()}`,
+                    type: 'event_cancelled'
+                  })
+                )
+              }
+
+              await Promise.all(timelineItems)
+              break
+          }
         }
         
         return data

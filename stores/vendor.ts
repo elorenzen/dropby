@@ -30,7 +30,6 @@ export const useVendorStore = defineStore('vendor', {
   },
   
   actions: {
-    // Existing actions
     async setAllVendors(vendors: Vendor[]) {
       this.allVendors = vendors
     },
@@ -39,7 +38,6 @@ export const useVendorStore = defineStore('vendor', {
       return this.allVendors.find(vendor => vendor.id === id)
     },
 
-    // New actions to replace direct Supabase calls
     async createVendor(vendorData: Partial<Vendor>) {
       this.creating = true
       try {
@@ -53,8 +51,16 @@ export const useVendorStore = defineStore('vendor', {
 
         if (error) throw error
 
-        // Add to local state
         this.allVendors.push(data)
+        
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data.id,
+          other_ids: [data.id],
+          title: 'Vendor Created',
+          description: `New vendor account created: ${data.vendor_name}`,
+          type: 'vendor_created'
+        })
         
         return data
       } catch (error) {
@@ -79,7 +85,6 @@ export const useVendorStore = defineStore('vendor', {
 
         if (error) throw error
 
-        // Update local state
         const index = this.allVendors.findIndex(vendor => vendor.id === vendorId)
         if (index !== -1) {
           this.allVendors[index] = { ...this.allVendors[index], ...data }
@@ -105,8 +110,16 @@ export const useVendorStore = defineStore('vendor', {
 
         if (error) throw error
 
-        // Remove from local state
         this.allVendors = this.allVendors.filter(vendor => vendor.id !== vendorId)
+        
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: vendorId,
+          other_ids: [vendorId],
+          title: 'Vendor Deleted',
+          description: `Vendor account deleted`,
+          type: 'vendor_deleted'
+        })
         
         return true
       } catch (error) {
@@ -154,7 +167,6 @@ export const useVendorStore = defineStore('vendor', {
 
         if (error) throw error
 
-        // Update local state
         const index = this.allVendors.findIndex(vendor => vendor.id === vendorId)
         if (index !== -1) {
           this.allVendors[index] = { ...this.allVendors[index], ...data }
@@ -172,7 +184,6 @@ export const useVendorStore = defineStore('vendor', {
         const vendor = this.allVendors.find(v => v.id === vendorId)
         if (!vendor) throw new Error('Vendor not found')
 
-        // Calculate new average rating
         const currentTotal = vendor.average_merchant_rating * vendor.total_events
         const newTotal = currentTotal + newRating
         const newTotalEvents = vendor.total_events + 1

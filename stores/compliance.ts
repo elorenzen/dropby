@@ -274,6 +274,16 @@ export const useComplianceStore = defineStore('compliance', () => {
 
       if (dbError) throw dbError
 
+      // Create timeline item for document upload
+      const timelineStore = useTimelineStore()
+      await timelineStore.createTimelineItem({
+        owner_id: businessId,
+        other_ids: [businessId], // We'll need to get the actual document ID from the insert
+        title: 'Compliance Document Uploaded',
+        description: `Uploaded ${title} for ${businessType}`,
+        type: 'compliance_uploaded'
+      })
+
       // Reload documents
       await loadDocuments(businessId)
       return true
@@ -312,6 +322,16 @@ export const useComplianceStore = defineStore('compliance', () => {
       // Update business compliance status if needed
       if (data?.[0]) {
         await updateBusinessCompliance(data[0])
+        
+        // Create timeline item for document verification
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data[0].business_id,
+          other_ids: [documentId, userStore.user?.id || ''],
+          title: 'Compliance Document Verified',
+          description: `Document ${data[0].title} has been verified`,
+          type: 'compliance_verified'
+        })
       }
 
       // Reload documents

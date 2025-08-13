@@ -54,8 +54,16 @@ export const useMerchantStore = defineStore('merchant', {
 
         if (error) throw error
 
-        // Add to local state
         this.allMerchants.push(data)
+        
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data.id,
+          other_ids: [data.id],
+          title: 'Merchant Created',
+          description: `New merchant account created: ${data.merchant_name}`,
+          type: 'merchant_created'
+        })
         
         return data
       } catch (error) {
@@ -80,7 +88,6 @@ export const useMerchantStore = defineStore('merchant', {
 
         if (error) throw error
 
-        // Update local state
         const index = this.allMerchants.findIndex(merchant => merchant.id === merchantId)
         if (index !== -1) {
           this.allMerchants[index] = { ...this.allMerchants[index], ...data }
@@ -108,6 +115,16 @@ export const useMerchantStore = defineStore('merchant', {
 
         // Remove from local state
         this.allMerchants = this.allMerchants.filter(merchant => merchant.id !== merchantId)
+        
+        // Create timeline item for merchant deletion
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: merchantId,
+          other_ids: [merchantId],
+          title: 'Merchant Deleted',
+          description: `Merchant account deleted`,
+          type: 'merchant_deleted'
+        })
         
         return true
       } catch (error) {

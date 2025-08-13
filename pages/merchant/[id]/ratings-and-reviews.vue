@@ -426,18 +426,6 @@ const getEventTime = (eventId: string): string => {
   return `${new Date(event.start).toLocaleTimeString()} - ${new Date(event.end).toLocaleTimeString()}`
 }
 
-const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  })
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
-  }
-}
 
 
 
@@ -469,23 +457,8 @@ const confirmDeleteReview = async () => {
     try {
         loading.value = true
         
-        // Delete the review from the database
-        const { error } = await supabase
-            .from('reviews')
-            .delete()
-            .eq('id', selectedReviewForDelete.value.id)
-        
-        if (error) {
-            throw error
-        }
-        
-        // Add timeline event for successful review deletion
-        await addTimelineEvent({
-            ownerId: route.params.id as string,
-            title: 'Review Deleted',
-            description: `Deleted a ${selectedReviewForDelete.value.rating}-star review`,
-            type: 'rating'
-        })
+        const reviewStore = useReviewStore()
+        await reviewStore.deleteReview(selectedReviewForDelete.value.id)
         
         closeDeleteDialog()
         toast.add({
@@ -523,30 +496,23 @@ const submitReview = async () => {
 
     try {
         loading.value = true
-        const { data, error } = await supabase.from('reviews').insert({
+        
+        // Validate required data before creating review
+        if (!user.value?.id || !selectedEvent.value?.vendor || !selectedEvent.value?.id) {
+            throw new Error('Missing required data for review creation')
+        }
+
+        const reviewStore = useReviewStore()
+        await reviewStore.createReview({
             id: uuidv4(),
             created_at: new Date().toISOString(),
-            author_id: user.value?.id,
+            author_id: user.value.id,
             sender_id: route.params.id as string,
-            recipient_id: selectedEvent.value?.vendor,
+            recipient_id: selectedEvent.value.vendor,
             content: review.value,
             rating: rating.value,
-            event_id: selectedEvent.value?.id,
-        }).select().single() as { data: any, error: any }
-        if (error) {
-            throw error
-        }
-        
-        // Add timeline event for successful review submission
-        await addTimelineEvent({
-            ownerId: route.params.id as string,
-            title: 'Review Submitted',
-            description: `Submitted a ${rating.value}-star review for ${getVendorProp(selectedEvent.value?.vendor || '', 'vendor_name')}`,
-            type: 'rating'
+            event_id: selectedEvent.value.id,
         })
-        
-        // The real-time subscription will handle updating the reviews
-        // and recalculating pending reviews
         
         closeReviewDialog()
         toast.add({
@@ -580,23 +546,7 @@ onMounted(() => {
     .on('postgres_changes',
       { event: '*', schema: 'public', table: 'reviews' }, 
       async (payload: any) => {
-        // Reload reviews when there are changes
-        const { data: newReceivedReviews } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('recipient_id', route.params.id as string)
-          .order('created_at', { ascending: false })
-        await reviewStore.setReceivedReviews(newReceivedReviews || [])
-        
-        const { data: newSentReviews } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('sender_id', route.params.id as string)
-          .order('created_at', { ascending: false })
-        await reviewStore.setSentReviews(newSentReviews || [])
-        
-        // The computed pendingReviews will automatically update
-        // when the store changes
+        await reviewStore.loadReviewsForUser(route.params.id as string)
       })
     .subscribe()
 })

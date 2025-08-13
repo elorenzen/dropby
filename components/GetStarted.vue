@@ -448,11 +448,11 @@ const submit = async () => {
         associated_vendor_id: type.value === 'vendor' ? typeId : null,
         available_to_contact: available.value
     }
-
-        const { error: userErr } = await supabase.from('users').insert(userObj as any)
+        const userStore = useUserStore()
+        const userData = await userStore.createUser(userObj)
         
-        if (userErr) {
-            throwErr('User Creation', userErr.message)
+        if (!userData) {
+            throwErr('User Creation', 'Failed to create user')
             return
         }
 
@@ -483,10 +483,17 @@ const submit = async () => {
             })
         }
 
-        const { error: businessErr } = await supabase.from(`${type.value}s`).insert(businessObj as any)
+        let businessData
+        if (type.value === 'merchant') {
+            const merchantStore = useMerchantStore()
+            businessData = await merchantStore.createMerchant(businessObj)
+        } else if (type.value === 'vendor') {
+            const vendorStore = useVendorStore()
+            businessData = await vendorStore.createVendor(businessObj)
+        }
         
-        if (businessErr) {
-            throwErr('Business Creation', businessErr.message)
+        if (!businessData) {
+            throwErr('Business Creation', 'Failed to create business')
             return
         }
 
@@ -519,11 +526,14 @@ const submit = async () => {
             // Don't fail the whole operation if subscription creation fails
             // The business was created successfully
         } else if (subscriptionData?.id) {
-            // Update business with subscription ID
-            await supabase
-                .from(`${type.value}s`)
-                .update({ subscription_id: subscriptionData.id } as any)
-                .eq('id', typeId)
+            // Update business with subscription ID using store action
+            if (type.value === 'merchant') {
+                const merchantStore = useMerchantStore()
+                await merchantStore.updateMerchant(typeId, { subscription_id: subscriptionData.id })
+            } else if (type.value === 'vendor') {
+                const vendorStore = useVendorStore()
+                await vendorStore.updateVendor(typeId, { subscription_id: subscriptionData.id })
+            }
         }
 
         // Success

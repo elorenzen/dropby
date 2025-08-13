@@ -160,21 +160,6 @@ const getRecipientAvatar = (): string => {
   }
 }
 
-const addTimelineEvent = async (timelineObj: any) => {
-  try {
-    await timelineStore.createTimelineItem({
-      id: uuidv4(),
-      owner_id: timelineObj.ownerId,
-      title: timelineObj.title,
-      description: timelineObj.description,
-      type: timelineObj.type
-    })
-  } catch (error) {
-    console.error('Timeline Event Creation Error:', error)
-  }
-}
-
-// Methods
 const closeDialog = () => {
   review.value = ''
   rating.value = 0
@@ -206,14 +191,6 @@ const submitReview = async () => {
       content: review.value,
       rating: rating.value,
       event_id: props.event?.id,
-    })
-    
-    // Add timeline event for successful review submission
-    await addTimelineEvent({
-      ownerId: props.senderId,
-      title: 'Review Submitted',
-      description: `Submitted a ${rating.value}-star review for ${getRecipientName()}`,
-      type: 'rating'
     })
     
     closeDialog()

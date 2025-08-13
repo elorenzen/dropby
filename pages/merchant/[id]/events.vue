@@ -828,18 +828,6 @@ const hasReview = (event: Event): boolean => {
   return sentReviews.some((review: any) => review.event_id === event.id)
 }
 
-const addTimelineEvent = async (timelineObj: any) => {
-  const { error } = await supabase.from('timeline_items').insert({
-    id: uuidv4(),
-    owner_id: timelineObj.ownerId,
-    title: timelineObj.title,
-    description: timelineObj.description,
-    type: timelineObj.type
-  } as any)
-  if (error) {
-    console.error('Timeline Event Creation Error:', error.message)
-  }
-}
 
 // Methods
 const navigateToDashboard = () => {
@@ -946,14 +934,6 @@ const handlePaymentSuccess = async (paymentData: any) => {
         .eq('id', selectedEventForPayment.value.id)
       
       if (error) throw error
-      
-      // Add timeline event for successful booking
-      await addTimelineEvent({
-        ownerId: route.params.id as string,
-        title: 'Event Booked',
-        description: `${merchant.value.merchant_name} successfully booked ${selectedVendorForPayment.value.name} for event on ${new Date(selectedEventForPayment.value.start).toLocaleDateString()}. Payment of $${paymentData.totalAmount.toFixed(2)} completed.`,
-        type: 'event'
-      })
     }
   } catch (error) {
     console.error('Error updating event status after payment:', error)
@@ -994,22 +974,8 @@ const confirmDeleteEvent = async () => {
   if (!selectedEventForDelete.value) return
   
   try {
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', selectedEventForDelete.value.id)
-    
-    if (error) throw error
-    
-    // Add timeline event for deleted event
-    const user = userStore.getUser
-    const userFullName = user ? `${user.first_name} ${user.last_name}` : 'Unknown User'
-    await addTimelineEvent({
-      ownerId: route.params.id as string,
-      title: 'Event Deleted',
-      description: `${userFullName} deleted event scheduled for ${new Date(selectedEventForDelete.value.start).toLocaleDateString()}`,
-      type: 'event'
-    })
+    const eventStore = useEventStore()
+    await eventStore.deleteEvent(selectedEventForDelete.value.id)
     
     showToast('success', 'Event Deleted', 'Event has been successfully deleted')
   } catch (error) {

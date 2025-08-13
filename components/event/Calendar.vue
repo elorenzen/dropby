@@ -231,27 +231,14 @@
     refresh.value++
     dayViewDialog.value = false
   }
-  const addTimelineEvent = async (timelineObj: any) => {
-    const { error } = await supabase.from('timeline_items').insert({
-      id: v4(),
-      owner_id: timelineObj.ownerId,
-      title: timelineObj.title,
-      description: timelineObj.description,
-      type: timelineObj.type
-    })
-    if (error) {
-        errType.value = 'Timeline Event Creation'
-        errMsg.value = error.message
-        errDialog.value = true
-    }
-  }
+
   const promptDeletion = () => { deleteDialog.value = true }
   const confirmDelete = async () => {
-      const { error } = await supabase
-          .from('events').delete().eq('id', eventOnDay.value.id)
-
-      if (!error) await resetFields('deleted')
-      else {
+      const eventStore = useEventStore()
+      try {
+          await eventStore.deleteEvent(eventOnDay.value.id)
+          await resetFields('deleted')
+      } catch (error: any) {
           errType.value = 'Event Deletion'
           errMsg.value = error.message
           errDialog.value = true
@@ -271,29 +258,20 @@
   }
   const approveRequest = async (id: any) => {
       loading.value = true
-      const updates = {
-          updated_at: new Date(),
-          status: 'booked',
-          vendor: id
-      }
-      const { error: dbErr } = await supabase
-          .from('events')
-          .update(updates)
-          .eq('id', eventOnDay.value.id)
-
-      if (dbErr) {
+      try {
+          const eventStore = useEventStore()
+          const updates = {
+              status: 'booked' as const,
+              vendor: id
+          }
+          await eventStore.updateEvent(eventOnDay.value.id, updates)
+          
+          await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.value?.associated_merchant_id}`)
+          await resetFields('approved')
+      } catch (error: any) {
           errType.value = 'Event Approval'
-          errMsg.value = dbErr.message
+          errMsg.value = error.message
           errDialog.value = true
-      } else {
-        await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${id}&merchantId=${user.value.associated_merchant_id}`)
-        await addTimelineEvent({
-          ownerId: user.value.associated_merchant_id,
-          title: 'Event Request Approved',
-          description: `Event request approved by ${user.value.first_name} ${user.value.last_name}`,
-          type: 'event'
-        })
-        await resetFields('approved')
       }
 
       loading.value = false

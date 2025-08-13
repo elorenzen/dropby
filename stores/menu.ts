@@ -57,6 +57,16 @@ export const useMenuStore = defineStore('menu', {
         // Add to local state
         this.menuItems.push(data)
         
+        // Create timeline item for menu item creation
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: data.vendor_id || '',
+          other_ids: [data.id],
+          title: 'Menu Item Added',
+          description: `Added ${data.name} to menu`,
+          type: 'menu_item_created'
+        })
+        
         return data
       } catch (error) {
         console.error('Error creating menu item:', error)
@@ -97,6 +107,10 @@ export const useMenuStore = defineStore('menu', {
 
     async deleteMenuItem(itemId: string) {
       try {
+        // Get vendor_id before deletion
+        const itemToDelete = this.menuItems.find(item => item.id === itemId)
+        const vendorId = itemToDelete?.vendor_id || ''
+        
         const supabase = useSupabaseClient()
         
         const { error } = await supabase
@@ -108,6 +122,16 @@ export const useMenuStore = defineStore('menu', {
 
         // Remove from local state
         this.menuItems = this.menuItems.filter(item => item.id !== itemId)
+        
+        // Create timeline item for menu item deletion
+        const timelineStore = useTimelineStore()
+        await timelineStore.createTimelineItem({
+          owner_id: vendorId,
+          other_ids: [itemId],
+          title: 'Menu Item Removed',
+          description: `Removed menu item`,
+          type: 'menu_item_deleted'
+        })
         
         return true
       } catch (error) {
