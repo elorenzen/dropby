@@ -29,6 +29,7 @@
     "chart.js": "^4.5.0",
     "firebase": "^10.12.5",
     "haversine": "^1.1.1",
+    "jspdf": "^3.0.1",
     "nuxt": "^3.12.4",
     "nuxt-graphql-client": "^0.2.43",
     "nuxt-svgo": "^4.0.9",
