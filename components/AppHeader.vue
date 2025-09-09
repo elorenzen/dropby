@@ -68,14 +68,6 @@
               <i class="pi pi-star"></i>
               Reviews
             </NuxtLink>
-            <NuxtLink 
-              :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/financials`"
-              class="text-text-muted hover:text-accent transition-colors flex items-center gap-2"
-              :class="{ 'text-accent font-medium': isCurrentRoute('financials') }"
-            >
-              <i class="pi pi-dollar"></i>
-              Financials
-            </NuxtLink>
           </div>
 
           <!-- Profile Dropdown -->

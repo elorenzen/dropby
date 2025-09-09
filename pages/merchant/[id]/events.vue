@@ -508,18 +508,6 @@
     <!-- Menu Dropdowns -->
     <Menu ref="currentUpcomingMenu" id="current_upcoming_menu" :model="getCurrentUpcomingMenuItems(selectedEventForCurrentUpcomingMenu || {})" :popup="true" />
     <Menu ref="pastEventsMenu" id="past_events_menu" :model="getPastEventsMenuItems(selectedEventForPastEventsMenu || {})" :popup="true" />
-
-    <!-- Payment Dialog -->
-    <PaymentDialog
-      :visible="showPaymentDialog"
-      :event="selectedEventForPayment || {}"
-      :vendor-id="selectedVendorForPayment?.id || ''"
-      :vendor-name="selectedVendorForPayment?.name || ''"
-      :merchant-id="String(route.params.id)"
-      @update:visible="showPaymentDialog = $event"
-      @payment-success="handlePaymentSuccess"
-      @payment-error="handlePaymentError"
-    />
   </div>
 </template>
 
@@ -589,12 +577,6 @@ const selectedEventForDelete = ref<Event | null>(null)
 const selectedEventForCurrentUpcomingMenu = ref<Event | null>(null)
 const selectedEventForPastEventsMenu = ref<Event | null>(null)
 
-// Payment dialog state
-const showPaymentDialog = ref(false)
-const selectedEventForPayment = ref<Event | null>(null)
-const selectedVendorForPayment = ref<{ id: string; name: string } | null>(null)
-
-import type { Event, Vendor } from '~/types'
 
 // Filter state for past events
 const pastEventsFilters = ref({
@@ -838,22 +820,19 @@ const approveRequest = async (event: Event, vendorId: string) => {
   loadingApproval.value = `${event.id}-${vendorId}`
   
   try {
-    // Check if event has a value set
-    if (!event.event_value || event.event_value <= 0) {
-      showToast('error', 'Event Value Required', 'Please set an event value before approving vendors.', 5000)
-      return
-    }
-
-    // Store the vendor selection for payment processing
-    // Don't update event status yet - wait for payment completion
-    selectedEventForPayment.value = event
-    selectedVendorForPayment.value = {
-      id: vendorId,
-      name: getVendorProp(vendorId, 'vendor_name')
-    }
-    showPaymentDialog.value = true
+    const { error } = await supabase
+      .from('events')
+      .update({
+        status: 'booked',
+        vendor: vendorId,
+        pending_requests: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', event.id)
     
-    showToast('success', 'Request Approved', `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event. Please complete payment to finalize booking.`)
+    if (error) throw error
+    
+    showToast('success', 'Request Approved', `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event. Event is now booked!`)
   } catch (error) {
     console.error('Error approving request:', error)
     showToast('error', 'Error', 'Failed to approve request. Please try again.')
@@ -917,53 +896,6 @@ const onEventCreated = () => {
   console.log('Event created successfully')
 }
 
-const handlePaymentSuccess = async (paymentData: any) => {
-  try {
-    // Now that payment is successful, update the event status to booked
-    if (selectedEventForPayment.value && selectedVendorForPayment.value) {
-      const { error } = await supabase
-        .from('events')
-        .update({
-          status: 'booked',
-          vendor: selectedVendorForPayment.value.id,
-          pending_requests: null,
-          payment_status: 'paid',
-          payment_id: paymentData.paymentId,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedEventForPayment.value.id)
-      
-      if (error) throw error
-    }
-  } catch (error) {
-    console.error('Error updating event status after payment:', error)
-    showToast('error', 'Payment Complete but Status Update Failed', 'Payment was successful but there was an issue updating the event status. Please contact support.')
-  }
-  
-  // Reset payment dialog state
-  showPaymentDialog.value = false
-  selectedEventForPayment.value = null
-  selectedVendorForPayment.value = null
-  
-  // The real-time subscription will handle updating the events
-  showToast('success', 'Payment Complete', 'Event has been booked and payment processed successfully!', 5000)
-  
-  // Payment completed successfully
-}
-
-
-
-const handlePaymentError = (error: Error) => {
-  console.error('Payment failed:', error)
-  
-  // Reset payment dialog state
-  showPaymentDialog.value = false
-  selectedEventForPayment.value = null
-  selectedVendorForPayment.value = null
-  
-  // Show error message to user
-  showToast('error', 'Payment Failed', 'Payment was not completed. The vendor request remains pending. You can try again or select a different vendor.')
-}
 
 const deleteEvent = (event: Event) => {
   selectedEventForDelete.value = event

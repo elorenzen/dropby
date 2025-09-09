@@ -283,12 +283,23 @@ const approveRequest = async (id: any) => {
 
     loading.value = true
     try {
-        // Don't update event status yet - wait for payment completion
-        // Just store the approval for payment processing
+        // Directly approve vendor without payment requirement
+        const { error } = await supabase
+            .from('events')
+            .update({
+                status: 'booked',
+                vendor: id,
+                pending_requests: null,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', selectedEvt.value.id)
+        
+        if (error) throw error
+        
         toast.add({ 
-            severity: 'info', 
+            severity: 'success', 
             summary: 'Request Approved', 
-            detail: 'Vendor request approved. Payment required to complete booking.', 
+            detail: 'Vendor request approved and event is now booked!', 
             group: 'main', 
             life: 6000 
         })

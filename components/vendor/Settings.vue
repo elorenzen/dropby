@@ -242,7 +242,65 @@
           <ComplianceUpload :business-id="vendor.id" business-type="vendor" />
         </div>
 
+        <!-- FINANCIALS TAB -->
+        <div v-if="activeTab === 4" class="space-y-6">
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">Financials & Payment Settings</h2>
+          <div v-if="hasActiveSubscription" class="space-y-8">
+            <VendorPaymentHistory :vendorId="vendor.id" />
+          </div>
 
+          <!-- Bottom Row: Subscription Status -->
+          <div v-if="!hasActiveSubscription" class="mb-8">
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <i class="pi pi-star text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-xl font-semibold">Upgrade Your Plan</h3>
+                  <p class="text-orange-100">Get unlimited events and premium features</p>
+                </div>
+              </div>
+              <p class="text-orange-100 mb-4">
+                You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and priority support.
+              </p>
+              <Button
+                label="View Plans"
+                icon="pi pi-arrow-right"
+                class="bg-white text-orange-600 hover:bg-orange-50"
+                @click="openSubscriptionModal"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Subscription Plans Section (shown when no active subscription) -->
+        <div v-if="!hasActiveSubscription" class="mt-8">
+          <SubscriptionPlans 
+            :userTypeProp="'merchant'"
+            :currentPlanId="currentSubscription?.plan_type || 'free'"
+            :loading="subscriptionLoading"
+            @plan-selected="handlePlanSelection" 
+          />
+        </div>
+
+        <!-- Subscription Plans Modal -->
+        <Dialog
+          :visible="showSubscriptionPlans"
+          @update:visible="showSubscriptionPlans = $event"
+          modal
+          header="Change Subscription Plan"
+          :style="{ width: '90vw', maxWidth: '800px' }"
+          :closable="true"
+          :dismissable-mask="true"
+        >
+          <SubscriptionPlans 
+            :userTypeProp="'merchant'"
+            :currentPlanId="currentSubscription?.plan_type || 'free'"
+            :loading="subscriptionLoading"
+            @plan-selected="handlePlanSelection" 
+          />
+        </Dialog>
 
         <!-- USER MANAGEMENT TAB -->
         <div v-if="activeTab === 5" class="space-y-6">
@@ -259,7 +317,8 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid';
-
+const route = useRoute()
+const { currentUser } = useAuth()
 const toast = useToast()
 const supabase = useSupabaseClient()
 const vendorStore = useVendorStore()
@@ -271,7 +330,11 @@ const vendor: any = ref(await vendorStore.getVendorById(assocId))
 const editDialog = ref(false)
 const uploading = ref(false)
 const loading = ref(false)
-const activeTab = ref(0)
+const activeTab = ref(route.query.activeTab ? parseInt(route.query.activeTab as string) : 0)
+
+// Subscription status
+const hasActiveSubscription = ref(false)
+const currentSubscription = ref<any>(null)
 
 const errType = ref()
 const errMsg = ref()
@@ -281,7 +344,10 @@ const radius = ref(vendor.value.service_radius ? vendor.value.service_radius : 1
 const streetRef = ref()
 const baseLat = ref()
 const baseLng = ref()
-const forattedAddr = ref()
+const formattedAddr = ref()
+const showSubscriptionPlans = ref(false)
+const subscriptionLoading = ref(false)
+
 const businessHours = ref(
   vendor.value.business_hours ?
   JSON.parse(JSON.stringify(vendor.value.business_hours)) :
@@ -351,11 +417,13 @@ const tabs = [
   { label: 'Business Hours', icon: 'pi pi-clock' },
   { label: 'Menu', icon: 'pi pi-list' },
   { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
+  { label: 'Financials & Payment Settings', icon: 'pi pi-credit-card' },
   { label: 'User Management', icon: 'pi pi-users' }
 ]
 
 onMounted(async () => {
   await sdkInit()
+  await checkSubscriptionStatus()
 })
 
 const sdkInit = async () => {
@@ -391,7 +459,7 @@ const sdkInit = async () => {
             baseLng.value = placeResponse.geometry.location.lng()
           }
 
-          forattedAddr.value = placeResponse
+          formattedAddr.value = placeResponse
             ? placeResponse.formatted_address
             : ''
         })
@@ -399,6 +467,47 @@ const sdkInit = async () => {
     })
   } catch (error) {
     console.warn('Google Maps API not available:', error)
+  }
+}
+
+// Check subscription status
+const checkSubscriptionStatus = async () => {
+  if (!currentUser.value) return
+
+  try {
+    // Get the vendor ID from the route
+    const vendorId = route.params.id as string
+    
+    // Check for business subscription (not user subscription)
+    const { data: subscriptionData } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('business_id', vendorId)
+      .eq('business_type', 'vendor')
+      .eq('status', 'active')
+      .single()
+
+    currentSubscription.value = subscriptionData
+    hasActiveSubscription.value = !!subscriptionData
+  } catch (error) {
+    console.error('Error checking subscription status:', error)
+    hasActiveSubscription.value = false
+  }
+}
+
+// Handle plan selection
+const handlePlanSelection = async (plan: { id: string; name: string; price: number; description: string; features: string[]; buttonText: string; featured: boolean; stripePriceId: string; paymentData?: any }) => {
+  console.log('Plan selected:', plan)
+  
+  // If plan has payment data, it means payment was completed
+  if (plan.paymentData) {
+    console.log('Payment completed for plan:', plan.name)
+    // Refresh subscription status
+    await checkSubscriptionStatus()
+    showSubscriptionPlans.value = false
+  } else {
+    // For free plans, just close the modal
+    showSubscriptionPlans.value = false
   }
 }
 
@@ -420,7 +529,7 @@ const saveEdits = async () => {
     service_radius: radius.value,
     base_latitude: baseLat.value,
     base_longitude: baseLng.value,
-    formatted_address: forattedAddr.value
+    formatted_address: formattedAddr.value
   }
 
   const { error } = await supabase

@@ -240,11 +240,6 @@
       icon: 'pi pi-chart-bar',
       command: () => navigateTo(`/merchant/${route.params.id}/analytics`)
     },
-    {
-      label: 'Financials',
-      icon: 'pi pi-dollar',
-      command: () => navigateTo(`/merchant/${route.params.id}/financials`)
-    },
     { separator: true },
     {
       label: 'Settings',

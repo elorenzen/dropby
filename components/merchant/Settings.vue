@@ -298,188 +298,9 @@
           </div>
 
           <!-- Middle Row: Event Pricing Configuration and Pricing Guide -->
-          <div class="mb-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <!-- Event Pricing Configuration Form (60% - 3/5 columns) -->
-            <div class="lg:col-span-3">
-              <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 h-full">
-                <div class="flex items-center justify-between mb-6">
-                  <h3 class="text-2xl font-semibold text-text-main flex items-center gap-3">
-                    <i class="pi pi-credit-card text-green-600"></i>
-                    Event Pricing Configuration
-                  </h3>
-                  <Button
-                    label="Change Plan"
-                    icon="pi pi-credit-card"
-                    severity="secondary"
-                    outlined
-                    @click="openSubscriptionModal"
-                  />
-                </div>
-                
-                <form @submit.prevent="savePaymentSettings" class="space-y-6">
-                  <!-- Seating Capacity -->
-                  <div>
-                    <FloatLabel variant="on">
-                      <InputNumber
-                        v-model="paymentSettings.seatingCapacity"
-                        inputId="seating-capacity"
-                        :min="1"
-                        :max="10000"
-                        class="w-full"
-                        :invalid="!!errors.seatingCapacity"
-                      />
-                      <label for="seating-capacity">Seating Capacity</label>
-                    </FloatLabel>
-                    <p class="text-xs text-text-muted mt-1">
-                      Maximum number of people your establishment can accommodate for events
-                    </p>
-                    <small v-if="errors.seatingCapacity" class="text-red-500">{{ errors.seatingCapacity }}</small>
-                  </div>
-                
-                  <!-- Custom Pricing Toggle -->
-                  <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div>
-                      <h4 class="font-medium text-text-main">Custom Event Pricing</h4>
-                      <p class="text-sm text-text-muted">Override automatic pricing based on seating capacity</p>
-                    </div>
-                    <InputSwitch v-model="paymentSettings.customPricing" />
-                  </div>
-                
-                  <!-- Default Event Value -->
-                  <div v-if="!paymentSettings.customPricing">
-                    <FloatLabel variant="on">
-                      <InputNumber
-                        v-model="paymentSettings.defaultEventValue"
-                        inputId="default-event-value"
-                        :min="0"
-                        :max="10000"
-                        class="w-full bg-gray-100 dark:bg-gray-700"
-                        readonly
-                      />
-                      <label for="default-event-value">Default Event Value (Auto-calculated)</label>
-                    </FloatLabel>
-                    <p class="text-xs text-text-muted mt-1">
-                      Automatically calculated based on your seating capacity
-                    </p>
-                  </div>
-                
-                  <!-- Custom Event Value -->
-                  <div v-if="paymentSettings.customPricing">
-                    <FloatLabel variant="on">
-                      <InputNumber
-                        v-model="paymentSettings.defaultEventValue"
-                        inputId="custom-event-value"
-                        :min="0"
-                        :max="10000"
-                        class="w-full"
-                        :invalid="!!errors.defaultEventValue"
-                      />
-                      <label for="custom-event-value">Custom Default Event Value</label>
-                    </FloatLabel>
-                    <p class="text-xs text-text-muted mt-1">
-                      This will be the default amount you pay vendors for events
-                    </p>
-                    <small v-if="errors.defaultEventValue" class="text-red-500">{{ errors.defaultEventValue }}</small>
-                  </div>
-                
-                  <!-- Price Range -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <FloatLabel variant="on">
-                        <InputNumber
-                          v-model="paymentSettings.minimumEventValue"
-                          inputId="minimum-event-value"
-                          :min="0"
-                          :max="10000"
-                          class="w-full"
-                        />
-                        <label for="minimum-event-value">Minimum Event Value (Optional)</label>
-                      </FloatLabel>
-                      <p class="text-xs text-text-muted mt-1">
-                        Floor price for events (optional)
-                      </p>
-                    </div>
-                    <div>
-                      <FloatLabel variant="on">
-                        <InputNumber
-                          v-model="paymentSettings.maximumEventValue"
-                          inputId="maximum-event-value"
-                          :min="0"
-                          :max="10000"
-                          class="w-full"
-                        />
-                        <label for="maximum-event-value">Maximum Event Value (Optional)</label>
-                      </FloatLabel>
-                      <p class="text-xs text-text-muted mt-1">
-                        Ceiling price for events (optional)
-                      </p>
-                    </div>
-                  </div>
-                
-                  <!-- Save Button -->
-                  <div class="flex justify-end pt-4">
-                    <Button
-                      type="submit"
-                      label="Save Payment Settings"
-                      icon="pi pi-check"
-                      :loading="saving"
-                      class="bg-green-600 hover:bg-green-700"
-                    />
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            <!-- Pricing Guide Card (40% - 2/5 columns) -->
-            <div class="lg:col-span-2">
-              <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 h-full">
-                <h3 class="text-xl font-semibold text-text-main mb-4 flex items-center gap-2">
-                  <i class="pi pi-info-circle text-blue-600"></i>
-                  Pricing Guide
-                </h3>
-                
-                <div class="space-y-4">
-                  <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <h4 class="font-medium text-blue-800 dark:text-blue-200 mb-2">Micro Events (0-25 people)</h4>
-                    <p class="text-sm text-blue-700 dark:text-blue-300">$75-150 default: $100</p>
-                  </div>
-                  
-                  <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <h4 class="font-medium text-green-800 dark:text-green-200 mb-2">Small Events (25-50 people)</h4>
-                    <p class="text-sm text-green-700 dark:text-green-300">$100-200 default: $150</p>
-                  </div>
-                  
-                  <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                    <h4 class="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Medium Events (50-100 people)</h4>
-                    <p class="text-sm text-yellow-700 dark:text-yellow-300">$200-400 default: $300</p>
-                  </div>
-                  
-                  <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                    <h4 class="font-medium text-orange-800 dark:text-orange-200 mb-2">Large Events (100-300 people)</h4>
-                    <p class="text-sm text-orange-700 dark:text-orange-300">$400-800 default: $600</p>
-                  </div>
-                  
-                  <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    <h4 class="font-medium text-red-800 dark:text-red-200 mb-2">Premium Events (300-500 people)</h4>
-                    <p class="text-sm text-red-700 dark:text-red-300">$800-1,500 default: $1,200</p>
-                  </div>
-                  
-                  <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <h4 class="font-medium text-purple-800 dark:text-purple-200 mb-2">Enterprise Events (500+ people)</h4>
-                    <p class="text-sm text-purple-700 dark:text-purple-300">$1,500+ default: $2,000</p>
-                  </div>
-                </div>
-
-                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <h4 class="font-medium text-text-main mb-2">Fee Structure</h4>
-                  <div class="text-sm text-text-muted space-y-1">
-                    <p>• Platform Fee: 8% of event value</p>
-                    <p>• Processing Fee: 2.9% + $0.30</p>
-                    <p>• Vendor receives: 100% of event value</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div v-if="hasActiveSubscription" class="space-y-8">
+              <!-- Payment History Section -->
+              <PaymentHistory :merchantId="merchant.id" />
           </div>
 
           <!-- Bottom Row: Subscription Status -->
@@ -559,7 +380,7 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 
-// Composables
+const route = useRoute()
 const toast = useToast()
 const supabase = useSupabaseClient()
 const merchantStore = useMerchantStore()
@@ -574,7 +395,7 @@ const assocId = user?.[`associated_${user?.type}_id`]
 
 // Reactive data
 const merchant = ref(await merchantStore.getMerchantById(assocId || ''))
-const activeTab = ref(0)
+const activeTab = ref(route.query.activeTab ? parseInt(route.query.activeTab as string) : 0)
 const uploading = ref(false)
 const loading = ref(false)
 const errDialog = ref(false)

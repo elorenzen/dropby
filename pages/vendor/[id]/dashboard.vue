@@ -586,7 +586,7 @@ const loadAnalytics = async () => {
 
 // Navigation methods
 const navigateToFinancials = () => {
-  navigateTo(`/vendor/${route.params.id}/financials`)
+  navigateTo(`/settings/${route.params.id}/?activeTab=4`)
 }
 
 // Debug timeline data
