@@ -45,108 +45,63 @@
       <!-- Payment Information Card -->
       <div class="lg:col-span-1">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-semibold text-text-main flex items-center gap-3">
-              <i class="pi pi-credit-card text-green-600"></i>
-              Payment Information
-            </h2>
-            <Button
-              label="Change Plan"
-              icon="pi pi-credit-card"
-              severity="secondary"
-              outlined
-              @click="openSubscriptionModal"
-            />
-          </div>
+          <h3 class="text-xl font-semibold text-text-main mb-4 flex items-center gap-2">
+            <i class="pi pi-credit-card text-blue-600"></i>
+            Payment Information
+          </h3>
           
           <div class="space-y-6">
             <!-- Current Plan -->
-            <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <h3 class="font-medium text-green-800 dark:text-green-200 mb-2">Current Plan</h3>
-              <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-                {{ currentSubscription?.plan_type === 'pro' ? 'Pro' : currentSubscription?.plan_type === 'premium' ? 'Premium' : 'Free' }}
-              </p>
-              <p class="text-sm text-green-600 dark:text-green-400 mt-1">
-                Status: {{ currentSubscription?.status || 'Active' }}
-              </p>
-            </div>
-
-            <!-- Payment Details -->
-            <div class="space-y-4">
-              <h3 class="font-medium text-text-main">Payment Details</h3>
-              
-              <div class="grid grid-cols-1 gap-4">
-                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <h4 class="font-medium text-text-main mb-2">How You Get Paid</h4>
-                  <div class="text-sm text-text-muted space-y-1">
-                    <p>• You receive 100% of the event value</p>
-                    <p>• No fees deducted from your payment</p>
-                    <p>• Payments processed after event completion</p>
-                    <p>• Direct deposit to your bank account</p>
-                  </div>
-                </div>
-                
-                <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <h4 class="font-medium text-blue-800 dark:text-blue-200 mb-2">Fee Structure</h4>
-                  <div class="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                    <p>• Platform Fee: 8% (paid by merchant)</p>
-                    <p>• Processing Fee: 2.9% + $0.30 (paid by merchant)</p>
-                    <p>• You receive: 100% of event value</p>
-                  </div>
-                </div>
+            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-medium text-blue-800 dark:text-blue-200">Current Plan</h4>
+                <Button 
+                  label="Change Plan" 
+                  size="small"
+                  @click="openSubscriptionModal"
+                  class="bg-orange-500 hover:bg-orange-600"
+                />
               </div>
+              <p class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ currentSubscription?.plan_type || 'Free' }}</p>
+              <p class="text-sm text-blue-600 dark:text-blue-400">Status: {{ currentSubscription?.status || 'inactive' }}</p>
             </div>
-
-            <!-- Automatic Payouts Setup -->
-            <div class="space-y-4">
-              <h3 class="font-medium text-text-main">Automatic Payouts</h3>
-              <StripeConnectSetup 
-                :vendorId="vendor.id"
-                :vendorEmail="vendor.email"
-                :vendorName="vendor.vendor_name"
-              />
+            
+            <!-- How You Get Paid -->
+            <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <h4 class="font-medium text-green-800 dark:text-green-200 mb-2">How You Get Paid</h4>
+              <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
+                <li>• You receive 100% of the event value</li>
+                <li>• No fees deducted from your payment</li>
+                <li>• Payments processed after event completion</li>
+                <li>• Direct deposit to your bank account</li>
+              </ul>
+            </div>
+            
+            <!-- Fee Structure -->
+            <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <h4 class="font-medium text-purple-800 dark:text-purple-200 mb-2">Fee Structure</h4>
+              <ul class="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                <li>• Platform Fee: 8% (paid by merchant)</li>
+                <li>• Processing Fee: 2.9% + $0.30 (paid by merchant)</li>
+                <li>• You receive: 100% of event value</li>
+              </ul>
+            </div>
+            
+            <!-- Automatic Payouts -->
+            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+              <h4 class="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Automatic Payouts</h4>
+              <p class="text-sm text-yellow-700 dark:text-yellow-300">
+                Payments are automatically processed after each event completion. 
+                You'll receive your earnings within 2-3 business days.
+              </p>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Analytics & Stats Card -->
+      
+      <!-- Payment History Section -->
       <div class="lg:col-span-1">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h3 class="text-xl font-semibold text-text-main mb-4 flex items-center gap-2">
-            <i class="pi pi-chart-line text-blue-600"></i>
-            Earnings Analytics
-          </h3>
-          
-          <div class="space-y-6">
-            <!-- Monthly Earnings -->
-            <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <h4 class="font-medium text-green-800 dark:text-green-200 mb-2">This Month</h4>
-              <p class="text-2xl font-bold text-green-600 dark:text-green-400">${{ monthlyEarnings }}</p>
-              <p class="text-sm text-green-600 dark:text-green-400 mt-1">
-                From {{ monthlyEvents }} events
-              </p>
-            </div>
-            
-            <!-- Total Earnings -->
-            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <h4 class="font-medium text-blue-800 dark:text-blue-200 mb-2">Total Earnings</h4>
-              <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">${{ totalEarnings }}</p>
-              <p class="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                All time earnings
-              </p>
-            </div>
-            
-            <!-- Upcoming Payments -->
-            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-              <h4 class="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Pending Payments</h4>
-              <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">${{ pendingPayments }}</p>
-              <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
-                From {{ pendingEvents }} events
-              </p>
-            </div>
-          </div>
-        </div>
+        <VendorPaymentHistory :vendorId="route.params.id" />
       </div>
     </div>
 
@@ -184,6 +139,8 @@
 </template>
 
 <script setup lang="ts">
+import VendorPaymentHistory from '~/components/VendorPaymentHistory.vue'
+
 const route = useRoute()
 const supabase = useSupabaseClient()
 const toast = useToast()
