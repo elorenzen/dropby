@@ -297,6 +297,44 @@
             </div>
           </div>
 
+          <!-- Current Subscription Plan Section -->
+          <div v-if="hasActiveSubscription" class="space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-text-main">Current Subscription Plan</h3>
+                <Button
+                  label="Change Plan"
+                  icon="pi pi-arrow-right"
+                  class="p-button-outlined"
+                  @click="openSubscriptionModal"
+                />
+              </div>
+              
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
+                  <i class="pi pi-star text-primary-600 dark:text-primary-400 text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="text-lg font-semibold text-text-main capitalize">
+                    {{ getCurrentPlanName() }}
+                  </h4>
+                  <p class="text-text-muted">
+                    ${{ getCurrentPlanPrice() }}/month
+                  </p>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      <i class="pi pi-check-circle mr-1"></i>
+                      Active
+                    </span>
+                    <span v-if="currentSubscription?.next_billing_date" class="text-xs text-text-muted">
+                      Next billing: {{ formatDate(currentSubscription.next_billing_date) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Middle Row: Event Pricing Configuration and Pricing Guide -->
           <div v-if="hasActiveSubscription" class="space-y-8">
               <!-- Payment History Section -->
@@ -750,6 +788,50 @@ const showToast = (message: string, severity: string = 'info') => {
 
 const onClose = () => {
   // Toast close handler
+}
+
+// Helper functions for subscription plan display
+const getCurrentPlanName = () => {
+  if (!currentSubscription.value) return 'Free'
+  
+  const planType = currentSubscription.value.plan_type
+  switch (planType) {
+    case 'pro':
+      return 'Pro'
+    case 'enterprise':
+      return 'Enterprise'
+    case 'premium':
+      return 'Premium'
+    default:
+      return 'Free'
+  }
+}
+
+const getCurrentPlanPrice = () => {
+  if (!currentSubscription.value) return 0
+  
+  const planType = currentSubscription.value.plan_type
+  switch (planType) {
+    case 'pro':
+      return 19
+    case 'enterprise':
+      return 49
+    case 'premium':
+      return 79
+    default:
+      return 0
+  }
+}
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return ''
+  
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
 }
 </script>
 
