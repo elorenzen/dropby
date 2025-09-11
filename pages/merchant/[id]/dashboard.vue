@@ -109,7 +109,10 @@
               </div>
             </template>
             <template #content>
-              <EventCalendar />
+              <EventCalendar 
+                user-type="merchant" 
+                :merchant="merchant" 
+              />
             </template>
           </Card>
   

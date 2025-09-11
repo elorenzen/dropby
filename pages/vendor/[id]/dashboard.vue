@@ -155,7 +155,10 @@
             </div>
           </template>
           <template #content>
-            <BaseCalendar :attributes="attributes" :refresh="refreshKey" />
+            <EventCalendar 
+              user-type="vendor" 
+              :vendor="vendor || {}" 
+            />
           </template>
         </Card>
 
@@ -316,7 +319,7 @@ const getMerchantProp = (merchantId: string, prop: string): string => {
   const merchantStore = useMerchantStore()
   const allMerchants = merchantStore.getAllMerchants
   const merchant = allMerchants.find((m: any) => m.id === merchantId)
-  return merchant?.[prop] || ''
+  return merchant?.[prop as keyof typeof merchant] || ''
 }
 
 // Recent activity data - now computed from timeline with fallback
