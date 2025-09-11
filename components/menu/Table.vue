@@ -1,53 +1,156 @@
 <template>
-    <div class="ma-2">
-        <DataTable :value="menuItems" tableStyle="width: 100%">
-            <template #header>
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-xl font-bold">Menu Items</span>
-                    <Button
-                        outlined
-                        severity="secondary"
-                        icon="pi pi-plus-circle"
-                        @click="addDialog = true"
-                    />
-                </div>
-            </template>
-            <Column field="name" header="Name" sortable></Column>
-            <Column header="Image">
-                <template #body="{ data }">
-                    <NuxtImg :src="data.image_url" :alt="data.name" class="w-24 h-24 rounded" />
+    <div class="space-y-6">
+        <!-- Header Section -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-text-main">Menu Items</h2>
+                <p class="text-text-muted mt-1">Manage your food and beverage offerings</p>
+            </div>
+            <Button
+                label="Add Menu Item"
+                icon="pi pi-plus"
+                class="bg-accent text-background border-accent hover:bg-accent-dark px-6 py-3 font-semibold rounded-lg"
+                @click="addDialog = true"
+            />
+        </div>
+
+        <!-- View Toggle -->
+        <div class="flex items-center gap-2">
+            <Button
+                :icon="layout === 'grid' ? 'pi pi-th-large' : 'pi pi-list'"
+                :label="layout === 'grid' ? 'Grid View' : 'List View'"
+                outlined
+                severity="secondary"
+                size="small"
+                @click="toggleLayout"
+            />
+            <div class="text-sm text-text-muted">
+                {{ menuItems ? menuItems.length : 0 }} items
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div v-if="layout === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <Card
+                v-for="item in filteredMenuItems"
+                :key="item.id"
+                class="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                @click="openEditDialog(item)"
+            >
+                <template #header>
+                    <div class="relative">
+                        <NuxtImg 
+                            :src="item.image_url" 
+                            :alt="item.name" 
+                            class="w-full h-48 object-cover rounded-t-lg"
+                            loading="lazy"
+                        />
+                        <div class="absolute top-2 right-2">
+                            <Tag 
+                                :value="item.type" 
+                                severity="info" 
+                                class="text-xs"
+                            />
+                        </div>
+                    </div>
                 </template>
-            </Column>
-            <Column field="price" header="Price" sortable>
-                <template #body="slotProps">
-                    {{ formatCurrency(slotProps.data.price) }}
+                <template #title>
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-text-main truncate">{{ item.name }}</h3>
+                        <span class="text-xl font-bold text-accent">{{ formatCurrency(item.price) }}</span>
+                    </div>
                 </template>
-            </Column>
-            <Column field="description" header="Description" style="max-width: 20rem;">
-                <template #body="{ data }">
-                    <ScrollPanel style="height: 10vh;">
-                        <p class="m-0">{{ data.description }}</p>
-                    </ScrollPanel>
+                <template #content>
+                    <p class="text-text-muted text-sm line-clamp-3">{{ item.description || 'No description provided' }}</p>
                 </template>
-            </Column>
-            <Column field="type" header="Type" sortable></Column>
-            <!-- <Column field="status" header="Status" sortable>
-                <template #body="slotProps">
-                    <Tag :value="slotProps.data.status" :severity="getStatusLabel(slotProps.data.status)" />
+                <template #footer>
+                    <div class="flex gap-2">
+                        <Button 
+                            icon="pi pi-pencil" 
+                            outlined 
+                            size="small"
+                            class="flex-1"
+                            @click.stop="openEditDialog(item)"
+                        />
+                        <Button 
+                            icon="pi pi-trash" 
+                            outlined 
+                            severity="danger"
+                            size="small"
+                            class="flex-1"
+                            @click.stop="promptDeletion(item)"
+                        />
+                    </div>
                 </template>
-            </Column> -->
-            <Column :exportable="false" style="min-width:8rem">
-                <template #body="slotProps">
-                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="openEditDialog(slotProps.data)" />
-                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="promptDeletion(slotProps.data)" />
+            </Card>
+        </div>
+
+        <!-- List View -->
+        <div v-else>
+            <DataTable :value="filteredMenuItems" tableStyle="width: 100%" class="p-datatable-sm">
+                <template #header>
+                    <div class="flex items-center gap-4">
+                        <InputText 
+                            v-model="searchQuery" 
+                            placeholder="Search menu items..."
+                            class="w-64"
+                        />
+                        <Dropdown
+                            v-model="selectedType"
+                            :options="typeOptions"
+                            placeholder="Filter by type"
+                            class="w-40"
+                        />
+                    </div>
                 </template>
-            </Column>
-            <template #footer>
-                <span class="font-medium text-surface-500 dark:text-surface-400 text-xs" style="color: gray;">
-                    Total: {{ menuItems ? menuItems.length : 0 }}
-                </span>
-            </template>
-        </DataTable>
+                <Column field="name" header="Name" sortable>
+                    <template #body="{ data }">
+                        <div class="flex items-center gap-3">
+                            <NuxtImg 
+                                :src="data.image_url" 
+                                :alt="data.name" 
+                                class="w-12 h-12 rounded object-cover"
+                            />
+                            <div>
+                                <div class="font-semibold">{{ data.name }}</div>
+                                <div class="text-sm text-text-muted">{{ data.type }}</div>
+                            </div>
+                        </div>
+                    </template>
+                </Column>
+                <Column field="price" header="Price" sortable>
+                    <template #body="{ data }">
+                        <span class="font-bold text-accent">{{ formatCurrency(data.price) }}</span>
+                    </template>
+                </Column>
+                <Column field="description" header="Description">
+                    <template #body="{ data }">
+                        <p class="text-sm text-text-muted line-clamp-2">{{ data.description || 'No description' }}</p>
+                    </template>
+                </Column>
+                <Column :exportable="false" style="min-width:8rem">
+                    <template #body="{ data }">
+                        <div class="flex gap-2">
+                            <Button 
+                                icon="pi pi-pencil" 
+                                outlined 
+                                rounded 
+                                size="small"
+                                @click="openEditDialog(data)" 
+                            />
+                            <Button 
+                                icon="pi pi-trash" 
+                                outlined 
+                                rounded 
+                                severity="danger"
+                                size="small"
+                                @click="promptDeletion(data)" 
+                            />
+                        </div>
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
 
         <!-- ADD ITEM -->
         <Dialog v-model:visible="addDialog" modal header="Add Menu Item" :style="{ width: '50rem' }">
@@ -87,6 +190,8 @@ const errMsg       = ref()
 const errType      = ref()
 const layout       = ref('grid')
 const loading      = ref(false)
+const searchQuery  = ref('')
+const selectedType = ref('')
 const sortKey      = ref();
 const sortOrder    = ref();
 const sortField    = ref();
@@ -94,6 +199,41 @@ const sortOptions  = ref([
     {label: 'Price High to Low', value: '!price'},
     {label: 'Price Low to High', value: 'price'},
 ]);
+
+// Type options for filtering
+const typeOptions = ref([
+    { label: 'All Types', value: '' },
+    { label: 'Appetizer', value: 'appetizer' },
+    { label: 'Entree', value: 'entree' },
+    { label: 'Dessert', value: 'dessert' },
+    { label: 'Beverage', value: 'beverage' },
+    { label: 'Side', value: 'side' }
+])
+
+// Computed properties
+const filteredMenuItems = computed(() => {
+    let filtered = menuItems.value
+
+    // Filter by search query
+    if (searchQuery.value) {
+        filtered = filtered.filter((item: any) => 
+            item.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            item.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+        )
+    }
+
+    // Filter by type
+    if (selectedType.value) {
+        filtered = filtered.filter((item: any) => item.type === selectedType.value)
+    }
+
+    return filtered
+})
+
+// Methods
+const toggleLayout = () => {
+    layout.value = layout.value === 'grid' ? 'list' : 'grid'
+}
 
 const onSortChange = (event:any) => {
     const value = event.value.value;
