@@ -119,6 +119,7 @@ interface Props {
   visible: boolean
   merchant: Merchant
   businessHours: any[]
+  preFilledDate?: Date
 }
 
 interface Emits {
@@ -135,8 +136,15 @@ const timelineStore = useTimelineStore()
 
 // Reactive data
 const loading = ref(false)
-const eventDate = ref(new Date())
+const eventDate = ref(props.preFilledDate || new Date())
 const eventStart = ref<Date | null>(null)
+
+// Watch for changes to preFilledDate prop
+watch(() => props.preFilledDate, (newDate) => {
+  if (newDate) {
+    eventDate.value = newDate
+  }
+}, { immediate: true })
 const eventEnd = ref<Date | null>(null)
 const eventNotes = ref(props.merchant?.notes || '')
 const eventValue = ref(props.merchant?.default_event_value || 150)

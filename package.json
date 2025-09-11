@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",
+    "@fullcalendar/core": "^6.1.19",
+    "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
+    "@fullcalendar/vue3": "^6.1.19",
     "@googlemaps/js-api-loader": "^1.16.8",
     "@nuxt/image": "^1.9.0",
     "@nuxt/scripts": "^0.8.3",
