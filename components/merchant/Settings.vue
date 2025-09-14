@@ -248,27 +248,7 @@
           <!-- Top Row: Payment Methods and Financial Summary -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <!-- Payment Methods -->
-            <div class="space-y-6">
-              <h3 class="text-xl font-semibold text-text-main">Payment Methods</h3>
-              <div class="space-y-4">
-                <div class="flex items-center justify-between p-4 border border-surface-light rounded-lg bg-surface-light">
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-credit-card text-2xl text-accent"></i>
-                    <div>
-                      <p class="font-semibold text-text-main">Credit Card</p>
-                      <p class="text-sm text-text-muted">**** **** **** 1234</p>
-                    </div>
-                  </div>
-                  <Button icon="pi pi-pencil" class="p-button-text text-text-muted" />
-                </div>
-                
-                <Button 
-                  icon="pi pi-plus" 
-                  label="Add Payment Method" 
-                  class="w-full p-button-outlined border-surface text-text-muted"
-                />
-              </div>
-            </div>
+            <SettingsPaymentMethods :stripeCustomerId="merchant.stripe_customer_id" />
 
             <!-- Financial Summary -->
             <div class="space-y-6">
