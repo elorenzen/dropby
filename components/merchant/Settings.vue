@@ -245,36 +245,8 @@
         <div v-if="activeTab === 2" class="space-y-6">
           <h2 class="text-2xl font-bold text-text-main mb-6">Payments & Financial</h2>
           
-          <!-- Top Row: Payment Methods and Financial Summary -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <!-- Payment Methods -->
             <SettingsPaymentMethods :stripeCustomerId="merchant.stripe_customer_id" />
-
-            <!-- Financial Summary -->
-            <div class="space-y-6">
-              <h3 class="text-xl font-semibold text-text-main">Financial Summary</h3>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="bg-surface-light rounded-lg p-4">
-                  <p class="text-sm text-text-muted">This Month</p>
-                  <p class="text-2xl font-bold text-text-main">$12,450</p>
-                </div>
-                <div class="bg-surface-light rounded-lg p-4">
-                  <p class="text-sm text-text-muted">Last Month</p>
-                  <p class="text-2xl font-bold text-text-main">$11,200</p>
-                </div>
-              </div>
-              
-              <div class="space-y-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-text-muted">Platform Fee</span>
-                  <span class="font-semibold text-text-main">5%</span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-text-muted">Processing Fee</span>
-                  <span class="font-semibold text-text-main">2.9% + $0.30</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Current Subscription Plan Section -->

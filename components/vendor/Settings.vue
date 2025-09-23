@@ -244,7 +244,11 @@
 
         <!-- FINANCIALS TAB -->
         <div v-if="activeTab === 4" class="space-y-6">
-          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">Financials & Payment Settings</h2>
+          <h2 class="text-2xl font-bold text-text-main mb-6">Payments & Financial</h2>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <SettingsPaymentMethods :stripeCustomerId="vendor.stripe_customer_id" />
+          </div>
           
           <!-- Current Subscription Plan Section -->
           <div v-if="hasActiveSubscription" class="space-y-6">
