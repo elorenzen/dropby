@@ -254,6 +254,60 @@
       </div>
     </Dialog>
 
+    <Dialog v-if="usageLimitReached" :visible="usageLimitReached" @update:visible="usageLimitReached = $event" modal :style="{ width: '32rem' }">
+      <template #header>
+        <div class="flex items-center gap-3">
+          <span class="text-xl font-semibold">Monthly Limit Exceeded</span>
+        </div>
+      </template>
+      
+      <div class="space-y-6">
+        <!-- Icon and message -->
+        <div class="text-center space-y-3">
+          <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto">
+            <i class="pi pi-ban text-orange-500 text-2xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-600 dark:text-gray-300">
+              You've used all <span class="font-semibold text-orange-600 dark:text-orange-400">{{ usageLimitObject.usageLimit }}</span> 
+              {{ usageLimitObject.usageType === 'requests' ? 'event requests' : 'event creations' }} 
+              for this month.
+            </p>
+          </div>
+          <!-- Additional info -->
+          <div class="text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Wait until next month for your limits to reset, or select from the options below to continue.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+          <Button 
+            severity="warning" 
+            class="w-full justify-center"
+            @click="navigateTo(`/settings/${usageLimitObject.businessId}/?activeTab=4`)" 
+          >
+            <i class="pi pi-arrow-up text-white"></i>
+            Upgrade Plan
+          </Button>
+          <Button 
+            severity="success" 
+            class="w-full justify-center"
+            @click="handlePayment"
+            v-tooltip="{
+              value: `Event: $${usageLimitObject.feeBreakdown?.baseAmount.toFixed(2)}<br/>Platform Fee: $${usageLimitObject.feeBreakdown?.platformFee.toFixed(2)}<br/>Processing Fee: $${usageLimitObject.feeBreakdown?.processingFee.toFixed(2)}<br/><strong>Total: $${usageLimitObject.feeBreakdown?.totalAmount.toFixed(2)}</strong>`,
+              escape: false,
+              showDelay: 500
+            }"
+          >
+            <i class="pi pi-credit-card text-white"></i>
+            Request Event for {{ usageLimitObject.oneTimeFee }}
+          </Button>
+      </template>
+    </Dialog>
+
     <!-- Event Create Dialog - Only show for merchants if there's NO event and day is not in the past -->
     <EventCreate 
       v-if="userType === 'merchant' && merchant && !eventOnDay && dayDate && new Date(dayDate) >= new Date(new Date().setHours(0,0,0,0))"
@@ -327,6 +381,9 @@ export default {
 
     const notes         = ref(merchant.value?.notes || '')
     const dayViewDialog = ref(false)
+    const usageLimitReached = ref(false)
+    const usageLimitObject = ref()
+    const showPaymentDialog = ref(false)
     const dayId         = ref()
     const dayDate       = ref()
     const eventOnDay    = ref()
@@ -664,6 +721,32 @@ export default {
       return 'secondary'
     }
 
+    const showUsageLimitReached = (object: any) => {
+      dayViewDialog.value = false
+      
+      // Calculate one-time payment fees
+      const baseAmount = object.businessType === 'vendor' ? 3.00 : 5.00 // $3 for vendors, $5 for merchants
+      const platformFee = baseAmount * 0.08 // 8% platform fee
+      const processingFee = (baseAmount * 0.029) + 0.30 // Stripe processing fee
+      const totalAmount = baseAmount + platformFee + processingFee
+      
+      usageLimitObject.value = {
+        ...object,
+        oneTimeFee: `$${totalAmount.toFixed(2)}`,
+        feeBreakdown: {
+          baseAmount,
+          platformFee,
+          processingFee,
+          totalAmount
+        }
+      }
+      usageLimitReached.value = true
+    }
+
+    const handlePayment = async () => {
+      showPaymentDialog.value = true
+    }
+
     const requestEvent = async () => {
       if (!props.vendor?.id || !eventOnDay.value) return
       
@@ -681,12 +764,7 @@ export default {
         }) as any
 
         if (!usageCheck.allowed) {
-          toast.add({
-            severity: 'warn',
-            summary: 'Usage Limit Reached',
-            detail: `You've reached your monthly limit of ${usageCheck.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
-            life: 5000
-          })
+          showUsageLimitReached(usageCheck)
           return
         }
 
@@ -789,7 +867,13 @@ export default {
       getVendorStatusLabel,
       getVendorStatusSeverity,
       requestEvent,
-      cancelRequest
+      cancelRequest,
+      // Usage limit dialog
+      usageLimitReached,
+      usageLimitObject,
+      showPaymentDialog,
+      showUsageLimitReached,
+      handlePayment
     }
   }
 }
