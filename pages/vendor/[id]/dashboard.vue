@@ -161,24 +161,6 @@
             />
           </template>
         </Card>
-
-        <!-- Recent Events Table -->
-        <Card>
-            <template #title>
-            <div class="flex items-center justify-between">
-              <h3 class="text-xl font-semibold">My Events</h3>
-              <Button 
-                label="View All" 
-                size="small" 
-                text 
-                @click="navigateToSettings"
-              />
-            </div>
-            </template>
-            <template #content>
-                <VendorEventTable />
-            </template>
-        </Card>
       </div>
 
       <!-- Right Column - Activity & Quick Actions -->

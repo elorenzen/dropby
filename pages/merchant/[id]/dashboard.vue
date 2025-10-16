@@ -115,24 +115,6 @@
               />
             </template>
           </Card>
-  
-          <!-- Recent Events Table -->
-          <Card>
-            <template #title>
-              <div class="flex items-center justify-between">
-                <h3 class="text-xl font-semibold">Recent Events</h3>
-                <Button 
-                  label="View All" 
-                  size="small" 
-                  text 
-                  @click="navigateToSettings"
-                />
-              </div>
-            </template>
-            <template #content>
-              <MerchantEventTable />
-            </template>
-          </Card>
         </div>
   
         <!-- Right Column - Activity & Charts -->
