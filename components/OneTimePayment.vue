@@ -28,7 +28,8 @@
 
     <!-- Payment Dialog -->
     <Dialog
-      v-model:visible="showPaymentDialog"
+      :visible="showPaymentDialog"
+      @update:visible="showPaymentDialog = $event"
       modal
       header="One-Time Payment"
       :style="{ width: '30rem' }"
@@ -87,6 +88,7 @@
             :disabled="!acceptedTerms || processing"
             class="flex-1 bg-accent text-background border-accent hover:bg-accent-dark"
             @click="processPayment"
+            :loading="processing"
           />
         </div>
       </div>
@@ -94,7 +96,8 @@
 
     <!-- Upgrade Dialog -->
     <Dialog
-      v-model:visible="showUpgradeDialog"
+      :visible="showUpgradeDialog"
+      @update:visible="showUpgradeDialog = $event"
       modal
       header="Upgrade Your Plan"
       :style="{ width: '40rem' }"
@@ -102,7 +105,7 @@
       <SubscriptionPlans
         :business-type="businessType"
         :business-id="businessId"
-        @subscription-created="handleSubscriptionCreated"
+        @plan-selected="handleSubscriptionCreated"
       />
     </Dialog>
   </div>
@@ -118,6 +121,7 @@ interface Props {
   currentUsage: number
   limit: number
   oneTimeFee: number
+  showPaymentDialog?: boolean
 }
 
 const props = defineProps<Props>()
@@ -125,6 +129,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   (e: 'payment-success'): void
   (e: 'subscription-upgraded'): void
+  (e: 'payment-dialog-closed'): void
 }>()
 
 // State
@@ -132,7 +137,7 @@ const showPaymentRequired = computed(() => {
   return props.currentUsage >= props.limit
 })
 
-const showPaymentDialog = ref(false)
+const showPaymentDialog = ref(props.showPaymentDialog || false)
 const showUpgradeDialog = ref(false)
 const processing = ref(false)
 const acceptedTerms = ref(false)
@@ -171,6 +176,20 @@ watch(showPaymentDialog, async (newValue) => {
   } else if (!newValue && cardElement.value) {
     cardElement.value.destroy()
     cardElement.value = null
+  }
+})
+
+// Watch for prop changes
+watch(() => props.showPaymentDialog, (newValue) => {
+  if (newValue !== undefined) {
+    showPaymentDialog.value = newValue
+  }
+})
+
+// Watch for dialog close
+watch(showPaymentDialog, (newValue) => {
+  if (!newValue && props.showPaymentDialog) {
+    emit('payment-dialog-closed')
   }
 })
 
@@ -273,9 +292,9 @@ const processPayment = async () => {
 }
 
 // Handle subscription upgrade
-const handleSubscriptionCreated = () => {
+const handleSubscriptionCreated = (plan: any) => {
   showUpgradeDialog.value = false
-  emit('subscription-upgraded')
+  emit('subscription-upgraded', plan)
 }
 </script>
 

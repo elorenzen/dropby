@@ -271,7 +271,7 @@
             <p class="text-gray-600 dark:text-gray-300">
               You've used all <span class="font-semibold text-orange-600 dark:text-orange-400">{{ usageLimitObject.usageLimit }}</span> 
               {{ usageLimitObject.usageType === 'requests' ? 'event requests' : 'event creations' }} 
-              for this month.
+              for this month. Choose an option below to continue.
             </p>
           </div>
           <!-- Additional info -->
@@ -303,10 +303,25 @@
             }"
           >
             <i class="pi pi-credit-card text-white"></i>
-            Request Event for {{ usageLimitObject.oneTimeFee }}
+            Request Event for ${{ usageLimitObject.oneTimeFee.toFixed(2) }}
           </Button>
       </template>
     </Dialog>
+
+    <!-- One-Time Payment Component -->
+    <OneTimePayment
+      v-if="usageLimitObject"
+      :business-id="usageLimitObject.businessId"
+      :business-type="usageLimitObject.businessType"
+      :action-type="usageLimitObject.usageType"
+      :current-usage="usageLimitObject.currentUsage"
+      :limit="usageLimitObject.usageLimit"
+      :one-time-fee="usageLimitObject.feeBreakdown?.baseAmount || 0"
+      :show-payment-dialog="showPaymentDialog"
+      @payment-success="handlePaymentSuccess"
+      @subscription-upgraded="handleSubscriptionUpgraded"
+      @payment-dialog-closed="handlePaymentDialogClosed"
+    />
 
     <!-- Event Create Dialog - Only show for merchants if there's NO event and day is not in the past -->
     <EventCreate 
@@ -330,12 +345,14 @@
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import OneTimePayment from '~/components/OneTimePayment.vue'
 import { v4 } from 'uuid'
 import { useToast } from 'primevue/usetoast'
 
 export default {
   components: {
-    FullCalendar
+    FullCalendar,
+    OneTimePayment
   },
   props: {
     userType: {
@@ -732,7 +749,7 @@ export default {
       
       usageLimitObject.value = {
         ...object,
-        oneTimeFee: `$${totalAmount.toFixed(2)}`,
+        oneTimeFee: totalAmount, // Show total amount to user
         feeBreakdown: {
           baseAmount,
           platformFee,
@@ -744,7 +761,26 @@ export default {
     }
 
     const handlePayment = async () => {
+      // Close the usage limit dialog and show the payment dialog
+      usageLimitReached.value = false
       showPaymentDialog.value = true
+    }
+
+    // Handle payment success from OneTimePayment component
+    const handlePaymentSuccess = () => {
+      // Refresh the page or reload data to reflect the new usage
+      window.location.reload()
+    }
+
+    // Handle subscription upgrade from OneTimePayment component
+    const handleSubscriptionUpgraded = () => {
+      // Refresh the page or reload data to reflect the new subscription
+      window.location.reload()
+    }
+
+    // Handle payment dialog close
+    const handlePaymentDialogClosed = () => {
+      showPaymentDialog.value = false
     }
 
     const requestEvent = async () => {
@@ -873,7 +909,10 @@ export default {
       usageLimitObject,
       showPaymentDialog,
       showUsageLimitReached,
-      handlePayment
+      handlePayment,
+      handlePaymentSuccess,
+      handleSubscriptionUpgraded,
+      handlePaymentDialogClosed
     }
   }
 }
