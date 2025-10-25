@@ -35,8 +35,8 @@
                 <span class="text-text-muted text-sm ml-2">({{ analytics.foodTruckReviews }} reviews)</span>
               </div>
             </div>
-            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 dark:bg-orange-900">
-              <i class="pi pi-truck text-orange-600 dark:text-orange-400"></i>
+            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-light">
+              <i class="pi pi-truck icon-primary"></i>
             </div>
           </div>
         </template>
@@ -53,8 +53,8 @@
                 <span class="text-text-muted text-sm ml-2">({{ analytics.userReviews }} reviews)</span>
               </div>
             </div>
-            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900">
-              <i class="pi pi-users text-blue-600 dark:text-blue-400"></i>
+            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-light">
+              <i class="pi pi-users icon-primary"></i>
             </div>
           </div>
         </template>
@@ -62,18 +62,18 @@
     </div>
 
     <!-- Pending Reviews Notification -->
-    <Card v-if="pendingReviews.length > 0" class="mb-6 border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+    <Card v-if="pendingReviews.length > 0" class="mb-6 border-accent-light bg-accent-light">
       <template #content>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-              <i class="pi pi-exclamation-triangle text-orange-600 dark:text-orange-400"></i>
+            <div class="w-10 h-10 rounded-full bg-accent-light flex items-center justify-center">
+              <i class="pi pi-exclamation-triangle icon-accent"></i>
             </div>
             <div>
-              <h4 class="font-semibold text-orange-800 dark:text-orange-200">
+              <h4 class="font-semibold text-accent-dark">
                 {{ pendingReviews.length }} Event{{ pendingReviews.length > 1 ? 's' : '' }} Need{{ pendingReviews.length > 1 ? '' : 's' }} Review
               </h4>
-              <p class="text-sm text-orange-600 dark:text-orange-400">
+              <p class="text-sm text-accent-dark">
                 Write reviews for completed events to help other merchants
               </p>
             </div>
@@ -88,7 +88,7 @@
         
         <!-- Pending Reviews List -->
         <div v-if="showPendingReviews" class="mt-4 space-y-3">
-          <div v-for="event in pendingReviews" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+          <div v-for="event in pendingReviews" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-accent-light">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
                 <NuxtImg 
@@ -215,8 +215,8 @@
     >
         <template #header>
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                    <i class="pi pi-star text-orange-600 dark:text-orange-400"></i>
+                <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+                    <i class="pi pi-star icon-primary"></i>
                 </div>
                 <div>
                     <h3 class="text-xl font-semibold text-text-main">Write Review</h3>
@@ -251,7 +251,7 @@
                         :cancel="false" 
                         class="text-2xl"
                         :pt="{
-                            onIcon: { class: 'text-orange-500' },
+                            onIcon: { class: 'text-accent' },
                             offIcon: { class: 'text-gray-300 dark:text-gray-600' }
                         }"
                     />

@@ -56,8 +56,8 @@ export default defineNuxtConfig({
         preset: Aura,
         options: {
           colorScheme: 'dark', // Force dark mode
-          primaryColor: '#FF8906', // PrimeVue orange
-          accentColor: '#FF8906',
+          primaryColor: '#1E40AF', // Navy Blue - Premium Event Platform
+          accentColor: '#D97706', // Amber/Gold accent
           darkModeSelector: ".p-dark"
         },
       },

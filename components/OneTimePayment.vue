@@ -207,14 +207,14 @@ const initializeCardElement = async () => {
       style: {
         base: {
           fontSize: '16px',
-          color: '#374151',
+          color: 'var(--text-color)',
           backgroundColor: 'transparent',
           '::placeholder': {
-            color: '#9ca3af',
+            color: 'var(--text-color-secondary)',
           },
         },
         invalid: {
-          color: '#ef4444',
+          color: 'var(--error-color)',
         },
       },
     })

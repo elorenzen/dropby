@@ -30,13 +30,13 @@
             <div>
               <p class="text-text-muted text-sm font-medium">Total Events</p>
               <p class="text-3xl font-bold text-text-main">{{ analytics.totalEvents }}</p>
-              <p class="text-green-500 text-sm mt-1">
+              <p class="text-success text-sm mt-1">
                 <i class="pi pi-arrow-up mr-1"></i>
                 +{{ analytics.eventsGrowth }}% this month
               </p>
             </div>
-            <div class="analytics-icon bg-blue-100 dark:bg-blue-900">
-              <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
+            <div class="analytics-icon bg-primary-light">
+              <i class="pi pi-calendar icon-primary"></i>
             </div>
           </div>
         </template>
@@ -48,13 +48,13 @@
             <div>
               <p class="text-text-muted text-sm font-medium">Upcoming Events</p>
               <p class="text-3xl font-bold text-text-main">{{ analytics.upcomingEvents }}</p>
-              <p class="text-orange-500 text-sm mt-1">
+              <p class="text-primary-dark text-sm mt-1">
                 <i class="pi pi-clock mr-1"></i>
                 {{ analytics.upcomingWeek }} in next 7 days
               </p>
             </div>
-            <div class="analytics-icon bg-green-100 dark:bg-green-900">
-              <i class="pi pi-check-circle text-green-600 dark:text-green-400"></i>
+            <div class="analytics-icon bg-success-light">
+              <i class="pi pi-check-circle icon-success"></i>
             </div>
           </div>
         </template>
@@ -108,7 +108,7 @@
                   :value="(usage.currentRequests / usage.maxRequests) * 100" 
                   :show-value="false"
                   class="flex-1 mr-2"
-                  :class="usage.currentRequests >= usage.maxRequests ? 'bg-red-200' : 'bg-green-200'"
+                  :class="usage.currentRequests >= usage.maxRequests ? 'bg-red-200' : 'bg-success-light'"
                 />
                 <span class="text-text-muted text-sm">{{ usage.remainingRequests }} left</span>
               </div>
@@ -121,8 +121,8 @@
                 class="mt-2"
               />
             </div>
-            <div class="analytics-icon bg-orange-100 dark:bg-orange-900">
-              <i class="pi pi-send text-orange-600 dark:text-orange-400"></i>
+            <div class="analytics-icon bg-accent-light">
+              <i class="pi pi-send icon-accent"></i>
             </div>
           </div>
         </template>
@@ -313,20 +313,20 @@ const recentActivity = computed(() => {
       
       // Determine icon and styling based on timeline item type
       let icon = 'pi pi-info-circle'
-      let iconClass = 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+      let iconClass = 'bg-primary-light text-primary-dark'
       
       switch (item.type) {
         case 'event_completed':
           icon = 'pi pi-check-circle'
-          iconClass = 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+          iconClass = 'bg-success-light text-success-dark'
           break
         case 'event':
           icon = 'pi pi-calendar-plus'
-          iconClass = 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400'
+          iconClass = 'bg-accent-light text-accent-dark'
           break
         case 'rating':
           icon = 'pi pi-star'
-          iconClass = 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
+          iconClass = 'bg-accent-light text-accent-dark'
           break
         case 'profile':
           icon = 'pi pi-user-edit'
@@ -357,18 +357,18 @@ const recentActivity = computed(() => {
     let title = ''
     let description = ''
     let icon = 'pi pi-calendar'
-    let iconClass = 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+    let iconClass = 'bg-primary-light text-primary-dark'
     
     if (event.status === 'booked') {
       title = 'Event Confirmed'
       description = `Event confirmed for ${eventDate.toLocaleDateString()} at ${eventDate.toLocaleTimeString()}`
       icon = 'pi pi-check-circle'
-      iconClass = 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+      iconClass = 'bg-success-light text-success-dark'
     } else if (event.status === 'open' && event.pending_requests?.includes(vendor.value?.id)) {
       title = 'Event Request Sent'
       description = `Request sent for event on ${eventDate.toLocaleDateString()}`
       icon = 'pi pi-send'
-      iconClass = 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400'
+      iconClass = 'bg-accent-light text-accent-dark'
     }
     
     if (title) {
@@ -406,7 +406,7 @@ const recentActivity = computed(() => {
       description: 'Start by browsing available events or updating your profile',
       time: 'Just now',
       icon: 'pi pi-info-circle',
-      iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+      iconClass: 'bg-primary-light text-primary-dark'
     })
   }
   

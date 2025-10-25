@@ -18,18 +18,18 @@
     </div>
 
     <!-- Pending Event Requests Card -->
-    <Card class="mb-6 border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+    <Card class="mb-6 border-primary-light bg-primary-light">
       <template #title>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-              <i class="pi pi-clock text-orange-600 dark:text-orange-400"></i>
+            <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+              <i class="pi pi-clock icon-primary"></i>
             </div>
             <div>
-              <h3 class="text-xl font-semibold text-orange-800 dark:text-orange-200">
+              <h3 class="text-xl font-semibold text-primary-dark">
                 Pending Event Requests
               </h3>
-              <p class="text-sm text-orange-600 dark:text-orange-400">
+              <p class="text-sm text-primary-dark">
                 {{ pendingRequests.length }} event{{ pendingRequests.length !== 1 ? 's' : '' }} with pending requests
               </p>
             </div>
@@ -41,12 +41,12 @@
           <EventBaseListCard 
             v-for="event in pendingRequests" 
             :key="event.id"
-            class="border-orange-200 dark:border-orange-800"
+            class="border-primary-light"
             :show-status-badge="false"
           >
             <template #vendor-avatar>
-              <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                <i class="pi pi-calendar text-orange-600 dark:text-orange-400"></i>
+              <div class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
+                <i class="pi pi-calendar icon-primary"></i>
               </div>
             </template>
             
@@ -57,10 +57,10 @@
               
               <!-- Vendor Requests List -->
               <div class="space-y-3">
-                <p class="text-sm font-medium text-orange-600 dark:text-orange-400">
+                <p class="text-sm font-medium text-primary-dark">
                   {{ event.pending_requests?.length || 0 }} vendor{{ (event.pending_requests?.length || 0) !== 1 ? 's' : '' }} requesting this event:
                 </p>
-                <div v-for="vendorId in event.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-800">
+                <div v-for="vendorId in event.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-primary-light rounded-lg border border-primary-light">
                   <div class="flex items-center gap-3">
                     <NuxtImg 
                       :src="getVendorProp(vendorId, 'avatar_url')" 
@@ -98,11 +98,11 @@
           </EventBaseListCard>
         </div>
         <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-check-circle text-orange-600 dark:text-orange-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-primary-light mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-check-circle icon-primary text-2xl"></i>
           </div>
-          <p class="text-orange-600 dark:text-orange-400 font-medium">No pending requests</p>
-          <p class="text-sm text-orange-500 dark:text-orange-300">All event requests have been processed</p>
+          <p class="text-primary-dark font-medium">No pending requests</p>
+          <p class="text-sm text-primary-dark">All event requests have been processed</p>
         </div>
       </template>
     </Card>
@@ -233,7 +233,7 @@
                 <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
                 <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
                 <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Waiting for food truck requests</p>
+                <p class="text-xs text-primary-dark mt-1">Waiting for food truck requests</p>
               </template>
             </template>
             

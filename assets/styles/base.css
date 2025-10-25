@@ -1,13 +1,17 @@
 /* PrimeVue Dark Theme Overrides for DropBy */
 :root {
-  /* Brand Orange */
-  --primary-color: #ff9800;
+  --primary-color: #1E40AF;
   --primary-color-text: #fff;
-  --highlight-bg: #ff9800;
+  --highlight-bg: #1E40AF;
   --highlight-text-color: #fff;
 
-  /* Secondary Color */
-  --secondary-color: #666;
+  --secondary-color: #059669;
+  
+  --accent-color: #D97706;
+  --success-color: #059669;
+
+  --warning-color: #D97706;
+  --error-color: #EF4444;
 
   /* Surfaces */
   --surface-ground: #18191b;
@@ -47,7 +51,7 @@ body {
   background: var(--primary-color) !important;
   border-color: var(--primary-color) !important;
   color: var(--primary-color-text) !important;
-  box-shadow: 0 2px 8px 0 rgba(255,152,0,0.15) !important;
+  box-shadow: 0 2px 8px 0 rgba(30,64,175,0.15) !important;
 }
 
 .p-button.p-button-outlined {
@@ -149,7 +153,7 @@ body {
 
 /* Outlined button: set color on button, icon inherits */
 .p-button.p-button-outlined {
-  color: #ff9800 !important;
+  color: #1E40AF !important;
 }
 .p-button.p-button-outlined .p-button-icon, .p-button.p-button-outlined .pi {
   color: inherit !important;
@@ -290,4 +294,153 @@ body {
 .p-button[style*="border-color: var(--secondary-color)"] .p-button-icon,
 .p-button[style*="border-color: var(--secondary-color)"] .pi {
   color: var(--secondary-color) !important;
+}
+
+/* --- CUSTOM UTILITY CLASSES FOR CONSISTENT THEMING --- */
+
+/* Primary Color Utilities */
+.text-primary { color: var(--primary-color) !important; }
+.bg-primary { background-color: var(--primary-color) !important; }
+.border-primary { border-color: var(--primary-color) !important; }
+
+/* Primary Color with Dark Mode Support */
+.text-primary-dark { 
+  color: var(--primary-color) !important; 
+}
+.dark .text-primary-dark { 
+  color: #60A5FA !important; /* Lighter blue for dark mode */
+}
+
+.bg-primary-light { 
+  background-color: rgba(from var(--primary-color) r g b / 0.1) !important; 
+}
+.dark .bg-primary-light { 
+  background-color: rgba(from var(--primary-color) r g b / 0.2) !important; 
+}
+
+.bg-primary-dark { 
+  background-color: rgba(from var(--primary-color) r g b / 0.9) !important; 
+}
+.dark .bg-primary-dark { 
+  background-color: rgba(from var(--primary-color) r g b / 0.8) !important; 
+}
+
+.border-primary-light { 
+  border-color: rgba(from var(--primary-color) r g b / 0.2) !important; 
+}
+.dark .border-primary-light { 
+  border-color: rgba(from var(--primary-color) r g b / 0.3) !important; 
+}
+
+/* Secondary/Success Color Utilities */
+.text-success { color: var(--success-color) !important; }
+.bg-success { background-color: var(--success-color) !important; }
+.border-success { border-color: var(--success-color) !important; }
+
+.text-success-dark { 
+  color: var(--success-color) !important; 
+}
+.dark .text-success-dark { 
+  color: #34D399 !important; /* Lighter green for dark mode */
+}
+
+.bg-success-light { 
+  background-color: rgba(from var(--success-color) r g b / 0.1) !important; 
+}
+.dark .bg-success-light { 
+  background-color: rgba(from var(--success-color) r g b / 0.2) !important; 
+}
+
+.bg-success-dark { 
+  background-color: rgba(from var(--success-color) r g b / 0.9) !important; 
+}
+.dark .bg-success-dark { 
+  background-color: rgba(from var(--success-color) r g b / 0.8) !important; 
+}
+
+.border-success-light { 
+  border-color: rgba(from var(--success-color) r g b / 0.2) !important; 
+}
+.dark .border-success-light { 
+  border-color: rgba(from var(--success-color) r g b / 0.3) !important; 
+}
+
+/* Accent/Warning Color Utilities */
+.text-accent { color: var(--accent-color) !important; }
+.bg-accent { background-color: var(--accent-color) !important; }
+.border-accent { border-color: var(--accent-color) !important; }
+
+.text-accent-dark { 
+  color: var(--accent-color) !important; 
+}
+.dark .text-accent-dark { 
+  color: #FBBF24 !important; /* Lighter amber for dark mode */
+}
+
+.bg-accent-light { 
+  background-color: rgba(from var(--accent-color) r g b / 0.1) !important; 
+}
+.dark .bg-accent-light { 
+  background-color: rgba(from var(--accent-color) r g b / 0.2) !important; 
+}
+
+.bg-accent-dark { 
+  background-color: rgba(from var(--accent-color) r g b / 0.9) !important; 
+}
+.dark .bg-accent-dark { 
+  background-color: rgba(from var(--accent-color) r g b / 0.8) !important; 
+}
+
+.border-accent-light { 
+  border-color: rgba(from var(--accent-color) r g b / 0.2) !important; 
+}
+.dark .border-accent-light { 
+  border-color: rgba(from var(--accent-color) r g b / 0.3) !important; 
+}
+
+/* Icon Color Utilities */
+.icon-primary { color: var(--primary-color) !important; }
+.icon-success { color: var(--success-color) !important; }
+.icon-accent { color: var(--accent-color) !important; }
+.icon-error { color: var(--error-color) !important; }
+
+/* Error Color Utilities */
+.text-error { color: var(--error-color) !important; }
+.bg-error { background-color: var(--error-color) !important; }
+.border-error { border-color: var(--error-color) !important; }
+
+.text-error-dark { 
+  color: var(--error-color) !important; 
+}
+.dark .text-error-dark { 
+  color: #F87171 !important; /* Lighter red for dark mode */
+}
+
+.bg-error-light { 
+  background-color: rgba(from var(--error-color) r g b / 0.1) !important; 
+}
+.dark .bg-error-light { 
+  background-color: rgba(from var(--error-color) r g b / 0.2) !important; 
+}
+
+.bg-error-dark { 
+  background-color: rgba(from var(--error-color) r g b / 0.9) !important; 
+}
+.dark .bg-error-dark { 
+  background-color: rgba(from var(--error-color) r g b / 0.8) !important; 
+}
+
+.border-error-light { 
+  border-color: rgba(from var(--error-color) r g b / 0.2) !important; 
+}
+.dark .border-error-light { 
+  border-color: rgba(from var(--error-color) r g b / 0.3) !important; 
+}
+
+/* Gradient Utilities */
+.gradient-primary { 
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%) !important; 
+}
+.gradient-accent { 
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%) !important; 
 } 

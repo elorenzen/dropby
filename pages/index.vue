@@ -30,7 +30,7 @@
                             class="secondary-cta"
                         >
                             <template #icon>
-                                <BaseIcon name="rocket" color="#FF8906" size="20" />
+                                <BaseIcon name="rocket" color="var(--primary-color)" size="20" />
                             </template>
                         </Button>
                     </NuxtLink>
@@ -48,7 +48,7 @@
             <div class="user-type-grid">
                 <div class="user-type-card patron-card">
                     <div class="user-type-icon">
-                        <BaseIcon name="search" color="#FF8906" size="48" />
+                        <BaseIcon name="search" color="var(--primary-color)" size="48" />
                     </div>
                     <h3>I'm Looking for Food & Events</h3>
                     <p>Discover local food trucks, bars, and exciting events near you</p>
@@ -70,7 +70,7 @@
                                 class="secondary-cta"
                             >
                                 <template #icon>
-                                    <BaseIcon name="map-marker" color="#FF8906" size="18" />
+                                    <BaseIcon name="map-marker" color="var(--primary-color)" size="18" />
                                 </template>
                             </Button>
                         </NuxtLink>
@@ -81,7 +81,7 @@
                                 class="secondary-cta"
                             >
                                 <template #icon>
-                                    <BaseIcon name="truck" color="#FF8906" size="18" />
+                                    <BaseIcon name="truck" color="var(--primary-color)" size="18" />
                                 </template>
                             </Button>
                         </NuxtLink>
@@ -90,7 +90,7 @@
                 
                 <div class="user-type-card business-card">
                     <div class="user-type-icon">
-                        <BaseIcon name="building" color="#FF8906" size="48" />
+                        <BaseIcon name="building" color="var(--primary-color)" size="48" />
                     </div>
                     <h3>I'm a Business Owner</h3>
                     <p>Connect with partners, schedule events, and grow your business</p>
@@ -112,7 +112,7 @@
                             @click="scrollToFeatures"
                         >
                             <template #icon>
-                                <BaseIcon name="info-circle" color="#FF8906" size="18" />
+                                <BaseIcon name="info-circle" color="var(--primary-color)" size="18" />
                             </template>
                         </Button>
                     </div>
@@ -130,7 +130,7 @@
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <BaseIcon name="calendar" color="#FF8906" size="32" />
+                        <BaseIcon name="calendar" color="var(--primary-color)" size="32" />
                     </div>
                     <h3>Smart Scheduling</h3>
                     <p>Intelligent event scheduling that works around your business hours and availability</p>
@@ -138,7 +138,7 @@
                 
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <BaseIcon name="map-marker" color="#FF8906" size="32" />
+                        <BaseIcon name="map-marker" color="var(--primary-color)" size="32" />
                     </div>
                     <h3>Location-Based Matching</h3>
                     <p>Find the perfect partners near you with our advanced location matching system</p>
@@ -146,7 +146,7 @@
                 
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <BaseIcon name="chart-line" color="#FF8906" size="32" />
+                        <BaseIcon name="chart-line" color="var(--primary-color)" size="32" />
                     </div>
                     <h3>Boost Your Revenue</h3>
                     <p>Increase foot traffic and sales through strategic partnerships and events</p>
@@ -154,7 +154,7 @@
                 
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <BaseIcon name="users" color="#FF8906" size="32" />
+                        <BaseIcon name="users" color="var(--primary-color)" size="32" />
                     </div>
                     <h3>Community Building</h3>
                     <p>Build lasting relationships with other local businesses in your community</p>
@@ -258,7 +258,7 @@
                             class="secondary-cta"
                         >
                             <template #icon>
-                                <BaseIcon name="search" color="#FF8906" size="20" />
+                                <BaseIcon name="search" color="var(--primary-color)" size="20" />
                             </template>
                         </Button>
                     </NuxtLink>
@@ -283,7 +283,7 @@ const scrollToFeatures = () => {
 /* Hero Section */
 .hero-section {
     padding: 4rem 0;
-    background: linear-gradient(135deg, rgba(255,137,6,0.1) 0%, rgba(255,137,6,0.05) 100%);
+    background: linear-gradient(135deg, rgba(from var(--primary-color) r g b / 0.1) 0%, rgba(from var(--success-color) r g b / 0.05) 100%);
     border-radius: 2rem;
     margin-bottom: 4rem;
 }
@@ -296,7 +296,7 @@ const scrollToFeatures = () => {
 .hero-title {
     font-size: 3rem;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #FF8906 0%, #FF6B35 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -312,7 +312,7 @@ const scrollToFeatures = () => {
 }
 
 .brand-highlight {
-    color: #FF8906;
+    color: var(--primary-color);
 }
 
 .hero-actions {
@@ -323,15 +323,15 @@ const scrollToFeatures = () => {
 }
 
 .primary-cta {
-    background: linear-gradient(135deg, #FF8906 0%, #FF6B35 100%) !important;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%) !important;
     border: none !important;
     padding: 1rem 2rem !important;
     font-weight: 600 !important;
 }
 
 .secondary-cta {
-    border-color: #FF8906 !important;
-    color: #FF8906 !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
     padding: 1rem 2rem !important;
     font-weight: 600 !important;
 }
@@ -366,7 +366,7 @@ const scrollToFeatures = () => {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, #FF8906 0%, #FF6B35 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%);
 }
 
 .user-type-card:hover {
@@ -572,7 +572,7 @@ const scrollToFeatures = () => {
 
 /* CTA Section */
 .cta-section {
-    background: linear-gradient(135deg, rgba(255,137,6,0.1) 0%, rgba(255,137,6,0.05) 100%);
+    background: linear-gradient(135deg, rgba(from var(--primary-color) r g b / 0.1) 0%, rgba(from var(--success-color) r g b / 0.05) 100%);
     border-radius: 2rem;
     padding: 3rem;
     text-align: center;

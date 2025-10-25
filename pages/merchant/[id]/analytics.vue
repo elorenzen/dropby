@@ -283,25 +283,25 @@ const chartOptions = {
   plugins: {
     legend: {
       labels: {
-        color: '#9ca3af' // text-muted color
+        color: 'var(--text-color-secondary)'
       }
     }
   },
   scales: {
     x: {
       ticks: {
-        color: '#9ca3af'
+        color: 'var(--text-color-secondary)'
       },
       grid: {
-        color: '#374151' // dark mode grid
+        color: 'var(--surface-border)'
       }
     },
     y: {
       ticks: {
-        color: '#9ca3af'
+        color: 'var(--text-color-secondary)'
       },
       grid: {
-        color: '#374151'
+        color: 'var(--surface-border)'
       }
     }
   }
@@ -314,7 +314,7 @@ const doughnutOptions = {
     legend: {
       position: 'bottom' as const,
       labels: {
-        color: '#9ca3af'
+        color: 'var(--text-color-secondary)'
       }
     }
   }
@@ -387,8 +387,8 @@ const generateChartData = (events: any[]) => {
     datasets: [{
       label: 'Events',
       data: Object.values(eventsByDate),
-      borderColor: '#3b82f6',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderColor: 'var(--primary-color)',
+      backgroundColor: 'rgba(from var(--primary-color) r g b / 0.1)',
       fill: true,
       tension: 0.4
     }]
@@ -401,8 +401,8 @@ const generateChartData = (events: any[]) => {
     datasets: [{
       label: 'Revenue',
       data: Object.values(revenueByDate),
-      backgroundColor: '#10b981',
-      borderColor: '#10b981',
+      backgroundColor: 'var(--success-color)',
+      borderColor: 'var(--success-color)',
       borderWidth: 1
     }]
   }
@@ -414,11 +414,11 @@ const generateChartData = (events: any[]) => {
     datasets: [{
       data: Object.values(statusCounts),
       backgroundColor: [
-        '#3b82f6', // blue
-        '#10b981', // green
-        '#f59e0b', // yellow
-        '#ef4444', // red
-        '#6b7280'  // gray
+        'var(--primary-color)', // blue
+        'var(--success-color)', // green
+        'var(--warning-color)', // yellow
+        'var(--error-color)', // red
+        'var(--text-color-secondary)'  // gray
       ]
     }]
   }
@@ -429,7 +429,7 @@ const generateChartData = (events: any[]) => {
     datasets: [{
       label: 'Events',
       data: [12, 8, 6, 5, 4],
-      backgroundColor: '#8b5cf6'
+      backgroundColor: 'var(--accent-color)'
     }]
   }
 }

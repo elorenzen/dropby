@@ -2,8 +2,8 @@
   <div>
     <Menubar>
       <template #start>
-        <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: #FF8906;" />
-        <NuxtLink to="/" class="m-2 text-xl font-bold" style="color: #FF8906;">DropBy</NuxtLink>
+        <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
+        <NuxtLink to="/" class="m-2 text-xl font-bold text-primary">DropBy</NuxtLink>
       </template>
       
       <template #end>
@@ -252,7 +252,7 @@ const errored = async (message: string) => {
 
 /* Active link styling */
 .text-accent {
-  color: #FF8906 !important;
+  color: var(--primary-color) !important;
 }
 
 /* Custom styling for menu items */
@@ -266,11 +266,11 @@ const errored = async (message: string) => {
 }
 
 :deep(.p-menubar-root-list > .p-menuitem > .p-menuitem-link:hover) {
-  color: #FF8906;
+  color: var(--primary-color);
 }
 
 :deep(.p-menubar-root-list > .p-menuitem > .p-menuitem-link.p-highlight) {
-  color: #FF8906;
+  color: var(--primary-color);
   font-weight: 500;
 }
 </style>

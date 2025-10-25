@@ -96,7 +96,7 @@
   left: 0;
   right: 0;
   height: 60px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  background: linear-gradient(transparent, rgba(from var(--surface-ground) r g b / 0.7));
   pointer-events: none;
 }
 
@@ -210,7 +210,7 @@
 }
 
 :deep(.p-rating .p-rating-icon.p-icon) {
-  color: #888;
+  color: var(--text-color-secondary);
 }
 
 :deep(.p-rating .p-rating-option-active .p-rating-icon.p-icon) {

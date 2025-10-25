@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
         
         const content = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #FF8906;">📋 New Event Request</h2>
+                <h2 style="color: var(--primary-color);">📋 New Event Request</h2>
                 <p><strong>${vendorData.vendor_name}</strong> has requested to work at your establishment:</p>
                 
                 <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
                 
                 <p>Please log into your DropBy dashboard to approve or decline this request.</p>
                 
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: var(--secondary-color);">
                     <p>This is an automated message from DropBy. Please do not reply to this email.</p>
                 </div>
             </div>

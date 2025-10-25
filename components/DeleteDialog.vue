@@ -56,7 +56,7 @@ const deleteConfirm = () => emit('deleteConfirm')
 <style scoped>
 /* Delete Dialog Styles */
 :deep(.delete-dialog .p-dialog-header) {
-    border-bottom: 1px solid rgb(229 231 235);
+    border-bottom: 1px solid var(--surface-border);
     padding: 1.5rem 1.5rem 1rem 1.5rem;
 }
 
@@ -65,13 +65,13 @@ const deleteConfirm = () => emit('deleteConfirm')
 }
 
 :deep(.delete-dialog .p-dialog-footer) {
-    border-top: 1px solid rgb(229 231 235);
+    border-top: 1px solid var(--surface-border);
     padding: 1rem 1.5rem;
 }
 
 :deep(.delete-dialog .p-dialog-title) {
     font-size: 1.25rem;
     font-weight: 600;
-    color: rgb(239 68 68);
+    color: var(--error-color);
 }
 </style>

@@ -18,18 +18,18 @@
     </div>
 
     <!-- Pending Events Card -->
-    <Card class="mb-6 border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+    <Card class="mb-6 border-primary-light bg-primary-light">
       <template #title>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-              <i class="pi pi-clock text-orange-600 dark:text-orange-400"></i>
+            <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+              <i class="pi pi-clock icon-primary"></i>
             </div>
             <div>
-              <h3 class="text-xl font-semibold text-orange-800 dark:text-orange-200">
+              <h3 class="text-xl font-semibold text-primary-dark">
                 Pending Requests
               </h3>
-              <p class="text-sm text-orange-600 dark:text-orange-400">
+              <p class="text-sm text-primary-dark">
                 {{ pendingEvents.length }} event{{ pendingEvents.length !== 1 ? 's' : '' }} awaiting merchant approval
               </p>
             </div>
@@ -41,12 +41,12 @@
           <EventBaseListCard 
             v-for="event in pendingEvents" 
             :key="event.id"
-            class="border-orange-200 dark:border-orange-800"
+            class="border-accent-light"
             :show-status-badge="false"
           >
             <template #vendor-avatar>
-              <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                <i class="pi pi-calendar text-orange-600 dark:text-orange-400"></i>
+              <div class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
+                <i class="pi pi-calendar icon-primary"></i>
               </div>
             </template>
             
@@ -55,7 +55,7 @@
               <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
               <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
               <p class="text-xs text-text-muted mb-2">Location: {{ event.location_address || 'No address specified' }}</p>
-              <p class="text-xs text-orange-600 dark:text-orange-400">Request sent - waiting for merchant approval</p>
+              <p class="text-xs text-primary-dark">Request sent - waiting for merchant approval</p>
             </template>
             
             <template #action-buttons>
@@ -71,11 +71,11 @@
           </EventBaseListCard>
         </div>
         <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-check-circle text-orange-600 dark:text-orange-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-primary-light mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-check-circle icon-primary text-2xl"></i>
           </div>
-          <p class="text-orange-600 dark:text-orange-400 font-medium">No pending requests</p>
-          <p class="text-sm text-orange-500 dark:text-orange-300">Browse open events below to find work opportunities</p>
+          <p class="text-primary-dark font-medium">No pending requests</p>
+          <p class="text-sm text-primary-dark">Browse open events below to find work opportunities</p>
         </div>
       </template>
     </Card>

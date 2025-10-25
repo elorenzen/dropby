@@ -219,7 +219,7 @@ const submitReview = async () => {
 <style scoped>
 /* Review Dialog Styles */
 :deep(.review-dialog .p-dialog-header) {
-  border-bottom: 1px solid rgb(229 231 235);
+  border-bottom: 1px solid var(--surface-border);
   padding: 1.5rem;
 }
 
@@ -228,7 +228,7 @@ const submitReview = async () => {
 }
 
 :deep(.review-dialog .p-dialog-footer) {
-  border-top: 1px solid rgb(229 231 235);
+  border-top: 1px solid var(--surface-border);
   padding: 1rem 1.5rem;
 }
 
@@ -238,17 +238,17 @@ const submitReview = async () => {
 
 :deep(.review-dialog .p-textarea) {
   border-radius: 0.5rem;
-  border: 1px solid rgb(209 213 219);
+  border: 1px solid var(--surface-border);
   transition: border-color 0.2s ease;
 }
 
 :deep(.review-dialog .p-textarea:focus) {
-  border-color: rgb(249 115 22);
-  box-shadow: 0 0 0 3px rgb(254 215 170);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(from var(--accent-color) r g b / 0.2);
 }
 
 :deep(.review-dialog .p-textarea.border-red-500) {
-  border-color: rgb(239 68 68);
-  box-shadow: 0 0 0 3px rgb(254 202 202);
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(from var(--error-color) r g b / 0.2);
 }
 </style> 

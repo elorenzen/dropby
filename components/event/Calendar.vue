@@ -37,7 +37,7 @@
         <!-- Location -->
         <div class="space-y-1">
           <label class="text-sm font-medium text-gray-400">Location</label>
-          <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-orange-400 hover:text-orange-300 block">
+          <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
             {{ eventOnDay.location_address }}
           </NuxtLink>
         </div>
@@ -69,7 +69,7 @@
           <!-- Location -->
           <div class="space-y-1">
             <label class="text-sm font-medium text-gray-400">Location</label>
-            <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-orange-400 hover:text-orange-300 block">
+            <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
               {{ eventOnDay.location_address }}
             </NuxtLink>
           </div>
@@ -83,10 +83,10 @@
         
         <!-- Vendor Requests List -->
         <div class="space-y-3">
-          <p class="text-sm font-medium text-orange-600 dark:text-orange-400">
+          <p class="text-sm font-medium text-primary-dark">
             {{ eventOnDay.pending_requests?.length || 0 }} vendor{{ (eventOnDay.pending_requests?.length || 0) !== 1 ? 's' : '' }} requesting this event:
           </p>
-          <div v-for="vendorId in eventOnDay.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-800">
+          <div v-for="vendorId in eventOnDay.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-primary-light rounded-lg border border-primary-light">
             <div class="flex items-center gap-3">
               <NuxtImg 
                 :src="getVendorProp(vendorId, 'avatar_url')" 
@@ -145,7 +145,7 @@
         <!-- Location -->
         <div class="space-y-1">
           <label class="text-sm font-medium text-gray-400">Location</label>
-          <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-orange-400 hover:text-orange-300 block">
+          <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
             {{ eventOnDay.location_address }}
           </NuxtLink>
         </div>
@@ -182,7 +182,7 @@
         <!-- Location -->
         <div class="space-y-1">
           <label class="text-sm font-medium text-gray-400">Location</label>
-          <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-orange-400 hover:text-orange-300 block">
+          <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
             {{ eventOnDay.location_address }}
           </NuxtLink>
         </div>
@@ -264,12 +264,12 @@
       <div class="space-y-6">
         <!-- Icon and message -->
         <div class="text-center space-y-3">
-          <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto">
-            <i class="pi pi-ban text-orange-500 text-2xl"></i>
+          <div class="w-16 h-16 bg-primary-light rounded-full flex items-center justify-center mx-auto">
+            <i class="pi pi-ban text-primary text-2xl"></i>
           </div>
           <div>
             <p class="text-gray-600 dark:text-gray-300">
-              You've used all <span class="font-semibold text-orange-600 dark:text-orange-400">{{ usageLimitObject.usageLimit }}</span> 
+              You've used all <span class="font-semibold text-primary-dark">{{ usageLimitObject.usageLimit }}</span> 
               {{ usageLimitObject.usageType === 'requests' ? 'event requests' : 'event creations' }} 
               for this month. Choose an option below to continue.
             </p>
@@ -475,7 +475,7 @@ export default {
         end: event.end,
         backgroundColor: getEventColor(event),
         borderColor: getEventColor(event),
-        textColor: '#fff',
+        textColor: 'var(--text-color)',
         extendedProps: {
           status: event.status,
           notes: event.notes,
@@ -493,19 +493,19 @@ export default {
         case 'open':
           // Only show yellow for pending requests if status is open
           if (props.userType === 'merchant' && event.pending_requests && event.pending_requests.length > 0) {
-            return '#eab308' // yellow for pending requests
+            return 'var(--warning-color)' // yellow for pending requests
           }
-          return '#f97316' // orange (matches VCalendar)
+          return 'var(--primary-color)' // navy blue (matches new primary color)
         case 'pending':
-          return '#eab308' // yellow (matches VCalendar)
+          return 'var(--warning-color)' // yellow (matches VCalendar)
         case 'booked':
-          return '#22c55e' // green (matches VCalendar)
+          return 'var(--success-color)' // green (matches VCalendar)
         case 'unfulfilled':
-          return '#ef4444' // red
+          return 'var(--error-color)' // red
         case 'closed':
-          return '#6b7280' // gray
+          return 'var(--text-color-secondary)' // gray
         default:
-          return '#3b82f6' // blue
+          return 'var(--primary-color)' // blue
       }
     }
 
@@ -920,11 +920,11 @@ export default {
 
 <style scoped>
 :deep(.fc-today) {
-  background-color: rgba(251, 191, 36, 0.1) !important;
+  background-color: rgba(from var(--warning-color) r g b / 0.1) !important;
 }
 
 :deep(.today-highlight) {
-  background-color: rgba(251, 191, 36, 0.1) !important;
+  background-color: rgba(from var(--warning-color) r g b / 0.1) !important;
 }
 
 :deep(.fc-event) {
@@ -962,26 +962,28 @@ export default {
 }
 
 :deep(.fc-button-primary) {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 :deep(.fc-button-primary:hover) {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  opacity: 0.8;
 }
 
 :deep(.fc-button-primary:focus) {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 2px rgba(from var(--primary-color) r g b / 0.2);
 }
 
 :deep(.fc-today-button) {
-  background-color: #6b7280;
-  border-color: #6b7280;
+  background-color: var(--text-color-secondary);
+  border-color: var(--text-color-secondary);
 }
 
 :deep(.fc-today-button:hover) {
-  background-color: #4b5563;
-  border-color: #4b5563;
+  background-color: var(--text-color-secondary);
+  border-color: var(--text-color-secondary);
+  opacity: 0.8;
 }
 </style>

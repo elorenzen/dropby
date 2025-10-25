@@ -30,13 +30,13 @@
               <div>
                 <p class="text-text-muted text-sm font-medium">Open Events</p>
                 <p class="text-3xl font-bold text-text-main">{{ analytics.openEvents }}</p>
-                <p class="text-orange-500 text-sm mt-1">
+                <p class="text-primary-dark text-sm mt-1">
                   <i class="pi pi-exclamation-triangle mr-1"></i>
                   {{ analytics.pendingRequests }} pending requests
                 </p>
               </div>
-              <div class="analytics-icon bg-orange-100 dark:bg-orange-900">
-                <i class="pi pi-calendar-plus text-orange-600 dark:text-orange-400"></i>
+              <div class="analytics-icon bg-primary-light">
+                <i class="pi pi-calendar-plus icon-primary"></i>
               </div>
             </div>
           </template>
@@ -48,13 +48,13 @@
               <div>
                 <p class="text-text-muted text-sm font-medium">Booked Events</p>
                 <p class="text-3xl font-bold text-text-main">{{ analytics.bookedEvents }}</p>
-                <p class="text-green-500 text-sm mt-1">
+                <p class="text-success text-sm mt-1">
                   <i class="pi pi-clock mr-1"></i>
                   {{ analytics.upcomingWeek }} in next 7 days
                 </p>
               </div>
-              <div class="analytics-icon bg-green-100 dark:bg-green-900">
-                <i class="pi pi-check-circle text-green-600 dark:text-green-400"></i>
+              <div class="analytics-icon bg-success-light">
+                <i class="pi pi-check-circle icon-success"></i>
               </div>
             </div>
           </template>
@@ -66,13 +66,13 @@
               <div>
                 <p class="text-text-muted text-sm font-medium">Completed Events</p>
                 <p class="text-3xl font-bold text-text-main">{{ analytics.totalEvents }}</p>
-                <p class="text-green-500 text-sm mt-1">
+                <p class="text-success text-sm mt-1">
                   <i class="pi pi-arrow-up mr-1"></i>
                   +{{ analytics.eventsGrowth }}% this month
                 </p>
               </div>
-              <div class="analytics-icon bg-blue-100 dark:bg-blue-900">
-                <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
+              <div class="analytics-icon bg-primary-light">
+                <i class="pi pi-calendar icon-primary"></i>
               </div>
             </div>
           </template>
@@ -252,7 +252,7 @@
       
       // Determine icon and styling based on timeline item type
       let icon = 'pi pi-info-circle'
-      let iconClass = 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+      let iconClass = 'bg-primary-light text-primary-dark'
       
       switch (item.type) {
         case 'event_completed':
@@ -261,7 +261,7 @@
           break
         case 'event':
           icon = 'pi pi-calendar-plus'
-          iconClass = 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400'
+          iconClass = 'bg-primary-light text-primary-dark'
           break
         case 'rating':
           icon = 'pi pi-star'
