@@ -132,7 +132,6 @@ const emit = defineEmits<Emits>()
 
 const toast = useToast()
 const eventStore = useEventStore()
-const timelineStore = useTimelineStore()
 
 // Reactive data
 const loading = ref(false)
@@ -317,15 +316,6 @@ const createEvent = async () => {
     } catch (usageError) {
       // Don't fail the event creation if usage tracking fails
     }
-
-    // Add timeline event using Timeline Store
-    await timelineStore.createTimelineItem({
-      id: uuidv4(),
-      owner_id: props.merchant.id,
-      title: 'Event Created',
-      description: `Event created for ${new Date(eventStartTime).toLocaleDateString()} ${new Date(eventStartTime).toLocaleTimeString()} - ${new Date(eventEndTime).toLocaleTimeString()}`,
-      type: 'event'
-    })
 
     closeDialog()
     emit('event-created')
