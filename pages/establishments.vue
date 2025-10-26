@@ -64,7 +64,7 @@
               outlined
               size="small"
               class="view-button"
-              @click="viewMerchantDetails(merchant)"
+              @click="navigateTo(`/merchant/${merchant.id}/profile`)"
             />
           </template>
         </GalleryCard>
@@ -191,12 +191,6 @@ const merchantsWithDistance = computed(() => {
     return merchant
   })
 })
-
-// Navigation functions
-const viewMerchantDetails = (merchant: any) => {
-  selectedMerchant.value = merchant
-  merchantDialogVisible.value = true
-}
 
 // Search input handlers
 const onSearchInput = () => {

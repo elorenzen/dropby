@@ -67,7 +67,7 @@
               outlined
               size="small"
               class="view-button"
-              @click="viewVendorDetails(vendor)"
+              @click="navigateTo(`/vendor/${vendor.id}/profile`)"
             />
           </template>
         </GalleryCard>
@@ -150,11 +150,6 @@ const clearSearch = () => {
   searchQuery.value = ''
 }
 
-// Navigation functions
-const viewVendorDetails = (vendor: any) => {
-  selectedVendor.value = vendor
-  vendorDialogVisible.value = true
-}
 </script>
 
 <style scoped>

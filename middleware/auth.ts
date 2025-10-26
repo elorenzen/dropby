@@ -13,8 +13,14 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         [key: string]: any
     }
 
-    // If no user is authenticated, redirect to home
+    // Allow public profile pages to be accessed without authentication
+    const isPublicProfile = to.path.includes('/profile')
+    
+    // If no user is authenticated, allow public profile access, otherwise redirect to home
     if (!user.value) {
+        if (isPublicProfile) {
+            return // Allow access to public profiles
+        }
         return navigateTo('/')
     }
 
@@ -49,7 +55,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     }
 
     // Handle protected routes that require specific user access
-    if (to.params.id && storeUser) {
+    if (to.params.id && storeUser && !isPublicProfile) {
         const userType = storeUser.type as 'vendor' | 'merchant'
         const associatedIdKey = `associated_${userType}_id` as keyof User
         const userAssociatedId = storeUser[associatedIdKey]
