@@ -85,8 +85,8 @@
       <template #title>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-              <i class="pi pi-calendar text-green-600 dark:text-green-400"></i>
+            <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+              <i class="pi pi-calendar text-success"></i>
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Open Events</h3>
@@ -163,8 +163,8 @@
             :show-status-badge="false"
           >
             <template #vendor-avatar>
-              <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                <i class="pi pi-building text-green-600 dark:text-green-400"></i>
+              <div class="w-12 h-12 rounded-full bg-success-light flex items-center justify-center">
+                <i class="pi pi-building text-success"></i>
               </div>
             </template>
             
@@ -202,11 +202,11 @@
           </EventBaseListCard>
         </div>
         <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-calendar-times text-green-600 dark:text-green-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-success-light mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-calendar-times text-success text-2xl"></i>
           </div>
-          <p class="text-green-600 dark:text-green-400 font-medium">No open events available</p>
-          <p class="text-sm text-green-500 dark:text-green-300">Check back later for new opportunities</p>
+          <p class="text-success font-medium">No open events available</p>
+          <p class="text-sm text-success-dark">Check back later for new opportunities</p>
         </div>
       </template>
     </Card>
@@ -216,8 +216,8 @@
       <template #title>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <i class="pi pi-history text-gray-600 dark:text-gray-400"></i>
+            <div class="w-10 h-10 rounded-full bg-surface-section flex items-center justify-center">
+              <i class="pi pi-history text-color-secondary"></i>
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Past Events</h3>
@@ -278,8 +278,8 @@
             :show-status-badge="false"
           >
             <template #vendor-avatar>
-              <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                <i class="pi pi-building text-gray-400 dark:text-gray-500"></i>
+              <div class="w-12 h-12 rounded-full bg-surface-section flex items-center justify-center">
+                <i class="pi pi-building text-color-secondary"></i>
               </div>
             </template>
             
@@ -307,18 +307,18 @@
           </EventBaseListCard>
         </div>
         <div v-else-if="pastEvents.length > 0" class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-search text-gray-600 dark:text-gray-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-surface-section mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-search text-color-secondary text-2xl"></i>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">No events match your filters</p>
-          <p class="text-sm text-gray-500 dark:text-gray-300">Try adjusting your search criteria</p>
+          <p class="text-color-secondary font-medium">No events match your filters</p>
+          <p class="text-sm text-color-secondary">Try adjusting your search criteria</p>
         </div>
         <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-inbox text-gray-600 dark:text-gray-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-surface-section mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-inbox text-color-secondary text-2xl"></i>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">No past events</p>
-          <p class="text-sm text-gray-500 dark:text-gray-300">Completed events will appear here</p>
+          <p class="text-color-secondary font-medium">No past events</p>
+          <p class="text-sm text-color-secondary">Completed events will appear here</p>
         </div>
       </template>
     </Card>

@@ -1,20 +1,20 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+  <div class="bg-surface-card rounded-lg p-4 border border-surface-border">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4 min-w-0 flex-1">
         <!-- Vendor Avatar Slot -->
         <slot name="vendor-avatar">
-          <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-            <i class="pi pi-user text-gray-400 dark:text-gray-500"></i>
+          <div class="w-12 h-12 rounded-full bg-surface-section flex items-center justify-center">
+            <i class="pi pi-user text-md-gray"></i>
           </div>
         </slot>
         
         <!-- Event Content Slot -->
         <div class="min-w-0 flex-1">
           <slot name="event-content">
-            <p class="font-semibold text-text-main truncate mb-1">Event Title</p>
-            <p class="text-sm text-text-muted">Event Date</p>
-            <p class="text-xs text-text-muted">Event Time</p>
+            <p class="font-semibold text-color truncate mb-1">Event Title</p>
+            <p class="text-sm text-md-gray">Event Date</p>
+            <p class="text-xs text-md-gray">Event Time</p>
           </slot>
         </div>
       </div>

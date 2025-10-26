@@ -19,7 +19,7 @@
             </Column>
             <Column field="is_admin" header="Admin">
                 <template #body="slotProps">
-                    <i v-if="slotProps.data.is_admin" class="pi pi-check-circle text-green-500"></i>
+                    <i v-if="slotProps.data.is_admin" class="pi pi-check-circle text-success"></i>
                 </template>
             </Column>
             <Column field="email" header="Email">

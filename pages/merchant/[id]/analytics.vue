@@ -38,13 +38,13 @@
             <div>
               <p class="text-text-muted text-sm font-medium">Total Events</p>
               <p class="text-3xl font-bold text-text-main">{{ metrics.totalEvents }}</p>
-              <p class="text-green-500 text-sm mt-1">
+              <p class="text-success text-sm mt-1">
                 <i class="pi pi-arrow-up mr-1"></i>
                 +{{ metrics.eventsGrowth }}% vs last period
               </p>
             </div>
-            <div class="analytics-icon bg-blue-100 dark:bg-blue-900">
-              <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
+            <div class="analytics-icon bg-primary-light">
+              <i class="pi pi-calendar text-primary"></i>
             </div>
           </div>
         </template>
@@ -56,13 +56,13 @@
             <div>
               <p class="text-text-muted text-sm font-medium">Total Revenue</p>
               <p class="text-3xl font-bold text-text-main">${{ metrics.totalRevenue.toLocaleString() }}</p>
-              <p class="text-green-500 text-sm mt-1">
+              <p class="text-success text-sm mt-1">
                 <i class="pi pi-arrow-up mr-1"></i>
                 +{{ metrics.revenueGrowth }}% vs last period
               </p>
             </div>
-            <div class="analytics-icon bg-green-100 dark:bg-green-900">
-              <i class="pi pi-dollar text-green-600 dark:text-green-400"></i>
+            <div class="analytics-icon bg-success-light">
+              <i class="pi pi-dollar text-success"></i>
             </div>
           </div>
         </template>
@@ -74,13 +74,13 @@
             <div>
               <p class="text-text-muted text-sm font-medium">Avg Event Value</p>
               <p class="text-3xl font-bold text-text-main">${{ metrics.avgEventValue }}</p>
-              <p class="text-blue-500 text-sm mt-1">
+              <p class="text-primary text-sm mt-1">
                 <i class="pi pi-chart-line mr-1"></i>
                 {{ metrics.eventValueTrend }}
               </p>
             </div>
-            <div class="analytics-icon bg-purple-100 dark:bg-purple-900">
-              <i class="pi pi-chart-bar text-purple-600 dark:text-purple-400"></i>
+            <div class="analytics-icon bg-accent-light">
+              <i class="pi pi-chart-bar text-accent"></i>
             </div>
           </div>
         </template>
@@ -97,8 +97,8 @@
                 <span class="text-text-muted text-sm ml-2">({{ metrics.totalReviews }} reviews)</span>
               </div>
             </div>
-            <div class="analytics-icon bg-yellow-100 dark:bg-yellow-900">
-              <i class="pi pi-star text-yellow-600 dark:text-yellow-400"></i>
+            <div class="analytics-icon bg-accent-light">
+              <i class="pi pi-star text-accent"></i>
             </div>
           </div>
         </template>
@@ -283,14 +283,14 @@ const chartOptions = {
   plugins: {
     legend: {
       labels: {
-        color: 'var(--text-color-secondary)'
+        color: 'var(--text-md-gray)'
       }
     }
   },
   scales: {
     x: {
       ticks: {
-        color: 'var(--text-color-secondary)'
+        color: 'var(--text-md-gray)'
       },
       grid: {
         color: 'var(--surface-border)'
@@ -298,7 +298,7 @@ const chartOptions = {
     },
     y: {
       ticks: {
-        color: 'var(--text-color-secondary)'
+        color: 'var(--text-md-gray)'
       },
       grid: {
         color: 'var(--surface-border)'
@@ -314,7 +314,7 @@ const doughnutOptions = {
     legend: {
       position: 'bottom' as const,
       labels: {
-        color: 'var(--text-color-secondary)'
+        color: 'var(--text-md-gray)'
       }
     }
   }
@@ -418,7 +418,7 @@ const generateChartData = (events: any[]) => {
         'var(--success-color)', // green
         'var(--warning-color)', // yellow
         'var(--error-color)', // red
-        'var(--text-color-secondary)'  // gray
+        'var(--text-md-gray)'  // gray
       ]
     }]
   }
@@ -501,10 +501,17 @@ useSeoMeta({ title: () => `Analytics | ${merchant.value?.merchant_name || 'Merch
 
 <style scoped>
 .analytics-card {
-  @apply bg-white/5 backdrop-blur border border-white/10;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .analytics-icon {
-  @apply w-12 h-12 rounded-full flex items-center justify-center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

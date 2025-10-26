@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+  <div class="bg-surface-card rounded-lg shadow-lg p-6">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-semibold text-text-main flex items-center gap-3">
-        <i class="pi pi-credit-card text-green-600"></i>
+      <h2 class="text-2xl font-semibold text-color flex items-center gap-3">
+        <i class="pi pi-credit-card text-success"></i>
         Payment History
       </h2>
       <div class="flex items-center gap-3">
@@ -27,59 +27,59 @@
 
     <!-- Payment Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+      <div class="bg-success-light rounded-lg p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-green-600 dark:text-green-400 font-medium">Total Earned</p>
-            <p class="text-2xl font-bold text-green-800 dark:text-green-200">
+            <p class="text-sm text-success font-medium">Total Earned</p>
+            <p class="text-2xl font-bold text-success-dark">
               ${{ formatCurrency(totalEarned) }}
             </p>
           </div>
-          <i class="pi pi-dollar text-green-500 text-xl"></i>
+          <i class="pi pi-dollar text-success text-xl"></i>
         </div>
       </div>
 
-      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+      <div class="bg-primary-light rounded-lg p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-blue-600 dark:text-blue-400 font-medium">This Month</p>
-            <p class="text-2xl font-bold text-blue-800 dark:text-blue-200">
+            <p class="text-sm text-primary font-medium">This Month</p>
+            <p class="text-2xl font-bold text-primary-dark">
               ${{ formatCurrency(monthlyEarnings) }}
             </p>
           </div>
-          <i class="pi pi-calendar text-blue-500 text-xl"></i>
+          <i class="pi pi-calendar text-primary text-xl"></i>
         </div>
       </div>
 
-      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+      <div class="bg-accent-light rounded-lg p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Pending Payments</p>
-            <p class="text-2xl font-bold text-yellow-800 dark:text-yellow-200">
+            <p class="text-sm text-accent font-medium">Pending Payments</p>
+            <p class="text-2xl font-bold text-accent-dark">
               ${{ formatCurrency(pendingPayments) }}
             </p>
           </div>
-          <i class="pi pi-clock text-yellow-500 text-xl"></i>
+          <i class="pi pi-clock text-accent text-xl"></i>
         </div>
       </div>
 
-      <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+      <div class="bg-primary-light rounded-lg p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-purple-600 dark:text-purple-400 font-medium">Completed Events</p>
-            <p class="text-2xl font-bold text-purple-800 dark:text-purple-200">
+            <p class="text-sm text-primary font-medium">Completed Events</p>
+            <p class="text-2xl font-bold text-primary-dark">
               {{ completedEventsCount }}
             </p>
           </div>
-          <i class="pi pi-check-circle text-purple-500 text-xl"></i>
+          <i class="pi pi-check-circle text-primary text-xl"></i>
         </div>
       </div>
     </div>
 
     <!-- Payment History Table -->
-    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+    <div class="bg-surface-section rounded-lg p-4">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-text-main">Recent Payments</h3>
+        <h3 class="text-lg font-semibold text-color">Recent Payments</h3>
         <div class="flex items-center gap-2">
           <InputText 
             v-model="searchQuery" 
@@ -146,7 +146,7 @@
 
         <Column field="amount" header="Amount" sortable>
           <template #body="{ data }">
-            <span class="font-bold text-green-600">+${{ formatCurrency(data.amount) }}</span>
+            <span class="font-bold text-success">+${{ formatCurrency(data.amount) }}</span>
           </template>
         </Column>
 

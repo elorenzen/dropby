@@ -1,16 +1,41 @@
 /* PrimeVue Dark Theme Overrides for DropBy */
+
+/*
+CHAT GPT PALETTE SUGGESTIONS:
+1) - CURRENT
+Primary: #7C3AED (Purple) - Creativity, luxury, memorable experiences
+Secondary: #DC2626 (Red) - Urgency, action, excitement
+Accent: #F59E0B (Amber) - Celebration, warmth, success
+
+2)
+Primary: #0EA5E9 (Sky Blue) - Innovation, clarity, digital connection
+Secondary: #10B981 (Emerald) - Growth, success, positive results
+Accent: #F97316 (Orange) - Energy, enthusiasm, action
+
+3)
+Primary: #1E40AF (Navy Blue) - Professionalism, reliability, premium service
+Secondary: #059669 (Emerald) - Success, growth, positive partnerships
+Accent: #D97706 (Amber) - Premium, celebration, memorable events
+
+4)
+Primary: #0891B2 (Cyan) - Fresh, modern, efficient scheduling
+Secondary: #7C2D12 (Red-Brown) - Grounded, reliable, food-focused
+Accent: #CA8A04 (Gold) - Success, premium, celebration
+
+*/
+
 :root {
-  --primary-color: #1E40AF;
+  --primary-color: #7C3AED;
   --primary-color-text: #fff;
-  --highlight-bg: #1E40AF;
+  --highlight-bg: #7C3AED;
   --highlight-text-color: #fff;
 
-  --secondary-color: #059669;
+  --secondary-color: #DC2626;
   
-  --accent-color: #D97706;
-  --success-color: #059669;
+  --accent-color: #F59E0B;
+  --success-color: #10B981;
 
-  --warning-color: #D97706;
+  --warning-color: #F97316;
   --error-color: #EF4444;
 
   /* Surfaces */
@@ -443,4 +468,29 @@ body {
 }
 .gradient-accent { 
   background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%) !important; 
-} 
+}
+
+/* Essential Gray Classes Used in App */
+.bg-lt-gray { background-color: #f9fafb !important; }
+.bg-md-gray { background-color: #f3f4f6 !important; }
+.bg-gray { background-color: #e5e7eb !important; }
+.bg-dk-gray { background-color: #374151 !important; }
+.bg-xdk-gray { background-color: #1f2937 !important; }
+
+.border-lt-gray { border-color: #f3f4f6 !important; }
+.border-md-gray { border-color: #e5e7eb !important; }
+.border-dk-gray { border-color: #374151 !important; }
+
+.text-md-gray { color: #9ca3af !important; }
+
+.dark .bg-lt-gray { background-color: #1f2937 !important; }
+.dark .bg-md-gray { background-color: #374151 !important; }
+.dark .bg-gray { background-color: #4b5563 !important; }
+.dark .bg-dk-gray { background-color: #f3f4f6 !important; }
+.dark .bg-xdk-gray { background-color: #f9fafb !important; }
+
+.dark .border-lt-gray { border-color: #374151 !important; }
+.dark .border-md-gray { border-color: #4b5563 !important; }
+.dark .border-dk-gray { border-color: #f3f4f6 !important; }
+
+.dark .text-md-gray { color: #6b7280 !important; } 

@@ -88,7 +88,7 @@
         
         <!-- Pending Reviews List -->
         <div v-if="showPendingReviews" class="mt-4 space-y-3">
-          <div v-for="event in pendingReviews" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-accent-light">
+          <div v-for="event in pendingReviews" :key="event.id" class="bg-surface-card rounded-lg p-4 border border-accent-light">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
                 <NuxtImg 
@@ -124,7 +124,7 @@
       </template>
       <template #content>
         <div class="space-y-3">
-          <div v-for="review in sentReviews" :key="review.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div v-for="review in sentReviews" :key="review.id" class="bg-surface-card rounded-lg p-4 border border-surface-border">
             <div class="flex items-start gap-4">
               <!-- Left: Event Data -->
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
@@ -140,7 +140,7 @@
               </div>
               
               <!-- Middle: Review Content -->
-              <div class="flex-1 min-w-0 border-l border-r border-gray-200 dark:border-gray-700 px-4">
+              <div class="flex-1 min-w-0 border-l border-r border-surface-border px-4">
                 <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
               </div>
               
@@ -154,7 +154,7 @@
                     text 
                     size="small"
                     @click="openDeleteDialog(review)"
-                    class="text-red-500 hover:text-red-700"
+                    class="text-error hover:text-error-dark"
                   />
                 </div>
                 <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
@@ -172,7 +172,7 @@
       </template>
       <template #content>
         <div class="space-y-3">
-          <div v-for="review in receivedReviews" :key="review.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div v-for="review in receivedReviews" :key="review.id" class="bg-surface-card rounded-lg p-4 border border-surface-border">
             <div class="flex items-start gap-4">
               <!-- Left: Reviewer Data -->
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
@@ -189,7 +189,7 @@
               </div>
               
               <!-- Middle: Review Content -->
-              <div class="flex-1 min-w-0 border-l border-r border-gray-200 dark:border-gray-700 px-4">
+              <div class="flex-1 min-w-0 border-l border-r border-surface-border px-4">
                 <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
               </div>
               
@@ -227,7 +227,7 @@
 
         <div class="space-y-6">
             <!-- Event Information -->
-            <div v-if="selectedEvent" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <div v-if="selectedEvent" class="bg-surface-section rounded-lg p-4 border border-surface-border">
                 <div class="flex items-center gap-3">
                     <NuxtImg 
                         :src="getVendorProp(selectedEvent.vendor, 'avatar_url')" 
@@ -252,12 +252,12 @@
                         class="text-2xl"
                         :pt="{
                             onIcon: { class: 'text-accent' },
-                            offIcon: { class: 'text-gray-300 dark:text-gray-600' }
+                            offIcon: { class: 'text-md-gray dark:text-md-gray' }
                         }"
                     />
                     <span v-if="rating > 0" class="text-sm text-text-muted ml-2">{{ rating }} star{{ rating > 1 ? 's' : '' }}</span>
                 </div>
-                <p v-if="rating === 0" class="text-xs text-red-500">Please select a rating</p>
+                <p v-if="rating === 0" class="text-xs text-error">Please select a rating</p>
             </div>
 
             <!-- Review Text -->
@@ -272,7 +272,7 @@
                     :class="{ 'border-red-500': review.length === 0 && showValidation }"
                 />
                 <div class="flex justify-between items-center">
-                    <p v-if="review.length === 0 && showValidation" class="text-xs text-red-500">Please write a review</p>
+                    <p v-if="review.length === 0 && showValidation" class="text-xs text-error">Please write a review</p>
                     <p class="text-xs text-text-muted">{{ review.length }}/500 characters</p>
                 </div>
             </div>

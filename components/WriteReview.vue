@@ -10,19 +10,19 @@
   >
     <template #header>
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-          <i class="pi pi-star text-orange-600 dark:text-orange-400"></i>
+        <div class="w-10 h-10 rounded-full bg-accent-light flex items-center justify-center">
+          <i class="pi pi-star text-accent"></i>
         </div>
         <div>
-          <h3 class="text-xl font-semibold text-text-main">Write Review</h3>
-          <p class="text-sm text-text-muted">{{ isVendor ? 'Share your experience with this establishment' : 'Share your experience with this food truck' }}</p>
+          <h3 class="text-xl font-semibold text-color">Write Review</h3>
+          <p class="text-sm text-md-gray">{{ isVendor ? 'Share your experience with this establishment' : 'Share your experience with this food truck' }}</p>
         </div>
       </div>
     </template>
 
     <div class="space-y-6">
       <!-- Event Information -->
-      <div v-if="event" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <div v-if="event" class="bg-surface-section rounded-lg p-4 border border-surface-border">
         <div class="flex items-center gap-3">
           <NuxtImg 
             :src="getRecipientAvatar()" 
@@ -30,45 +30,45 @@
             class="w-12 h-12 rounded-full"
           />
           <div class="flex-1">
-            <h4 class="font-semibold text-text-main">{{ getRecipientName() }}</h4>
-            <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-            <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+            <h4 class="font-semibold text-color">{{ getRecipientName() }}</h4>
+            <p class="text-sm text-md-gray">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
+            <p class="text-xs text-md-gray">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
           </div>
         </div>
       </div>
 
       <!-- Rating Section -->
       <div class="space-y-3">
-        <label class="block text-sm font-medium text-text-main">Rating *</label>
+        <label class="block text-sm font-medium text-color">Rating *</label>
         <div class="flex items-center gap-2">
           <Rating 
             v-model="rating" 
             :cancel="false" 
             class="text-2xl"
             :pt="{
-              onIcon: { class: 'text-orange-500' },
-              offIcon: { class: 'text-gray-300 dark:text-gray-600' }
+              onIcon: { class: 'text-accent' },
+              offIcon: { class: 'text-md-gray' }
             }"
           />
-          <span v-if="rating > 0" class="text-sm text-text-muted ml-2">{{ rating }} star{{ rating > 1 ? 's' : '' }}</span>
+          <span v-if="rating > 0" class="text-sm text-md-gray ml-2">{{ rating }} star{{ rating > 1 ? 's' : '' }}</span>
         </div>
-        <p v-if="rating === 0" class="text-xs text-red-500">Please select a rating</p>
+        <p v-if="rating === 0" class="text-xs text-error">Please select a rating</p>
       </div>
 
       <!-- Review Text -->
       <div class="space-y-3">
-        <label for="review" class="block text-sm font-medium text-text-main">Review *</label>
+        <label for="review" class="block text-sm font-medium text-color">Review *</label>
         <Textarea 
           id="review" 
           v-model="review" 
           rows="6" 
           :placeholder="isVendor ? 'Share your experience with this establishment. What went well? What could be improved?' : 'Share your experience with this food truck. What went well? What could be improved?'"
           class="w-full resize-none"
-          :class="{ 'border-red-500': review.length === 0 && showValidation }"
+          :class="{ 'border-error': review.length === 0 && showValidation }"
         />
         <div class="flex justify-between items-center">
-          <p v-if="review.length === 0 && showValidation" class="text-xs text-red-500">Please write a review</p>
-          <p class="text-xs text-text-muted">{{ review.length }}/500 characters</p>
+          <p v-if="review.length === 0 && showValidation" class="text-xs text-error">Please write a review</p>
+          <p class="text-xs text-md-gray">{{ review.length }}/500 characters</p>
         </div>
       </div>
     </div>

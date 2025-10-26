@@ -2,20 +2,20 @@
   <div class="space-y-8">
     <!-- Header -->
     <div class="text-center">
-      <h2 class="text-3xl font-bold text-text-main mb-2">Choose Your Plan</h2>
-      <p class="text-text-muted">Select the perfect plan for your business needs</p>
+      <h2 class="text-3xl font-bold text-color mb-2">Choose Your Plan</h2>
+      <p class="text-md-gray">Select the perfect plan for your business needs</p>
     </div>
 
     <!-- Plan Toggle - Only show if no specific user type is provided -->
     <div v-if="!userTypeProp" class="flex justify-center">
-      <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+      <div class="bg-surface-section rounded-lg p-1">
         <button
           @click="userType = 'merchant'"
           :class="[
             'px-4 py-2 rounded-md text-sm font-medium transition-colors',
             userType === 'merchant'
-              ? 'bg-white dark:bg-gray-700 text-text-main shadow-sm'
-              : 'text-text-muted hover:text-text-main'
+              ? 'bg-surface-card text-color shadow-sm'
+              : 'text-md-gray hover:text-color'
           ]"
         >
           For Merchants
@@ -25,8 +25,8 @@
           :class="[
             'px-4 py-2 rounded-md text-sm font-medium transition-colors',
             userType === 'vendor'
-              ? 'bg-white dark:bg-gray-700 text-text-main shadow-sm'
-              : 'text-text-muted hover:text-text-main'
+              ? 'bg-surface-card text-color shadow-sm'
+              : 'text-md-gray hover:text-color'
           ]"
         >
           For Vendors
@@ -39,11 +39,11 @@
       <div
         v-for="plan in currentPlans"
         :key="plan.id"
-        class="relative bg-white dark:bg-gray-800 rounded-xl border-2 p-6 transition-all hover:shadow-lg"
+        class="relative bg-surface-card rounded-xl border-2 p-6 transition-all hover:shadow-lg"
         :class="[
           plan.featured 
-            ? 'border-primary-500 shadow-lg scale-105' 
-            : 'border-gray-200 dark:border-gray-700'
+            ? 'border-primary shadow-lg scale-105' 
+            : 'border-surface-border'
         ]"
       >
         <!-- Featured Badge -->
@@ -51,7 +51,7 @@
           v-if="plan.featured"
           class="absolute -top-3 left-1/2 transform -translate-x-1/2"
         >
-          <span class="bg-primary-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+          <span class="bg-primary text-primary-color-text px-3 py-1 rounded-full text-xs font-medium">
             Most Popular
           </span>
         </div>
@@ -61,19 +61,19 @@
           v-if="isCurrentPlan(plan.id)"
           class="absolute -top-3 left-1/2 transform -translate-x-1/2"
         >
-          <span class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+          <span class="bg-success text-primary-color-text px-3 py-1 rounded-full text-xs font-medium">
             Current Plan
           </span>
         </div>
 
         <!-- Plan Header -->
         <div class="text-center mb-6">
-          <h3 class="text-xl font-bold text-text-main mb-2">{{ plan.name }}</h3>
+          <h3 class="text-xl font-bold text-color mb-2">{{ plan.name }}</h3>
           <div class="mb-4">
-            <span class="text-3xl font-bold text-text-main">${{ plan.price }}</span>
-            <span class="text-text-muted">/month</span>
+            <span class="text-3xl font-bold text-color">${{ plan.price }}</span>
+            <span class="text-md-gray">/month</span>
           </div>
-          <p class="text-sm text-text-muted">{{ plan.description }}</p>
+          <p class="text-sm text-md-gray">{{ plan.description }}</p>
         </div>
 
         <!-- Features List -->
@@ -83,8 +83,8 @@
             :key="feature"
             class="flex items-center gap-3"
           >
-            <i class="pi pi-check text-green-500"></i>
-            <span class="text-sm text-text-main">{{ feature }}</span>
+            <i class="pi pi-check text-success"></i>
+            <span class="text-sm text-color">{{ feature }}</span>
           </li>
         </ul>
 
@@ -95,12 +95,12 @@
           :class="[
             'w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2',
             isCurrentPlan(plan.id)
-              ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              ? 'bg-surface-section text-md-gray cursor-not-allowed'
               : props.loading
-                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                ? 'bg-surface-section text-md-gray cursor-not-allowed'
                 : plan.featured
-                  ? 'bg-primary-500 text-white hover:bg-primary-600'
-                  : 'bg-gray-100 dark:bg-gray-700 text-text-main hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-primary text-primary-color-text hover:bg-primary-dark'
+                  : 'bg-surface-section text-color hover:bg-surface-border'
           ]"
         >
           <i v-if="props.loading" class="pi pi-spinner animate-spin"></i>
@@ -111,15 +111,15 @@
 
     <!-- FAQ Section -->
     <div class="mt-12">
-      <h3 class="text-xl font-bold text-text-main mb-6 text-center">Frequently Asked Questions</h3>
+      <h3 class="text-xl font-bold text-color mb-6 text-center">Frequently Asked Questions</h3>
       <div class="grid md:grid-cols-2 gap-6">
         <div
           v-for="faq in faqs"
           :key="faq.question"
-          class="bg-white dark:bg-gray-800 rounded-lg p-4"
+          class="bg-surface-card rounded-lg p-4"
         >
-          <h4 class="font-semibold text-text-main mb-2">{{ faq.question }}</h4>
-          <p class="text-sm text-text-muted">{{ faq.answer }}</p>
+          <h4 class="font-semibold text-color mb-2">{{ faq.question }}</h4>
+          <p class="text-sm text-md-gray">{{ faq.answer }}</p>
         </div>
       </div>
     </div>

@@ -5,8 +5,8 @@
         <template #content>
           <div class="space-y-6">
             <!-- Success Icon -->
-            <div class="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-              <i class="pi pi-check text-2xl text-green-600 dark:text-green-400"></i>
+            <div class="mx-auto w-16 h-16 bg-success-light rounded-full flex items-center justify-center">
+              <i class="pi pi-check text-2xl text-success"></i>
             </div>
             
             <!-- Success Message -->
@@ -18,7 +18,7 @@
             </div>
             
             <!-- Subscription Details -->
-            <div v-if="subscriptionDetails" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <div v-if="subscriptionDetails" class="bg-surface-section rounded-lg p-4">
               <h3 class="font-semibold text-text-main mb-2">Subscription Details</h3>
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
@@ -27,7 +27,7 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-text-muted">Status:</span>
-                  <span class="text-green-600 dark:text-green-400 font-medium">Active</span>
+                  <span class="text-success font-medium">Active</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-text-muted">Next billing:</span>

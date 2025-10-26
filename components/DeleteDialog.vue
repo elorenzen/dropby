@@ -9,8 +9,8 @@
         :closeOnEscape="true"
     >
         <div class="flex items-start gap-4 mb-6">
-            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-red-100 dark:bg-red-900 flex-shrink-0">
-                <i class="pi pi-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-error-light flex-shrink-0">
+                <i class="pi pi-exclamation-triangle text-error text-xl"></i>
             </div>
             <div class="flex-1">
                 <h3 class="text-lg font-semibold text-text-main mb-2">Are you sure?</h3>

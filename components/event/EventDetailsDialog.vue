@@ -7,19 +7,19 @@
   >
     <div v-if="event" class="space-y-8">
       <!-- Header Section -->
-      <div class="flex items-start justify-between border-b border-gray-200 dark:border-gray-700 pb-6">
+      <div class="flex items-start justify-between border-b border-surface-border pb-6">
         <div class="flex-1">
-          <h2 class="text-3xl font-bold text-text-main mb-3 leading-tight">
+          <h2 class="text-3xl font-bold text-color mb-3 leading-tight">
             {{ getMerchantName(event.merchant) }} | {{ getVendorName(event.vendor) }}
           </h2>
           <div class="flex items-center gap-6 text-base">
             <div class="flex items-center gap-2">
-              <i class="pi pi-calendar text-text-muted"></i>
-              <span class="text-text-muted">{{ formatFullDate(event.start) }}</span>
+              <i class="pi pi-calendar text-md-gray"></i>
+              <span class="text-md-gray">{{ formatFullDate(event.start) }}</span>
             </div>
             <div class="flex items-center gap-2">
-              <i class="pi pi-clock text-text-muted"></i>
-              <span class="text-text-muted">{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
+              <i class="pi pi-clock text-md-gray"></i>
+              <span class="text-md-gray">{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
             </div>
             <Badge :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" />
           </div>
@@ -37,7 +37,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Image Section -->
         <div class="relative">
-          <div class="w-full h-80 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden shadow-lg">
+          <div class="w-full h-80 bg-surface-section rounded-xl overflow-hidden shadow-lg">
             <NuxtImg
               :src="getMerchantImage(event.merchant)"
               :alt="getMerchantName(event.merchant)"
@@ -53,50 +53,50 @@
         <!-- Information Section -->
         <div class="space-y-8">
           <!-- Event Information -->
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-            <h3 class="font-semibold text-xl text-text-main mb-4 flex items-center gap-2">
+          <div class="bg-surface-section rounded-lg p-6">
+            <h3 class="font-semibold text-xl text-color mb-4 flex items-center gap-2">
               <i class="pi pi-info-circle text-primary"></i>
               Event Information
             </h3>
             <div class="space-y-4 text-base">
               <div class="flex items-start gap-4">
                 <div class="w-20 flex-shrink-0">
-                  <span class="text-text-muted font-medium">Date:</span>
+                  <span class="text-md-gray font-medium">Date:</span>
                 </div>
                 <div class="flex-1">
-                  <span class="text-text-main">{{ formatFullDate(event.start) }}</span>
+                  <span class="text-color">{{ formatFullDate(event.start) }}</span>
                 </div>
               </div>
               <div class="flex items-start gap-4">
                 <div class="w-20 flex-shrink-0">
-                  <span class="text-text-muted font-medium">Time:</span>
+                  <span class="text-md-gray font-medium">Time:</span>
                 </div>
                 <div class="flex-1">
-                  <span class="text-text-main">{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
+                  <span class="text-color">{{ formatTime(event.start) }} - {{ formatTime(event.end) }}</span>
                 </div>
               </div>
               <div class="flex items-start gap-4">
                 <div class="w-20 flex-shrink-0">
-                  <span class="text-text-muted font-medium">Location:</span>
+                  <span class="text-md-gray font-medium">Location:</span>
                 </div>
                 <div class="flex-1">
-                  <span class="text-text-main">{{ event.location_address || 'TBD' }}</span>
+                  <span class="text-color">{{ event.location_address || 'TBD' }}</span>
                 </div>
               </div>
               <div v-if="event.notes" class="flex items-start gap-4">
                 <div class="w-20 flex-shrink-0">
-                  <span class="text-text-muted font-medium">Notes:</span>
+                  <span class="text-md-gray font-medium">Notes:</span>
                 </div>
                 <div class="flex-1">
-                  <span class="text-text-main">{{ event.notes }}</span>
+                  <span class="text-color">{{ event.notes }}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Cuisine Types -->
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-            <h4 class="font-semibold text-xl text-text-main mb-4 flex items-center gap-2">
+          <div class="bg-surface-section rounded-lg p-6">
+            <h4 class="font-semibold text-xl text-color mb-4 flex items-center gap-2">
               <i class="pi pi-tag text-primary"></i>
               Cuisine Types
             </h4>

@@ -3,8 +3,8 @@
     <Card>
       <template #title>
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-            <i class="pi pi-credit-card text-green-600 dark:text-green-400"></i>
+          <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+            <i class="pi pi-credit-card text-success"></i>
           </div>
           <div>
             <h3 class="text-xl font-semibold text-text-main">Automatic Payouts</h3>
@@ -16,42 +16,42 @@
       <template #content>
         <div class="space-y-6">
           <!-- Current Status -->
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <div class="bg-surface-section rounded-lg p-4">
             <h4 class="font-medium text-text-main mb-3">Current Status</h4>
             <div class="flex items-center gap-3">
               <div v-if="stripeAccountStatus === 'complete'" class="flex items-center gap-2">
-                <i class="pi pi-check-circle text-green-600"></i>
-                <span class="text-green-600 font-medium">Automatic payouts enabled</span>
+                <i class="pi pi-check-circle text-success"></i>
+                <span class="text-success font-medium">Automatic payouts enabled</span>
               </div>
               <div v-else-if="stripeAccountStatus === 'pending'" class="flex items-center gap-2">
-                <i class="pi pi-clock text-yellow-600"></i>
-                <span class="text-yellow-600 font-medium">Account setup in progress</span>
+                <i class="pi pi-clock text-accent"></i>
+                <span class="text-accent font-medium">Account setup in progress</span>
               </div>
               <div v-else class="flex items-center gap-2">
-                <i class="pi pi-exclamation-triangle text-orange-600"></i>
-                <span class="text-orange-600 font-medium">Manual payouts only</span>
+                <i class="pi pi-exclamation-triangle text-accent"></i>
+                <span class="text-accent font-medium">Manual payouts only</span>
               </div>
             </div>
           </div>
 
           <!-- Benefits -->
-          <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+          <div class="bg-primary-light rounded-lg p-4">
             <h4 class="font-medium text-text-main mb-3">Benefits of Automatic Payouts</h4>
             <ul class="space-y-2 text-sm">
               <li class="flex items-center gap-2">
-                <i class="pi pi-check text-blue-600"></i>
+                <i class="pi pi-check text-primary"></i>
                 <span>Get paid automatically when events complete</span>
               </li>
               <li class="flex items-center gap-2">
-                <i class="pi pi-check text-blue-600"></i>
+                <i class="pi pi-check text-primary"></i>
                 <span>No need to wait for manual checks</span>
               </li>
               <li class="flex items-center gap-2">
-                <i class="pi pi-check text-blue-600"></i>
+                <i class="pi pi-check text-primary"></i>
                 <span>Direct deposit to your bank account</span>
               </li>
               <li class="flex items-center gap-2">
-                <i class="pi pi-check text-blue-600"></i>
+                <i class="pi pi-check text-primary"></i>
                 <span>Track all payments in your Stripe dashboard</span>
               </li>
             </ul>
@@ -72,7 +72,7 @@
           </div>
 
           <!-- Account Info -->
-          <div v-if="stripeAccountStatus === 'complete'" class="bg-green-50 dark:bg-green-900/30 rounded-lg p-4">
+          <div v-if="stripeAccountStatus === 'complete'" class="bg-success-light rounded-lg p-4">
             <h4 class="font-medium text-text-main mb-3">Account Information</h4>
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
@@ -81,13 +81,13 @@
               </div>
               <div class="flex justify-between">
                 <span class="text-text-muted">Status:</span>
-                <span class="text-green-600">Active</span>
+                <span class="text-success">Active</span>
               </div>
             </div>
           </div>
 
           <!-- Manual Payout Info -->
-          <div v-if="!stripeAccountStatus" class="bg-orange-50 dark:bg-orange-900/30 rounded-lg p-4">
+          <div v-if="!stripeAccountStatus" class="bg-accent-light rounded-lg p-4">
             <h4 class="font-medium text-text-main mb-3">Manual Payouts</h4>
             <p class="text-sm text-text-muted">
               Currently, you'll receive payments via check or bank transfer after events complete. 

@@ -3,7 +3,7 @@
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <!-- Card Title/Description -->
       <div>
-        <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">
+        <label class="block text-sm font-medium mb-2" style="color: var(--text-md-gray);">
           Card Title/Description
         </label>
         <InputText 
@@ -16,23 +16,23 @@
 
       <!-- Stripe Card Element -->
       <div>
-        <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">
+        <label class="block text-sm font-medium mb-2" style="color: var(--text-md-gray);">
           Card Details
         </label>
         <div id="card-element" class="p-4 border rounded-lg min-h-[60px]" style="border-color: var(--surface-border); background: var(--surface-card);"></div>
-        <div v-if="cardError" class="text-red-400 text-sm mt-2">{{ cardError }}</div>
+        <div v-if="cardError" class="text-error text-sm mt-2">{{ cardError }}</div>
       </div>
 
       <!-- Default Payment Method -->
       <div>
-        <label class="block text-sm font-medium mb-2" style="color: var(--text-color-secondary);">
+        <label class="block text-sm font-medium mb-2" style="color: var(--text-md-gray);">
           Make Default Payment Method
         </label>
         <InputSwitch v-model="formData.default" />
       </div>
 
       <!-- Error Message -->
-      <div v-if="error" class="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg">
+      <div v-if="error" class="text-error text-sm bg-error-light p-3 rounded-lg">
         {{ error }}
       </div>
 
@@ -130,7 +130,7 @@ const initializeCardElement = async () => {
           color: 'var(--text-color)',
           backgroundColor: 'transparent',
           '::placeholder': {
-            color: 'var(--text-color-secondary)',
+            color: 'var(--text-md-gray)',
           },
         },
         invalid: {

@@ -88,7 +88,7 @@
         
         <!-- Pending Reviews List -->
         <div v-if="showPendingReviews" class="mt-4 space-y-3">
-          <div v-for="event in pendingReviews" :key="event.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-accent-light">
+          <div v-for="event in pendingReviews" :key="event.id" class="bg-surface-card rounded-lg p-4 border border-accent-light">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
                 <NuxtImg 
@@ -124,7 +124,7 @@
       </template>
       <template #content>
         <div class="space-y-3">
-          <div v-for="review in sentReviews" :key="review.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div v-for="review in sentReviews" :key="review.id" class="bg-surface-card rounded-lg p-4 border border-surface-border">
             <div class="flex items-start gap-4">
               <!-- Left: Event Data -->
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
@@ -140,7 +140,7 @@
               </div>
               
               <!-- Middle: Review Content -->
-              <div class="flex-1 min-w-0 border-l border-r border-gray-200 dark:border-gray-700 px-4">
+              <div class="flex-1 min-w-0 border-l border-r border-surface-border px-4">
                 <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
               </div>
               
@@ -154,7 +154,7 @@
                     text 
                     size="small"
                     @click="openDeleteDialog(review)"
-                    class="text-red-500 hover:text-red-700"
+                    class="text-error hover:text-error-dark"
                   />
                 </div>
                 <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
@@ -172,7 +172,7 @@
       </template>
       <template #content>
         <div class="space-y-3">
-          <div v-for="review in receivedReviews" :key="review.id" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div v-for="review in receivedReviews" :key="review.id" class="bg-white dark:bg-xdk-gray rounded-lg p-4 border border-md-gray dark:border-dk-gray">
             <div class="flex items-start gap-4">
               <!-- Left: Reviewer Data -->
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
@@ -189,7 +189,7 @@
               </div>
               
               <!-- Middle: Review Content -->
-              <div class="flex-1 min-w-0 border-l border-r border-gray-200 dark:border-gray-700 px-4">
+              <div class="flex-1 min-w-0 border-l border-r border-surface-border px-4">
                 <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
               </div>
               

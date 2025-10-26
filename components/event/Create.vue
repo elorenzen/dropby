@@ -10,8 +10,8 @@
   >
     <template #header>
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-          <i class="pi pi-calendar-plus text-green-600 dark:text-green-400"></i>
+          <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+            <i class="pi pi-calendar-plus text-success"></i>
         </div>
         <div>
           <h3 class="text-xl font-semibold text-text-main">Create New Event</h3>
@@ -74,7 +74,7 @@
         <p class="text-xs text-text-muted">
           This is the amount you'll pay to the vendor for this event
         </p>
-        <small v-if="errors.eventValue" class="text-red-500">{{ errors.eventValue }}</small>
+        <small v-if="errors.eventValue" class="text-error">{{ errors.eventValue }}</small>
       </div>
 
       <!-- Notes -->

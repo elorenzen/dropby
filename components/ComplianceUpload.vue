@@ -3,12 +3,12 @@
     <Card>
       <template #title>
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-            <i class="pi pi-shield text-blue-600 dark:text-blue-400"></i>
+          <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+            <i class="pi pi-shield icon-primary"></i>
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-text-main">Business Compliance</h3>
-            <p class="text-sm text-text-muted">Upload required documents for verification</p>
+            <h3 class="text-xl font-semibold text-primary">Business Compliance</h3>
+            <p class="text-sm text-md-gray">Upload required documents for verification</p>
           </div>
         </div>
       </template>
@@ -20,23 +20,23 @@
             <div 
               v-for="category in documentCategories" 
               :key="category.id"
-              class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+              class="border border-surface-border rounded-lg p-4 hover:border-primary-light transition-colors"
             >
               <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <i class="pi pi-file-pdf text-gray-600 dark:text-gray-400"></i>
+                  <div class="w-8 h-8 rounded-full bg-surface-section flex items-center justify-center">
+                    <i class="pi pi-file-pdf text-md-gray"></i>
                   </div>
                   <div>
-                    <h4 class="font-medium text-text-main">{{ category.title }}</h4>
-                    <p class="text-sm text-text-muted">{{ category.description }}</p>
+                    <h4 class="font-medium text-color">{{ category.title }}</h4>
+                    <p class="text-sm text-md-gray">{{ category.description }}</p>
                     <div class="flex items-center gap-2 mt-2">
                       <Tag 
                         :value="getDocumentStatus(category.id)" 
                         :severity="getDocumentStatusSeverity(category.id)"
                         size="small"
                       />
-                      <span v-if="getDocumentExpiry(category.id)" class="text-xs text-text-muted">
+                      <span v-if="getDocumentExpiry(category.id)" class="text-xs text-md-gray">
                         Expires: {{ formatDate(getDocumentExpiry(category.id)) }}
                       </span>
                     </div>
@@ -54,72 +54,72 @@
           </div>
 
           <!-- Compliance Summary -->
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h4 class="font-medium text-text-main mb-3">Compliance Summary</h4>
+          <div class="bg-surface-section rounded-lg p-4">
+            <h4 class="font-medium text-color mb-3">Compliance Summary</h4>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div class="text-center">
-                <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                <div class="text-2xl font-bold text-success">
                   {{ complianceStore.complianceScore }}%
                 </div>
-                <div class="text-text-muted">Compliance Score</div>
+                <div class="text-md-gray">Compliance Score</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                <div class="text-2xl font-bold text-accent">
                   {{ complianceStore.pendingDocuments.length }}
                 </div>
-                <div class="text-text-muted">Pending</div>
+                <div class="text-md-gray">Pending</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-red-600 dark:text-red-400">
+                <div class="text-2xl font-bold text-error">
                   {{ complianceStore.expiredDocuments.length }}
                 </div>
-                <div class="text-text-muted">Expired</div>
+                <div class="text-md-gray">Expired</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <div class="text-2xl font-bold text-primary">
                   {{ complianceStore.verifiedDocuments.length }}
                 </div>
-                <div class="text-text-muted">Verified</div>
+                <div class="text-md-gray">Verified</div>
               </div>
             </div>
             
             <!-- Operation Status -->
-            <div class="mt-4 p-3 rounded-lg" :class="complianceStore.canBusinessOperate ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'">
+            <div class="mt-4 p-3 rounded-lg" :class="complianceStore.canBusinessOperate ? 'bg-success-light' : 'bg-error-light'">
               <div class="flex items-center gap-2">
-                <i :class="complianceStore.canBusinessOperate ? 'pi pi-check-circle text-green-600' : 'pi pi-times-circle text-red-600'"></i>
-                <span class="font-medium" :class="complianceStore.canBusinessOperate ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'">
+                <i :class="complianceStore.canBusinessOperate ? 'pi pi-check-circle text-success' : 'pi pi-times-circle text-error'"></i>
+                <span class="font-medium" :class="complianceStore.canBusinessOperate ? 'text-success-dark' : 'text-error-dark'">
                   {{ complianceStore.canBusinessOperate ? 'Business Can Operate' : 'Business Cannot Operate' }}
                 </span>
               </div>
-              <p class="text-sm mt-1" :class="complianceStore.canBusinessOperate ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'">
+              <p class="text-sm mt-1" :class="complianceStore.canBusinessOperate ? 'text-success-dark' : 'text-error-dark'">
                 {{ complianceStore.canBusinessOperate ? 'All required documents are valid and verified' : 'Some required documents are missing, expired, or unverified' }}
               </p>
             </div>
           </div>
 
           <!-- Expiry Notifications -->
-          <div v-if="complianceStore.getExpiryNotifications(props.businessId).length > 0" class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-            <h4 class="font-medium text-text-main mb-3">⚠️ Document Expiry Alerts</h4>
+          <div v-if="complianceStore.getExpiryNotifications(props.businessId).length > 0" class="bg-accent-light rounded-lg p-4">
+            <h4 class="font-medium text-color mb-3">⚠️ Document Expiry Alerts</h4>
             <div class="space-y-2">
               <div 
                 v-for="notification in complianceStore.getExpiryNotifications(props.businessId)" 
                 :key="notification.documentId"
                 class="flex items-center justify-between p-3 rounded-lg"
                 :class="{
-                  'bg-red-100 dark:bg-red-900/30': notification.severity === 'expired',
-                  'bg-orange-100 dark:bg-orange-900/30': notification.severity === 'urgent',
-                  'bg-yellow-100 dark:bg-yellow-900/30': notification.severity === 'warning'
+                  'bg-error-light': notification.severity === 'expired',
+                  'bg-accent-light': notification.severity === 'urgent',
+                  'bg-accent-light': notification.severity === 'warning'
                 }"
               >
                 <div class="flex items-center gap-3">
                   <i :class="{
-                    'pi pi-exclamation-triangle text-red-600': notification.severity === 'expired',
-                    'pi pi-exclamation-circle text-orange-600': notification.severity === 'urgent',
-                    'pi pi-info-circle text-yellow-600': notification.severity === 'warning'
+                    'pi pi-exclamation-triangle text-error': notification.severity === 'expired',
+                    'pi pi-exclamation-circle text-accent': notification.severity === 'urgent',
+                    'pi pi-info-circle text-accent': notification.severity === 'warning'
                   }"></i>
                   <div>
-                    <div class="font-medium text-text-main">{{ notification.documentTitle }}</div>
-                    <div class="text-sm text-text-muted">
+                    <div class="font-medium text-color">{{ notification.documentTitle }}</div>
+                    <div class="text-sm text-md-gray">
                       {{ notification.isExpired ? 'Expired' : `Expires in ${notification.daysUntilExpiry} days` }}
                     </div>
                   </div>
@@ -147,12 +147,12 @@
     >
       <template #header>
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-            <i class="pi pi-upload text-blue-600 dark:text-blue-400"></i>
+          <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+            <i class="pi pi-upload icon-primary"></i>
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-text-main">Upload {{ selectedCategory?.title }}</h3>
-            <p class="text-sm text-text-muted">Upload your {{ selectedCategory?.title.toLowerCase() }} document</p>
+            <h3 class="text-xl font-semibold text-color">Upload {{ selectedCategory?.title }}</h3>
+            <p class="text-sm text-md-gray">Upload your {{ selectedCategory?.title.toLowerCase() }} document</p>
           </div>
         </div>
       </template>
@@ -161,7 +161,7 @@
         <!-- Document Information -->
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-text-main mb-2">Document Type</label>
+            <label class="block text-sm font-medium text-color mb-2">Document Type</label>
             <InputText 
               v-model="documentInfo.type" 
               :placeholder="selectedCategory?.title"
@@ -171,7 +171,7 @@
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Issue Date</label>
+              <label class="block text-sm font-medium text-color mb-2">Issue Date</label>
               <Calendar 
                 v-model="documentInfo.issueDate" 
                 :max-date="new Date()"
@@ -179,7 +179,7 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Expiry Date</label>
+              <label class="block text-sm font-medium text-color mb-2">Expiry Date</label>
               <Calendar 
                 v-model="documentInfo.expiryDate" 
                 :min-date="new Date()"
@@ -189,7 +189,7 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-text-main mb-2">Document Number</label>
+            <label class="block text-sm font-medium text-color mb-2">Document Number</label>
             <InputText 
               v-model="documentInfo.document_number" 
               placeholder="e.g., LICENSE-12345"
@@ -198,7 +198,7 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-text-main mb-2">Issuing Authority</label>
+            <label class="block text-sm font-medium text-color mb-2">Issuing Authority</label>
             <InputText 
               v-model="documentInfo.issuing_authority" 
               placeholder="e.g., City Health Department"
@@ -209,7 +209,7 @@
 
         <!-- File Upload -->
         <div class="space-y-3">
-          <label class="block text-sm font-medium text-text-main">Document File</label>
+          <label class="block text-sm font-medium text-color">Document File</label>
           <FileUpload
             v-model="uploadedFile"
             mode="basic"
@@ -220,14 +220,14 @@
             class="w-full"
             @select="onFileSelect"
           />
-          <p class="text-xs text-text-muted">
+          <p class="text-xs text-md-gray">
             Accepted formats: PDF, JPG, PNG (max 5MB)
           </p>
         </div>
 
         <!-- Additional Notes -->
         <div>
-          <label class="block text-sm font-medium text-text-main mb-2">Additional Notes</label>
+          <label class="block text-sm font-medium text-color mb-2">Additional Notes</label>
           <Textarea 
             v-model="documentInfo.notes" 
             rows="3" 

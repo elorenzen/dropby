@@ -12,7 +12,7 @@
                 <StepPanel v-slot="{ activateCallback }" value="1" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Create Your Account</h2>
-                        <p class="text-gray-600">Let's get you started with DropBy</p>
+                        <p class="text-color-secondary">Let's get you started with DropBy</p>
                     </div>
                     <Fluid>
                         <div class="grid grid-cols-1 gap-4">
@@ -21,21 +21,21 @@
                                     <InputText id="signup_email" v-model="signupEmail" type="email" @blur="() => { step1Touched = true; validateStep1() }" />
                                     <label for="signup_email">Email Address</label>
                                 </FloatLabel>
-                                <p v-if="step1Touched && step1Errors.email" class="text-red-500 text-xs mt-1">{{ step1Errors.email }}</p>
+                                <p v-if="step1Touched && step1Errors.email" class="text-error text-xs mt-1">{{ step1Errors.email }}</p>
                             </div>
                             <div>
                                 <FloatLabel variant="on">
                                     <Password id="signup_password" v-model="signupPassword" @blur="() => { step1Touched = true; validateStep1() }" />
                                     <label for="signup_password">Password</label>
                                 </FloatLabel>
-                                <p v-if="step1Touched && step1Errors.password" class="text-red-500 text-xs mt-1">{{ step1Errors.password }}</p>
+                                <p v-if="step1Touched && step1Errors.password" class="text-error text-xs mt-1">{{ step1Errors.password }}</p>
                             </div>
                             <div>
                                 <FloatLabel variant="on">
                                     <Password id="confirm_password" v-model="confirmPassword" @blur="() => { step1Touched = true; validateStep1() }" />
                                     <label for="confirm_password">Confirm Password</label>
                                 </FloatLabel>
-                                <p v-if="step1Touched && step1Errors.confirmPassword" class="text-red-500 text-xs mt-1">{{ step1Errors.confirmPassword }}</p>
+                                <p v-if="step1Touched && step1Errors.confirmPassword" class="text-error text-xs mt-1">{{ step1Errors.confirmPassword }}</p>
                             </div>
                         </div>
                     </Fluid>
@@ -53,14 +53,14 @@
                 <StepPanel v-slot="{ activateCallback }" value="2" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">What type of business are you?</h2>
-                        <p class="text-gray-600">This helps us customize your experience</p>
+                        <p class="text-color-secondary">This helps us customize your experience</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Card
                                 class="h-full cursor-pointer transition-all duration-200"
                                 :class="[
-                                    type === 'merchant' ? 'ring-4 ring-orange-500 bg-orange-200/30 shadow-2xl scale-105 border-2 border-orange-500' : 'hover:ring-2 hover:ring-orange-300 hover:bg-orange-50/5 hover:shadow',
+                                    type === 'merchant' ? 'border-primary bg-primary-light shadow-lg scale-105' : 'hover:border-primary-light hover:bg-primary-light hover:shadow',
                                 ]"
                                 @click="type = 'merchant'"
                             >
@@ -68,7 +68,7 @@
                                     <div class="text-xl font-semibold mb-2">Merchant</div>
                                 </template>
                                 <template #content>
-                                    <p class="text-gray-600">
+                                    <p class="text-color-secondary">
                                         Select this option if you are an employee or owner of a physical business.
                                         You must have a physical location and a business license in order to be approved 
                                         for food trucks to begin setting up at your place of business.
@@ -80,7 +80,7 @@
                             <Card
                                 class="h-full cursor-pointer transition-all duration-200"
                                 :class="[
-                                    type === 'vendor' ? 'ring-4 ring-orange-500 bg-orange-200/30 shadow-2xl scale-105 border-2 border-orange-500' : 'hover:ring-2 hover:ring-orange-300 hover:bg-orange-50/5 hover:shadow',
+                                    type === 'vendor' ? 'border-primary bg-primary-light shadow-lg scale-105' : 'hover:border-primary-light hover:bg-primary-light hover:shadow',
                                 ]"
                                 @click="type = 'vendor'"
                             >
@@ -88,7 +88,7 @@
                                     <div class="text-xl font-semibold mb-2">Vendor</div>
                                 </template>
                                 <template #content>
-                                    <p class="text-gray-600">
+                                    <p class="text-color-secondary">
                                         Select this option if you are an employee or owner of a food truck business.
                                         You must have a valid business license in order to be approved and begin setting up
                                         at breweries, and other establishments in the area.
@@ -111,7 +111,7 @@
                 <StepPanel v-slot="{ activateCallback }" value="3" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Tell us about yourself</h2>
-                        <p class="text-gray-600">Primary contact information</p>
+                        <p class="text-color-secondary">Primary contact information</p>
                     </div>
                     <div class="flex flex-col">
                         <Fluid>
@@ -121,28 +121,28 @@
                                         <InputText id="first_name" v-model="first" @blur="validateStep3" />
                                         <label for="first_name">First Name</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.first" class="text-red-500 text-xs mt-1">{{ step3Errors.first }}</p>
+                                    <p v-if="step3Errors.first" class="text-error text-xs mt-1">{{ step3Errors.first }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
                                         <InputText id="last_name" v-model="last" @blur="validateStep3" />
                                         <label for="last_name">Last Name</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.last" class="text-red-500 text-xs mt-1">{{ step3Errors.last }}</p>
+                                    <p v-if="step3Errors.last" class="text-error text-xs mt-1">{{ step3Errors.last }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
                                         <InputText id="email" v-model="email" disabled />
                                         <label for="email">Email</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.email" class="text-red-500 text-xs mt-1">{{ step3Errors.email }}</p>
+                                    <p v-if="step3Errors.email" class="text-error text-xs mt-1">{{ step3Errors.email }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
                                         <InputMask id="phone" v-model="phone" mask="(999) 999-9999" @blur="validateStep3" />
                                         <label for="phone">Phone</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.phone" class="text-red-500 text-xs mt-1">{{ step3Errors.phone }}</p>
+                                    <p v-if="step3Errors.phone" class="text-error text-xs mt-1">{{ step3Errors.phone }}</p>
                                 </div>
                                 <div class="card flex justify-center">
                                     <InputSwitch v-model="isAdmin" :disabled="true" class="mt-2" />
@@ -167,7 +167,7 @@
                 <StepPanel v-slot="{ activateCallback }" value="4" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Business Information</h2>
-                        <p class="text-gray-600">Tell us about your {{ type }}</p>
+                        <p class="text-color-secondary">Tell us about your {{ type }}</p>
                     </div>
                     <div v-if="type" class="flex flex-col">
                         <NewBusiness @objUpdated="objUpdated" :bizType="type" />
@@ -186,10 +186,10 @@
                 <StepPanel v-slot="{ activateCallback }" value="5" class="p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Review Your Information</h2>
-                        <p class="text-gray-600">Please review before submitting</p>
+                        <p class="text-color-secondary">Please review before submitting</p>
                     </div>
                     
-                    <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                    <div class="bg-surface-section p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">Primary User</h4>
                     <p class="m-2"><span class="font-bold">Name: </span>{{ first }} {{ last }}</p>
                     <p class="m-2"><span class="font-bold">Email: </span>{{ email }}</p>
@@ -199,7 +199,7 @@
                     </p>
                     </div>
 
-                    <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                    <div class="bg-surface-section p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">{{ type }} Information</h4>
                     <p class="m-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
                     <p class="m-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>

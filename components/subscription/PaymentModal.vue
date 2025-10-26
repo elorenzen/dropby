@@ -4,18 +4,18 @@
       <div class="modal-content" style="background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 20px 20px 0 20px;">
           <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: var(--heading-color);">Complete Payment for {{ planName }}</h3>
-          <button @click="closeModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color-secondary); transition: color 0.2s;" onmouseover="this.style.color='var(--heading-color)'" onmouseout="this.style.color='var(--text-color-secondary)'">×</button>
+          <button @click="closeModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-md-gray); transition: color 0.2s;" onmouseover="this.style.color='var(--heading-color)'" onmouseout="this.style.color='var(--text-md-gray)'">×</button>
         </div>
         
         <div class="payment-form" style="padding: 0 20px 20px 20px;">
           <!-- Error State -->
           <div v-if="subscriptionData?.error" class="space-y-4">
             <div class="text-center mb-4">
-              <div class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="pi pi-exclamation-triangle text-2xl text-red-400"></i>
+              <div class="w-16 h-16 bg-error-light rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="pi pi-exclamation-triangle text-2xl text-error"></i>
               </div>
-              <h3 class="text-xl font-semibold text-gray-100 mb-2">Subscription Creation Failed</h3>
-              <p class="text-gray-400">{{ subscriptionData.message }}</p>
+              <h3 class="text-xl font-semibold text-color mb-2">Subscription Creation Failed</h3>
+              <p class="text-md-gray">{{ subscriptionData.message }}</p>
             </div>
             
             <!-- Action Buttons -->
@@ -39,25 +39,25 @@
           <!-- Payment Form -->
           <div v-else-if="!paymentComplete" class="space-y-4">
             <div class="text-center mb-6">
-              <p class="text-gray-400 text-sm">Please enter your payment details to activate your subscription</p>
+              <p class="text-md-gray text-sm">Please enter your payment details to activate your subscription</p>
             </div>
             
             <!-- Stripe Elements Container -->
-            <div id="card-element" class="p-4 border border-gray-600 rounded-lg bg-gray-800 min-h-[60px]"></div>
+            <div id="card-element" class="p-4 border border-surface-border rounded-lg bg-surface-card min-h-[60px]"></div>
             
             <!-- Fallback input if Stripe fails -->
-            <div v-if="error" class="p-4 border border-red-600 rounded-lg bg-red-900/20">
-              <p class="text-red-400 text-sm mb-2">Stripe Elements failed to load. Please check console for details.</p>
+            <div v-if="error" class="p-4 border border-error rounded-lg bg-error-light">
+              <p class="text-error text-sm mb-2">Stripe Elements failed to load. Please check console for details.</p>
               <input 
                 type="text" 
                 placeholder="Card number (test: 4242 4242 4242 4242)"
-                class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                class="w-full p-2 bg-surface-card border border-surface-border rounded text-color"
                 disabled
               />
             </div>
             
             <!-- Error Message -->
-            <div v-if="error" class="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg">
+            <div v-if="error" class="text-error text-sm bg-error-light p-3 rounded-lg">
               {{ error }}
             </div>
             
@@ -84,11 +84,11 @@
           
           <!-- Success State -->
           <div v-else class="text-center space-y-4">
-            <div class="w-16 h-16 bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-              <i class="pi pi-check text-2xl text-green-400"></i>
+            <div class="w-16 h-16 bg-success-light rounded-full flex items-center justify-center mx-auto">
+              <i class="pi pi-check text-2xl text-success"></i>
             </div>
-            <h3 class="text-xl font-semibold text-gray-100">Payment Successful!</h3>
-            <p class="text-gray-400">Your subscription is now active.</p>
+            <h3 class="text-xl font-semibold text-color">Payment Successful!</h3>
+            <p class="text-md-gray">Your subscription is now active.</p>
             <Button 
               label="Continue" 
               severity="success"
@@ -238,7 +238,7 @@ const initializePaymentForm = async () => {
           color: 'var(--text-color)',
           backgroundColor: 'transparent',
           '::placeholder': {
-            color: 'var(--text-color-secondary)',
+            color: 'var(--text-md-gray)',
           },
         },
         invalid: {

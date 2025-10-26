@@ -2,7 +2,7 @@
   <div class="page-content">
     <div class="section">
       <div class="text-center mb-8">
-        <h1 class="font-bold text-4xl md:text-5xl mb-4 bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+        <h1 class="font-bold text-4xl md:text-5xl mb-4 bg-gradient-to-r from-accent to-error bg-clip-text text-transparent">
           Find Amazing Food Truck Events
         </h1>
         <p class="text-lg md:text-xl text-text-muted max-w-3xl mx-auto leading-relaxed">
@@ -15,7 +15,7 @@
         <Card class="stat-card hover:scale-105 transition-transform duration-200">
           <template #content>
             <div class="text-center">
-              <div class="text-3xl md:text-4xl font-bold text-orange-500 mb-2">{{ totalEvents }}</div>
+              <div class="text-3xl md:text-4xl font-bold text-accent mb-2">{{ totalEvents }}</div>
               <div class="text-text-muted">Available Events</div>
               <div class="text-xs text-text-muted mt-1">Updated in real-time</div>
             </div>
@@ -24,7 +24,7 @@
         <Card class="stat-card hover:scale-105 transition-transform duration-200">
           <template #content>
             <div class="text-center">
-              <div class="text-3xl md:text-4xl font-bold text-blue-500 mb-2">{{ totalMerchants }}</div>
+              <div class="text-3xl md:text-4xl font-bold text-primary mb-2">{{ totalMerchants }}</div>
               <div class="text-text-muted">Participating Establishments</div>
               <div class="text-xs text-text-muted mt-1">Restaurants & venues</div>
             </div>
@@ -33,7 +33,7 @@
         <Card class="stat-card hover:scale-105 transition-transform duration-200">
           <template #content>
             <div class="text-center">
-              <div class="text-3xl md:text-4xl font-bold text-green-500 mb-2">{{ totalVendors }}</div>
+              <div class="text-3xl md:text-4xl font-bold text-success mb-2">{{ totalVendors }}</div>
               <div class="text-text-muted">Food Truck Vendors</div>
               <div class="text-xs text-text-muted mt-1">Diverse cuisines</div>
             </div>
@@ -46,7 +46,7 @@
           <div class="space-y-6">
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="pi pi-search text-gray-400"></i>
+                <i class="pi pi-search text-color-secondary"></i>
               </div>
               <InputText 
                 v-model="filters.keyword" 
@@ -100,10 +100,10 @@
               </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-surface-border">
               <div class="text-sm text-text-muted">
                 Showing {{ filteredEvents.length }} of {{ totalEvents }} events
-                <span v-if="filters.keyword || filters.cuisines.length > 0 || filters.dateRange" class="text-blue-600 dark:text-blue-400">
+                <span v-if="filters.keyword || filters.cuisines.length > 0 || filters.dateRange" class="text-primary">
                   (filtered)
                 </span>
               </div>
@@ -141,12 +141,12 @@
             <!-- Map Container -->
             <div 
               ref="mapContainer" 
-              class="w-full h-96 md:h-[600px] rounded-lg border border-gray-200 dark:border-gray-700"
+              class="w-full h-96 md:h-[600px] rounded-lg border border-surface-border"
             ></div>
             
             <!-- Map Controls Overlay -->
             <div class="absolute top-4 right-4 z-10">
-              <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 space-y-2">
+              <div class="bg-surface-card rounded-lg shadow-lg p-2 space-y-2">
                 <Button 
                   icon="pi pi-plus"
                   size="small"
@@ -167,7 +167,7 @@
             <!-- Event Info Panel -->
             <div 
               v-if="selectedMapEvent"
-              class="absolute bottom-4 left-4 right-4 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4"
+              class="absolute bottom-4 left-4 right-4 z-10 bg-surface-card rounded-lg shadow-lg p-4"
             >
               <div class="flex justify-between items-start mb-3">
                 <div>
@@ -184,15 +184,15 @@
               
               <div class="space-y-2 text-sm">
                 <div class="flex items-center gap-2">
-                  <i class="pi pi-calendar text-gray-400"></i>
+                  <i class="pi pi-calendar text-color-secondary"></i>
                   <span>{{ formatDate(selectedMapEvent.start) }}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <i class="pi pi-clock text-gray-400"></i>
+                  <i class="pi pi-clock text-color-secondary"></i>
                   <span>{{ formatTime(selectedMapEvent.start) }} - {{ formatTime(selectedMapEvent.end) }}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <i class="pi pi-map-marker text-gray-400"></i>
+                  <i class="pi pi-map-marker text-color-secondary"></i>
                   <span>{{ selectedMapEvent.location_address || 'Location TBD' }}</span>
                 </div>
               </div>
@@ -214,18 +214,18 @@
           </div>
           
           <!-- Map Legend -->
-          <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div class="mt-4 p-3 bg-surface-section rounded-lg">
             <div class="flex flex-wrap gap-4 text-sm">
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                <div class="w-4 h-4 bg-success rounded-full"></div>
                 <span>Available Events</span>
               </div>
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
+                <div class="w-4 h-4 bg-accent rounded-full"></div>
                 <span>Booked Events</span>
               </div>
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+                <div class="w-4 h-4 bg-error rounded-full"></div>
                 <span>Completed Events</span>
               </div>
             </div>
@@ -234,8 +234,8 @@
 
         <!-- Events List Section (30% width) -->
         <div class="lg:col-span-3">
-          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="bg-surface-card rounded-lg border border-surface-border">
+            <div class="p-4 border-b border-surface-border">
               <h3 class="text-lg font-semibold text-text-main">Events List</h3>
               <p class="text-sm text-text-muted">{{ filteredEvents.length }} events found</p>
             </div>
@@ -244,8 +244,8 @@
               <div 
                 v-for="event in filteredEvents" 
                 :key="event.id" 
-                class="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                :class="{ 'bg-orange-50 dark:bg-orange-900/20': selectedMapEvent?.id === event.id }"
+                class="p-4 border-b border-surface-border hover:bg-surface-section cursor-pointer transition-colors"
+                :class="{ 'bg-accent-light': selectedMapEvent?.id === event.id }"
                 @click="selectEventOnMap(event)"
               >
                 <div class="space-y-2">
@@ -316,8 +316,8 @@
     </div>
 
     <div v-else-if="!loading" class="text-center py-12">
-      <div class="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-search text-4xl text-gray-400"></i>
+      <div class="w-24 h-24 rounded-full bg-surface-section flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-search text-4xl text-color-secondary"></i>
       </div>
       <h3 class="text-2xl font-semibold text-text-main mb-2">No events found</h3>
       <p class="text-text-muted mb-6 max-w-md mx-auto">

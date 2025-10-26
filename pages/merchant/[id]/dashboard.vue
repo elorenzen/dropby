@@ -89,8 +89,8 @@
                   <span class="text-text-muted text-sm ml-2">({{ analytics.totalRatings }} reviews)</span>
                 </div>
               </div>
-              <div class="analytics-icon bg-purple-100 dark:bg-purple-900">
-                <i class="pi pi-star text-purple-600 dark:text-purple-400"></i>
+            <div class="analytics-icon bg-accent-light">
+              <i class="pi pi-star text-accent"></i>
               </div>
             </div>
           </template>
@@ -257,7 +257,7 @@
       switch (item.type) {
         case 'event_completed':
           icon = 'pi pi-check-circle'
-          iconClass = 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+          iconClass = 'bg-success-light text-success-dark'
           break
         case 'event':
           icon = 'pi pi-calendar-plus'
@@ -265,11 +265,11 @@
           break
         case 'rating':
           icon = 'pi pi-star'
-          iconClass = 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
+          iconClass = 'bg-accent-light text-accent-dark'
           break
         case 'profile':
           icon = 'pi pi-user-edit'
-          iconClass = 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400'
+          iconClass = 'bg-accent-light text-accent-dark'
           break
       }
       
@@ -397,24 +397,40 @@
   })
   </script>
   
-  <style scoped>
-  .analytics-card {
-    @apply bg-white/5 backdrop-blur border border-white/10;
-  }
-  
-  .analytics-icon {
-    @apply w-12 h-12 rounded-full flex items-center justify-center;
-  }
-  
-  .activity-icon {
-    @apply w-8 h-8 rounded-full flex items-center justify-center text-sm;
-  }
-  
-  .clickable-card {
-    @apply cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg;
-  }
-  
-  .clickable-card:hover {
-    @apply border-blue-500/50;
-  }
-  </style>
+<style scoped>
+.analytics-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.analytics-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activity-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: rgba(var(--primary-color-rgb), 0.5);
+}
+</style>

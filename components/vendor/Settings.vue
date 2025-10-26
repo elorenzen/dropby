@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="border-b px-8 py-6" style="border-color: var(--surface-border);">
       <h1 class="text-3xl font-bold mb-1" style="color: var(--text-color);">Vendor Settings</h1>
-      <p class="text-sm" style="color: var(--text-color-secondary);">Manage your business profile, hours, menu, and associated users</p>
+      <p class="text-sm" style="color: var(--text-md-gray);">Manage your business profile, hours, menu, and associated users</p>
     </div>
 
     <div class="flex">
@@ -20,7 +20,7 @@
                   : 'hover:text-white hover:bg-opacity-80'"
                 :style="activeTab === index 
                   ? 'background: var(--primary-color); color: var(--primary-color-text);' 
-                  : 'color: var(--text-color-secondary); background: transparent;'"
+                  : 'color: var(--text-md-gray); background: transparent;'"
               >
                 <i :class="tab.icon" class="text-lg"></i>
                 <span class="font-medium">{{ tab.label }}</span>
@@ -39,7 +39,7 @@
           <div class="flex gap-8">
             <!-- Image Upload Section -->
             <div class="w-1/3">
-              <div class="bg-white rounded-lg p-4 mb-4">
+              <div class="bg-surface-card rounded-lg p-4 mb-4">
                 <NuxtImg 
                   :src="imageUrl || '/placeholder-vendor.jpg'" 
                   alt="Vendor Image" 
@@ -252,7 +252,7 @@
           
           <!-- Current Subscription Plan Section -->
           <div v-if="hasActiveSubscription" class="space-y-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div class="bg-surface-card rounded-lg border border-surface-border p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-semibold text-text-main">Current Subscription Plan</h3>
                 <Button
@@ -264,8 +264,8 @@
               </div>
               
               <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
-                  <i class="pi pi-star text-primary-600 dark:text-primary-400 text-xl"></i>
+                <div class="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center">
+                  <i class="pi pi-star text-primary text-xl"></i>
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-text-main capitalize">
@@ -275,7 +275,7 @@
                     ${{ getCurrentPlanPrice() }}/month
                   </p>
                   <div class="flex items-center space-x-2 mt-1">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success-dark">
                       <i class="pi pi-check-circle mr-1"></i>
                       Active
                     </span>
@@ -296,15 +296,15 @@
           <div v-if="!hasActiveSubscription" class="mb-8">
             <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
               <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <div class="w-12 h-12 bg-surface-card/20 rounded-full flex items-center justify-center">
                   <i class="pi pi-star text-xl"></i>
                 </div>
                 <div>
                   <h3 class="text-xl font-semibold">Upgrade Your Plan</h3>
-                  <p class="text-orange-100">Get unlimited events and premium features</p>
+                  <p class="text-accent-dark">Get unlimited events and premium features</p>
                 </div>
               </div>
-              <p class="text-orange-100 mb-4">
+              <p class="text-accent-dark mb-4">
                 You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and priority support.
               </p>
               <Button
@@ -683,7 +683,7 @@ const openSubscriptionModal = () => {
 }
 
 :deep(.p-multiselect-trigger) {
-  color: var(--text-color-secondary) !important;
+  color: var(--text-md-gray) !important;
 }
 
 :deep(.p-inputnumber) {
@@ -709,7 +709,7 @@ const openSubscriptionModal = () => {
 }
 
 :deep(.p-dropdown-trigger) {
-  color: var(--text-color-secondary) !important;
+  color: var(--text-md-gray) !important;
 }
 
 :deep(.p-fileupload) {

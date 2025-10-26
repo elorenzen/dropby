@@ -26,7 +26,7 @@
                             </div>
                             <div v-if="event.notes">
                                 <span class="font-medium">Notes:</span>
-                                <p class="ml-2 mt-1 text-gray-600">{{ event.notes }}</p>
+                                <p class="ml-2 mt-1 text-md-gray">{{ event.notes }}</p>
                             </div>
                         </div>
                     </div>
@@ -40,7 +40,7 @@
                             </div>
                             <div v-if="merchant.merchant_description">
                                 <span class="font-medium">Description:</span>
-                                <p class="ml-2 mt-1 text-gray-600">{{ merchant.merchant_description }}</p>
+                                <p class="ml-2 mt-1 text-md-gray">{{ merchant.merchant_description }}</p>
                             </div>
                             <div v-if="merchant.phone">
                                 <span class="font-medium">Phone:</span>
@@ -54,19 +54,19 @@
                     </div>
                 </div>
                 
-                <div v-if="event.status === 'booked'" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h4 class="font-semibold text-green-800 mb-2">✅ Event Confirmed</h4>
-                    <p class="text-green-700">This event has been approved by the establishment. Please contact them to coordinate setup details.</p>
+                <div v-if="event.status === 'booked'" class="mt-4 p-4 bg-success-light border border-success-light rounded-lg">
+                    <h4 class="font-semibold text-success-dark mb-2">✅ Event Confirmed</h4>
+                    <p class="text-success">This event has been approved by the establishment. Please contact them to coordinate setup details.</p>
                 </div>
                 
-                <div v-else-if="isPendingRequest" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h4 class="font-semibold text-yellow-800 mb-2">⏳ Request Pending</h4>
-                    <p class="text-yellow-700">Your request for this event is pending approval from the establishment.</p>
+                <div v-else-if="isPendingRequest" class="mt-4 p-4 bg-accent-light border border-accent-light rounded-lg">
+                    <h4 class="font-semibold text-accent-dark mb-2">⏳ Request Pending</h4>
+                    <p class="text-accent">Your request for this event is pending approval from the establishment.</p>
                 </div>
                 
-                <div v-else-if="event.status === 'open'" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 class="font-semibold text-blue-800 mb-2">📋 Event Available</h4>
-                    <p class="text-blue-700">This event is open for requests. Click the button below to request this event.</p>
+                <div v-else-if="event.status === 'open'" class="mt-4 p-4 bg-primary-light border border-primary-light rounded-lg">
+                    <h4 class="font-semibold text-primary-dark mb-2">📋 Event Available</h4>
+                    <p class="text-primary">This event is open for requests. Click the button below to request this event.</p>
                 </div>
             </template>
             

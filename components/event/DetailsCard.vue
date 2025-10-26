@@ -9,109 +9,109 @@
   >
     <template #header>
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-          <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
+        <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+          <i class="pi pi-calendar icon-primary"></i>
         </div>
         <div>
-          <h2 class="text-xl font-semibold text-text-main">Event Details</h2>
-          <p class="text-sm text-text-muted">View complete event information</p>
+          <h2 class="text-xl font-semibold text-color">Event Details</h2>
+          <p class="text-sm text-md-gray">View complete event information</p>
         </div>
       </div>
     </template>
 
     <div v-if="event" class="space-y-6">
       <!-- Event Information Section -->
-      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-          <i class="pi pi-calendar-plus text-blue-600"></i>
+      <div class="bg-surface-section rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-color mb-3 flex items-center gap-2">
+          <i class="pi pi-calendar-plus text-primary"></i>
           Event Information
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p class="text-sm font-medium text-text-muted mb-1">Event Date</p>
-            <p class="text-text-main">{{ new Date(event.start).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
+            <p class="text-sm font-medium text-md-gray mb-1">Event Date</p>
+            <p class="text-color">{{ new Date(event.start).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
           </div>
           <div>
-            <p class="text-sm font-medium text-text-muted mb-1">Event Time</p>
-            <p class="text-text-main">{{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+            <p class="text-sm font-medium text-md-gray mb-1">Event Time</p>
+            <p class="text-color">{{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
           </div>
           <div>
-            <p class="text-sm font-medium text-text-muted mb-1">Status</p>
+            <p class="text-sm font-medium text-md-gray mb-1">Status</p>
             <Tag :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" />
           </div>
           <div>
-            <p class="text-sm font-medium text-text-muted mb-1">Duration</p>
-            <p class="text-text-main">{{ getEventDuration(event) }}</p>
+            <p class="text-sm font-medium text-md-gray mb-1">Duration</p>
+            <p class="text-color">{{ getEventDuration(event) }}</p>
           </div>
           <div v-if="event.location_address" class="md:col-span-2">
-            <p class="text-sm font-medium text-text-muted mb-1">Location</p>
-            <p class="text-text-main">{{ event.location_address }}</p>
+            <p class="text-sm font-medium text-md-gray mb-1">Location</p>
+            <p class="text-color">{{ event.location_address }}</p>
           </div>
         </div>
       </div>
 
       <!-- Merchant Information Section -->
-      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-          <i class="pi pi-building text-green-600"></i>
+      <div class="bg-surface-section rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-color mb-3 flex items-center gap-2">
+          <i class="pi pi-building text-success"></i>
           Merchant Information
         </h3>
         <div class="flex items-start gap-4">
-          <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0">
-            <i class="pi pi-building text-green-600 dark:text-green-400 text-xl"></i>
+          <div class="w-16 h-16 rounded-full bg-success-light flex items-center justify-center flex-shrink-0">
+            <i class="pi pi-building text-success text-xl"></i>
           </div>
           <div class="flex-1">
-            <h4 class="font-semibold text-text-main text-lg">{{ merchant?.merchant_name || 'Merchant Name' }}</h4>
-            <p class="text-text-muted mb-3">{{ merchant?.merchant_description || 'No description available' }}</p>
+            <h4 class="font-semibold text-color text-lg">{{ merchant?.merchant_name || 'Merchant Name' }}</h4>
+            <p class="text-md-gray mb-3">{{ merchant?.merchant_description || 'No description available' }}</p>
             
             <!-- Contact Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
               <div>
-                <p class="font-medium text-text-muted mb-1">Phone</p>
-                <p class="text-text-main">{{ merchant?.phone || 'No phone provided' }}</p>
+                <p class="font-medium text-md-gray mb-1">Phone</p>
+                <p class="text-color">{{ merchant?.phone || 'No phone provided' }}</p>
               </div>
               <div>
-                <p class="font-medium text-text-muted mb-1">Email</p>
-                <p class="text-text-main">{{ merchant?.email || 'No email provided' }}</p>
+                <p class="font-medium text-md-gray mb-1">Email</p>
+                <p class="text-color">{{ merchant?.email || 'No email provided' }}</p>
               </div>
               <div>
-                <p class="font-medium text-text-muted mb-1">Website</p>
-                <p class="text-text-main">
-                  <a v-if="merchant?.website" :href="merchant.website" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                <p class="font-medium text-md-gray mb-1">Website</p>
+                <p class="text-color">
+                  <a v-if="merchant?.website" :href="merchant.website" target="_blank" class="text-primary hover:text-primary-dark">
                     {{ merchant.website }}
                   </a>
-                  <span v-else class="text-text-muted">No website</span>
+                  <span v-else class="text-md-gray">No website</span>
                 </p>
               </div>
               <div>
-                <p class="font-medium text-text-muted mb-1">Instagram</p>
-                <p class="text-text-main">
-                  <a v-if="merchant?.instagram" :href="`https://instagram.com/${merchant.instagram}`" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                <p class="font-medium text-md-gray mb-1">Instagram</p>
+                <p class="text-color">
+                  <a v-if="merchant?.instagram" :href="`https://instagram.com/${merchant.instagram}`" target="_blank" class="text-primary hover:text-primary-dark">
                     @{{ merchant.instagram }}
                   </a>
-                  <span v-else class="text-text-muted">No Instagram</span>
+                  <span v-else class="text-md-gray">No Instagram</span>
                 </p>
               </div>
             </div>
 
             <!-- Address Information -->
             <div v-if="merchant?.formatted_address" class="mb-4">
-              <p class="font-medium text-text-muted mb-1">Address</p>
-              <p class="text-text-main">{{ merchant.formatted_address }}</p>
+              <p class="font-medium text-md-gray mb-1">Address</p>
+              <p class="text-color">{{ merchant.formatted_address }}</p>
             </div>
             <!-- Vendor Notes -->
             <div v-if="merchant?.notes" class="mb-4">
-              <p class="font-medium text-text-muted mb-1">Directions/Notes for Vendors</p>
-              <p class="text-text-main">{{ merchant.notes }}</p>
+              <p class="font-medium text-md-gray mb-1">Directions/Notes for Vendors</p>
+              <p class="text-color">{{ merchant.notes }}</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Vendor Information Section -->
-      <div v-if="event.vendor" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-          <i class="pi pi-truck text-orange-600"></i>
+      <div v-if="event.vendor" class="bg-surface-section rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-color mb-3 flex items-center gap-2">
+          <i class="pi pi-truck text-accent"></i>
           Food Truck Information
         </h3>
         <div class="flex items-start gap-4">
@@ -121,19 +121,19 @@
             class="w-16 h-16 rounded-full flex-shrink-0"
           />
           <div class="flex-1">
-            <h4 class="font-semibold text-text-main text-lg">{{ getVendorProp(event.vendor, 'vendor_name') }}</h4>
-            <p class="text-text-muted mb-2">{{ getVendorProp(event.vendor, 'description') || 'No description available' }}</p>
+            <h4 class="font-semibold text-color text-lg">{{ getVendorProp(event.vendor, 'vendor_name') }}</h4>
+            <p class="text-md-gray mb-2">{{ getVendorProp(event.vendor, 'description') || 'No description available' }}</p>
             <div class="flex items-center gap-2 mb-3">
               <Tag v-for="cuisine in getVendorCuisines(event.vendor)" :key="cuisine" :value="cuisine" severity="info" size="small" />
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p class="font-medium text-text-muted mb-1">Contact</p>
-                <p class="text-text-main">{{ getVendorProp(event.vendor, 'contact_email') || 'No contact info' }}</p>
+                <p class="font-medium text-md-gray mb-1">Contact</p>
+                <p class="text-color">{{ getVendorProp(event.vendor, 'contact_email') || 'No contact info' }}</p>
               </div>
               <div>
-                <p class="font-medium text-text-muted mb-1">Phone</p>
-                <p class="text-text-main">{{ getVendorProp(event.vendor, 'phone') || 'No phone info' }}</p>
+                <p class="font-medium text-md-gray mb-1">Phone</p>
+                <p class="text-color">{{ getVendorProp(event.vendor, 'phone') || 'No phone info' }}</p>
               </div>
             </div>
           </div>
@@ -141,55 +141,55 @@
       </div>
 
       <!-- No Vendor Section -->
-      <div v-else-if="businessType !== 'vendor'" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-          <i class="pi pi-truck text-gray-600"></i>
+      <div v-else-if="businessType !== 'vendor'" class="bg-surface-section rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-color mb-3 flex items-center gap-2">
+          <i class="pi pi-truck text-md-gray"></i>
           Food Truck Status
         </h3>
         <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-            <i class="pi pi-clock text-gray-400 dark:text-gray-500 text-xl"></i>
+          <div class="w-16 h-16 rounded-full bg-surface-section flex items-center justify-center">
+            <i class="pi pi-clock text-md-gray text-xl"></i>
           </div>
           <div>
-            <h4 class="font-semibold text-text-main">No Food Truck Booked</h4>
-            <p class="text-text-muted">This event is currently open for food truck requests</p>
+            <h4 class="font-semibold text-color">No Food Truck Booked</h4>
+            <p class="text-md-gray">This event is currently open for food truck requests</p>
           </div>
         </div>
       </div>
 
       <!-- Event Notes Section -->
-      <div v-if="event.notes" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-          <i class="pi pi-file-edit text-purple-600"></i>
+      <div v-if="event.notes" class="bg-surface-section rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-color mb-3 flex items-center gap-2">
+          <i class="pi pi-file-edit text-primary"></i>
           Event Notes
         </h3>
-        <p class="text-text-main whitespace-pre-wrap">{{ event.notes }}</p>
+        <p class="text-color whitespace-pre-wrap">{{ event.notes }}</p>
       </div>
 
       <!-- Event Value Information Section (if available) -->
-      <div v-if="businessType === 'merchant'" class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-        <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">Event Value</h3>
+      <div v-if="businessType === 'merchant'" class="bg-primary-light rounded-lg p-4 border border-primary-light">
+        <h3 class="text-lg font-semibold text-primary-dark mb-2">Event Value</h3>
         <div class="space-y-2">
           <div class="flex justify-between">
-            <span class="text-blue-700 dark:text-blue-300">Event Value:</span>
-            <span class="font-semibold text-blue-800 dark:text-blue-200">${{ event.event_value }}</span>
+            <span class="text-primary-dark">Event Value:</span>
+            <span class="font-semibold text-primary-dark">${{ event.event_value }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-blue-700 dark:text-blue-300">Platform Fee (8%):</span>
-            <span class="text-blue-800 dark:text-blue-200">${{ (event.event_value * 0.08).toFixed(2) }}</span>
+            <span class="text-primary-dark">Platform Fee (8%):</span>
+            <span class="text-primary-dark">${{ (event.event_value * 0.08).toFixed(2) }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-blue-700 dark:text-blue-300">Processing Fee:</span>
-            <span class="text-blue-800 dark:text-blue-200">${{ ((event.event_value * 0.029) + 0.30).toFixed(2) }}</span>
+            <span class="text-primary-dark">Processing Fee:</span>
+            <span class="text-primary-dark">${{ ((event.event_value * 0.029) + 0.30).toFixed(2) }}</span>
           </div>
-          <div class="border-t border-blue-300 dark:border-blue-700 pt-2">
+          <div class="border-t border-primary-light pt-2">
             <div class="flex justify-between font-semibold">
-              <span class="text-blue-800 dark:text-blue-200">Total (Merchant Pays):</span>
-              <span class="text-blue-800 dark:text-blue-200">${{ ((event.event_value * 1.109) + 0.30).toFixed(2) }}</span>
+              <span class="text-primary-dark">Total (Merchant Pays):</span>
+              <span class="text-primary-dark">${{ ((event.event_value * 1.109) + 0.30).toFixed(2) }}</span>
             </div>
           </div>
-          <div class="mt-3 p-2 bg-blue-100 dark:bg-blue-900/30 rounded border border-blue-300 dark:border-blue-700">
-            <p class="text-xs text-blue-800 dark:text-blue-200">
+          <div class="mt-3 p-2 bg-primary-light rounded border border-primary-light">
+            <p class="text-xs text-primary-dark">
               <i class="pi pi-info-circle mr-1"></i>
               You will receive the full event value of ${{ event.event_value }} after the event is completed.
             </p>

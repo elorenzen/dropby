@@ -8,7 +8,7 @@
       <div v-if="userType === 'merchant' && (eventOnDay.status === 'booked' || eventOnDay.status === 'completed' || eventOnDay.status === 'closed')" class="space-y-4">
         <!-- Event Time and Status -->
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-white">
+          <h3 class="text-lg font-semibold text-color">
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
           </h3>
           <Tag :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
@@ -16,8 +16,8 @@
         
         <!-- Vendor Info -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Vendor</label>
-          <div class="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800">
+          <label class="text-sm font-medium text-md-gray">Vendor</label>
+          <div class="flex items-center gap-3 p-3 bg-success-light rounded-lg border border-success-light">
             <NuxtImg 
               :src="getVendorProp(eventOnDay.vendor, 'avatar_url')" 
               :alt="getVendorProp(eventOnDay.vendor, 'vendor_name')" 
@@ -36,7 +36,7 @@
         
         <!-- Location -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Location</label>
+          <label class="text-sm font-medium text-md-gray">Location</label>
           <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
             {{ eventOnDay.location_address }}
           </NuxtLink>
@@ -44,8 +44,8 @@
         
         <!-- Notes -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Notes</label>
-          <p class="text-white">{{ eventOnDay.notes }}</p>
+          <label class="text-sm font-medium text-md-gray">Notes</label>
+          <p class="text-color">{{ eventOnDay.notes }}</p>
         </div>
         
         <!-- Action Buttons -->
@@ -60,7 +60,7 @@
         <!-- Event Details -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-white">
+            <h3 class="text-lg font-semibold text-color">
               {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
             </h3>
             <Tag :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
@@ -68,7 +68,7 @@
           
           <!-- Location -->
           <div class="space-y-1">
-            <label class="text-sm font-medium text-gray-400">Location</label>
+            <label class="text-sm font-medium text-md-gray">Location</label>
             <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
               {{ eventOnDay.location_address }}
             </NuxtLink>
@@ -76,8 +76,8 @@
           
           <!-- Notes -->
           <div class="space-y-1">
-            <label class="text-sm font-medium text-gray-400">Notes</label>
-            <p class="text-white">{{ eventOnDay.notes }}</p>
+            <label class="text-sm font-medium text-md-gray">Notes</label>
+            <p class="text-color">{{ eventOnDay.notes }}</p>
           </div>
         </div>
         
@@ -126,9 +126,9 @@
       <!-- MERCHANT VIEW - PAST DATE (NO EVENTS) -->
       <div v-else-if="userType === 'merchant' && !eventOnDay && dayDate && new Date(dayDate) < new Date(new Date().setHours(0,0,0,0))" class="space-y-4">
         <div class="text-center py-8">
-          <i class="pi pi-calendar-times text-4xl text-gray-400 mb-4"></i>
-          <h3 class="text-lg font-semibold text-white mb-2">Past Date</h3>
-          <p class="text-gray-400">You cannot create events for past dates.</p>
+            <i class="pi pi-calendar-times text-4xl text-md-gray mb-4"></i>
+          <h3 class="text-lg font-semibold text-color mb-2">Past Date</h3>
+          <p class="text-md-gray">You cannot create events for past dates.</p>
         </div>
       </div>
       
@@ -136,7 +136,7 @@
       <div v-else-if="userType === 'merchant' && eventOnDay.status === 'open'" class="space-y-4">
         <!-- Event Time and Status -->
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-white">
+          <h3 class="text-lg font-semibold text-color">
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
           </h3>
           <Tag :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
@@ -144,7 +144,7 @@
         
         <!-- Location -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Location</label>
+          <label class="text-sm font-medium text-md-gray">Location</label>
           <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
             {{ eventOnDay.location_address }}
           </NuxtLink>
@@ -152,8 +152,8 @@
         
         <!-- Notes -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Notes</label>
-          <p class="text-white">{{ eventOnDay.notes }}</p>
+          <label class="text-sm font-medium text-md-gray">Notes</label>
+          <p class="text-color">{{ eventOnDay.notes }}</p>
         </div>
         
         <!-- Action Buttons -->
@@ -167,7 +167,7 @@
       <div v-else-if="userType === 'vendor'" class="space-y-4">
         <!-- Event Time and Status -->
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-white">
+          <h3 class="text-lg font-semibold text-color">
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
           </h3>
           <Tag :value="getVendorStatusLabel(eventOnDay)" :severity="getVendorStatusSeverity(eventOnDay)" />
@@ -175,13 +175,13 @@
         
         <!-- Merchant Info -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Establishment</label>
+          <label class="text-sm font-medium text-md-gray">Establishment</label>
           <p class="text-white">{{ getMerchantName(eventOnDay.merchant) }}</p>
         </div>
         
         <!-- Location -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Location</label>
+          <label class="text-sm font-medium text-md-gray">Location</label>
           <NuxtLink :to="eventOnDay.location_url" target="_blank" class="text-primary hover:text-primary-dark block">
             {{ eventOnDay.location_address }}
           </NuxtLink>
@@ -189,8 +189,8 @@
         
         <!-- Notes -->
         <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-400">Notes</label>
-          <p class="text-white">{{ eventOnDay.notes }}</p>
+          <label class="text-sm font-medium text-md-gray">Notes</label>
+          <p class="text-color">{{ eventOnDay.notes }}</p>
         </div>
         
         <!-- Action Buttons for Vendor -->
@@ -230,7 +230,7 @@
           <!-- Show disabled message for past events -->
           <div 
             v-else-if="eventOnDay.status === 'open' && new Date(eventOnDay.start) <= new Date()"
-            class="flex-1 text-center text-gray-400 text-sm py-2"
+            class="flex-1 text-center text-md-gray text-sm py-2"
           >
             Event has already started
           </div>
@@ -238,7 +238,7 @@
           <!-- Show disabled message for completed events -->
           <div 
             v-else-if="eventOnDay.status === 'completed'"
-            class="flex-1 text-center text-gray-400 text-sm py-2"
+            class="flex-1 text-center text-md-gray text-sm py-2"
           >
             Event completed
           </div>
@@ -246,7 +246,7 @@
           <!-- Show disabled message for booked events -->
           <div 
             v-else-if="eventOnDay.status === 'booked' && eventOnDay.vendor === vendor?.id"
-            class="flex-1 text-center text-green-400 text-sm py-2"
+            class="flex-1 text-center text-success text-sm py-2"
           >
             Event confirmed
           </div>
@@ -268,7 +268,7 @@
             <i class="pi pi-ban text-primary text-2xl"></i>
           </div>
           <div>
-            <p class="text-gray-600 dark:text-gray-300">
+            <p class="text-md-gray">
               You've used all <span class="font-semibold text-primary-dark">{{ usageLimitObject.usageLimit }}</span> 
               {{ usageLimitObject.usageType === 'requests' ? 'event requests' : 'event creations' }} 
               for this month. Choose an option below to continue.
@@ -276,7 +276,7 @@
           </div>
           <!-- Additional info -->
           <div class="text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-md-gray">
               Wait until next month for your limits to reset, or select from the options below to continue.
             </p>
           </div>
@@ -503,7 +503,7 @@ export default {
         case 'unfulfilled':
           return 'var(--error-color)' // red
         case 'closed':
-          return 'var(--text-color-secondary)' // gray
+          return 'var(--text-md-gray)' // gray
         default:
           return 'var(--primary-color)' // blue
       }
@@ -977,13 +977,13 @@ export default {
 }
 
 :deep(.fc-today-button) {
-  background-color: var(--text-color-secondary);
-  border-color: var(--text-color-secondary);
+  background-color: var(--text-md-gray);
+  border-color: var(--text-md-gray);
 }
 
 :deep(.fc-today-button:hover) {
-  background-color: var(--text-color-secondary);
-  border-color: var(--text-color-secondary);
+  background-color: var(--text-md-gray);
+  border-color: var(--text-md-gray);
   opacity: 0.8;
 }
 </style>

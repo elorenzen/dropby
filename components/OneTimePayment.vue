@@ -2,11 +2,11 @@
   <div class="one-time-payment-container">
     <!-- Payment Required Banner -->
     <div v-if="showPaymentRequired" class="payment-required-banner">
-      <div class="flex items-center gap-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-        <i class="pi pi-exclamation-triangle text-yellow-600 text-xl"></i>
+      <div class="flex items-center gap-3 p-4 bg-accent-light border border-accent-light rounded-lg">
+        <i class="pi pi-exclamation-triangle text-accent text-xl"></i>
         <div class="flex-1">
-          <h3 class="font-semibold text-yellow-800 dark:text-yellow-200">Free Plan Limit Reached</h3>
-          <p class="text-sm text-yellow-700 dark:text-yellow-300">
+          <h3 class="font-semibold text-accent-dark">Free Plan Limit Reached</h3>
+          <p class="text-sm text-accent-dark">
             You've reached your free plan limit of {{ limit }} {{ actionType }}. 
             {{ actionType === 'events' ? 'Create' : 'Request' }} one more for ${{ oneTimeFee }} or upgrade to a paid plan.
           </p>
@@ -36,23 +36,23 @@
     >
       <div class="space-y-4">
         <div class="text-center">
-          <i class="pi pi-credit-card text-4xl text-blue-600 mb-4"></i>
+          <i class="pi pi-credit-card text-4xl text-primary mb-4"></i>
           <h3 class="text-lg font-semibold mb-2">Complete One-Time Payment</h3>
-          <p class="text-text-muted text-sm">
+          <p class="text-md-gray text-sm">
             Pay ${{ oneTimeFee }} to {{ actionType === 'events' ? 'create' : 'request' }} one additional {{ actionType.slice(0, -1) }}
           </p>
         </div>
 
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <div class="bg-surface-section rounded-lg p-4">
           <div class="flex justify-between items-center mb-2">
-            <span class="text-sm text-text-muted">One-time fee:</span>
+            <span class="text-sm text-md-gray">One-time fee:</span>
             <span class="font-semibold">${{ oneTimeFee }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-sm text-text-muted">Processing fee:</span>
+            <span class="text-sm text-md-gray">Processing fee:</span>
             <span class="font-semibold">${{ processingFee.toFixed(2) }}</span>
           </div>
-          <div class="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+          <div class="border-t border-surface-border pt-2 mt-2">
             <div class="flex justify-between items-center">
               <span class="font-semibold">Total:</span>
               <span class="text-lg font-bold text-accent">${{ totalAmount.toFixed(2) }}</span>
@@ -62,17 +62,17 @@
 
         <!-- Stripe Elements -->
         <div class="space-y-3">
-          <label class="block text-sm font-medium text-text-main">Payment Method</label>
-          <div id="one-time-card-element" class="p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 min-h-[50px]"></div>
-          <div v-if="cardError" class="text-red-500 text-sm">{{ cardError }}</div>
+          <label class="block text-sm font-medium text-color">Payment Method</label>
+          <div id="one-time-card-element" class="p-3 border border-surface-border rounded-lg bg-surface-card min-h-[50px]"></div>
+          <div v-if="cardError" class="text-error text-sm">{{ cardError }}</div>
         </div>
 
         <!-- Terms -->
         <div class="flex items-start gap-2">
           <input type="checkbox" v-model="acceptedTerms" class="mt-1" />
-          <p class="text-xs text-text-muted">
-            I agree to the <a href="#" class="text-blue-500 hover:underline">Terms of Service</a> and 
-            <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a>
+          <p class="text-xs text-md-gray">
+            I agree to the <a href="#" class="text-primary hover:underline">Terms of Service</a> and 
+            <a href="#" class="text-primary hover:underline">Privacy Policy</a>
           </p>
         </div>
 
@@ -86,7 +86,7 @@
           <Button
             :label="processing ? 'Processing...' : `Pay $${totalAmount.toFixed(2)}`"
             :disabled="!acceptedTerms || processing"
-            class="flex-1 bg-accent text-background border-accent hover:bg-accent-dark"
+            class="flex-1 bg-accent text-color border-accent hover:bg-accent-dark"
             @click="processPayment"
             :loading="processing"
           />
@@ -210,7 +210,7 @@ const initializeCardElement = async () => {
           color: 'var(--text-color)',
           backgroundColor: 'transparent',
           '::placeholder': {
-            color: 'var(--text-color-secondary)',
+            color: 'var(--text-md-gray)',
           },
         },
         invalid: {

@@ -112,16 +112,16 @@
       <template #title>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-              <i class="pi pi-calendar text-green-600 dark:text-green-400"></i>
+            <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+              <i class="pi pi-calendar text-success"></i>
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Current & Upcoming Events</h3>
               <div class="flex items-center gap-2 text-sm">
                 <span class="text-text-muted">Total events: {{ filteredCurrentUpcomingEvents.length }} |</span>
-                <span v-if="openEventsCount > 0" class="text-red-600 dark:text-red-400 font-medium">open: {{ openEventsCount }}</span>
+                <span v-if="openEventsCount > 0" class="text-error font-medium">open: {{ openEventsCount }}</span>
                 <span v-if="openEventsCount > 0 && bookedEventsCount > 0" class="text-text-muted">|</span>
-                <span v-if="bookedEventsCount > 0" class="text-green-600 dark:text-green-400 font-medium">booked: {{ bookedEventsCount }}</span>
+                <span v-if="bookedEventsCount > 0" class="text-success font-medium">booked: {{ bookedEventsCount }}</span>
               </div>
             </div>
           </div>
@@ -211,8 +211,8 @@
               
               <!-- Show no vendor message if event is open -->
               <template v-else>
-                <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                  <i class="pi pi-truck text-gray-400 dark:text-gray-500"></i>
+                <div class="w-12 h-12 rounded-full bg-surface-section flex items-center justify-center">
+                  <i class="pi pi-truck text-md-gray"></i>
                 </div>
               </template>
             </template>
@@ -256,11 +256,11 @@
           </EventBaseListCard>
         </div>
         <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-calendar-times text-green-600 dark:text-green-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-success-light mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-calendar-times text-success text-2xl"></i>
           </div>
-          <p class="text-green-600 dark:text-green-400 font-medium">No upcoming events</p>
-          <p class="text-sm text-green-500 dark:text-green-300">Create new events to get started</p>
+          <p class="text-success font-medium">No upcoming events</p>
+          <p class="text-sm text-success-dark">Create new events to get started</p>
         </div>
       </template>
     </Card>
@@ -270,16 +270,16 @@
       <template #title>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <i class="pi pi-history text-gray-600 dark:text-gray-400"></i>
+            <div class="w-10 h-10 rounded-full bg-surface-section flex items-center justify-center">
+              <i class="pi pi-history text-md-gray"></i>
             </div>
             <div>
               <h3 class="text-xl font-semibold text-text-main">Past Events</h3>
               <div class="flex items-center gap-2 text-sm">
                 <span class="text-text-muted">Total events: {{ filteredPastEvents.length }} |</span>
-                <span v-if="completedEventsCount > 0" class="text-green-600 dark:text-green-400 font-medium">completed: {{ completedEventsCount }}</span>
+                <span v-if="completedEventsCount > 0" class="text-success font-medium">completed: {{ completedEventsCount }}</span>
                 <span v-if="completedEventsCount > 0 && closedEventsCount > 0" class="text-text-muted">|</span>
-                <span v-if="closedEventsCount > 0" class="text-gray-600 dark:text-gray-400 font-medium">closed: {{ closedEventsCount }}</span>
+                <span v-if="closedEventsCount > 0" class="text-md-gray font-medium">closed: {{ closedEventsCount }}</span>
               </div>
             </div>
           </div>
@@ -362,8 +362,8 @@
               
               <!-- Show no vendor message if event was closed without a vendor -->
               <template v-else>
-                <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                  <i class="pi pi-times-circle text-gray-400 dark:text-gray-500"></i>
+                <div class="w-12 h-12 rounded-full bg-surface-section flex items-center justify-center">
+                  <i class="pi pi-times-circle text-md-gray"></i>
                 </div>
               </template>
             </template>
@@ -381,7 +381,7 @@
                 <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
                 <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
                 <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Event was closed without a vendor</p>
+                <p class="text-xs text-md-gray mt-1">Event was closed without a vendor</p>
               </template>
             </template>
             
@@ -404,18 +404,18 @@
           </EventBaseListCard>
         </div>
         <div v-else-if="pastEvents.length > 0" class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-search text-gray-600 dark:text-gray-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-surface-section mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-search text-md-gray text-2xl"></i>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">No events match your filters</p>
-          <p class="text-sm text-gray-500 dark:text-gray-300">Try adjusting your search criteria</p>
+          <p class="text-md-gray font-medium">No events match your filters</p>
+          <p class="text-sm text-md-gray">Try adjusting your search criteria</p>
         </div>
         <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-inbox text-gray-600 dark:text-gray-400 text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-surface-section mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-inbox text-md-gray text-2xl"></i>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">No past events</p>
-          <p class="text-sm text-gray-500 dark:text-gray-300">Completed events will appear here</p>
+          <p class="text-md-gray font-medium">No past events</p>
+          <p class="text-sm text-md-gray">Completed events will appear here</p>
         </div>
       </template>
     </Card>
@@ -466,8 +466,8 @@
     >
       <template #header>
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-            <i class="pi pi-exclamation-triangle text-red-600 dark:text-red-400"></i>
+          <div class="w-10 h-10 rounded-full bg-error-light flex items-center justify-center">
+            <i class="pi pi-exclamation-triangle text-error"></i>
           </div>
           <div>
             <h3 class="text-xl font-semibold text-text-main">Delete Event</h3>
@@ -480,7 +480,7 @@
         <p class="text-text-main">
           This action cannot be undone. The event will be permanently deleted.
         </p>
-        <div v-if="selectedEventForDelete" class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div v-if="selectedEventForDelete" class="p-4 bg-surface-section rounded-lg">
           <p class="font-medium text-text-main">Event Details:</p>
           <p class="text-sm text-text-muted">Date: {{ new Date(selectedEventForDelete.start).toLocaleDateString() }}</p>
           <p class="text-sm text-text-muted">Time: {{ new Date(selectedEventForDelete.start).toLocaleTimeString() }} - {{ new Date(selectedEventForDelete.end).toLocaleTimeString() }}</p>
