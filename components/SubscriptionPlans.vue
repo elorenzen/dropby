@@ -138,17 +138,7 @@
 </template>
 
 <script setup lang="ts">
-// Plan interface for subscription plans display
-interface Plan {
-  id: string
-  name: string
-  price: number
-  description: string
-  features: string[]
-  buttonText: string
-  featured: boolean
-  stripePriceId: string
-}
+import { merchantPlans, vendorPlans, type Plan } from '~/constants/subscriptionPlans'
 
 // Reactive data for payment modal
 const showPaymentModal = ref(false)
@@ -171,106 +161,6 @@ watch(() => props.userTypeProp, (newValue: 'merchant' | 'vendor' | undefined) =>
   }
 })
 
-const merchantPlans: Plan[] = [
-  {
-    id: 'merchant-free',
-    name: 'Free',
-    price: 0,
-    description: 'Perfect for getting started',
-    features: [
-      '3 events per month',
-      'Basic dashboard',
-      'Email support',
-      'Standard features'
-    ],
-    buttonText: 'Get Started',
-    featured: false,
-    stripePriceId: ''
-  },
-  {
-    id: 'merchant-pro',
-    name: 'Pro',
-    price: 19,
-    description: 'For growing businesses',
-    features: [
-      'Unlimited events',
-      'Advanced analytics',
-      'Priority support',
-      'Custom branding',
-      'API access'
-    ],
-    buttonText: 'Start Pro Trial',
-    featured: true,
-    stripePriceId: 'price_1RpHqpE5B6laqC9SWeiNDf2U'
-  },
-  {
-    id: 'merchant-enterprise',
-    name: 'Enterprise',
-    price: 49,
-    description: 'For large organizations',
-    features: [
-      'Everything in Pro',
-      'Dedicated support',
-      'Custom integrations',
-      'White-label options',
-      'Advanced reporting'
-    ],
-    buttonText: 'Contact Sales',
-    featured: false,
-    stripePriceId: 'price_1RpHrHE5B6laqC9SCChY5dJB'
-  }
-]
-
-const vendorPlans: Plan[] = [
-  {
-    id: 'vendor-free',
-    name: 'Free',
-    price: 0,
-    description: 'Perfect for getting started',
-    features: [
-      '5 event requests per month',
-      'Basic profile',
-      'Email support',
-      'Standard features'
-    ],
-    buttonText: 'Get Started',
-    featured: false,
-    stripePriceId: ''
-  },
-  {
-    id: 'vendor-pro',
-    name: 'Pro',
-    price: 29,
-    description: 'For active food trucks',
-    features: [
-      'Unlimited requests',
-      'Featured placement',
-      'Advanced analytics',
-      'Priority support',
-      'Custom branding'
-    ],
-    buttonText: 'Start Pro Trial',
-    featured: true,
-    stripePriceId: 'price_1RpHsOE5B6laqC9S2hYZtXdt' // Replace with actual Stripe price ID
-  },
-  {
-    id: 'vendor-premium',
-    name: 'Premium',
-    price: 79,
-    description: 'For premium vendors',
-    features: [
-      'Everything in Pro',
-      'Priority booking',
-      'Advanced analytics',
-      'Dedicated support',
-      'API access'
-    ],
-    buttonText: 'Start Premium Trial',
-    featured: false,
-    stripePriceId: 'price_1RpHsnE5B6laqC9S9FvB3k3E' // Replace with actual Stripe price ID
-  }
-]
-
 const currentPlans = computed(() => {
   return userType.value === 'merchant' ? merchantPlans : vendorPlans
 })
@@ -286,7 +176,6 @@ const getCurrentPlanId = computed(() => {
   if (planType === 'free') return `${prefix}free`
   if (planType === 'pro') return `${prefix}pro`
   if (planType === 'premium') return `${prefix}premium`
-  if (planType === 'enterprise') return `${prefix}enterprise`
   
   // If it's already a full plan ID, return as is
   if (planType.startsWith('merchant-') || planType.startsWith('vendor-')) {
