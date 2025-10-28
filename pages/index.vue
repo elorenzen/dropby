@@ -1,40 +1,50 @@
 <template>
     <div class="page-content">
-        <!-- Hero Section -->
-        <div class="section hero-section" style="text-align: center;">
-            <div class="hero-content">
-                <div class="font-bold hero-title">Event Scheduling Made Easy!</div>
-                <div class="hero-description">
-                  Good drinks belong with good eats,
-                  and every food truck should have a spot to serve a hungry crowd.
-                  With <span class="font-bold brand-highlight">DropBy</span>, businesses can find each other and book events,
-                  increasing sales for both, and improving the overall experience for a shared customer base.
+        <!-- Hero Section with Image -->
+        <div class="hero-container">
+            <div class="hero-content-section">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        <span class="block">Where great</span>
+                        <span class="block">food meets</span>
+                        <span class="block">great drinks</span>
+                    </h1>
+                    <p class="hero-description">
+                        Discover the best food trucks at your favorite breweries and bars. 
+                        Great food, great drinks, all in one place.
+                    </p>
+                    <div class="hero-actions">
+                        <NuxtLink to="/viewer/events">
+                            <Button 
+                                label="Find Events" 
+                                class="primary-cta"
+                            >
+                                <template #icon>
+                                    <BaseIcon name="calendar" color="#fff" size="20" />
+                                </template>
+                            </Button>
+                        </NuxtLink>
+                        <NuxtLink to="/get-started">
+                            <Button 
+                                label="Get Started" 
+                                outlined
+                                class="secondary-cta"
+                            >
+                                <template #icon>
+                                    <BaseIcon name="rocket" color="var(--primary-color)" size="20" />
+                                </template>
+                            </Button>
+                        </NuxtLink>
+                    </div>
                 </div>
-                
-                <!-- Call to Action Buttons -->
-                <div class="hero-actions">
-                    <NuxtLink to="/viewer/events">
-                        <Button 
-                            label="Browse Events" 
-                            class="primary-cta"
-                        >
-                            <template #icon>
-                                <BaseIcon name="calendar" color="#fff" size="20" />
-                            </template>
-                        </Button>
-                    </NuxtLink>
-                    <NuxtLink to="/get-started">
-                        <Button 
-                            label="Get Started" 
-                            outlined
-                            class="secondary-cta"
-                        >
-                            <template #icon>
-                                <BaseIcon name="rocket" color="var(--primary-color)" size="20" />
-                            </template>
-                        </Button>
-                    </NuxtLink>
-                </div>
+            </div>
+            <div class="hero-image-section">
+                <div class="hero-image-overlay"></div>
+                <img
+                    src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2074&auto=format&fit=crop"
+                    alt="Food trucks and events"
+                    class="hero-image"
+                />
             </div>
         </div>
 
@@ -105,81 +115,18 @@
                                 </template>
                             </Button>
                         </NuxtLink>
-                        <Button 
-                            label="Learn More" 
-                            outlined
-                            class="secondary-cta"
-                            @click="scrollToFeatures"
-                        >
-                            <template #icon>
-                                <BaseIcon name="info-circle" color="var(--primary-color)" size="18" />
-                            </template>
-                        </Button>
+                        <NuxtLink to="/viewer/about">
+                            <Button 
+                                label="Learn More" 
+                                outlined
+                                class="secondary-cta"
+                            >
+                                <template #icon>
+                                    <BaseIcon name="info-circle" color="var(--primary-color)" size="18" />
+                                </template>
+                            </Button>
+                        </NuxtLink>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Features Section -->
-        <div class="section features-section" id="features">
-            <div class="section-header">
-                <h2 class="section-title">Why Choose DropBy?</h2>
-                <p class="section-subtitle">Connect, collaborate, and grow your business together</p>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <BaseIcon name="calendar" color="var(--primary-color)" size="32" />
-                    </div>
-                    <h3>Smart Scheduling</h3>
-                    <p>Intelligent event scheduling that works around your business hours and availability</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <BaseIcon name="map-marker" color="var(--primary-color)" size="32" />
-                    </div>
-                    <h3>Location-Based Matching</h3>
-                    <p>Find the perfect partners near you with our advanced location matching system</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <BaseIcon name="chart-line" color="var(--primary-color)" size="32" />
-                    </div>
-                    <h3>Boost Your Revenue</h3>
-                    <p>Increase foot traffic and sales through strategic partnerships and events</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <BaseIcon name="users" color="var(--primary-color)" size="32" />
-                    </div>
-                    <h3>Community Building</h3>
-                    <p>Build lasting relationships with other local businesses in your community</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics Section -->
-        <div class="section stats-section">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">500+</div>
-                    <div class="stat-label">Active Businesses</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">1,200+</div>
-                    <div class="stat-label">Events Created</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">$2.5M+</div>
-                    <div class="stat-label">Revenue Generated</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">4.8★</div>
-                    <div class="stat-label">Average Rating</div>
                 </div>
             </div>
         </div>
@@ -189,57 +136,11 @@
             <HomeGalleries />
         </div>
 
-        <!-- Testimonials Section -->
-        <div class="section testimonials-section">
-            <div class="section-header">
-                <h2 class="section-title">What Our Partners Say</h2>
-                <p class="section-subtitle">Real stories from real businesses</p>
-            </div>
-            
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <div class="testimonial-content">
-                        <p>"DropBy helped us increase our weekend sales by 40% through strategic food truck partnerships. The platform is incredibly easy to use!"</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-info">
-                            <strong>Sarah Chen</strong>
-                            <span>Owner, Craft Brew Co.</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="testimonial-card">
-                    <div class="testimonial-content">
-                        <p>"Finding consistent locations for our food truck was always a challenge. DropBy solved that problem and connected us with amazing venues."</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-info">
-                            <strong>Mike Rodriguez</strong>
-                            <span>Chef, Taco Truck Deluxe</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="testimonial-card">
-                    <div class="testimonial-content">
-                        <p>"The analytics and insights from DropBy have been invaluable for understanding our customer patterns and optimizing our events."</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-info">
-                            <strong>Emily Watson</strong>
-                            <span>Manager, Downtown Taproom</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- CTA Section -->
         <div class="section cta-section">
             <div class="cta-content">
-                <h2>Ready to Grow Your Business?</h2>
-                <p>Join hundreds of businesses already using DropBy to create amazing events and boost their revenue.</p>
+                <h2>Ready to Get Started?</h2>
+                <p>Join DropBy today and start creating unforgettable events that bring communities together.</p>
                 <div class="cta-buttons">
                     <NuxtLink to="/get-started">
                         <Button 
@@ -251,14 +152,14 @@
                             </template>
                         </Button>
                     </NuxtLink>
-                    <NuxtLink to="/viewer/events">
+                    <NuxtLink to="/viewer/about">
                         <Button 
-                            label="Explore Events" 
+                            label="Learn More" 
                             outlined
                             class="secondary-cta"
                         >
                             <template #icon>
-                                <BaseIcon name="search" color="var(--primary-color)" size="20" />
+                                <BaseIcon name="info-circle" color="var(--primary-color)" size="20" />
                             </template>
                         </Button>
                     </NuxtLink>
@@ -270,56 +171,80 @@
 
 <script setup lang="ts">
 useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
-
-const scrollToFeatures = () => {
-    const featuresSection = document.getElementById('features')
-    if (featuresSection) {
-        featuresSection.scrollIntoView({ behavior: 'smooth' })
-    }
-}
 </script>
 
 <style scoped>
-/* Hero Section */
-.hero-section {
-    padding: 4rem 0;
-    background: linear-gradient(135deg, rgba(from var(--primary-color) r g b / 0.1) 0%, rgba(from var(--success-color) r g b / 0.05) 100%);
+/* Hero Section with Image */
+.hero-container {
+    display: flex;
+    min-height: 70vh;
+    position: relative;
+    overflow: hidden;
     border-radius: 2rem;
     margin-bottom: 4rem;
+    background: var(--surface-ground);
 }
 
-.hero-content {
-    max-width: 800px;
-    margin: 0 auto;
+.hero-content-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-text {
+    max-width: 600px;
 }
 
 .hero-title {
-    font-size: 3rem;
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.1;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--heading-color);
+}
+
+.hero-title .block {
+    display: block;
+}
+
+.hero-title .text-primary {
+    color: var(--primary-color);
 }
 
 .hero-description {
     font-size: 1.25rem;
     margin-bottom: 2.5rem;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
+    color: var(--text-color-secondary);
     line-height: 1.6;
-}
-
-.brand-highlight {
-    color: var(--primary-color);
 }
 
 .hero-actions {
     display: flex;
     gap: 1rem;
-    justify-content: center;
     flex-wrap: wrap;
+}
+
+.hero-image-section {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--surface-ground) 0%, transparent 100%);
+    z-index: 1;
+}
+
+.hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .primary-cta {
@@ -412,11 +337,7 @@ const scrollToFeatures = () => {
     margin-top: 0.5rem;
 }
 
-/* Features Section */
-.features-section {
-    margin-bottom: 4rem;
-}
-
+/* Section Styles */
 .section-header {
     text-align: center;
     margin-bottom: 3rem;
@@ -433,141 +354,6 @@ const scrollToFeatures = () => {
     color: var(--text-color-secondary);
     max-width: 600px;
     margin: 0 auto;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    margin-top: 3rem;
-}
-
-.feature-card {
-    background: var(--surface-card);
-    padding: 2rem;
-    border-radius: 1.25rem;
-    text-align: center;
-    border: 1px solid var(--surface-border);
-    transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 40px 0 rgba(0,0,0,0.55);
-    border-color: var(--primary-color);
-}
-
-.feature-icon {
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: center;
-}
-
-.feature-card h3 {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-    color: var(--heading-color);
-}
-
-.feature-card p {
-    color: var(--text-color-secondary);
-    line-height: 1.6;
-}
-
-/* Statistics Section */
-.stats-section {
-    margin-bottom: 4rem;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-}
-
-.stat-card {
-    background: var(--surface-card);
-    padding: 2rem;
-    border-radius: 1.25rem;
-    text-align: center;
-    border: 1px solid var(--surface-border);
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 32px 0 rgba(0,0,0,0.45);
-}
-
-.stat-number {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    color: var(--text-color-secondary);
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Testimonials Section */
-.testimonials-section {
-    margin-bottom: 4rem;
-}
-
-.testimonials-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    margin-top: 3rem;
-}
-
-.testimonial-card {
-    background: var(--surface-card);
-    padding: 2rem;
-    border-radius: 1.25rem;
-    border: 1px solid var(--surface-border);
-    transition: all 0.3s ease;
-}
-
-.testimonial-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 32px 0 rgba(0,0,0,0.45);
-}
-
-.testimonial-content {
-    margin-bottom: 1.5rem;
-}
-
-.testimonial-content p {
-    color: var(--text-color-secondary);
-    line-height: 1.6;
-    font-style: italic;
-    font-size: 1rem;
-}
-
-.testimonial-author {
-    border-top: 1px solid var(--surface-border);
-    padding-top: 1rem;
-}
-
-.author-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.author-info strong {
-    color: var(--heading-color);
-    font-size: 0.875rem;
-}
-
-.author-info span {
-    color: var(--text-color-secondary);
-    font-size: 0.75rem;
 }
 
 /* CTA Section */
@@ -602,27 +388,35 @@ const scrollToFeatures = () => {
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+    .hero-container {
+        flex-direction: column;
+        min-height: auto;
+    }
+    
+    .hero-content-section {
+        order: 2;
+        padding: 2rem;
+    }
+    
+    .hero-image-section {
+        order: 1;
+        height: 50vh;
+        min-height: 300px;
+    }
+    
+    .hero-image-overlay {
+        background: linear-gradient(0deg, var(--surface-ground) 0%, transparent 100%);
+    }
+    
     .user-type-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
-    }
-    
-    .features-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .testimonials-grid {
-        grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 768px) {
     .hero-title {
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
     
     .hero-description {
@@ -643,10 +437,6 @@ const scrollToFeatures = () => {
     
     .user-type-card p {
         font-size: 1rem;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
     }
     
     .hero-actions,
@@ -672,6 +462,15 @@ const scrollToFeatures = () => {
     
     .user-type-card {
         padding: 1.5rem 1rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-image-section {
+        height: 40vh;
+        min-height: 250px;
     }
 }
 </style>
