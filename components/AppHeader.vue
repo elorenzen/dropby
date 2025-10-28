@@ -1,30 +1,28 @@
 <template>
   <div>
-    <Menubar>
+    <Menubar :model="items">
       <template #start>
         <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
         <NuxtLink to="/" class="m-2 text-xl font-bold text-primary">DropBy</NuxtLink>
+      </template>
+
+      <template #item="{ item, props, hasSubmenu }">
+          <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+              <a v-ripple :href="href" v-bind="props.action" @click="navigate">
+                  <span :class="item.icon" />
+                  <span>{{ item.label }}</span>
+              </a>
+          </router-link>
+          <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
+              <span :class="item.icon" />
+              <span>{{ item.label }}</span>
+              <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
+          </a>
       </template>
       
       <template #end>
         <!-- Not Authenticated - Show Login/Signup -->
         <div v-if="!isAuthenticated" class="flex items-center gap-2">
-
-          <!-- Public Navigation Links -->
-          <div class="hidden sm:flex items-center gap-4 ml-4">
-            <NuxtLink 
-              to="/viewer/about" 
-              class="text-text-muted hover:text-accent transition-colors"
-            >
-              How It Works
-            </NuxtLink>
-            <NuxtLink 
-              to="/viewer/events" 
-              class="text-text-muted hover:text-accent transition-colors"
-            >
-              Events
-            </NuxtLink>
-          </div>
           <InputText placeholder="Email" v-model="email" type="text" class="w-32 sm:w-auto" />
           <Password placeholder="Password" v-model="password" class="w-32 sm:w-auto" />
           <Button
@@ -47,7 +45,7 @@
             <NuxtLink 
               :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/dashboard`"
               class="text-text-muted hover:text-accent transition-colors flex items-center gap-2"
-              :class="{ 'text-accent font-medium': isCurrentRoute('dashboard') }"
+              :class="isCurrentRoute('dashboard') ? 'text-accent font-medium' : ''"
             >
               <i class="pi pi-home"></i>
               Dashboard
@@ -55,7 +53,7 @@
             <NuxtLink 
               :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/events`"
               class="text-text-muted hover:text-accent transition-colors flex items-center gap-2"
-              :class="{ 'text-accent font-medium': isCurrentRoute('events') }"
+              :class="isCurrentRoute('events') ? 'text-accent font-medium' : ''"
             >
               <i class="pi pi-calendar"></i>
               Events
@@ -63,7 +61,7 @@
             <NuxtLink 
               :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/ratings-and-reviews`"
               class="text-text-muted hover:text-accent transition-colors flex items-center gap-2"
-              :class="{ 'text-accent font-medium': isCurrentRoute('ratings-and-reviews') }"
+              :class="isCurrentRoute('ratings-and-reviews') ? 'text-accent font-medium' : ''"
             >
               <i class="pi pi-star"></i>
               Reviews
@@ -113,6 +111,32 @@ const renderKey = ref(0)
 const email = ref('')
 const password = ref('')
 const profileMenu = ref()
+
+const items = ref([
+    {
+        label: 'How It Works',
+        command: () => {
+            router.push('/about');
+        }
+    },
+    {
+        label: 'Explore',
+        items: [
+            {
+                label: 'Events',
+                command: () => { router.push('/viewer/events') }
+            },
+            {
+                label: 'Food Trucks',
+                command: () => { router.push('/food-trucks') }
+            },
+            {
+                label: 'Establishments',
+                command: () => { router.push('/establishments')}
+            }
+        ]
+    }
+]);
 
 // Check if current route matches the given section
 const isCurrentRoute = (section: string) => {
