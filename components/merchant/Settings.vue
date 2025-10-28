@@ -750,8 +750,6 @@ const getCurrentPlanName = () => {
   switch (planType) {
     case 'pro':
       return 'Pro'
-    case 'enterprise':
-      return 'Enterprise'
     case 'premium':
       return 'Premium'
     default:
@@ -766,10 +764,8 @@ const getCurrentPlanPrice = () => {
   switch (planType) {
     case 'pro':
       return 19
-    case 'enterprise':
-      return 49
     case 'premium':
-      return 79
+      return 49
     default:
       return 0
   }

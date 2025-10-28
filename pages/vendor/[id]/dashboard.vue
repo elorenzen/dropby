@@ -280,7 +280,7 @@ const subscription = ref<any>(null)
 // Computed property to determine if plan is premium (unlimited requests)
 const isPremiumPlan = computed(() => {
   if (!subscription.value) return false
-  const premiumPlans = ['pro', 'premium', 'enterprise']
+  const premiumPlans = ['pro', 'premium']
   return premiumPlans.includes(subscription.value.planType)
 })
 

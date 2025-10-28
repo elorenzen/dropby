@@ -156,7 +156,7 @@ export interface User {
   avatar_url: string | null
   updated_at: string | null
   stripe_customer_id: string | null
-  current_plan: 'free' | 'pro' | 'premium' | 'enterprise'
+  current_plan: 'free' | 'pro' | 'premium'
 }
 
 // ============================================================================
@@ -232,7 +232,7 @@ export interface Payment {
 export interface Subscription {
   id: string
   user_id: string | null
-  plan_type: 'free' | 'pro' | 'premium' | 'enterprise'
+  plan_type: 'free' | 'pro' | 'premium'
   status: 'active' | 'past_due' | 'canceled' | 'unpaid'
   stripe_subscription_id: string | null
   stripe_customer_id: string | null
@@ -270,4 +270,4 @@ export type EventStatus = 'open' | 'booked' | 'completed' | 'cancelled'
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export type ComplianceStatus = 'pending' | 'verified' | 'rejected' | 'expired'
 export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'unpaid'
-export type PlanType = 'free' | 'pro' | 'premium' | 'enterprise'
+export type PlanType = 'free' | 'pro' | 'premium'
