@@ -228,19 +228,15 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create Stripe subscription with proper structure according to Stripe API docs
-    const stripeSubscription = await stripe.subscriptions.create({
+    // Use 'default_incomplete' to allow subscriptions without payment methods (payment collected later)
+    const subscriptionParams: Stripe.SubscriptionCreateParams = {
       customer: stripeCustomerId,
       items: [
         {
           price: stripePriceId,
         },
       ],
-      payment_behavior: paymentMethodAttached ? 'default_incomplete' : 'allow_incomplete',
-      default_payment_method: paymentMethodAttached ? paymentMethodId : undefined,
-      payment_settings: { 
-        save_default_payment_method: 'on_subscription',
-        payment_method_types: ['card']
-      },
+      payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
       metadata: {
         business_id: businessId,
@@ -250,9 +246,18 @@ export default defineEventHandler(async (event) => {
       },
       collection_method: 'charge_automatically',
       description: `${actualPlanType} subscription for ${businessType}`,
-      currency: 'usd',
-      off_session: false
-    })
+    }
+
+    // Only add payment method related params if payment method is attached
+    if (paymentMethodAttached && paymentMethodId) {
+      subscriptionParams.default_payment_method = paymentMethodId
+      subscriptionParams.payment_settings = { 
+        save_default_payment_method: 'on_subscription',
+        payment_method_types: ['card']
+      }
+    }
+
+    const stripeSubscription = await stripe.subscriptions.create(subscriptionParams)
 
     // If payment method was provided and attached, try to pay the first invoice
     if (paymentMethodAttached && paymentMethodId) {
@@ -304,6 +309,16 @@ export default defineEventHandler(async (event) => {
       return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     }
 
+    // Map Stripe subscription status to our database status
+    // Stripe uses 'incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid'
+    // We'll map 'incomplete' and 'unpaid' to 'unpaid' in our system
+    let subscriptionStatus = stripeSubscription.status
+    if (stripeSubscription.status === 'incomplete' || stripeSubscription.status === 'unpaid') {
+      subscriptionStatus = 'unpaid'
+    } else if (paymentMethodAttached && stripeSubscription.status === 'active') {
+      subscriptionStatus = 'active'
+    }
+
     // Create Supabase subscription record with both customer and subscription IDs
     const { data: newSubscription, error: subscriptionError } = await client
       .from('subscriptions')
@@ -312,7 +327,7 @@ export default defineEventHandler(async (event) => {
         business_type: businessType,
         user_id: user.id,
         plan_type: actualPlanType,
-        status: paymentMethodId ? 'active' : stripeSubscription.status, // Use active if payment method provided
+        status: subscriptionStatus, // Use Stripe's status (mapped to 'unpaid' if incomplete/unpaid)
         stripe_customer_id: stripeCustomerId,
         stripe_subscription_id: stripeSubscription.id,
         current_period_start: getCurrentPeriodStart(),
@@ -348,7 +363,7 @@ export default defineEventHandler(async (event) => {
         stripeSubscriptionId: stripeSubscription.id,
         stripeCustomerId: stripeCustomerId,
         planType: actualPlanType,
-        status: paymentMethodAttached ? 'active' : stripeSubscription.status,
+        status: subscriptionStatus,
         paymentIntentId: paymentIntent?.id,
         clientSecret: paymentIntent?.client_secret
       },

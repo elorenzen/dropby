@@ -1,56 +1,15 @@
 <template>
-    <div class="card flex justify-center">
-        <Stepper value="1" class="basis-[60rem]">
+    <div class="card flex justify-center" style="background-color: var(--surface-ground) !important;">
+        <Stepper value="1" class="basis-[60rem]" style="background-color: var(--surface-ground) !important;">
             <StepList>
-                <Step value="1" :disabled="!step1Valid">Account Setup</Step>
-                <Step value="2" :disabled="!step1Valid">Business Type</Step>
-                <Step value="3" :disabled="!step1Valid || !type">Primary User Information</Step>
-                <Step value="4" :disabled="!step1Valid || !type || !step3Valid">Business Information</Step>
-                <Step value="5" :disabled="!step1Valid || !type || !step3Valid || !step4Valid">Review</Step>
+                <Step value="1">Business Type</Step>
+                <Step value="2" :disabled="!step1Valid">Primary User Information</Step>
+                <Step value="3" :disabled="!step1Valid || !step2Valid">Business Information</Step>
+                <Step value="4" :disabled="!step1Valid || !step2Valid || !step3Valid">Choose Plan</Step>
+                <Step value="5" :disabled="!step1Valid || !step2Valid || !step3Valid || !step4Valid">Review</Step>
             </StepList>
             <StepPanels>
-                <StepPanel v-slot="{ activateCallback }" value="1" class="p-8">
-                    <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold mb-4">Create Your Account</h2>
-                        <p class="text-color-secondary">Let's get you started with DropBy</p>
-                    </div>
-                    <Fluid>
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <FloatLabel variant="on">
-                                    <InputText id="signup_email" v-model="signupEmail" type="email" @blur="() => { step1Touched = true; validateStep1() }" />
-                                    <label for="signup_email">Email Address</label>
-                                </FloatLabel>
-                                <p v-if="step1Touched && step1Errors.email" class="text-error text-xs mt-1">{{ step1Errors.email }}</p>
-                            </div>
-                            <div>
-                                <FloatLabel variant="on">
-                                    <Password id="signup_password" v-model="signupPassword" @blur="() => { step1Touched = true; validateStep1() }" />
-                                    <label for="signup_password">Password</label>
-                                </FloatLabel>
-                                <p v-if="step1Touched && step1Errors.password" class="text-error text-xs mt-1">{{ step1Errors.password }}</p>
-                            </div>
-                            <div>
-                                <FloatLabel variant="on">
-                                    <Password id="confirm_password" v-model="confirmPassword" @blur="() => { step1Touched = true; validateStep1() }" />
-                                    <label for="confirm_password">Confirm Password</label>
-                                </FloatLabel>
-                                <p v-if="step1Touched && step1Errors.confirmPassword" class="text-error text-xs mt-1">{{ step1Errors.confirmPassword }}</p>
-                            </div>
-                        </div>
-                    </Fluid>
-                    <div class="flex justify-end">
-                        <Button
-                            label="Create Account"
-                            :disabled="!step1Valid || accountCreating"
-                            icon="pi pi-arrow-right"
-                            iconPos="right"
-                            @click="createAccount(activateCallback)"
-                            :loading="accountCreating"
-                        />
-                    </div>
-                </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="2" class="p-8">
+                <StepPanel v-slot="{ activateCallback }" value="1" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">What type of business are you?</h2>
                         <p class="text-color-secondary">This helps us customize your experience</p>
@@ -97,63 +56,87 @@
                             </Card>
                         </div>
                     </div>
-                    <div class="flex justify-between">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
+                    <div class="flex justify-end" style="margin-top: 3rem; padding-top: 2rem;">
                         <Button
                             :label="!type ? 'Continue' : `Continue as ${type.charAt(0).toUpperCase() + type.slice(1)}`"
                             :disabled="!type"
+                            severity="secondary"
                             icon="pi pi-arrow-right"
                             iconPos="right"
-                            @click="activateCallback('3')"
+                            @click="activateCallback('2')"
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="3" class="p-8">
+                <StepPanel v-slot="{ activateCallback }" value="2" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Tell us about yourself</h2>
                         <p class="text-color-secondary">Primary contact information</p>
                     </div>
                     <div class="flex flex-col">
                         <Fluid>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputText id="first_name" v-model="first" @blur="validateStep3" />
+                                        <InputText id="first_name" v-model="first" @blur="validateStep2" />
                                         <label for="first_name">First Name</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.first" class="text-error text-xs mt-1">{{ step3Errors.first }}</p>
+                                    <p v-if="step2Errors.first" class="text-error text-xs mt-1">{{ step2Errors.first }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputText id="last_name" v-model="last" @blur="validateStep3" />
+                                        <InputText id="last_name" v-model="last" @blur="validateStep2" />
                                         <label for="last_name">Last Name</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.last" class="text-error text-xs mt-1">{{ step3Errors.last }}</p>
+                                    <p v-if="step2Errors.last" class="text-error text-xs mt-1">{{ step2Errors.last }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputText id="email" v-model="email" disabled />
+                                        <InputText id="email" v-model="email" type="email" @blur="validateStep2" />
                                         <label for="email">Email</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.email" class="text-error text-xs mt-1">{{ step3Errors.email }}</p>
+                                    <p v-if="step2Errors.email" class="text-error text-xs mt-1">{{ step2Errors.email }}</p>
                                 </div>
                                 <div>
                                     <FloatLabel variant="on">
-                                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" @blur="validateStep3" />
+                                        <InputMask id="phone" v-model="phone" mask="(999) 999-9999" @blur="validateStep2" />
                                         <label for="phone">Phone</label>
                                     </FloatLabel>
-                                    <p v-if="step3Errors.phone" class="text-error text-xs mt-1">{{ step3Errors.phone }}</p>
+                                    <p v-if="step2Errors.phone" class="text-error text-xs mt-1">{{ step2Errors.phone }}</p>
                                 </div>
-                                <div class="card flex justify-center">
-                                    <InputSwitch v-model="isAdmin" :disabled="true" class="mt-2" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mt-4">
+                                <div class="flex items-center gap-3">
+                                    <label class="text-color">Is Admin</label>
+                                    <InputSwitch v-model="isAdmin" :disabled="true" />
                                 </div>
-                                <div class="card flex justify-center">
-                                    <InputSwitch v-model="available" class="mt-2" />
+                                <div class="flex items-center gap-3">
+                                    <label class="text-color">Available for Contact</label>
+                                    <InputSwitch v-model="available" />
                                 </div>
                             </div>
                         </Fluid>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
+                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
+                        <Button
+                            label="Next"
+                            severity="secondary"
+                            icon="pi pi-arrow-right"
+                            iconPos="right"
+                            :disabled="!step2Valid"
+                            @click="activateCallback('3')"
+                        />
+                    </div>
+                </StepPanel>
+                <StepPanel v-slot="{ activateCallback }" value="3" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold mb-4">Business Information</h2>
+                        <p class="text-color-secondary">Tell us about your {{ type }}</p>
+                    </div>
+                    <div v-if="type" class="flex flex-col">
+                        <NewBusiness @objUpdated="objUpdated" :bizType="type" />
+                    </div>
+                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
                         <Button
                             label="Next"
@@ -164,18 +147,63 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="4" class="p-8">
-                    <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold mb-4">Business Information</h2>
-                        <p class="text-color-secondary">Tell us about your {{ type }}</p>
+                <StepPanel v-slot="{ activateCallback }" value="4" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
+                    <div v-if="type" class="plan-selection-container">
+                        <div class="text-center mb-6">
+                            <h2 class="text-3xl font-bold text-color mb-2">Choose Your Plan</h2>
+                            <p class="text-md-gray">Select the perfect plan for your business needs</p>
+                        </div>
+
+                        <div class="plans-grid">
+                            <div 
+                                v-for="plan in availablePlans" 
+                                :key="plan.id"
+                                class="plan-card"
+                                :class="{ 
+                                    'featured': plan.featured,
+                                    'selected': selectedPlan?.id === plan.id
+                                }"
+                                @click="handlePlanSelection(plan)"
+                            >
+                                <div class="plan-header">
+                                    <h4>{{ plan.name }}</h4>
+                                    <p>{{ plan.description }}</p>
+                                </div>
+
+                                <div class="plan-divider" />
+                                
+                                <div class="plan-price">
+                                    <span class="price">${{ plan.price }}</span>
+                                    <span class="period">per month</span>
+                                </div>
+                                
+                                <div class="plan-divider" />
+                                
+                                <ul class="plan-features">
+                                    <li v-for="feature in plan.features" :key="feature">
+                                        <i class="pi pi-check-circle icon-success" />
+                                        <span>{{ feature }}</span>
+                                    </li>
+                                </ul>
+                                
+                                <Button 
+                                    :label="selectedPlan?.id === plan.id ? 'Selected' : plan.buttonText"
+                                    rounded
+                                    class="plan-button"
+                                    :disabled="selectedPlan?.id === plan.id"
+                                    @click.stop="handlePlanSelection(plan)"
+                                />
+                            </div>
+                        </div>
+
+                        <p v-if="step4Errors.selectedPlan" class="text-error text-sm mt-4 text-center">
+                            {{ step4Errors.selectedPlan }}
+                        </p>
                     </div>
-                    <div v-if="type" class="flex flex-col">
-                        <NewBusiness @objUpdated="objUpdated" :bizType="type" />
-                    </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('3')" />
                         <Button
-                            label="Review"
+                            label="Continue to Review"
                             icon="pi pi-arrow-right"
                             iconPos="right"
                             :disabled="!step4Valid"
@@ -183,7 +211,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="5" class="p-8">
+                <StepPanel v-slot="{ activateCallback }" value="5" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Review Your Information</h2>
                         <p class="text-color-secondary">Please review before submitting</p>
@@ -191,27 +219,76 @@
                     
                     <div class="bg-surface-section p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">Primary User</h4>
-                    <p class="m-2"><span class="font-bold">Name: </span>{{ first }} {{ last }}</p>
-                    <p class="m-2"><span class="font-bold">Email: </span>{{ email }}</p>
-                    <p class="m-2"><span class="font-bold">Phone: </span>{{ phone }}</p>
-                    <p class="m-2"><span class="font-bold">Available for contact: </span>
-                        {{ available ? 'Yes' : 'No' }}
-                    </p>
+                        <p class="m-2"><span class="font-bold">Name: </span>{{ first }} {{ last }}</p>
+                        <p class="m-2"><span class="font-bold">Email: </span>{{ email }}</p>
+                        <p class="m-2"><span class="font-bold">Phone: </span>{{ phone }}</p>
+                        <p class="m-2"><span class="font-bold">Available for contact: </span>
+                            {{ available ? 'Yes' : 'No' }}
+                        </p>
                     </div>
 
                     <div class="bg-surface-section p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">{{ type }} Information</h4>
-                    <p class="m-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
-                    <p class="m-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>
-                    <p class="m-2"><span class="font-bold">Website: </span>{{ website ? website : '-'}}</p>
-                    <p class="m-2"><span class="font-bold">Instagram: </span>{{ ig ? ig : '-' }}</p>
-                    <p class="m-2"><span class="font-bold">Phone: </span>{{ bizEmail }}</p>
-                    <p class="m-2"><span class="font-bold">Email: </span>{{ bizPhone }}</p>
+                        <p class="m-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
+                        <p class="m-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>
+                        <p class="m-2"><span class="font-bold">Website: </span>{{ website ? website : '-'}}</p>
+                        <p class="m-2"><span class="font-bold">Instagram: </span>{{ ig ? ig : '-' }}</p>
+                        <p class="m-2"><span class="font-bold">Phone: </span>{{ bizEmail }}</p>
+                        <p class="m-2"><span class="font-bold">Email: </span>{{ bizPhone }}</p>
                     </div>
 
-                    <div class="flex justify-between">
+                    <div v-if="selectedPlan" class="bg-surface-section p-6 rounded-lg mb-6">
+                        <h4 class="text-xl font-bold mb-4">Selected Plan</h4>
+                        <p class="m-2"><span class="font-bold">Plan: </span>{{ selectedPlan.name }}</p>
+                        <p class="m-2"><span class="font-bold">Price: </span>${{ selectedPlan.price }}/month</p>
+                        <p class="m-2" v-if="selectedPlan.price === 0">
+                            <span class="font-bold">Status: </span>Free plan selected
+                        </p>
+                        <p class="m-2" v-else>
+                            <span class="font-bold">Status: </span>Payment will be collected after account creation
+                        </p>
+                    </div>
+
+                    <div class="border-t pt-6 mt-6">
+                        <h4 class="text-xl font-bold mb-4">Create Your Account</h4>
+                        <p class="text-color-secondary mb-4">Set a password to complete your registration</p>
+                        <Fluid>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <FloatLabel variant="on">
+                                        <InputText id="signup_email" :model-value="signupEmail" type="email" disabled />
+                                        <label for="signup_email">Email Address</label>
+                                    </FloatLabel>
+                                </div>
+                                <div></div>
+                                <div>
+                                    <FloatLabel variant="on">
+                                        <Password id="signup_password" v-model="signupPassword" @blur="() => { step5Touched = true; validateStep5() }" />
+                                        <label for="signup_password">Password</label>
+                                    </FloatLabel>
+                                    <p v-if="step5Touched && step5Errors.password" class="text-error text-xs mt-1">{{ step5Errors.password }}</p>
+                                </div>
+                                <div>
+                                    <FloatLabel variant="on">
+                                        <Password id="confirm_password" v-model="confirmPassword" @blur="() => { step5Touched = true; validateStep5() }" />
+                                        <label for="confirm_password">Confirm Password</label>
+                                    </FloatLabel>
+                                    <p v-if="step5Touched && step5Errors.confirmPassword" class="text-error text-xs mt-1">{{ step5Errors.confirmPassword }}</p>
+                                </div>
+                            </div>
+                        </Fluid>
+                    </div>
+
+                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('4')" />
-                        <Button label="Complete Setup" @click="submit" :loading="submitting" />
+                        <Button 
+                            label="Complete Setup" 
+                            icon="pi pi-check"
+                            iconPos="right"
+                            @click="submit" 
+                            :loading="submitting" 
+                            :disabled="!step5Valid" 
+                        />
                     </div>
                 </StepPanel>
             </StepPanels>
@@ -224,21 +301,31 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
+import { merchantPlans, vendorPlans, type Plan } from '~/constants/subscriptionPlans'
 
 const supabase = useSupabaseClient()
 const authUser = useSupabaseUser()
+const route = useRoute()
 
-// Step 1: Account Setup
-const signupEmail = ref('')
-const signupPassword = ref('')
-const confirmPassword = ref('')
-const accountCreating = ref(false)
-const step1Touched = ref(false)
-
-// Step 2: Business Type
+// Step 1: Business Type
 const type = ref<'vendor' | 'merchant' | null>(null)
 
-// Step 3: User Information
+// Check for pre-selected plan from query params
+watch(type, (newType: 'vendor' | 'merchant' | null) => {
+    if (newType) {
+        const planParam = route.query.plan as string
+        if (planParam) {
+            // Find the plan based on query param (e.g., "merchant-pro", "vendor-premium")
+            const plans = newType === 'merchant' ? merchantPlans : vendorPlans
+            const plan = plans.find(p => p.id === planParam || p.id === `${newType}-${planParam}`)
+            if (plan) {
+                selectedPlan.value = plan
+            }
+        }
+    }
+})
+
+// Step 2: User Information
 const first = ref('')
 const last = ref('')
 const email = ref('')
@@ -246,7 +333,7 @@ const phone = ref('')
 const isAdmin = ref(true)
 const available = ref(true)
 
-// Step 4: Business Information
+// Step 3: Business Information
 const bizName = ref('')
 const bizDesc = ref('')
 const website = ref('')
@@ -254,6 +341,15 @@ const ig = ref('')
 const bizEmail = ref('')
 const bizPhone = ref('')
 const imageUrl = ref('https://ionicframework.com/docs/img/demos/card-media.png')
+
+// Step 4: Subscription Plan Selection
+const selectedPlan = ref<any>(null)
+
+// Step 5: Review & Account Setup (password only, email pre-filled)
+const signupEmail = computed(() => email.value) // Pre-filled from Step 2
+const signupPassword = ref('')
+const confirmPassword = ref('')
+const step5Touched = ref(false)
 
 // Vendor specific
 const cuisine = ref<string[]>([])
@@ -274,12 +370,39 @@ const errDialog = ref(false)
 
 // Validation errors
 const step1Errors = ref<Record<string, string>>({})
+const step2Errors = ref<Record<string, string>>({})
 const step3Errors = ref<Record<string, string>>({})
 const step4Errors = ref<Record<string, string>>({})
+const step5Errors = ref<Record<string, string>>({})
 
 // Zod schemas
 const step1Schema = z.object({
+    type: z.enum(['merchant', 'vendor'], {
+        errorMap: () => ({ message: 'Please select a business type' })
+    })
+})
+
+const step2Schema = z.object({
+    first: z.string().min(1, 'First name is required'),
+    last: z.string().min(1, 'Last name is required'),
     email: z.string().min(1, 'Email is required').email('Invalid email format'),
+    phone: z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Invalid phone format. Use (555) 555-5555')
+})
+
+const step3Schema = z.object({
+    name: z.string().min(1, 'Business name is required'),
+    desc: z.string().min(1, 'Description is required'),
+    email: z.string().min(1, 'Business email is required').email('Invalid email format'),
+    phone: z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Invalid phone format. Use (555) 555-5555')
+})
+
+const step4Schema = z.object({
+    selectedPlan: z.any().refine((val: any) => val !== null && val !== undefined, {
+        message: 'Please select a subscription plan'
+    })
+})
+
+const step5Schema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password')
 }).refine((data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword, {
@@ -287,28 +410,11 @@ const step1Schema = z.object({
     path: ["confirmPassword"]
 })
 
-const step3Schema = z.object({
-    first: z.string().min(1, 'First name is required'),
-    last: z.string().min(1, 'Last name is required'),
-    email: z.string().min(1, 'Email is required').email('Invalid email format'),
-    phone: z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Invalid phone format. Use (555) 555-5555')
-})
-
-const step4Schema = z.object({
-    name: z.string().min(1, 'Business name is required'),
-    desc: z.string().min(1, 'Description is required'),
-    email: z.string().min(1, 'Business email is required').email('Invalid email format'),
-    phone: z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Invalid phone format. Use (555) 555-5555')
-})
-
 // Validation functions
 const validateStep1 = () => {
-    step1Touched.value = true
     try {
         step1Schema.parse({
-            email: signupEmail.value,
-            password: signupPassword.value,
-            confirmPassword: confirmPassword.value
+            type: type.value
         })
         step1Errors.value = {}
     } catch (error: unknown) {
@@ -322,13 +428,33 @@ const validateStep1 = () => {
     }
 }
 
-const validateStep3 = () => {
+const validateStep2 = () => {
     try {
-        step3Schema.parse({
+        step2Schema.parse({
             first: first.value,
             last: last.value,
             email: email.value,
             phone: phone.value
+        })
+        step2Errors.value = {}
+    } catch (error: unknown) {
+        if (error instanceof z.ZodError) {
+            step2Errors.value = {}
+            error.errors.forEach((err: z.ZodIssue) => {
+                const field = err.path[0] as string
+                step2Errors.value[field] = err.message
+            })
+        }
+    }
+}
+
+const validateStep3 = () => {
+    try {
+        step3Schema.parse({
+            name: bizName.value,
+            desc: bizDesc.value,
+            email: bizEmail.value,
+            phone: bizPhone.value
         })
         step3Errors.value = {}
     } catch (error: unknown) {
@@ -345,10 +471,7 @@ const validateStep3 = () => {
 const validateStep4 = () => {
     try {
         step4Schema.parse({
-            name: bizName.value,
-            desc: bizDesc.value,
-            email: bizEmail.value,
-            phone: bizPhone.value
+            selectedPlan: selectedPlan.value
         })
         step4Errors.value = {}
     } catch (error: unknown) {
@@ -362,12 +485,34 @@ const validateStep4 = () => {
     }
 }
 
+const validateStep5 = () => {
+    step5Touched.value = true
+    try {
+        step5Schema.parse({
+            password: signupPassword.value,
+            confirmPassword: confirmPassword.value
+        })
+        step5Errors.value = {}
+    } catch (error: unknown) {
+        if (error instanceof z.ZodError) {
+            step5Errors.value = {}
+            error.errors.forEach((err: z.ZodIssue) => {
+                const field = err.path[0] as string
+                step5Errors.value[field] = err.message
+            })
+        }
+    }
+}
+
 // Step validation computed properties
 const step1Valid = computed(() => {
-    if (step1Touched.value) {
-        validateStep1()
-    }
+    validateStep1()
     return Object.keys(step1Errors.value).length === 0
+})
+
+const step2Valid = computed(() => {
+    validateStep2()
+    return Object.keys(step2Errors.value).length === 0
 })
 
 const step3Valid = computed(() => {
@@ -376,36 +521,34 @@ const step3Valid = computed(() => {
 })
 
 const step4Valid = computed(() => {
+    // Access selectedPlan.value to track the dependency
+    const plan = selectedPlan.value
     validateStep4()
-    return Object.keys(step4Errors.value).length === 0
+    return Object.keys(step4Errors.value).length === 0 && plan !== null && plan !== undefined
+})
+
+const step5Valid = computed(() => {
+    if (step5Touched.value) {
+        validateStep5()
+    }
+    return Object.keys(step5Errors.value).length === 0
+})
+
+// Available plans based on type
+const availablePlans = computed(() => {
+    return type.value === 'merchant' ? merchantPlans : vendorPlans
 })
 
 // Methods
-const createAccount = async (activateCallback?: Function) => {
-    if (!step1Valid.value) return
-    
-    accountCreating.value = true
-    try {
-        const { data, error } = await supabase.auth.signUp({
-            email: signupEmail.value,
-            password: signupPassword.value
-        })
-        
-        if (error) {
-            throwErr('Account Creation', error.message)
-        } else if (data.user) {
-            // Set email for next step
-            email.value = signupEmail.value
-            snackbar.value = true
-            snacktext.value = 'Account created successfully! Please check your email for verification.'
-            if (activateCallback) activateCallback('2') // Move to next step
-        }
-    } catch (err) {
-        console.error('Account creation error:', err)
-        throwErr('Account Creation', 'Failed to create account. Please try again.')
-    } finally {
-        accountCreating.value = false
-    }
+const handlePlanSelection = (plan: Plan) => {
+    console.log('Plan selected:', plan)
+    // During onboarding, we just store the plan selection
+    // Payment will be collected after account creation
+    selectedPlan.value = plan
+    // Validate step 4 when a plan is selected
+    validateStep4()
+    console.log('Selected plan value:', selectedPlan.value)
+    console.log('Step 4 valid:', step4Valid.value)
 }
 
 const objUpdated = (obj: any) => {
@@ -424,16 +567,37 @@ const objUpdated = (obj: any) => {
 }
 
 const submit = async () => {
-    if (!authUser.value?.id || !type.value) {
+    if (!type.value) {
         throwErr('Submission Error', 'Missing required information')
         return
     }
 
     submitting.value = true
-    const userId = authUser.value.id
     const typeId = uuidv4()
 
     try {
+        // Create account first to get user ID
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email.value, // Use email from Step 2
+            password: signupPassword.value
+        })
+        
+        if (authError) {
+            throwErr('Account Creation', authError.message)
+            submitting.value = false
+            return
+        }
+        
+        if (!authData.user?.id) {
+            throwErr('Account Creation', 'Failed to create account')
+            submitting.value = false
+            return
+        }
+        
+        const userId = authData.user.id
+        
+        // Sync email value
+        email.value = signupEmail.value
         // Create user in database
     const userObj = {
         id: userId,
@@ -512,17 +676,47 @@ const submit = async () => {
             // Continue without Stripe customer ID for free subscription
         }
 
-        // Create free subscription for the new business
-        const { createFreeSubscription } = useSubscription()
-        const { data: subscriptionData, error: subscriptionErr } = await createFreeSubscription(
-            typeId, 
-            type.value, 
-            userId, 
-            stripeCustomerId || undefined
-        )
+        // Create subscription based on selected plan
+        let subscriptionData: any = null
+        let subscriptionErr: any = null
+
+        if (selectedPlan.value && selectedPlan.value.price > 0) {
+            // Create paid subscription with allow_incomplete (no payment method yet)
+            // This creates a subscription with status 'incomplete'/'unpaid' in Stripe
+            try {
+                const response = await $fetch('/api/subscriptions/create', {
+                    method: 'POST',
+                    body: {
+                        planType: selectedPlan.value.id,
+                        stripePriceId: selectedPlan.value.stripePriceId
+                        // No paymentMethodId - this creates an incomplete/unpaid subscription
+                    }
+                }) as any
+                
+                if (response.success) {
+                    subscriptionData = response.subscription
+                } else {
+                    subscriptionErr = new Error('Failed to create subscription')
+                }
+            } catch (error: any) {
+                console.error('Error creating paid subscription:', error)
+                subscriptionErr = error
+            }
+        } else {
+            // Create free subscription
+            const { createFreeSubscription } = useSubscription()
+            const { data, error } = await createFreeSubscription(
+                typeId, 
+                type.value, 
+                userId, 
+                stripeCustomerId || undefined
+            )
+            subscriptionData = data
+            subscriptionErr = error
+        }
 
         if (subscriptionErr) {
-            console.error('Failed to create free subscription:', subscriptionErr)
+            console.error('Failed to create subscription:', subscriptionErr)
             // Don't fail the whole operation if subscription creation fails
             // The business was created successfully
         } else if (subscriptionData?.id) {
@@ -537,11 +731,11 @@ const submit = async () => {
         }
 
         // Success
-            snackbar.value = true
-            snacktext.value = `${type.value} Created! An email confirmation has been sent. You will now be redirected.`
+        snackbar.value = true
+        snacktext.value = `${type.value} Created! An email confirmation has been sent.`
         
-        // Redirect to business dashboard
-        await navigateTo(`/${type.value}/${typeId}/dashboard`)
+        // Always redirect to homepage - payment will be collected after sign-in
+        await navigateTo('/')
         
     } catch (err) {
         console.error('Submission error:', err)
@@ -559,5 +753,189 @@ const throwErr = (title: string, msg: string) => {
 </script>
 
 <style scoped>
+/* Force dark background on StepPanels - NUCLEAR OPTION */
+:deep(.p-stepper),
+:deep(.p-stepper *),
+:deep(.p-stepper-panel),
+:deep(.p-stepper-panel *),
+:deep(.p-stepper-panel-content),
+:deep(.p-stepper-panel-content *),
+:deep(.p-stepper .p-stepper-panel),
+:deep(.p-stepper .p-stepper-panel *),
+:deep([data-pc-section="content"]),
+:deep([data-pc-section="content"] *),
+:deep([data-pc-name="stepperpanel"]),
+:deep([data-pc-name="stepperpanel"] *) {
+    background-color: var(--surface-ground) !important;
+    background: var(--surface-ground) !important;
+}
+
+/* Target ALL possible PrimeVue StepPanel elements */
+:deep(.p-stepper .p-stepper-panel > div),
+:deep(.p-stepper .p-stepper-panel > div > div),
+:deep(.p-stepper-panel[data-p-panel]),
+:deep(.p-stepper .p-stepper-panels),
+:deep(.p-stepper .p-stepper-panels *) {
+    background-color: var(--surface-ground) !important;
+    background: var(--surface-ground) !important;
+}
+
+/* Override any white or light backgrounds specifically */
+:deep(.p-stepper),
+:deep(.p-stepper-panel),
+:deep(.p-stepper-panel-content),
+:deep([data-pc-section="content"]),
+:deep(.p-stepper-panels),
+:deep(.p-stepper-panels *) {
+    background-color: var(--surface-ground) !important;
+    background: var(--surface-ground) !important;
+}
+
+/* Plan Selection Styles */
+.plan-selection-container {
+    max-width: 80rem;
+    margin: 0 auto;
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .plans-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.plans-grid .plan-card {
+    min-width: 0;
+}
+
+.plan-card {
+    background: var(--surface-card);
+    padding: 2rem;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border: 1px solid var(--surface-border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.plan-card.selected {
+    border: 2px solid var(--primary-color) !important;
+}
+
+.plan-card.featured:not(.selected) {
+    border: 1px solid var(--surface-border);
+    box-shadow: none;
+}
+
+.plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 40px 0 rgba(0,0,0,0.55);
+    border-color: var(--primary-color);
+}
+
+.plan-header h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--heading-color);
+}
+
+.plan-header p {
+    color: var(--text-color-secondary);
+    line-height: 1.6;
+}
+
+.plan-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--surface-border);
+}
+
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.plan-price .price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+}
+
+.plan-price .period {
+    font-size: 1rem;
+    color: var(--text-color-secondary);
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-color-secondary);
+}
+
+.plan-features .icon-success {
+    color: var(--success-color);
+    font-size: 1.125rem;
+}
+
+.plan-features span {
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.plan-button {
+    width: 100%;
+}
+
+/* Fix InputSwitch/ToggleSwitch visibility - PrimeVue v4 uses p-toggleswitch */
+:deep(.p-toggleswitch) {
+    display: inline-block !important;
+    width: 3rem !important;
+    height: 1.75rem !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+:deep(.p-toggleswitch-slider) {
+    background: #495057 !important;
+    border: 1px solid #495057 !important;
+    border-radius: 30px !important;
+}
+
+:deep(.p-toggleswitch-slider:before) {
+    background: #ffffff !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+}
+
+:deep(.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider) {
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+:deep(.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider:before) {
+    background: #ffffff !important;
+    transform: translateX(1.25rem) !important;
+}
 
 </style>

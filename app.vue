@@ -120,6 +120,42 @@ if (user.value) {
   await userStore.setUser(foundUser)
 }
 
+// Check for incomplete/unpaid subscriptions after user is loaded
+const checkUnpaidSubscription = async () => {
+  if (!user.value) return
+  
+  const currentUser = userStore.getUser
+  if (!currentUser || !currentUser.type) return
+  
+  const businessType = currentUser.type
+  const businessIdKey = `associated_${businessType}_id`
+  const businessId = currentUser[businessIdKey]
+  
+  if (!businessId) return
+  
+  try {
+    // Check for unpaid/incomplete subscriptions
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('business_id', businessId)
+      .eq('business_type', businessType)
+      .in('status', ['unpaid', 'incomplete'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    
+    if (subscription) {
+      // Redirect to settings page with subscription tab to complete payment
+      const router = useRouter()
+      await router.push(`/settings/${businessId}?activeTab=2&completePayment=true`)
+    }
+  } catch (error) {
+    // No unpaid subscription found, or error - continue normally
+    console.log('No unpaid subscription found or error:', error)
+  }
+}
+
 onMounted(async () => {
   await subscribeToEvents()
   await subscribeToUsers()
@@ -127,6 +163,8 @@ onMounted(async () => {
   await subscribeToMerchants()
   await subscribeToMenuItems()
   
+  // Check for unpaid subscriptions after everything is loaded
+  await checkUnpaidSubscription()
 })
 // console.log('user: ', user.user)
         // Get necessary script for Map initializtion (google maps API key required!!)
