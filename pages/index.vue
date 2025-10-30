@@ -107,7 +107,7 @@
                     <div class="user-type-actions">
                         <NuxtLink to="/get-started">
                             <Button 
-                                label="Start Free Trial" 
+                                label="Get Started" 
                                 class="primary-cta"
                             >
                                 <template #icon>
@@ -144,7 +144,7 @@
                 <div class="cta-buttons">
                     <NuxtLink to="/get-started">
                         <Button 
-                            label="Start Free Trial" 
+                            label="Get Started" 
                             class="primary-cta"
                         >
                             <template #icon>

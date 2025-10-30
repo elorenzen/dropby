@@ -37,7 +37,7 @@ export const merchantPlans: Plan[] = [
       'Date range creation',
       'Priority support'
     ],
-    buttonText: 'Start Pro Trial',
+    buttonText: 'Start Pro',
     featured: true,
     stripePriceId: 'price_1RpHqpE5B6laqC9SWeiNDf2U'
   },
@@ -86,7 +86,7 @@ export const vendorPlans: Plan[] = [
       'Preferred vendor status',
       'Priority support'
     ],
-    buttonText: 'Start Pro Trial',
+    buttonText: 'Start Pro',
     featured: true,
     stripePriceId: 'price_1RpHsOE5B6laqC9S2hYZtXdt'
   },

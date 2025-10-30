@@ -255,7 +255,7 @@
         <div class="cta-buttons">
           <NuxtLink to="/get-started">
             <Button 
-              label="Start Free Trial" 
+              label="Get Started" 
               class="primary-cta"
             >
               <template #icon>
