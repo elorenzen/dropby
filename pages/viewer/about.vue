@@ -131,7 +131,7 @@
             </li>
           </ul>
           
-          <NuxtLink to="/get-started">
+          <NuxtLink :to="`/get-started?businessType=merchant&plan=${plan.id}`">
             <Button :label="plan.buttonText" rounded class="plan-button" />
           </NuxtLink>
         </div>
@@ -171,7 +171,7 @@
             </li>
           </ul>
           
-          <NuxtLink to="/get-started">
+          <NuxtLink :to="`/get-started?businessType=vendor&plan=${plan.id}`">
             <Button :label="plan.buttonText" rounded class="plan-button" />
           </NuxtLink>
         </div>

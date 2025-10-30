@@ -1,6 +1,6 @@
 <template>
     <div class="card flex justify-center" style="background-color: var(--surface-ground) !important;">
-        <Stepper value="1" class="basis-[60rem]" style="background-color: var(--surface-ground) !important;">
+        <Stepper :value="currentStep" class="basis-[60rem]" style="background-color: var(--surface-ground) !important;">
             <StepList>
                 <Step value="1">Business Type</Step>
                 <Step value="2" :disabled="!step1Valid">Primary User Information</Step>
@@ -310,20 +310,29 @@ const route = useRoute()
 // Step 1: Business Type
 const type = ref<'vendor' | 'merchant' | null>(null)
 
-// Check for pre-selected plan from query params
-watch(type, (newType: 'vendor' | 'merchant' | null) => {
-    if (newType) {
-        const planParam = route.query.plan as string
-        if (planParam) {
-            // Find the plan based on query param (e.g., "merchant-pro", "vendor-premium")
-            const plans = newType === 'merchant' ? merchantPlans : vendorPlans
-            const plan = plans.find(p => p.id === planParam || p.id === `${newType}-${planParam}`)
+// Step 4: Subscription Plan Selection (declared early for use in watch)
+const selectedPlan = ref<any>(null)
+
+// Handle query params on mount and route changes
+watch(() => route.query, (query: Record<string, any>) => {
+    // Set business type from query param
+    if (query.businessType === 'merchant' || query.businessType === 'vendor') {
+        type.value = query.businessType as 'merchant' | 'vendor'
+    }
+    
+    // Set plan from query param (use businessType from query if type.value not set yet)
+    if (query.plan) {
+        const businessType = type.value || query.businessType
+        if (businessType === 'merchant' || businessType === 'vendor') {
+            const planParam = query.plan as string
+            const plans = businessType === 'merchant' ? merchantPlans : vendorPlans
+            const plan = plans.find(p => p.id === planParam || p.id === `${businessType}-${planParam}`)
             if (plan) {
                 selectedPlan.value = plan
             }
         }
     }
-})
+}, { immediate: true })
 
 // Step 2: User Information
 const first = ref('')
@@ -342,8 +351,13 @@ const bizEmail = ref('')
 const bizPhone = ref('')
 const imageUrl = ref('https://ionicframework.com/docs/img/demos/card-media.png')
 
-// Step 4: Subscription Plan Selection
-const selectedPlan = ref<any>(null)
+// Stepper current step - defaults to 1, but starts at 2 if businessType is provided
+const currentStep = computed(() => {
+    if (route.query.businessType) {
+        return '2'
+    }
+    return '1'
+})
 
 // Step 5: Review & Account Setup (password only, email pre-filled)
 const signupEmail = computed(() => email.value) // Pre-filled from Step 2
