@@ -222,6 +222,7 @@ const route = useRoute()
 
 const user = ref<User | null>(userStore.user as User | null)
 const vendor = ref<Vendor | null>((await vendorStore.getVendorById(user.value?.associated_vendor_id || '')) as unknown as Vendor | null)
+const subscriptionStore = useSubscriptionStore()
 
 // Load timeline data
 const timelineStore = useTimelineStore()
@@ -247,6 +248,10 @@ const { data: sentReviews, error: sentReviewsError } = await supabase
   .eq('sender_id', route.params.id)
   .order('created_at', { ascending: false })
 await reviewStore.setSentReviews(sentReviews || [])
+
+await subscriptionStore.setActiveSubscription(route.params.id as string, 'vendor')
+const activeSubscription = subscriptionStore.getActiveSubscription
+console.log('Active subscription:', activeSubscription)
 
 useSeoMeta({ title: () => `Dashboard | ${vendor.value?.vendor_name || 'Vendor'}` })
 

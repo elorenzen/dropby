@@ -169,6 +169,7 @@
   const route = useRoute()
   const merchantStore = useMerchantStore()
   const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
+  const subcriptionStore = useSubscriptionStore()
 
   const timelineStore = useTimelineStore()
   const { data: timelineData, error: timelineError } = await supabase
@@ -193,6 +194,9 @@
     .order('created_at', { ascending: false })
   await reviewStore.setSentReviews(sentReviews || [])
 
+  await subcriptionStore.setActiveSubscription(route.params.id as string, 'merchant')
+  const activeSubscription = subcriptionStore.getActiveSubscription
+  console.log('Active subscription:', activeSubscription)
   const menu = ref()
   
   // Analytics data (move above menuItems)
