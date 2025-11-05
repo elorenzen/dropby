@@ -25,14 +25,14 @@ Accent: #CA8A04 (Gold) - Success, premium, celebration
 */
 
 :root {
-  --primary-color: #7C3AED;
+  --primary-color: #0891B2;
   --primary-color-text: #fff;
-  --highlight-bg: #7C3AED;
+  --highlight-bg: #0891B2;
   --highlight-text-color: #fff;
 
-  --secondary-color: #DC2626;
+  --secondary-color: #7C2D12;
   
-  --accent-color: #F59E0B;
+  --accent-color: #CA8A04;
   --success-color: #10B981;
 
   --warning-color: #F97316;
