@@ -26,6 +26,29 @@ export interface Event {
   payment_id: string | null
 }
 
+export interface RecurringEvent {
+  id: string
+  created_at: string
+  merchant: string
+  first_event_start: string
+  first_event_end: string
+  location_coordinates: string | null
+  location_address: string | null
+  location_url: string | null
+  event_value: number
+  notes: string | null
+  active: boolean
+  recurrence_type: 'daily' | 'weekly' | 'monthly'
+  recurrence_interval: number
+  recurrence_day_of_week: number | null
+  recurrence_days_of_week: number[] | null
+  recurrence_day_of_month: number | null // -1 for last day, 1-31 for specific day
+  recurrence_end_date: string | null
+  schedule_interval_amount: number
+  schedule_interval_unit: 'days' | 'weeks' | 'months'
+  updated_at: string | null
+}
+
 export interface TimelineItem {
   id: string
   created_at: string

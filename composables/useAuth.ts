@@ -3,6 +3,7 @@ export const useAuth = () => {
   const user = useSupabaseUser()
   const userStore = useUserStore()
   const subscriptionStore = useSubscriptionStore()
+  const recurringEventStore = useRecurringEventStore()
   const router = useRouter()
 
   // Check if user is authenticated
@@ -77,6 +78,12 @@ export const useAuth = () => {
     
     if (userAssociatedId) {
       await subscriptionStore.setActiveSubscription(userAssociatedId as string, currentUserData.type as 'merchant' | 'vendor')
+      
+      // Load recurring events if user is a merchant
+      if (currentUserData.type === 'merchant') {
+        await recurringEventStore.setAllRecurringEventsByMerchantId(userAssociatedId as string)
+      }
+      
       await router.push(`/${currentUserData.type}/${userAssociatedId}/dashboard`)
     } else {
       await router.push('/get-started')

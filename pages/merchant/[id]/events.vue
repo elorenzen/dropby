@@ -12,7 +12,14 @@
           </p>
         </div>
         <div class="flex items-center gap-4">
-          <!-- Quick action buttons can go here if needed -->
+          <Button 
+            v-if="canCreateRecurringEvents"
+            @click="viewRecurringEvents"
+            label="Recurring Events"
+            severity="success"
+            outlined
+            size="small"
+          />
         </div>
       </div>
     </div>
@@ -537,6 +544,7 @@ const vendorStore = useVendorStore()
 const eventStore = useEventStore()
 const reviewStore = useReviewStore()
 const userStore = useUserStore()
+const subscriptionStore = useSubscriptionStore()
 
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const loadingApproval = ref<string | null>(null)
@@ -614,6 +622,11 @@ const sortOptions = ref([
 ])
 
 // Get all events for this merchant
+// Check if user can create recurring events (premium feature)
+const canCreateRecurringEvents = computed(() => {
+  return subscriptionStore.canCreateRecurringEvents
+})
+
 const allEvents = computed((): Event[] => {
   return (eventStore.getAllEvents as Event[]).filter((event: Event) => event.merchant === route.params.id)
 })
@@ -814,6 +827,10 @@ const hasReview = (event: Event): boolean => {
 // Methods
 const navigateToDashboard = () => {
   navigateTo(`/merchant/${route.params.id}/dashboard`)
+}
+
+const viewRecurringEvents = () => {
+  navigateTo(`/merchant/${route.params.id}/recurring-events`)
 }
 
 const approveRequest = async (event: Event, vendorId: string) => {
