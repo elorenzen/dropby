@@ -550,6 +550,18 @@ const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
 const loadingApproval = ref<string | null>(null)
 const loadingRejection = ref<string | null>(null)
 
+// Check and set active subscription on mount if not already set
+onMounted(async () => {
+  if (!subscriptionStore.activeSubscription) {
+    try {
+      await subscriptionStore.setActiveSubscription(String(route.params.id), 'merchant')
+    } catch (error) {
+      // Silently fail if no subscription found - this is expected for free tier users
+      console.log('No active subscription found for merchant')
+    }
+  }
+})
+
 // Menu refs for dropdown actions
 const currentUpcomingMenu = ref()
 const pastEventsMenu = ref()

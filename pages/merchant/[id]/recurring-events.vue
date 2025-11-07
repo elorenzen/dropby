@@ -161,6 +161,15 @@
       @recurring-event-created="onRecurringEventCreated"
     />
 
+    <!-- Edit Recurring Event Dialog -->
+    <EventEditRecurringEvent
+      :visible="showEditRecurringEventDialog"
+      :recurring-event="selectedRecurringEventForEdit"
+      :business-hours="businessHours"
+      @update:visible="showEditRecurringEventDialog = $event"
+      @recurring-event-updated="onRecurringEventUpdated"
+    />
+
     <!-- Menu Dropdown -->
     <Menu ref="menu" id="recurring_events_menu" :model="getMenuItems(selectedRecurringEvent || null)" :popup="true" />
 
@@ -196,6 +205,10 @@ businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
 
 // Create recurring event dialog state
 const showCreateRecurringEventDialog = ref(false)
+
+// Edit recurring event dialog state
+const showEditRecurringEventDialog = ref(false)
+const selectedRecurringEventForEdit = ref<any | null>(null)
 
 // Menu refs for dropdown actions
 const menu = ref()
@@ -331,6 +344,11 @@ const onRecurringEventCreated = async () => {
   await recurringEventStore.loadRecurringEventsByMerchantId(merchantId)
 }
 
+const onRecurringEventUpdated = async () => {
+  // Refresh the recurring events data from database
+  await recurringEventStore.loadRecurringEventsByMerchantId(merchantId)
+}
+
 const onClose = () => {
   // Toast closed functionality
   console.log('Toast closed')
@@ -395,8 +413,8 @@ const getMenuItems = (recurringEvent: any | null) => {
       label: 'Edit',
       icon: 'pi pi-pencil',
       command: () => {
-        // TODO: Implement edit functionality
-        console.log('Edit recurring event:', recurringEvent)
+        selectedRecurringEventForEdit.value = recurringEvent
+        showEditRecurringEventDialog.value = true
       }
     },
     {
