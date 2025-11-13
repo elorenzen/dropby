@@ -179,6 +179,7 @@
 
 <script setup lang="ts">
 import type { Merchant } from '~/types'
+import { merchantPlans, vendorPlans } from '~/constants/subscriptionPlans'
 
 interface Props {
   merchantId: string
@@ -392,6 +393,14 @@ const loadPayments = async () => {
   }
 }
 
+// Helper function to get subscription price from plan type
+const getSubscriptionPrice = (planType: string, businessType: string): number => {
+  const plans = businessType === 'merchant' ? merchantPlans : vendorPlans
+  const planId = `${businessType}-${planType}`
+  const plan = plans.find(p => p.id === planId)
+  return plan?.price || 0
+}
+
 const loadSubscriptionFees = async () => {
   try {
     const supabase = useSupabaseClient()
@@ -406,19 +415,22 @@ const loadSubscriptionFees = async () => {
 
     if (subscriptions && subscriptions.length > 0) {
       // Add subscription fees to payments
-      const subscriptionPayments = subscriptions.map((sub: any) => ({
-        id: `sub_${sub.id}`,
-        date: sub.created_at,
-        type: 'subscription',
-        description: `${sub.plan_type} Subscription`,
-        details: `Plan: ${sub.plan_type}, Status: ${sub.status}`,
-        recipient_name: 'DropBy Platform',
-        amount: sub.monthly_price || 0,
-        status: sub.status === 'active' ? 'completed' : sub.status, // Map to payment status
-        reference: sub.stripe_subscription_id || sub.id,
-        platform_fee: 0,
-        processing_fee: 0
-      }))
+      const subscriptionPayments = subscriptions.map((sub: any) => {
+        const price = getSubscriptionPrice(sub.plan_type, sub.business_type || 'merchant')
+        return {
+          id: `sub_${sub.id}`,
+          date: sub.created_at,
+          type: 'subscription',
+          description: `${sub.plan_type.charAt(0).toUpperCase() + sub.plan_type.slice(1)} Subscription`,
+          details: `Plan: ${sub.plan_type}, Status: ${sub.status}`,
+          recipient_name: 'DropBy Platform',
+          amount: price,
+          status: sub.status === 'active' ? 'completed' : sub.status, // Map to payment status
+          reference: sub.stripe_subscription_id || sub.id,
+          platform_fee: 0,
+          processing_fee: 0
+        }
+      })
 
       payments.value = [...payments.value, ...subscriptionPayments]
     }

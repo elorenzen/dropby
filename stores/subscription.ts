@@ -253,6 +253,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     async setActiveSubscription(businessId: string, businessType: 'merchant' | 'vendor') {
         const supabase = useSupabaseClient()
         this.loading = true
+        this.error = null
         try {
             const { data, error } = await supabase
                 .from('subscriptions')
@@ -260,13 +261,24 @@ export const useSubscriptionStore = defineStore('subscription', {
                 .eq('business_id', businessId)
                 .eq('business_type', businessType)
                 .eq('status', 'active')
-                .single()
+                .maybeSingle()
 
-            if (data) this.activeSubscription = data as Subscription
-            else throw new Error('No active subscription found')
+            if (error && error.code !== 'PGRST116') {
+                // PGRST116 is "no rows returned" which is fine - just means no active subscription
+                console.error('Error fetching subscription:', error)
+                this.error = error.message
+            }
+
+            if (data) {
+                this.activeSubscription = data as Subscription
+            } else {
+                // No active subscription found - this is OK, user is on free tier
+                this.activeSubscription = null
+            }
         } catch (error: any) {
             console.error('Error setting active subscription:', error)
-            throw error
+            this.error = error.message || 'Failed to load subscription'
+            this.activeSubscription = null // Set to null instead of crashing
         } finally {
             this.loading = false
         }

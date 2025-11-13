@@ -311,12 +311,39 @@ export default defineEventHandler(async (event) => {
 
     // Map Stripe subscription status to our database status
     // Stripe uses 'incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid'
-    // We'll map 'incomplete' and 'unpaid' to 'unpaid' in our system
+    // Only mark as unpaid if payment actually failed or is incomplete
     let subscriptionStatus = stripeSubscription.status
-    if (stripeSubscription.status === 'incomplete' || stripeSubscription.status === 'unpaid') {
+    
+    // Check if payment was successful
+    const stripeSub = stripeSubscription as any
+    const invoice = stripeSub.latest_invoice
+    let paymentSucceeded = false
+    
+    if (invoice) {
+      const invoiceId = typeof invoice === 'string' ? invoice : invoice.id
+      try {
+        const invoiceDetails = await stripe.invoices.retrieve(invoiceId)
+        paymentSucceeded = invoiceDetails.status === 'paid' || (invoiceDetails as any).paid === true
+      } catch (err) {
+        console.error('Error checking invoice status:', err)
+      }
+    }
+    
+    // Only mark as unpaid if:
+    // 1. Status is incomplete/unpaid AND payment didn't succeed
+    // 2. Status is past_due (payment failed)
+    if ((stripeSubscription.status === 'incomplete' || stripeSubscription.status === 'incomplete_expired' || stripeSubscription.status === 'unpaid') && !paymentSucceeded) {
       subscriptionStatus = 'unpaid'
-    } else if (paymentMethodAttached && stripeSubscription.status === 'active') {
+    } else if (stripeSubscription.status === 'past_due') {
+      subscriptionStatus = 'unpaid'
+    } else if (stripeSubscription.status === 'active' || stripeSubscription.status === 'trialing') {
+      // Active or trialing subscriptions are active
       subscriptionStatus = 'active'
+    } else if (stripeSubscription.status === 'canceled') {
+      subscriptionStatus = 'canceled'
+    } else {
+      // Default to active if payment succeeded, otherwise unpaid
+      subscriptionStatus = paymentSucceeded ? 'active' : 'unpaid'
     }
 
     // Create Supabase subscription record with both customer and subscription IDs
@@ -353,8 +380,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get payment intent for frontend payment collection
-    const subscription = stripeSubscription as any
-    const paymentIntent = subscription.latest_invoice?.payment_intent
+    const stripeSubForPayment = stripeSubscription as any
+    const paymentIntent = stripeSubForPayment.latest_invoice?.payment_intent
 
     return {
       success: true,

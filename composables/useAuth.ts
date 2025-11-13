@@ -77,11 +77,21 @@ export const useAuth = () => {
     const userAssociatedId = currentUserData[associatedIdKey]
     
     if (userAssociatedId) {
-      await subscriptionStore.setActiveSubscription(userAssociatedId as string, currentUserData.type as 'merchant' | 'vendor')
+      // Try to load subscription, but don't fail if none exists (user might be on free tier)
+      try {
+        await subscriptionStore.setActiveSubscription(userAssociatedId as string, currentUserData.type as 'merchant' | 'vendor')
+      } catch (error) {
+        // Subscription loading failed - that's OK, user might not have one
+        console.log('No active subscription found, user is on free tier')
+      }
       
       // Load recurring events if user is a merchant
       if (currentUserData.type === 'merchant') {
-        await recurringEventStore.setAllRecurringEventsByMerchantId(userAssociatedId as string)
+        try {
+          await recurringEventStore.setAllRecurringEventsByMerchantId(userAssociatedId as string)
+        } catch (error) {
+          console.log('Error loading recurring events:', error)
+        }
       }
       
       await router.push(`/${currentUserData.type}/${userAssociatedId}/dashboard`)
