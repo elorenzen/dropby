@@ -14,7 +14,7 @@
                         Great food, great drinks, all in one place.
                     </p>
                     <div class="hero-actions">
-                        <NuxtLink to="/viewer/events">
+                        <NuxtLink to="/events">
                             <Button 
                                 label="Find Events" 
                                 class="primary-cta"
@@ -63,7 +63,7 @@
                     <h3>I'm Looking for Food & Events</h3>
                     <p>Discover local food trucks, bars, and exciting events near you</p>
                     <div class="user-type-actions">
-                        <NuxtLink to="/viewer/events">
+                        <NuxtLink to="/events">
                             <Button 
                                 label="Find Events" 
                                 class="primary-cta"
@@ -115,7 +115,7 @@
                                 </template>
                             </Button>
                         </NuxtLink>
-                        <NuxtLink to="/viewer/about">
+                        <NuxtLink to="/about">
                             <Button 
                                 label="Learn More" 
                                 outlined
@@ -152,7 +152,7 @@
                             </template>
                         </Button>
                     </NuxtLink>
-                    <NuxtLink to="/viewer/about">
+                    <NuxtLink to="/about">
                         <Button 
                             label="Learn More" 
                             outlined

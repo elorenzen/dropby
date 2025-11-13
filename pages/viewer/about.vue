@@ -263,7 +263,7 @@
               </template>
             </Button>
           </NuxtLink>
-          <NuxtLink to="/viewer/events">
+          <NuxtLink to="/events">
             <Button 
               label="Browse Events" 
               outlined

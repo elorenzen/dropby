@@ -346,6 +346,10 @@
 import BaseIcon from '~/components/BaseIcon.vue'
 import type { Event, Merchant, Vendor } from '~/types'
 
+definePageMeta({
+  alias: '/events'
+})
+
 interface UserLocation {
   lat: number
   lng: number

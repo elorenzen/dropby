@@ -240,7 +240,7 @@ const getDirections = (event: Event) => {
 }
 
 const shareEvent = (event: Event) => {
-  const eventUrl = `${window.location.origin}/viewer/events`
+  const eventUrl = `${window.location.origin}/events`
   const eventText = `Check out this food truck event: ${getMerchantName(event.merchant)} | ${getVendorName(event.vendor)} on ${formatFullDate(event.start)}`
   
   if (navigator.share) {

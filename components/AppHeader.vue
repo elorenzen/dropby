@@ -124,7 +124,7 @@ const items = ref([
         items: [
             {
                 label: 'Events',
-                command: () => { router.push('/viewer/events') }
+                command: () => { router.push('/events') }
             },
             {
                 label: 'Food Trucks',
