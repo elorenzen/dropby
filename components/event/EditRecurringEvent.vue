@@ -102,7 +102,7 @@
         <!-- Recurrence Type -->
         <div class="space-y-3">
           <label class="block text-sm font-medium text-text-main">Recurrence Type *</label>
-          <Dropdown 
+          <Select 
             v-model="recurrenceType" 
             :options="recurrenceTypeOptions" 
             optionLabel="label" 
@@ -262,7 +262,7 @@
             </div>
             <div class="flex-1 pt-2">
               <FloatLabel>
-                <Dropdown 
+                <Select 
                   v-model="scheduleIntervalUnit" 
                   inputId="schedule-interval-unit"
                   :options="scheduleIntervalUnitOptions" 

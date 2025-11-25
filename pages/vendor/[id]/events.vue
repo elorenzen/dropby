@@ -118,7 +118,7 @@
             <!-- Date Range Filter -->
             <div class="w-48">
               <FloatLabel>
-                <Dropdown 
+                <Select 
                   id="open-events-date-filter"
                   v-model="openEventsFilters.dateRange" 
                   :options="dateRangeOptions" 
@@ -133,7 +133,7 @@
             <!-- Sort By -->
             <div class="w-48">
               <FloatLabel>
-                <Dropdown 
+                <Select 
                   id="open-events-sort-filter"
                   v-model="openEventsFilters.sortBy" 
                   :options="sortOptions" 
@@ -248,7 +248,7 @@
             <!-- Sort By -->
             <div class="w-48">
               <FloatLabel>
-                <Dropdown 
+                <Select 
                   id="past-events-sort-filter"
                   v-model="pastEventsFilters.sortBy" 
                   :options="sortOptions" 

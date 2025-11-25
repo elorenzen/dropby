@@ -98,7 +98,7 @@
             placeholder="Search payments..."
             class="w-48"
           />
-          <Dropdown
+          <Select
             v-model="selectedCategory"
             :options="paymentCategories"
             optionLabel="label"

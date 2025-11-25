@@ -12,11 +12,11 @@
           </p>
         </div>
         <div class="flex items-center gap-4">
-          <Dropdown 
+          <Select 
             v-model="selectedPeriod" 
             :options="periodOptions" 
-            option-label="label"
-            option-value="value"
+            optionLabel="label"
+            optionValue="value"
             placeholder="Select Period"
             class="w-56"
           />

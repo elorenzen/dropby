@@ -32,7 +32,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
-                <Dropdown 
+                <Select 
                   v-model="sortBy" 
                   :options="sortOptions" 
                   optionLabel="label" 
@@ -54,7 +54,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-text-main mb-2">Filter by Rating</label>
-                <Dropdown 
+                <Select 
                   v-model="minRating" 
                   :options="ratingOptions" 
                   optionLabel="label" 

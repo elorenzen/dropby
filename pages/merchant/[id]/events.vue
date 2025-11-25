@@ -178,7 +178,7 @@
             <!-- Status Filter -->
             <div class="w-40">
               <FloatLabel>
-                <Dropdown 
+                <Select 
                   id="status-filter"
                   v-model="eventFilters.status" 
                   :options="statusOptions" 
@@ -193,7 +193,7 @@
             <!-- Sort By -->
             <div class="w-48">
               <FloatLabel>
-                <Dropdown 
+                <Select 
                   id="sort-filter"
                   v-model="eventFilters.sortBy" 
                   :options="sortOptions" 

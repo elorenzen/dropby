@@ -47,14 +47,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-text-main mb-2">Filter by Type</label>
-                            <Dropdown
+                            <Select
                                 v-model="selectedType"
                                 :options="typeOptions"
                                 optionLabel="label"
                                 optionValue="value"
                                 placeholder="All types"
                                 class="w-full"
-                                :showClear="true"
                             />
                         </div>
                     </div>

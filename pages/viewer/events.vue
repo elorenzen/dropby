@@ -78,7 +78,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-text-main mb-2">Distance</label>
-                <Dropdown 
+                <Select 
                   v-model="filters.distance" 
                   :options="distanceOptions" 
                   optionLabel="label" 
@@ -89,7 +89,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
-                <Dropdown 
+                <Select 
                   v-model="filters.sortBy" 
                   :options="sortOptions" 
                   optionLabel="label" 

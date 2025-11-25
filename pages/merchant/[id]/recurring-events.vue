@@ -58,7 +58,7 @@
             <!-- Sort By -->
             <div class="w-48">
               <FloatLabel>
-                <Dropdown 
+                <Select 
                   id="sort-filter"
                   v-model="filters.sortBy" 
                   :options="sortOptions" 
