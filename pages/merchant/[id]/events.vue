@@ -861,6 +861,16 @@ const approveRequest = async (event: Event, vendorId: string) => {
     
     if (error) throw error
     
+    // Create timeline item for event booked
+    const timelineStore = useTimelineStore()
+    await timelineStore.createTimelineItem({
+      owner_id: event.merchant || '',
+      other_ids: [event.id, vendorId],
+      title: 'Event Booked',
+      description: `Approved ${getVendorProp(vendorId, 'vendor_name')} for event on ${new Date(event.start).toLocaleDateString()}`,
+      type: 'event_booked'
+    })
+    
     showToast('success', 'Request Approved', `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event. Event is now booked!`)
   } catch (error) {
     console.error('Error approving request:', error)

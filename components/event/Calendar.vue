@@ -677,6 +677,18 @@ export default {
             }
             await eventStore.updateEvent(eventOnDay.value.id, updates)
             
+            // Create timeline item for event booked
+            const timelineStore = useTimelineStore()
+            const vendorStore = useVendorStore()
+            const vendor = await vendorStore.getVendorById(vendorId)
+            await timelineStore.createTimelineItem({
+              owner_id: user.value?.associated_merchant_id || '',
+              other_ids: [eventOnDay.value.id, vendorId],
+              title: 'Event Booked',
+              description: `Approved ${vendor?.vendor_name || 'vendor'} for event on ${new Date(eventOnDay.value.start).toLocaleDateString()}`,
+              type: 'event_booked'
+            })
+            
             await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${vendorId}&merchantId=${user.value?.associated_merchant_id}`)
             await resetFields('approved')
         } catch (error: any) {

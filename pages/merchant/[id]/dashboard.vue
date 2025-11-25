@@ -249,47 +249,33 @@
     return `${Math.floor(diffInSeconds / 2592000)} months ago`
   }
   
+  // Timeline items computed
+  const timelineItems = computed(() => {
+    return timelineStore.getTimeline || []
+  })
+  
   // Recent activity data - now computed from timeline
+  const { getTimelineConfig } = useTimelineIcons()
   const recentActivity = computed(() => {
+    if (!timelineItems.value || timelineItems.value.length === 0) {
+      return []
+    }
+    
     return timelineItems.value.slice(0, 4).map((item: any) => {
       const timeAgo = getTimeAgo(new Date(item.created_at))
       
-      // Determine icon and styling based on timeline item type
-      let icon = 'pi pi-info-circle'
-      let iconClass = 'bg-primary-light text-primary-dark'
-      
-      switch (item.type) {
-        case 'event_completed':
-          icon = 'pi pi-check-circle'
-          iconClass = 'bg-success-light text-success-dark'
-          break
-        case 'event':
-          icon = 'pi pi-calendar-plus'
-          iconClass = 'bg-primary-light text-primary-dark'
-          break
-        case 'rating':
-          icon = 'pi pi-star'
-          iconClass = 'bg-accent-light text-accent-dark'
-          break
-        case 'profile':
-          icon = 'pi pi-user-edit'
-          iconClass = 'bg-accent-light text-accent-dark'
-          break
-      }
+      // Get icon and color from composable based on timeline item type
+      const config = getTimelineConfig(item.type)
       
       return {
         id: item.id,
         title: item.title,
         description: item.description,
         time: timeAgo,
-        icon,
-        iconClass
+        icon: `pi ${config.icon}`,
+        iconClass: config.colorClass
       }
     })
-  })
-  
-  const timelineItems = computed(() => {
-    return timelineStore.getTimeline
   })
   
   // Debug timeline data
@@ -379,6 +365,7 @@
   onMounted(async () => {
     loadAnalytics()
 
+    // Subscribe to real-time updates for reviews
     supabase
       .channel('reviews')
       .on('postgres_changes',
@@ -396,6 +383,22 @@
             .eq('sender_id', route.params.id)
             .order('created_at', { ascending: false })
           await reviewStore.setSentReviews(sentReviews || [])
+        })
+      .subscribe()
+
+    // Subscribe to real-time updates for timeline items
+    supabase
+      .channel('timeline')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'timeline_items' }, 
+        async (payload: any) => {
+          // Reload timeline data when there are changes
+          const { data: newTimelineData } = await supabase
+            .from('timeline_items')
+            .select('*')
+            .eq('owner_id', route.params.id)
+            .order('created_at', { ascending: false })
+          await timelineStore.setTimeline(newTimelineData || [])
         })
       .subscribe()
   })

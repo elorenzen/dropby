@@ -310,42 +310,23 @@ const getMerchantProp = (merchantId: string, prop: string): string => {
 }
 
 // Recent activity data - now computed from timeline with fallback
+const { getTimelineConfig } = useTimelineIcons()
 const recentActivity = computed(() => {
   // If we have timeline items, use them
   if (timelineItems.value.length > 0) {
     return timelineItems.value.slice(0, 4).map((item: any) => {
       const timeAgo = getTimeAgo(new Date(item.created_at))
       
-      // Determine icon and styling based on timeline item type
-      let icon = 'pi pi-info-circle'
-      let iconClass = 'bg-primary-light text-primary-dark'
-      
-      switch (item.type) {
-        case 'event_completed':
-          icon = 'pi pi-check-circle'
-          iconClass = 'bg-success-light text-success-dark'
-          break
-        case 'event':
-          icon = 'pi pi-calendar-plus'
-          iconClass = 'bg-accent-light text-accent-dark'
-          break
-        case 'rating':
-          icon = 'pi pi-star'
-          iconClass = 'bg-accent-light text-accent-dark'
-          break
-        case 'profile':
-          icon = 'pi pi-user-edit'
-          iconClass = 'bg-accent-light text-accent-dark'
-          break
-      }
+      // Get icon and color from composable based on timeline item type
+      const config = getTimelineConfig(item.type)
       
       return {
         id: item.id,
         title: item.title,
         description: item.description,
         time: timeAgo,
-        icon,
-        iconClass
+        icon: `pi ${config.icon}`,
+        iconClass: config.colorClass
       }
     })
   }
@@ -419,7 +400,7 @@ const recentActivity = computed(() => {
 })
 
 const timelineItems = computed(() => {
-  return timelineStore.getTimeline
+  return timelineStore.getTimeline || []
 })
 
 const events = computed(() => {
