@@ -61,7 +61,11 @@
                         <BaseIcon name="search" color="var(--primary-color)" size="48" />
                     </div>
                     <h3>I'm Looking for Food & Events</h3>
-                    <p>Discover local food trucks, bars, and exciting events near you</p>
+                    <p class="mission-statement">
+                        Discover amazing food trucks at your favorite breweries, bars, and restaurants. 
+                        Find events near you, explore menus, read reviews, and never miss out on great food experiences. 
+                        Perfect for food lovers who want to know where the best food trucks will be.
+                    </p>
                     <div class="user-type-actions">
                         <NuxtLink to="/events">
                             <Button 
@@ -73,41 +77,23 @@
                                 </template>
                             </Button>
                         </NuxtLink>
-                        <NuxtLink to="/establishments">
-                            <Button 
-                                label="Browse Bars" 
-                                outlined
-                                class="secondary-cta"
-                            >
-                                <template #icon>
-                                    <BaseIcon name="map-marker" color="var(--primary-color)" size="18" />
-                                </template>
-                            </Button>
-                        </NuxtLink>
-                        <NuxtLink to="/food-trucks">
-                            <Button 
-                                label="Find Food Trucks" 
-                                outlined
-                                class="secondary-cta"
-                            >
-                                <template #icon>
-                                    <BaseIcon name="truck" color="var(--primary-color)" size="18" />
-                                </template>
-                            </Button>
-                        </NuxtLink>
                     </div>
                 </div>
                 
-                <div class="user-type-card business-card">
+                <div class="user-type-card merchant-card">
                     <div class="user-type-icon">
-                        <BaseIcon name="building" color="var(--primary-color)" size="48" />
+                        <i class="pi pi-building" style="font-size: 48px; color: var(--primary-color);"></i>
                     </div>
-                    <h3>I'm a Business Owner</h3>
-                    <p>Connect with partners, schedule events, and grow your business</p>
+                    <h3>I'm a Merchant</h3>
+                    <p class="mission-statement">
+                        For breweries, restaurants, bars, and other establishments. Schedule food truck events, 
+                        attract more customers, and create memorable experiences. Manage your calendar, connect with 
+                        trusted vendors, and grow your business with exciting food events.
+                    </p>
                     <div class="user-type-actions">
-                        <NuxtLink to="/get-started">
+                        <NuxtLink to="/get-started?businessType=merchant">
                             <Button 
-                                label="Get Started" 
+                                label="Merchant Signup" 
                                 class="primary-cta"
                             >
                                 <template #icon>
@@ -115,19 +101,46 @@
                                 </template>
                             </Button>
                         </NuxtLink>
-                        <NuxtLink to="/about">
+                    </div>
+                </div>
+                
+                <div class="user-type-card vendor-card">
+                    <div class="user-type-icon">
+                        <i class="pi pi-truck" style="font-size: 48px; color: var(--primary-color);"></i>
+                    </div>
+                    <h3>I'm a Food Truck Vendor</h3>
+                    <p class="mission-statement">
+                        For food truck owners and operators. Find new locations, book events at great establishments, 
+                        expand your reach, and grow your customer base. Browse available events, request bookings, and 
+                        build lasting partnerships with merchants.
+                    </p>
+                    <div class="user-type-actions">
+                        <NuxtLink to="/get-started?businessType=vendor">
                             <Button 
-                                label="Learn More" 
-                                outlined
-                                class="secondary-cta"
+                                label="Vendor Signup" 
+                                class="primary-cta"
                             >
                                 <template #icon>
-                                    <BaseIcon name="info-circle" color="var(--primary-color)" size="18" />
+                                    <BaseIcon name="rocket" color="#fff" size="18" />
                                 </template>
                             </Button>
                         </NuxtLink>
                     </div>
                 </div>
+            </div>
+            
+            <div class="learn-more-section">
+                <NuxtLink to="/about">
+                    <Button 
+                        label="Learn More" 
+                        outlined
+                        class="learn-more-cta"
+                    >
+                        <template #icon>
+                            <BaseIcon name="info-circle" color="var(--primary-color)" size="20" />
+                        </template>
+                    </Button>
+                </NuxtLink>
             </div>
         </div>
 
@@ -171,6 +184,7 @@
 
 <script setup lang="ts">
 useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
+
 </script>
 
 <style scoped>
@@ -268,7 +282,7 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
 
 .user-type-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     margin-top: 3rem;
 }
@@ -282,6 +296,8 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .user-type-card::before {
@@ -319,11 +335,25 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
     font-size: 1.125rem;
 }
 
+.mission-statement {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
 .user-type-actions {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     align-items: center;
+    margin-top: auto;
+    padding-top: 2rem;
+}
+
+.user-type-actions .primary-cta {
+    width: 100%;
+    max-width: 200px;
 }
 
 .user-type-actions .primary-cta {
@@ -335,6 +365,19 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
     width: 100%;
     max-width: 200px;
     margin-top: 0.5rem;
+}
+
+.learn-more-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+.learn-more-cta {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    padding: 1rem 2rem !important;
+    font-weight: 600 !important;
 }
 
 /* Section Styles */
@@ -411,6 +454,10 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
     .user-type-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+    }
+    
+    .mission-statement {
+        min-height: auto;
     }
 }
 

@@ -150,11 +150,11 @@ const cuisines = ref([
 const altLabels = ref({
     merchant: {
         name: "Merchant Name (e.g. 'McDonald's')",
-        desc: "Merchant Desciption (e.g. 'Fast food restaurant selling burgers & fries.')",
+        desc: "Merchant Description (e.g. 'Brewery, restaurant, bar, etc.')",
     },
     vendor: {
         name: "Vendor Name (e.g. 'Tegridy Burger')",
-        desc: "Vendor Desciption (e.g. 'Food truck from South Park, CO. We sell our very own Tegridy Burger®.')",
+        desc: "Vendor Description (e.g. 'Food truck from South Park, CO. We sell our very own Tegridy Burger®.')",
     }
 })
 

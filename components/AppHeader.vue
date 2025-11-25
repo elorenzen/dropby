@@ -29,24 +29,32 @@
       
       <template #end>
         <!-- Not Authenticated - Show Login/Signup -->
-        <div v-if="!isAuthenticated" class="flex items-center gap-2">
-          <InputText placeholder="Email" v-model="email" type="text" class="w-32 sm:w-auto" />
-          <Password placeholder="Password" v-model="password" class="w-32 sm:w-auto" />
-          <Button
-            outlined
-            @click="fireAuth"
-            :disabled="email == '' || password == ''"
-            :loading="loading"
-          >Login</Button>
+        <div v-if="!isAuthenticated" class="auth-section">
+          <div class="auth-inputs">
+            <InputText placeholder="Email" v-model="email" type="text" class="auth-input" size="small" />
+            <Password placeholder="Password" v-model="password" class="auth-input" size="small" />
+          </div>
+          <div class="auth-buttons">
+            <Button
+              outlined
+              @click="fireAuth"
+              :disabled="email == '' || password == ''"
+              :loading="loading"
+              class="auth-button"
+              size="small"
+            >Login</Button>
 
-          <Button
-            outlined
-            @click="register"
-          >Sign Up</Button>
+            <Button
+              outlined
+              @click="register"
+              class="auth-button"
+              size="small"
+            >Sign Up</Button>
+          </div>
         </div>
 
         <!-- Authenticated - Show Menu Items and Profile Dropdown -->
-        <div v-else class="flex items-center gap-4">
+        <div v-else class="authenticated-section">
           <!-- Notification Bell -->
           <div class="relative">
             <Button 
@@ -57,6 +65,7 @@
               @click="toggleNotificationPanel" 
               aria-haspopup="true" 
               aria-controls="notification_panel"
+              class="header-icon-button"
               style="border-color: var(--secondary-color); color: var(--secondary-color); position: relative;" 
             />
             <Badge 
@@ -77,6 +86,7 @@
             @click="toggleProfileMenu" 
             aria-haspopup="true" 
             aria-controls="profile_menu" 
+            class="header-icon-button"
             style="border-color: var(--secondary-color); color: var(--secondary-color);" 
           />
           <Menu
@@ -367,6 +377,135 @@ onUnmounted(() => {
 :deep(.p-menubar-root-list > .p-menuitem > .p-menuitem-link.p-highlight) {
   color: var(--primary-color);
   font-weight: 500;
+}
+
+/* Authentication section styling */
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.auth-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.auth-input {
+  min-width: 120px;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.auth-button {
+  white-space: nowrap;
+}
+
+/* Authenticated section styling */
+.authenticated-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon-button {
+  min-width: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 !important;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .auth-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .auth-inputs {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .auth-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .auth-buttons {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .auth-button {
+    width: 100%;
+  }
+
+  .authenticated-section {
+    gap: 0.5rem;
+  }
+
+  .header-icon-button {
+    min-width: 2.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Ensure PrimeVue Menubar mobile menu works well */
+  :deep(.p-menubar-button) {
+    margin-left: auto;
+  }
+
+  :deep(.p-menubar-mobile-active .p-menubar-root-list) {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  :deep(.p-menubar-mobile-active .p-menubar-root-list > .p-menuitem) {
+    width: 100%;
+  }
+
+  :deep(.p-menubar-mobile-active .p-menubar-root-list > .p-menuitem > .p-menuitem-link) {
+    width: 100%;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-section {
+    gap: 0.5rem;
+  }
+
+  .authenticated-section {
+    gap: 0.375rem;
+  }
+
+  .header-icon-button {
+    min-width: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Hide text labels on very small screens, show only icons */
+  :deep(.p-menubar .p-menubar-start) {
+    flex: 1;
+  }
+
+  :deep(.p-menubar .p-menubar-start .text-xl) {
+    font-size: 1rem;
+  }
 }
 </style>
 
