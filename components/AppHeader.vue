@@ -47,6 +47,27 @@
 
         <!-- Authenticated - Show Menu Items and Profile Dropdown -->
         <div v-else class="flex items-center gap-4">
+          <!-- Notification Bell -->
+          <div class="relative">
+            <Button 
+              outlined 
+              severity="contrast" 
+              type="button" 
+              icon="pi pi-bell" 
+              @click="toggleNotificationPanel" 
+              aria-haspopup="true" 
+              aria-controls="notification_panel"
+              style="border-color: var(--secondary-color); color: var(--secondary-color); position: relative;" 
+            />
+            <Badge 
+              v-if="unreadCount > 0" 
+              :value="unreadCount > 99 ? '99+' : unreadCount"
+              severity="danger"
+              style="position: absolute; top: -8px; right: -8px; min-width: 20px; height: 20px; font-size: 11px;"
+            />
+          </div>
+          <NotificationPanel ref="notificationPanel" />
+          
           <!-- Profile Dropdown -->
           <Button 
             outlined 
@@ -76,6 +97,7 @@
 import { h } from 'vue'
 import Logo from '~/assets/logo-one.svg' // options: '.../logo-two.svg', '.../logo-three.svg'
 import BaseIcon from '~/components/BaseIcon.vue'
+import NotificationPanel from '~/components/NotificationPanel.vue'
 
 const supabase = useSupabaseClient()
 const router = useRouter()
@@ -90,6 +112,9 @@ const renderKey = ref(0)
 const email = ref('')
 const password = ref('')
 const profileMenu = ref()
+const notificationPanel = ref()
+const notificationStore = useNotificationStore()
+const notificationChannel = ref<any>(null)
 
 const menuItemsStart = ref([
     {
@@ -274,6 +299,41 @@ const errored = async (message: string) => {
   errMsg.value = message
   errDialog.value = true
 }
+
+// Notification handling
+const unreadCount = computed(() => notificationStore.unreadCount)
+
+const toggleNotificationPanel = (event: Event) => {
+  notificationPanel.value?.show(event)
+}
+
+// Load notifications when user is authenticated
+watch(isAuthenticated, async (newVal) => {
+  if (newVal && currentUser.value?.id) {
+    // Load notifications
+    await notificationStore.loadNotifications()
+    await notificationStore.loadUnreadCount()
+    
+    // Subscribe to real-time updates
+    if (notificationChannel.value) {
+      notificationStore.unsubscribeFromNotifications(notificationChannel.value)
+    }
+    notificationChannel.value = notificationStore.subscribeToNotifications()
+  } else {
+    // Unsubscribe when user logs out
+    if (notificationChannel.value) {
+      notificationStore.unsubscribeFromNotifications(notificationChannel.value)
+      notificationChannel.value = null
+    }
+  }
+}, { immediate: true })
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (notificationChannel.value) {
+    notificationStore.unsubscribeFromNotifications(notificationChannel.value)
+  }
+})
 </script>
 
 <style scoped>

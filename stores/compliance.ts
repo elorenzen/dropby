@@ -332,6 +332,32 @@ export const useComplianceStore = defineStore('compliance', () => {
           description: `Document ${data[0].title} has been verified`,
           type: 'compliance_verified'
         })
+        
+        // Create notification for business owner
+        const userStore = useUserStore()
+        const businessUserIds = await userStore.getUserIdsFromBusiness(data[0].business_id, data[0].business_type)
+        const notificationStore = useNotificationStore()
+        
+        for (const userId of businessUserIds) {
+          await notificationStore.createNotification({
+            recipient_id: userId,
+            sender_id: userStore.user?.id || null,
+            action_type: verified ? 'compliance_verified' : 'compliance_rejected',
+            entity_type: 'compliance',
+            entity_id: documentId,
+            title: verified ? 'Compliance Document Verified' : 'Compliance Document Rejected',
+            message: verified 
+              ? `Your ${data[0].title} document has been verified`
+              : `Your ${data[0].title} document was rejected${notes ? ': ' + notes : ''}`,
+            metadata: {
+              document_id: documentId,
+              document_title: data[0].title,
+              business_id: data[0].business_id,
+              business_type: data[0].business_type,
+              verification_notes: notes
+            }
+          })
+        }
       }
 
       // Reload documents

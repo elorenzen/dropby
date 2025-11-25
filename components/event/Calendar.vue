@@ -689,6 +689,35 @@ export default {
               type: 'event_booked'
             })
             
+            // Create notification for vendor
+            const notificationStore = useNotificationStore()
+            const currentUser = useSupabaseUser()
+            const vendorUserIds = await userStore.getUserIdsFromBusiness(vendorId, 'vendor')
+            
+            for (const vendorUserId of vendorUserIds) {
+              try {
+                await notificationStore.createNotification({
+                  recipient_id: vendorUserId,
+                  sender_id: currentUser.value?.id || null,
+                  sender_business_id: user.value?.associated_merchant_id || null,
+                  sender_business_type: 'merchant',
+                  action_type: 'event_request_approved',
+                  entity_type: 'event',
+                  entity_id: eventOnDay.value.id,
+                  title: 'Event Request Approved',
+                  message: `${merchant.value?.merchant_name || 'A merchant'} approved your request for the event on ${new Date(eventOnDay.value.start).toLocaleDateString()}`,
+                  metadata: {
+                    event_id: eventOnDay.value.id,
+                    merchant_id: user.value?.associated_merchant_id,
+                    merchant_name: merchant.value?.merchant_name,
+                    event_date: eventOnDay.value.start
+                  }
+                })
+              } catch (notifError) {
+                console.error('Failed to create notification for vendor user:', vendorUserId, notifError)
+              }
+            }
+            
             await useFetch(`/api/sendBookingConfirmation?eventId=${eventOnDay.value.id}&vendorId=${vendorId}&merchantId=${user.value?.associated_merchant_id}`)
             await resetFields('approved')
         } catch (error: any) {
@@ -837,7 +866,37 @@ export default {
           }
         })
 
-        // Send notification to merchant
+        // Create notification for merchant
+        const notificationStore = useNotificationStore()
+        const currentUser = useSupabaseUser()
+        const merchantUserIds = await userStore.getUserIdsFromBusiness(eventOnDay.value.merchant, 'merchant')
+        const vendorData = await vendorStore.getVendorById(props.vendor.id)
+        
+        for (const merchantUserId of merchantUserIds) {
+          try {
+            await notificationStore.createNotification({
+              recipient_id: merchantUserId,
+              sender_id: currentUser.value?.id || null,
+              sender_business_id: props.vendor.id,
+              sender_business_type: 'vendor',
+              action_type: 'event_request_sent',
+              entity_type: 'event',
+              entity_id: eventOnDay.value.id,
+              title: 'New Event Request',
+              message: `${vendorData?.vendor_name || 'A vendor'} requested to work your event on ${new Date(eventOnDay.value.start).toLocaleDateString()}`,
+              metadata: {
+                event_id: eventOnDay.value.id,
+                vendor_id: props.vendor.id,
+                vendor_name: vendorData?.vendor_name,
+                event_date: eventOnDay.value.start
+              }
+            })
+          } catch (notifError) {
+            console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
+          }
+        }
+
+        // Send email notification to merchant
         try {
           await $fetch(`/api/sendEventRequestNotification?eventId=${eventOnDay.value.id}&vendorId=${props.vendor.id}&merchantId=${eventOnDay.value.merchant}`)
         } catch (emailErr) {

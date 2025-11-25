@@ -74,6 +74,9 @@
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
+    const vendorStore   = useVendorStore()
+    const notificationStore = useNotificationStore()
+    const currentUser   = useSupabaseUser()
     const toast         = useToast()
     const events        = eventStore.getAllOpenEvents
     const merchants     = merchantStore.getAllMerchants
@@ -167,6 +170,34 @@
                         incrementAmount: 1
                     }
                 })
+
+                // Create notification for merchant
+                const merchantUserIds = await userStore.getUserIdsFromBusiness(selectedEvt.value.merchant, 'merchant')
+                const vendorData = await vendorStore.getVendorById(vendor.value)
+                
+                for (const merchantUserId of merchantUserIds) {
+                    try {
+                        await notificationStore.createNotification({
+                            recipient_id: merchantUserId,
+                            sender_id: currentUser.value?.id || null,
+                            sender_business_id: vendor.value,
+                            sender_business_type: 'vendor',
+                            action_type: 'event_request_sent',
+                            entity_type: 'event',
+                            entity_id: selectedEvt.value.id,
+                            title: 'New Event Request',
+                            message: `${vendorData?.vendor_name || 'A vendor'} requested to work your event on ${new Date(selectedEvt.value.start).toLocaleDateString()}`,
+                            metadata: {
+                                event_id: selectedEvt.value.id,
+                                vendor_id: vendor.value,
+                                vendor_name: vendorData?.vendor_name,
+                                event_date: selectedEvt.value.start
+                            }
+                        })
+                    } catch (notifError) {
+                        console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
+                    }
+                }
 
                 openViewDialog.value = false
                 selectedEvt.value = ''

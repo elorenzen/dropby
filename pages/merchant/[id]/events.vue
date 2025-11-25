@@ -427,6 +427,8 @@ const userStore = useUserStore()
 const subscriptionStore = useSubscriptionStore()
 
 const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
+const currentUser = useSupabaseUser()
+const notificationStore = useNotificationStore()
 const loadingApproval = ref<string | null>(null)
 const loadingRejection = ref<string | null>(null)
 
@@ -694,6 +696,33 @@ const approveRequest = async (event: Event, vendorId: string) => {
       description: `Approved ${getVendorProp(vendorId, 'vendor_name')} for event on ${new Date(event.start).toLocaleDateString()}`,
       type: 'event_booked'
     })
+    
+    // Create notification for vendor
+    const vendorUserIds = await userStore.getUserIdsFromBusiness(vendorId, 'vendor')
+    
+    for (const vendorUserId of vendorUserIds) {
+      try {
+        await notificationStore.createNotification({
+          recipient_id: vendorUserId,
+          sender_id: currentUser.value?.id || null,
+          sender_business_id: route.params.id as string,
+          sender_business_type: 'merchant',
+          action_type: 'event_request_approved',
+          entity_type: 'event',
+          entity_id: event.id,
+          title: 'Event Request Approved',
+          message: `${merchant.value?.merchant_name || 'A merchant'} approved your request for the event on ${new Date(event.start).toLocaleDateString()}`,
+          metadata: {
+            event_id: event.id,
+            merchant_id: route.params.id as string,
+            merchant_name: merchant.value?.merchant_name,
+            event_date: event.start
+          }
+        })
+      } catch (notifError) {
+        console.error('Failed to create notification for vendor user:', vendorUserId, notifError)
+      }
+    }
     
     showToast('success', 'Request Approved', `Approved ${getVendorProp(vendorId, 'vendor_name')} for the event. Event is now booked!`)
   } catch (error) {

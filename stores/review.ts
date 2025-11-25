@@ -67,6 +67,23 @@ export const useReviewStore = defineStore('review', {
           type: 'review_submitted'
         })
         
+        // Create notification for recipient
+        const notificationStore = useNotificationStore()
+        await notificationStore.createNotification({
+          recipient_id: data.recipient_id,
+          sender_id: data.sender_id,
+          action_type: 'review_received',
+          entity_type: 'review',
+          entity_id: data.id,
+          title: 'New Review Received',
+          message: `You received a ${data.rating}-star review`,
+          metadata: {
+            review_id: data.id,
+            rating: data.rating,
+            event_id: data.event_id
+          }
+        })
+        
         return data
       } catch (error) {
         console.error('Error creating review:', error)

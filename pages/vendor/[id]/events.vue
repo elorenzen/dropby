@@ -690,6 +690,37 @@ const requestEvent = async (event: Event) => {
       }
     })
     
+    // Create notification for merchant
+    const merchantUserIds = await userStore.getUserIdsFromBusiness(event.merchant, 'merchant')
+    const vendorStore = useVendorStore()
+    const vendor = await vendorStore.getVendorById(route.params.id as string)
+    const currentUser = useSupabaseUser()
+    const notificationStore = useNotificationStore()
+    
+    for (const merchantUserId of merchantUserIds) {
+      try {
+        await notificationStore.createNotification({
+          recipient_id: merchantUserId,
+          sender_id: currentUser.value?.id || null,
+          sender_business_id: route.params.id as string,
+          sender_business_type: 'vendor',
+          action_type: 'event_request_sent',
+          entity_type: 'event',
+          entity_id: event.id,
+          title: 'New Event Request',
+          message: `${vendor?.vendor_name || 'A vendor'} requested to work your event on ${new Date(event.start).toLocaleDateString()}`,
+          metadata: {
+            event_id: event.id,
+            vendor_id: route.params.id as string,
+            vendor_name: vendor?.vendor_name,
+            event_date: event.start
+          }
+        })
+      } catch (notifError) {
+        console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
+      }
+    }
+    
     toast.add({
       severity: 'success',
       summary: 'Request Sent',

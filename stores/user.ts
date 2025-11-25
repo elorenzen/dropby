@@ -216,6 +216,33 @@ export const useUserStore = defineStore('user', {
       
       const newStatus = !this.user.available_to_contact
       return await this.updateUser(this.user.id, { available_to_contact: newStatus })
+    },
+
+    /**
+     * Get all user IDs associated with a business
+     * (in case multiple users are associated with one business)
+     */
+    async getUserIdsFromBusiness(
+      businessId: string,
+      businessType: 'merchant' | 'vendor'
+    ): Promise<string[]> {
+      try {
+        const supabase = useSupabaseClient()
+        const key = businessType === 'merchant' 
+          ? 'associated_merchant_id' 
+          : 'associated_vendor_id'
+        
+        const { data, error } = await supabase
+          .from('users')
+          .select('id')
+          .eq(key, businessId)
+        
+        if (error || !data) return []
+        return data.map(u => u.id)
+      } catch (error) {
+        console.error('Error getting user IDs from business:', error)
+        return []
+      }
     }
   }
 })

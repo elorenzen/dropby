@@ -1,4 +1,10 @@
 // ============================================================================
+// IMPORTS
+// ============================================================================
+
+import type { NotificationActionType } from '~/constants/notificationTypes'
+
+// ============================================================================
 // EVENT & TIMELINE TYPES
 // ============================================================================
 
@@ -294,3 +300,28 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export type ComplianceStatus = 'pending' | 'verified' | 'rejected' | 'expired'
 export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'unpaid'
 export type PlanType = 'free' | 'pro' | 'premium'
+
+// ============================================================================
+// NOTIFICATION TYPES
+// ============================================================================
+
+export interface Notification {
+  id: string
+  recipient_id: string
+  sender_id: string | null
+  sender_business_id: string | null
+  sender_business_type: 'merchant' | 'vendor' | null
+  action_type: NotificationActionType
+  entity_type: 'event' | 'review' | 'compliance' | 'partnership' | 'subscription' | null
+  entity_id: string | null
+  title: string
+  message: string | null
+  is_read: boolean
+  read_at: string | null
+  metadata: Record<string, any> | null
+  created_at: string
+  updated_at: string
+}
+
+// Re-export NotificationActionType for convenience
+export type { NotificationActionType }
