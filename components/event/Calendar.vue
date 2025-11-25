@@ -50,7 +50,6 @@
         
         <!-- Action Buttons -->
         <div class="flex gap-3 pt-4">
-          <Button label="Edit" severity="secondary" outlined class="flex-1" />
           <Button @click="promptDeletion" label="Delete" severity="danger" class="flex-1" />
         </div>
       </div>
@@ -158,7 +157,6 @@
         
         <!-- Action Buttons -->
         <div class="flex gap-3 pt-4">
-          <Button label="Edit" severity="secondary" outlined class="flex-1" />
           <Button @click="promptDeletion" label="Delete" severity="danger" class="flex-1" />
         </div>
       </div>
