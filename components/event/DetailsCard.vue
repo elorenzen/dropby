@@ -166,7 +166,10 @@
         <p class="text-color whitespace-pre-wrap">{{ event.notes }}</p>
       </div>
 
+      </div>
+
       <!-- Event Value Information Section (if available) -->
+      <!-- COMMENTED OUT - Feature under consideration
       <div v-if="businessType === 'merchant'" class="bg-primary-light rounded-lg p-4 border border-primary-light">
         <h3 class="text-lg font-semibold text-primary-dark mb-2">Event Value</h3>
         <div class="space-y-2">
@@ -196,7 +199,7 @@
           </div>
         </div>
       </div>
-    </div>
+      -->
 
     <template #footer>
       <div class="flex justify-end gap-2">

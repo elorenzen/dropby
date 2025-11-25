@@ -61,7 +61,8 @@
         </div>
 
         <!-- Event Value -->
-        <div class="space-y-3">
+        <!-- COMMENTED OUT - Feature under consideration -->
+        <!-- <div class="space-y-3">
           <FloatLabel variant="on">
             <InputNumber 
               v-model="eventValue" 
@@ -79,7 +80,7 @@
             This is the amount you'll pay to the vendor for each event
           </p>
           <small v-if="errors.eventValue" class="text-error">{{ errors.eventValue }}</small>
-        </div>
+        </div> -->
 
         <!-- Notes -->
         <div class="space-y-3">
@@ -328,7 +329,7 @@ const eventDate = ref<Date>(new Date())
 const eventStart = ref<Date | null>(null)
 const eventEnd = ref<Date | null>(null)
 const eventNotes = ref('')
-const eventValue = ref(150)
+// const eventValue = ref(150) // COMMENTED OUT - Feature under consideration
 const errors = ref<Record<string, string>>({})
 
 // Recurrence settings
@@ -380,7 +381,7 @@ const populateForm = () => {
   eventEnd.value = new Date(event.first_event_end)
 
   // Set basic fields
-  eventValue.value = event.event_value
+  // eventValue.value = event.event_value // COMMENTED OUT - Feature under consideration
   eventNotes.value = event.notes || ''
 
   // Set recurrence settings
@@ -438,7 +439,8 @@ watch(() => props.visible, (isVisible) => {
 
 // Computed properties
 const canUpdateRecurringEvent = computed(() => {
-  const hasBasicFields = eventDate.value && eventStart.value && eventEnd.value && eventValue.value && eventValue.value > 0
+  const hasBasicFields = eventDate.value && eventStart.value && eventEnd.value
+  // && eventValue.value && eventValue.value > 0 // COMMENTED OUT - Feature under consideration
   const hasRecurrenceType = recurrenceType.value !== null
   const hasScheduleInterval = scheduleIntervalAmount.value > 0 && scheduleIntervalUnit.value !== null
   
@@ -489,9 +491,10 @@ const validateForm = (): boolean => {
   if (!eventEnd.value) {
     errors.value.end = 'End time is required'
   }
-  if (!eventValue.value || eventValue.value <= 0) {
-    errors.value.eventValue = 'Event value must be greater than 0'
-  }
+  // COMMENTED OUT - Feature under consideration
+  // if (!eventValue.value || eventValue.value <= 0) {
+  //   errors.value.eventValue = 'Event value must be greater than 0'
+  // }
   if (!recurrenceType.value) {
     errors.value.recurrenceType = 'Recurrence type is required'
   }
@@ -547,7 +550,7 @@ const updateRecurringEvent = async () => {
     const recurrenceData: any = {
       first_event_start: eventStartTime.toISOString(),
       first_event_end: eventEndTime.toISOString(),
-      event_value: eventValue.value,
+      event_value: null, // COMMENTED OUT - Feature under consideration (was: eventValue.value)
       notes: eventNotes.value || null,
       recurrence_type: recurrenceType.value,
       recurrence_interval: recurrenceInterval.value,

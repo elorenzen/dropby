@@ -35,7 +35,7 @@ export interface RecurringEvent {
   location_coordinates: string | null
   location_address: string | null
   location_url: string | null
-  event_value: number
+  event_value: number | null
   notes: string | null
   active: boolean
   recurrence_type: 'daily' | 'weekly' | 'monthly'

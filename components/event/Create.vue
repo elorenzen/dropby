@@ -57,7 +57,8 @@
         </div>
 
       <!-- Event Value -->
-      <div class="space-y-3">
+      <!-- COMMENTED OUT - Feature under consideration -->
+      <!-- <div class="space-y-3">
         <FloatLabel variant="on">
           <InputNumber 
             v-model="eventValue" 
@@ -75,7 +76,7 @@
           This is the amount you'll pay to the vendor for this event
         </p>
         <small v-if="errors.eventValue" class="text-error">{{ errors.eventValue }}</small>
-      </div>
+      </div> -->
 
       <!-- Notes -->
       <div class="space-y-3">
@@ -146,12 +147,13 @@ watch(() => props.preFilledDate, (newDate) => {
 }, { immediate: true })
 const eventEnd = ref<Date | null>(null)
 const eventNotes = ref(props.merchant?.notes || '')
-const eventValue = ref(props.merchant?.default_event_value || 150)
+// const eventValue = ref(props.merchant?.default_event_value || 150) // COMMENTED OUT - Feature under consideration
 const errors = ref<Record<string, string>>({})
 
 // Computed properties
 const canCreateEvent = computed(() => {
-  return eventDate.value && eventStart.value && eventEnd.value && eventValue.value && eventValue.value > 0
+  return eventDate.value && eventStart.value && eventEnd.value
+  // && eventValue.value && eventValue.value > 0 // COMMENTED OUT - Feature under consideration
 })
 
 // Helper functions
@@ -193,7 +195,7 @@ const closeDialog = () => {
   eventStart.value = null
   eventEnd.value = null
   eventNotes.value = props.merchant?.notes || ''
-  eventValue.value = props.merchant?.default_event_value || 150
+  // eventValue.value = props.merchant?.default_event_value || 150 // COMMENTED OUT - Feature under consideration
   errors.value = {}
   emit('update:visible', false)
 }
@@ -212,9 +214,10 @@ const createEvent = async () => {
   if (!eventEnd.value) {
     errors.value.end = 'End time is required'
   }
-  if (!eventValue.value || eventValue.value <= 0) {
-    errors.value.eventValue = 'Event value must be greater than 0'
-  }
+  // COMMENTED OUT - Feature under consideration
+  // if (!eventValue.value || eventValue.value <= 0) {
+  //   errors.value.eventValue = 'Event value must be greater than 0'
+  // }
   
   if (Object.keys(errors.value).length > 0) {
     toast.add({
@@ -295,8 +298,8 @@ const createEvent = async () => {
       vendor_comment: null,
       merchant_comment: null,
       notes: eventNotes.value !== '' ? eventNotes.value : props.merchant.notes,
-      event_value: eventValue.value,
-      payment_status: 'pending'
+      event_value: null, // COMMENTED OUT - Feature under consideration (was: eventValue.value)
+      payment_status: 'pending' as const
     }
 
     // Use Event Store to create event

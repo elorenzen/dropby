@@ -139,6 +139,8 @@
           </template>
         </Card>
 
+        <!-- Avg. Event Value Card -->
+        <!-- COMMENTED OUT - Feature under consideration
         <Card class="info-card">
           <template #content>
             <div class="text-center">
@@ -150,6 +152,7 @@
             </div>
           </template>
         </Card>
+        -->
 
         <Card class="info-card">
           <template #content>
@@ -199,9 +202,11 @@
                   <p v-if="event.notes" class="text-text-main mt-2">{{ event.notes }}</p>
                 </div>
                 <div class="flex-shrink-0 text-right">
+                  <!-- COMMENTED OUT - Feature under consideration
                   <div v-if="canSeeEventValue(event) && event.event_value" class="text-2xl font-bold text-primary mb-2">
                     ${{ event.event_value }}
                   </div>
+                  -->
                   <Tag v-if="event.vendor && getVendorName(event.vendor)" :value="getVendorName(event.vendor)" severity="success" />
                 </div>
               </div>

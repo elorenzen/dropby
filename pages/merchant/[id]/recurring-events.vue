@@ -106,9 +106,11 @@
               <p class="text-xs text-text-muted mb-1">
                 Recurrence: {{ getRecurrenceDescription(recurringEvent) }}
               </p>
+              <!-- COMMENTED OUT - Feature under consideration
               <p class="text-xs text-text-muted">
                 Event Value: ${{ recurringEvent.event_value?.toFixed(2) || '0.00' }}
               </p>
+              -->
             </template>
             
             <template #status-badge>
@@ -226,9 +228,10 @@ const filters = ref({
 
 const sortOptions = ref([
   { label: 'Date (Newest First)', value: 'date-desc' },
-  { label: 'Date (Oldest First)', value: 'date-asc' },
-  { label: 'Event Value (High to Low)', value: 'value-desc' },
-  { label: 'Event Value (Low to High)', value: 'value-asc' }
+  { label: 'Date (Oldest First)', value: 'date-asc' }
+  // COMMENTED OUT - Feature under consideration
+  // { label: 'Event Value (High to Low)', value: 'value-desc' },
+  // { label: 'Event Value (Low to High)', value: 'value-asc' }
 ])
 
 // Get recurring events from store using getter
@@ -262,10 +265,11 @@ const filteredRecurringEvents = computed(() => {
         return new Date(a.first_event_start).getTime() - new Date(b.first_event_start).getTime()
       case 'date-desc':
         return new Date(b.first_event_start).getTime() - new Date(a.first_event_start).getTime()
-      case 'value-asc':
-        return (a.event_value || 0) - (b.event_value || 0)
-      case 'value-desc':
-        return (b.event_value || 0) - (a.event_value || 0)
+      // COMMENTED OUT - Feature under consideration
+      // case 'value-asc':
+      //   return (a.event_value || 0) - (b.event_value || 0)
+      // case 'value-desc':
+      //   return (b.event_value || 0) - (a.event_value || 0)
       default:
         return new Date(b.first_event_start).getTime() - new Date(a.first_event_start).getTime()
     }

@@ -422,10 +422,10 @@ const currentSubscription = ref<any>(null)
 // Payment settings state
 const paymentSettings = ref({
   seatingCapacity: merchant.value?.seating_capacity || 100,
-  defaultEventValue: merchant.value?.default_event_value || 350,
+  // defaultEventValue: merchant.value?.default_event_value || 350, // COMMENTED OUT - Feature under consideration
   customPricing: merchant.value?.custom_event_pricing || false,
-  minimumEventValue: merchant.value?.minimum_event_value || null,
-  maximumEventValue: merchant.value?.maximum_event_value || null
+  // minimumEventValue: merchant.value?.minimum_event_value || null, // COMMENTED OUT - Feature under consideration
+  // maximumEventValue: merchant.value?.maximum_event_value || null // COMMENTED OUT - Feature under consideration
 })
 
 // UI state
@@ -607,10 +607,10 @@ const savePaymentSettings = async () => {
   try {
     const updates = {
       seating_capacity: paymentSettings.value.seatingCapacity,
-      default_event_value: paymentSettings.value.defaultEventValue,
+      // default_event_value: paymentSettings.value.defaultEventValue, // COMMENTED OUT - Feature under consideration
       custom_event_pricing: paymentSettings.value.customPricing,
-      minimum_event_value: paymentSettings.value.minimumEventValue,
-      maximum_event_value: paymentSettings.value.maximumEventValue,
+      // minimum_event_value: paymentSettings.value.minimumEventValue, // COMMENTED OUT - Feature under consideration
+      // maximum_event_value: paymentSettings.value.maximumEventValue, // COMMENTED OUT - Feature under consideration
       updated_at: new Date().toISOString()
     }
     
@@ -684,11 +684,11 @@ const calculateDefaultEventValue = (capacity: number): number => {
 }
 
 // Watch for seating capacity changes and update default event value
-watch(() => paymentSettings.value.seatingCapacity, (newCapacity: number) => {
-  if (!paymentSettings.value.customPricing) {
-    paymentSettings.value.defaultEventValue = calculateDefaultEventValue(newCapacity)
-  }
-})
+// watch(() => paymentSettings.value.seatingCapacity, (newCapacity: number) => {
+//   if (!paymentSettings.value.customPricing) {
+//     paymentSettings.value.defaultEventValue = calculateDefaultEventValue(newCapacity)
+//   }
+// }) // COMMENTED OUT - Feature under consideration
 
 // Validate form
 const validateForm = (): boolean => {
@@ -698,17 +698,17 @@ const validateForm = (): boolean => {
     errors.value.seatingCapacity = 'Seating capacity must be at least 1'
   }
   
-  if (paymentSettings.value.customPricing) {
-    if (!paymentSettings.value.defaultEventValue || paymentSettings.value.defaultEventValue < 0) {
-      errors.value.defaultEventValue = 'Default event value must be a positive number'
-    }
-  }
+  // if (paymentSettings.value.customPricing) {
+  //   if (!paymentSettings.value.defaultEventValue || paymentSettings.value.defaultEventValue < 0) {
+  //     errors.value.defaultEventValue = 'Default event value must be a positive number'
+  //   }
+  // } // COMMENTED OUT - Feature under consideration
   
-  if (paymentSettings.value.minimumEventValue && paymentSettings.value.maximumEventValue) {
-    if (paymentSettings.value.minimumEventValue > paymentSettings.value.maximumEventValue) {
-      errors.value.minimumEventValue = 'Minimum value cannot be greater than maximum value'
-    }
-  }
+  // if (paymentSettings.value.minimumEventValue && paymentSettings.value.maximumEventValue) {
+  //   if (paymentSettings.value.minimumEventValue > paymentSettings.value.maximumEventValue) {
+  //     errors.value.minimumEventValue = 'Minimum value cannot be greater than maximum value'
+  //   }
+  // } // COMMENTED OUT - Feature under consideration
   
   return Object.keys(errors.value).length === 0
 }

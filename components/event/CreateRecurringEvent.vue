@@ -61,6 +61,7 @@
         </div>
 
         <!-- Event Value -->
+        <!-- COMMENTED OUT - Feature under consideration
         <div class="space-y-3">
           <FloatLabel variant="on">
             <InputNumber 
@@ -80,6 +81,7 @@
           </p>
           <small v-if="errors.eventValue" class="text-error">{{ errors.eventValue }}</small>
         </div>
+        -->
 
         <!-- Notes -->
         <div class="space-y-3">
@@ -276,7 +278,7 @@
           </div>
           <small v-if="errors.scheduleInterval" class="text-error">{{ errors.scheduleInterval }}</small>
           <p class="text-xs text-text-muted">
-            Events will be automatically created {{ scheduleIntervalAmount }} {{ getScheduleIntervalUnitLabel(scheduleIntervalUnit) }} before they occur
+            Events will be automatically created {{ scheduleIntervalAmount }} {{ scheduleIntervalUnitLabel }} before they occur
           </p>
         </div>
       </div>
@@ -329,7 +331,7 @@ const eventDate = ref(props.preFilledDate || new Date())
 const eventStart = ref<Date | null>(null)
 const eventEnd = ref<Date | null>(null)
 const eventNotes = ref(props.merchant?.notes || '')
-const eventValue = ref(props.merchant?.default_event_value || 150)
+// const eventValue = ref(props.merchant?.default_event_value || 150) // COMMENTED OUT - Feature under consideration
 const errors = ref<Record<string, string>>({})
 
 // Recurrence settings
@@ -378,7 +380,7 @@ watch(() => props.preFilledDate, (newDate: Date | undefined) => {
 
 // Computed properties
 const canCreateRecurringEvent = computed(() => {
-  const hasBasicFields = eventDate.value && eventStart.value && eventEnd.value && eventValue.value && eventValue.value > 0
+  const hasBasicFields = eventDate.value && eventStart.value && eventEnd.value
   const hasRecurrenceType = recurrenceType.value !== null
   const hasScheduleInterval = scheduleIntervalAmount.value > 0 && scheduleIntervalUnit.value !== null
   
@@ -405,6 +407,10 @@ const getScheduleIntervalUnitLabel = (unit: 'days' | 'weeks' | 'months' | null):
     default: return ''
   }
 }
+
+const scheduleIntervalUnitLabel = computed(() => {
+  return getScheduleIntervalUnitLabel(scheduleIntervalUnit.value as 'days' | 'weeks' | 'months' | null)
+})
 
 // Helper functions
 const getBusinessHour = (day: number, type: 'open' | 'close'): string => {
@@ -450,9 +456,9 @@ const validateForm = (): boolean => {
   if (!eventEnd.value) {
     errors.value.end = 'End time is required'
   }
-  if (!eventValue.value || eventValue.value <= 0) {
-    errors.value.eventValue = 'Event value must be greater than 0'
-  }
+  // if (!eventValue.value || eventValue.value <= 0) {
+  //   errors.value.eventValue = 'Event value must be greater than 0'
+  // }
   if (!recurrenceType.value) {
     errors.value.recurrenceType = 'Recurrence type is required'
   }
@@ -478,7 +484,7 @@ const closeDialog = () => {
   eventStart.value = null
   eventEnd.value = null
   eventNotes.value = props.merchant?.notes || ''
-  eventValue.value = props.merchant?.default_event_value || 150
+  // eventValue.value = props.merchant?.default_event_value || 150 // COMMENTED OUT - Feature under consideration
   recurrenceType.value = null
   recurrenceInterval.value = 1
   recurrenceDayOfWeek.value = null
@@ -488,7 +494,7 @@ const closeDialog = () => {
   hasEndDate.value = false
   endDate.value = null
   scheduleIntervalAmount.value = 1
-  scheduleIntervalUnit.value = null as 'days' | 'weeks' | 'months' | null
+  scheduleIntervalUnit.value = 'days'
   errors.value = {}
   emit('update:visible', false)
 }
@@ -559,7 +565,7 @@ const createRecurringEvent = async () => {
       location_coordinates: props.merchant.coordinates,
       location_address: props.merchant.formatted_address,
       location_url: props.merchant.address_url,
-      event_value: eventValue.value,
+      event_value: null, // COMMENTED OUT - Feature under consideration (was: eventValue.value)
       notes: eventNotes.value !== '' ? eventNotes.value : props.merchant.notes,
       active: true,
       ...recurrenceData
