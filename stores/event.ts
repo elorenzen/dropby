@@ -12,6 +12,13 @@ export const useEventStore = defineStore('event', {
   
   getters: {
     getAllEvents: (state) => state.allEvents,
+    getEventsByMerchantId: (state) => {
+      return (merchantId: string) => {
+        return state.allEvents
+          .filter(e => e.merchant === merchantId)
+          .sort((a, b) => Date.parse(b.start) - Date.parse(a.start))
+      }
+    },
     getAllOpenEvents: (state) => {
       return state.allEvents
         .filter((e) =>
@@ -35,11 +42,6 @@ export const useEventStore = defineStore('event', {
       this.allEvents = events
     },
     
-    async getEventsByMerchantId(id: string) {
-      return this.allEvents
-        .filter(e => e.merchant === id)
-        .sort((a,b) => Date.parse(b.start) - Date.parse(b.start))
-    },
     
     async getBookedEventsByVendorId(id: string) {
       return this.allEvents

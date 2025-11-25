@@ -114,8 +114,8 @@
       </template>
     </Card>
 
-    <!-- Current and Upcoming Events Card -->
-    <Card class="mb-6">
+    <!-- All Events Card -->
+    <Card>
       <template #title>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -123,22 +123,38 @@
               <i class="pi pi-calendar text-success"></i>
             </div>
             <div>
-              <h3 class="text-xl font-semibold text-text-main">Current & Upcoming Events</h3>
+              <h3 class="text-xl font-semibold text-text-main">All Events</h3>
               <div class="flex items-center gap-2 text-sm">
-                <span class="text-text-muted">Total events: {{ filteredCurrentUpcomingEvents.length }} |</span>
+                <span class="text-text-muted">Total events: {{ filteredEvents.length }} |</span>
                 <span v-if="openEventsCount > 0" class="text-error font-medium">open: {{ openEventsCount }}</span>
                 <span v-if="openEventsCount > 0 && bookedEventsCount > 0" class="text-text-muted">|</span>
                 <span v-if="bookedEventsCount > 0" class="text-success font-medium">booked: {{ bookedEventsCount }}</span>
+                <span v-if="(openEventsCount > 0 || bookedEventsCount > 0) && completedEventsCount > 0" class="text-text-muted">|</span>
+                <span v-if="completedEventsCount > 0" class="text-success font-medium">completed: {{ completedEventsCount }}</span>
+                <span v-if="(openEventsCount > 0 || bookedEventsCount > 0 || completedEventsCount > 0) && (cancelledEventsCount > 0 || closedEventsCount > 0)" class="text-text-muted">|</span>
+                <span v-if="cancelledEventsCount > 0" class="text-warning font-medium">cancelled: {{ cancelledEventsCount }}</span>
+                <span v-if="cancelledEventsCount > 0 && closedEventsCount > 0" class="text-text-muted">|</span>
+                <span v-if="closedEventsCount > 0" class="text-md-gray font-medium">closed: {{ closedEventsCount }}</span>
               </div>
             </div>
           </div>
-          <Button 
-            @click="showCreateEventDialog = true"
-            label="Create Event"
-            severity="success"
-            outlined
-            size="small"
-          />
+          <div class="flex items-center gap-2">
+            <Button 
+              @click="showCreateEventDialog = true"
+              label="Create Event"
+              severity="success"
+              outlined
+              size="small"
+            />
+            <Button 
+              v-if="canCreateDateRangeEvents"
+              @click="showCreateMultipleDialog = true"
+              label="Create Multiple"
+              icon="pi pi-calendar-plus"
+              severity="success"
+              size="small"
+            />
+          </div>
         </div>
       </template>
       <template #content>
@@ -150,12 +166,12 @@
               <FloatLabel>
                 <span class="p-input-icon-left w-full">
                   <InputText 
-                    id="current-upcoming-search-filter"
-                    v-model="currentUpcomingFilters.keyword" 
+                    id="search-filter"
+                    v-model="eventFilters.keyword" 
                     class="w-full"
                   />
                 </span>
-                <label for="current-upcoming-search-filter">Search by food truck name...</label>
+                <label for="search-filter">Search by food truck name...</label>
               </FloatLabel>
             </div>
             
@@ -163,14 +179,14 @@
             <div class="w-40">
               <FloatLabel>
                 <Dropdown 
-                  id="current-upcoming-status-filter"
-                  v-model="currentUpcomingFilters.status" 
-                  :options="currentUpcomingStatusOptions" 
+                  id="status-filter"
+                  v-model="eventFilters.status" 
+                  :options="statusOptions" 
                   optionLabel="label" 
                   optionValue="value"
                   class="w-full"
                 />
-                <label for="current-upcoming-status-filter">Status</label>
+                <label for="status-filter">Status</label>
               </FloatLabel>
             </div>
             
@@ -178,20 +194,20 @@
             <div class="w-48">
               <FloatLabel>
                 <Dropdown 
-                  id="current-upcoming-sort-filter"
-                  v-model="currentUpcomingFilters.sortBy" 
+                  id="sort-filter"
+                  v-model="eventFilters.sortBy" 
                   :options="sortOptions" 
                   optionLabel="label" 
                   optionValue="value"
                   class="w-full"
                 />
-                <label for="current-upcoming-sort-filter">Sort by</label>
+                <label for="sort-filter">Sort by</label>
               </FloatLabel>
             </div>
             
             <!-- Clear Filters -->
             <Button 
-              @click="clearCurrentUpcomingFilters"
+              @click="clearEventFilters"
               label="Clear Filters"
               severity="secondary"
               outlined
@@ -200,9 +216,9 @@
           </div>
         </div>
 
-        <div v-if="filteredCurrentUpcomingEvents.length > 0" class="space-y-4">
+        <div v-if="filteredEvents.length > 0" class="space-y-4">
           <EventBaseListCard 
-            v-for="event in filteredCurrentUpcomingEvents" 
+            v-for="event in filteredEvents" 
             :key="event.id"
             :show-status-badge="true"
           >
@@ -216,7 +232,7 @@
                 />
               </template>
               
-              <!-- Show no vendor message if event is open -->
+              <!-- Show no vendor message if event doesn't have a vendor -->
               <template v-else>
                 <div class="w-12 h-12 rounded-full bg-surface-section flex items-center justify-center">
                   <i class="pi pi-truck text-md-gray"></i>
@@ -235,12 +251,13 @@
                 </div>
               </template>
               
-              <!-- Show no vendor message if event is open -->
+              <!-- Show no vendor message if event doesn't have a vendor -->
               <template v-else>
                 <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
                 <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
                 <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                <p class="text-xs text-primary-dark mt-1">Waiting for food truck requests</p>
+                <p v-if="event.status === 'open'" class="text-xs text-primary-dark mt-1">Waiting for food truck requests</p>
+                <p v-else class="text-xs text-md-gray mt-1">Event was {{ event.status }} without a vendor</p>
               </template>
             </template>
             
@@ -252,9 +269,9 @@
               <Button 
                 type="button" 
                 icon="pi pi-ellipsis-v" 
-                @click="(e) => toggleCurrentUpcomingMenu(e, event)" 
+                @click="(e) => toggleEventMenu(e, event)" 
                 aria-haspopup="true" 
-                aria-controls="current_upcoming_menu"
+                aria-controls="event_menu"
                 severity="secondary"
                 outlined
                 size="small"
@@ -262,155 +279,7 @@
             </template>
           </EventBaseListCard>
         </div>
-        <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-success-light mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-calendar-times text-success text-2xl"></i>
-          </div>
-          <p class="text-success font-medium">No upcoming events</p>
-          <p class="text-sm text-success-dark">Create new events to get started</p>
-        </div>
-      </template>
-    </Card>
-
-    <!-- Past Events Card -->
-    <Card>
-      <template #title>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-surface-section flex items-center justify-center">
-              <i class="pi pi-history text-md-gray"></i>
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-text-main">Past Events</h3>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-text-muted">Total events: {{ filteredPastEvents.length }} |</span>
-                <span v-if="completedEventsCount > 0" class="text-success font-medium">completed: {{ completedEventsCount }}</span>
-                <span v-if="completedEventsCount > 0 && closedEventsCount > 0" class="text-text-muted">|</span>
-                <span v-if="closedEventsCount > 0" class="text-md-gray font-medium">closed: {{ closedEventsCount }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
-      <template #content>
-        <!-- Filters Section -->
-        <div class="mb-6">
-          <div class="flex items-end gap-4">
-            <!-- Search Bar -->
-            <div class="flex-1">
-              <FloatLabel>
-                <span class="p-input-icon-left w-full">
-                  <InputText 
-                    id="search-filter"
-                    v-model="pastEventsFilters.keyword" 
-                    class="w-full"
-                  />
-                </span>
-                <label for="search-filter">Search by food truck name...</label>
-              </FloatLabel>
-            </div>
-            
-            <!-- Status Filter -->
-            <div class="w-40">
-              <FloatLabel>
-                              <Dropdown 
-                id="status-filter"
-                v-model="pastEventsFilters.status" 
-                :options="pastStatusOptions" 
-                optionLabel="label" 
-                optionValue="value"
-                class="w-full"
-              />
-                <label for="status-filter">Status</label>
-              </FloatLabel>
-            </div>
-            
-            <!-- Sort By -->
-            <div class="w-48">
-              <FloatLabel>
-                <Dropdown 
-                  id="sort-filter"
-                  v-model="pastEventsFilters.sortBy" 
-                  :options="sortOptions" 
-                  optionLabel="label" 
-                  optionValue="value"
-                  class="w-full"
-                />
-                <label for="sort-filter">Sort by</label>
-              </FloatLabel>
-            </div>
-            
-            <!-- Clear Filters -->
-            <Button 
-              @click="clearPastEventsFilters"
-              label="Clear Filters"
-              severity="secondary"
-              outlined
-              size="small"
-            />
-          </div>
-        </div>
-
-        <div v-if="filteredPastEvents.length > 0" class="space-y-4">
-          <EventBaseListCard 
-            v-for="event in filteredPastEvents" 
-            :key="event.id"
-            :show-status-badge="true"
-          >
-            <template #vendor-avatar>
-              <!-- Show vendor info if event has a vendor -->
-              <template v-if="event.vendor">
-                <NuxtImg 
-                  :src="getVendorProp(event.vendor, 'avatar_url')" 
-                  :alt="getVendorProp(event.vendor, 'vendor_name')" 
-                  class="w-12 h-12 rounded-full"
-                />
-              </template>
-              
-              <!-- Show no vendor message if event was closed without a vendor -->
-              <template v-else>
-                <div class="w-12 h-12 rounded-full bg-surface-section flex items-center justify-center">
-                  <i class="pi pi-times-circle text-md-gray"></i>
-                </div>
-              </template>
-            </template>
-            
-            <template #event-content>
-              <!-- Show vendor info if event has a vendor -->
-              <template v-if="event.vendor">
-                <p class="font-semibold text-text-main truncate mb-1">{{ getVendorProp(event.vendor, 'vendor_name') }}</p>
-                <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-              </template>
-              
-              <!-- Show no vendor message if event was closed without a vendor -->
-              <template v-else>
-                <p class="font-semibold text-text-main truncate mb-1">No Food Truck Booked</p>
-                <p class="text-sm text-text-muted">Event Date: {{ new Date(event.start).toLocaleDateString() }}</p>
-                <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-                <p class="text-xs text-md-gray mt-1">Event was closed without a vendor</p>
-              </template>
-            </template>
-            
-            <template #status-badge>
-              <Tag :value="event.status.toUpperCase()" :severity="event.status === 'completed' ? 'success' : 'secondary'" size="small" />
-            </template>
-            
-            <template #action-buttons>
-              <Button 
-                type="button" 
-                icon="pi pi-ellipsis-v" 
-                @click="(e) => togglePastEventsMenu(e, event)" 
-                aria-haspopup="true" 
-                aria-controls="past_events_menu"
-                severity="secondary"
-                outlined
-                size="small"
-              />
-            </template>
-          </EventBaseListCard>
-        </div>
-        <div v-else-if="pastEvents.length > 0" class="text-center py-8">
+        <div v-else-if="allEvents.length > 0" class="text-center py-8">
           <div class="w-16 h-16 rounded-full bg-surface-section mx-auto mb-4 flex items-center justify-center">
             <i class="pi pi-search text-md-gray text-2xl"></i>
           </div>
@@ -418,11 +287,11 @@
           <p class="text-sm text-md-gray">Try adjusting your search criteria</p>
         </div>
         <div v-else class="text-center py-8">
-          <div class="w-16 h-16 rounded-full bg-surface-section mx-auto mb-4 flex items-center justify-center">
-            <i class="pi pi-inbox text-md-gray text-2xl"></i>
+          <div class="w-16 h-16 rounded-full bg-success-light mx-auto mb-4 flex items-center justify-center">
+            <i class="pi pi-calendar-times text-success text-2xl"></i>
           </div>
-          <p class="text-md-gray font-medium">No past events</p>
-          <p class="text-sm text-md-gray">Completed events will appear here</p>
+          <p class="text-success font-medium">No events</p>
+          <p class="text-sm text-success-dark">Create new events to get started</p>
         </div>
       </template>
     </Card>
@@ -446,6 +315,15 @@
       :merchant="merchant"
       :business-hours="businessHours"
       @update:visible="showCreateEventDialog = $event"
+      @event-created="onEventCreated"
+    />
+
+    <!-- Create Multiple Events Dialog -->
+    <EventCreateMultiple
+      :visible="showCreateMultipleDialog"
+      :merchant="merchant"
+      :business-hours="businessHours"
+      @update:visible="showCreateMultipleDialog = $event"
       @event-created="onEventCreated"
     />
 
@@ -513,8 +391,7 @@
     </Dialog>
 
     <!-- Menu Dropdowns -->
-    <Menu ref="currentUpcomingMenu" id="current_upcoming_menu" :model="getCurrentUpcomingMenuItems(selectedEventForCurrentUpcomingMenu || {})" :popup="true" />
-    <Menu ref="pastEventsMenu" id="past_events_menu" :model="getPastEventsMenuItems(selectedEventForPastEventsMenu || {})" :popup="true" />
+    <Menu ref="eventMenu" id="event_menu" :model="getEventMenuItems(selectedEventForMenu || {})" :popup="true" />
   </div>
 </template>
 
@@ -563,8 +440,7 @@ onMounted(async () => {
 })
 
 // Menu refs for dropdown actions
-const currentUpcomingMenu = ref()
-const pastEventsMenu = ref()
+const eventMenu = ref()
 
 // Fetch review data for this merchant
 const { data: sentReviews, error: sentReviewsError } = await supabase
@@ -584,6 +460,7 @@ const selectedEventForReview = ref<Event | null>(null)
 
 // Create event dialog state
 const showCreateEventDialog = ref(false)
+const showCreateMultipleDialog = ref(false)
 
 // Event details dialog state
 const showEventDetailsDialog = ref(false)
@@ -594,36 +471,23 @@ const showDeleteEventDialog = ref(false)
 const selectedEventForDelete = ref<Event | null>(null)
 
 // Menu state
-const selectedEventForCurrentUpcomingMenu = ref<Event | null>(null)
-const selectedEventForPastEventsMenu = ref<Event | null>(null)
+const selectedEventForMenu = ref<Event | null>(null)
 
 
-// Filter state for past events
-const pastEventsFilters = ref({
+// Unified filter state for all events
+const eventFilters = ref({
   keyword: '',
-  status: '',
-  sortBy: 'date-desc'
+  status: '', // Empty string shows all statuses
+  sortBy: 'date-desc' // Default to newest first
 })
 
-// Filter state for current/upcoming events
-const currentUpcomingFilters = ref({
-  keyword: '',
-  status: '',
-  sortBy: 'date-asc'
-})
-
-// Filter options for past events
-const pastStatusOptions = ref([
-  { label: 'All Statuses', value: '' },
-  { label: 'Completed', value: 'completed' },
-  { label: 'Closed', value: 'closed' }
-])
-
-// Filter options for current/upcoming events
-const currentUpcomingStatusOptions = ref([
-  { label: 'All Statuses', value: '' },
+// Filter options for all event statuses (no "All Statuses" option - use clear filters to show all)
+const statusOptions = ref([
   { label: 'Open', value: 'open' },
-  { label: 'Booked', value: 'booked' }
+  { label: 'Booked', value: 'booked' },
+  { label: 'Completed', value: 'completed' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Closed', value: 'closed' }
 ])
 
 const sortOptions = ref([
@@ -639,14 +503,62 @@ const canCreateRecurringEvents = computed(() => {
   return subscriptionStore.canCreateRecurringEvents
 })
 
-const allEvents = computed((): Event[] => {
-  return (eventStore.getAllEvents as Event[]).filter((event: Event) => event.merchant === route.params.id)
+const canCreateDateRangeEvents = computed(() => {
+  return subscriptionStore.hasFeature('createDateRangeEvents')
 })
+
+// Get all events for this merchant using store getter
+const allEvents = computed(() => {
+  const events = eventStore.getEventsByMerchantId(String(route.params.id))
+  return events || []
+})
+
+// Helper function to filter events by keyword
+const filterByKeyword = (events: Event[], keyword: string): Event[] => {
+  if (!keyword) return events
+  const searchTerm = keyword.toLowerCase()
+  return events.filter((event: Event) => {
+    const vendorName = getVendorProp(event.vendor || '', 'vendor_name').toLowerCase()
+    const cuisines = getVendorCuisines(event.vendor || '').join(' ').toLowerCase()
+    const location = event.location_address?.toLowerCase() || ''
+    return vendorName.includes(searchTerm) || cuisines.includes(searchTerm) || location.includes(searchTerm)
+  })
+}
+
+// Helper function to sort events
+const sortEvents = (events: Event[], sortBy: string): Event[] => {
+  return [...events].sort((a: Event, b: Event) => {
+    switch (sortBy) {
+      case 'date-asc':
+        return new Date(a.start).getTime() - new Date(b.start).getTime()
+      case 'date-desc':
+        return new Date(b.start).getTime() - new Date(a.start).getTime()
+      case 'vendor-asc':
+        return getVendorProp(a.vendor || '', 'vendor_name').localeCompare(getVendorProp(b.vendor || '', 'vendor_name'))
+      case 'vendor-desc':
+        return getVendorProp(b.vendor || '', 'vendor_name').localeCompare(getVendorProp(a.vendor || '', 'vendor_name'))
+      default:
+        return new Date(b.start).getTime() - new Date(a.start).getTime()
+    }
+  })
+}
+
+// Helper function to filter and sort events
+const filterAndSortEvents = (events: Event[], filters: { keyword: string; status: string; sortBy: string }): Event[] => {
+  if (!events || events.length === 0) return []
+  
+  let filtered = filterByKeyword(events, filters.keyword)
+  // Only filter by status if a specific status is selected (empty string shows all statuses)
+  if (filters.status && filters.status.trim() !== '') {
+    filtered = filtered.filter((event: Event) => event.status === filters.status)
+  }
+  return sortEvents(filtered, filters.sortBy)
+}
 
 // Pending requests - events with pending_requests that include vendor IDs
 const pendingRequests = computed(() => {
   const now = new Date()
-  return allEvents.value.filter((event: Event) => {
+  return (allEvents.value || []).filter((event: Event) => {
     return event.status === 'open' && 
            event.pending_requests && 
            event.pending_requests.length > 0 &&
@@ -654,122 +566,31 @@ const pendingRequests = computed(() => {
   })
 })
 
-// Current and upcoming events - all events that haven't ended yet
-const currentUpcomingEvents = computed(() => {
-  const now = new Date()
-  return allEvents.value.filter((event: Event) => {
-    return new Date(event.end) > now
-  }).sort((a: Event, b: Event) => new Date(a.start).getTime() - new Date(b.start).getTime())
+// Filtered events with search, status filter, and sorting
+const filteredEvents = computed(() => {
+  return filterAndSortEvents(allEvents.value, eventFilters.value)
 })
 
-// Filtered current/upcoming events with search, status filter, and sorting
-const filteredCurrentUpcomingEvents = computed(() => {
-  let filtered = currentUpcomingEvents.value
+// Event count computed properties
+const openEventsCount = computed(() => 
+  filteredEvents.value.filter((event: Event) => event.status === 'open').length
+)
 
-  // Filter by keyword search
-  if (currentUpcomingFilters.value.keyword) {
-    const keyword = currentUpcomingFilters.value.keyword.toLowerCase()
-    filtered = filtered.filter((event: Event) => {
-      const vendorName = getVendorProp(event.vendor || '', 'vendor_name').toLowerCase()
-      const cuisines = getVendorCuisines(event.vendor || '').join(' ').toLowerCase()
-      const location = event.location_address?.toLowerCase() || ''
-      
-      return vendorName.includes(keyword) || 
-             cuisines.includes(keyword) || 
-             location.includes(keyword)
-    })
-  }
+const bookedEventsCount = computed(() => 
+  filteredEvents.value.filter((event: Event) => event.status === 'booked').length
+)
 
-  // Filter by status
-  if (currentUpcomingFilters.value.status) {
-    filtered = filtered.filter((event: Event) => event.status === currentUpcomingFilters.value.status)
-  }
+const completedEventsCount = computed(() => 
+  filteredEvents.value.filter((event: Event) => event.status === 'completed').length
+)
 
-  // Sort events
-  filtered.sort((a: Event, b: Event) => {
-    switch (currentUpcomingFilters.value.sortBy) {
-      case 'date-asc':
-        return new Date(a.start).getTime() - new Date(b.start).getTime()
-      case 'date-desc':
-        return new Date(b.start).getTime() - new Date(a.start).getTime()
-      case 'vendor-asc':
-        return getVendorProp(a.vendor || '', 'vendor_name').localeCompare(getVendorProp(b.vendor || '', 'vendor_name'))
-      case 'vendor-desc':
-        return getVendorProp(b.vendor || '', 'vendor_name').localeCompare(getVendorProp(a.vendor || '', 'vendor_name'))
-      default:
-        return new Date(a.start).getTime() - new Date(b.start).getTime()
-    }
-  })
+const cancelledEventsCount = computed(() => 
+  filteredEvents.value.filter((event: Event) => event.status === 'cancelled').length
+)
 
-  return filtered
-})
-
-// Event count computed properties for current/upcoming events
-const openEventsCount = computed(() => {
-  return filteredCurrentUpcomingEvents.value.filter((event: Event) => event.status === 'open').length
-})
-
-const bookedEventsCount = computed(() => {
-  return filteredCurrentUpcomingEvents.value.filter((event: Event) => event.status === 'booked').length
-})
-
-// Event count computed properties for past events
-const completedEventsCount = computed(() => {
-  return filteredPastEvents.value.filter((event: Event) => event.status === 'completed').length
-})
-
-const closedEventsCount = computed(() => {
-  return filteredPastEvents.value.filter((event: Event) => event.status === 'closed').length
-})
-
-// Past events - completed or closed events
-const pastEvents = computed(() => {
-  return allEvents.value.filter((event: Event) => {
-    return event.status === 'completed' || event.status === 'closed'
-  })
-})
-
-// Filtered past events with search, status filter, and sorting
-const filteredPastEvents = computed(() => {
-  let filtered = pastEvents.value
-
-  // Filter by keyword search
-  if (pastEventsFilters.value.keyword) {
-    const keyword = pastEventsFilters.value.keyword.toLowerCase()
-    filtered = filtered.filter((event: Event) => {
-      const vendorName = getVendorProp(event.vendor || '', 'vendor_name').toLowerCase()
-      const cuisines = getVendorCuisines(event.vendor || '').join(' ').toLowerCase()
-      const location = event.location_address?.toLowerCase() || ''
-      
-      return vendorName.includes(keyword) || 
-             cuisines.includes(keyword) || 
-             location.includes(keyword)
-    })
-  }
-
-  // Filter by status
-  if (pastEventsFilters.value.status) {
-    filtered = filtered.filter((event: Event) => event.status === pastEventsFilters.value.status)
-  }
-
-  // Sort events
-  filtered.sort((a: Event, b: Event) => {
-    switch (pastEventsFilters.value.sortBy) {
-      case 'date-asc':
-        return new Date(a.start).getTime() - new Date(b.start).getTime()
-      case 'date-desc':
-        return new Date(b.start).getTime() - new Date(a.start).getTime()
-      case 'vendor-asc':
-        return getVendorProp(a.vendor || '', 'vendor_name').localeCompare(getVendorProp(b.vendor || '', 'vendor_name'))
-      case 'vendor-desc':
-        return getVendorProp(b.vendor || '', 'vendor_name').localeCompare(getVendorProp(a.vendor || '', 'vendor_name'))
-      default:
-        return new Date(b.start).getTime() - new Date(a.start).getTime()
-    }
-  })
-
-  return filtered
-})
+const closedEventsCount = computed(() => 
+  filteredEvents.value.filter((event: Event) => event.status === 'closed').length
+)
 
 // Helper functions
 const getVendorProp = (vendorId: string | null, prop: string): string => {
@@ -963,35 +784,22 @@ const onClose = () => {
   console.log('Toast closed')
 }
 
-const clearPastEventsFilters = () => {
-  pastEventsFilters.value = {
+const clearEventFilters = () => {
+  eventFilters.value = {
     keyword: '',
-    status: '',
-    sortBy: 'date-desc'
-  }
-}
-
-const clearCurrentUpcomingFilters = () => {
-  currentUpcomingFilters.value = {
-    keyword: '',
-    status: '',
-    sortBy: 'date-asc'
+    status: '', // Reset to empty string to show all statuses
+    sortBy: 'date-desc' // Reset to newest first
   }
 }
 
 // Menu toggle functions
-const toggleCurrentUpcomingMenu = (event: MouseEvent, selectedEvent: Event) => {
-  selectedEventForCurrentUpcomingMenu.value = selectedEvent
-  currentUpcomingMenu.value?.toggle(event)
+const toggleEventMenu = (event: MouseEvent, selectedEvent: Event) => {
+  selectedEventForMenu.value = selectedEvent
+  eventMenu.value?.toggle(event)
 }
 
-const togglePastEventsMenu = (event: MouseEvent, selectedEvent: Event) => {
-  selectedEventForPastEventsMenu.value = selectedEvent
-  pastEventsMenu.value?.toggle(event)
-}
-
-// Menu items for current and upcoming events
-const getCurrentUpcomingMenuItems = (event: Event) => {
+// Menu items for events
+const getEventMenuItems = (event: Event) => {
   const items = [
     {
       label: 'View Details',
@@ -1009,21 +817,17 @@ const getCurrentUpcomingMenuItems = (event: Event) => {
     })
   }
   
-  return items
-}
-
-// Menu items for past events
-const getPastEventsMenuItems = (event: Event) => {
-  const items = [
-    {
-      label: 'View Details',
-      icon: 'pi pi-eye',
-      command: () => viewEventDetails(event)
-    }
-  ]
+  // Add cancel option if event is open or booked
+  if (event.status === 'open' || event.status === 'booked') {
+    items.push({
+      label: 'Cancel Event',
+      icon: 'pi pi-times',
+      command: () => cancelEvent(event)
+    })
+  }
   
-  // Add review option if no review exists and event has a vendor
-  if (!hasReview(event) && event.vendor) {
+  // Add review option if no review exists and event has a vendor (for completed events)
+  if ((event.status === 'completed' || event.status === 'closed') && !hasReview(event) && event.vendor) {
     items.push({
       label: 'Write Review',
       icon: 'pi pi-star',
