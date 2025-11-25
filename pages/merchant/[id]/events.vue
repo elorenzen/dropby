@@ -176,14 +176,17 @@
             </div>
             
             <!-- Status Filter -->
-            <div class="w-40">
+            <div class="w-56">
               <FloatLabel>
-                <Select 
+                <MultiSelect 
                   id="status-filter"
                   v-model="eventFilters.status" 
                   :options="statusOptions" 
                   optionLabel="label" 
                   optionValue="value"
+                  filter
+                  placeholder="Select Statuses"
+                  :maxSelectedLabels="3"
                   class="w-full"
                 />
                 <label for="status-filter">Status</label>
@@ -477,7 +480,7 @@ const selectedEventForMenu = ref<Event | null>(null)
 // Unified filter state for all events
 const eventFilters = ref({
   keyword: '',
-  status: '', // Empty string shows all statuses
+  status: [] as string[], // Empty array shows all statuses
   sortBy: 'date-desc' // Default to newest first
 })
 
@@ -544,13 +547,13 @@ const sortEvents = (events: Event[], sortBy: string): Event[] => {
 }
 
 // Helper function to filter and sort events
-const filterAndSortEvents = (events: Event[], filters: { keyword: string; status: string; sortBy: string }): Event[] => {
+const filterAndSortEvents = (events: Event[], filters: { keyword: string; status: string[]; sortBy: string }): Event[] => {
   if (!events || events.length === 0) return []
   
   let filtered = filterByKeyword(events, filters.keyword)
-  // Only filter by status if a specific status is selected (empty string shows all statuses)
-  if (filters.status && filters.status.trim() !== '') {
-    filtered = filtered.filter((event: Event) => event.status === filters.status)
+  // Only filter by status if statuses are selected (empty array shows all statuses)
+  if (filters.status && filters.status.length > 0) {
+    filtered = filtered.filter((event: Event) => filters.status.includes(event.status))
   }
   return sortEvents(filtered, filters.sortBy)
 }
@@ -787,7 +790,7 @@ const onClose = () => {
 const clearEventFilters = () => {
   eventFilters.value = {
     keyword: '',
-    status: '', // Reset to empty string to show all statuses
+    status: [], // Reset to empty array to show all statuses
     sortBy: 'date-desc' // Reset to newest first
   }
 }
