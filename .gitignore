@@ -24,3 +24,4 @@ logs
 !.env.example
 .vercel
 MVP_ROADMAP.md
+SETUP_SMTP.md

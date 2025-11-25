@@ -30,16 +30,10 @@
       <template #end>
         <!-- Not Authenticated - Show Login/Signup -->
         <div v-if="!isAuthenticated" class="auth-section">
-          <div class="auth-inputs">
-            <InputText placeholder="Email" v-model="email" type="text" class="auth-input" size="small" />
-            <Password placeholder="Password" v-model="password" class="auth-input" size="small" />
-          </div>
           <div class="auth-buttons">
             <Button
               outlined
-              @click="fireAuth"
-              :disabled="email == '' || password == ''"
-              :loading="loading"
+              @click="navigateTo('/login')"
               class="auth-button"
               size="small"
             >Login</Button>
@@ -99,28 +93,19 @@
         </div>
       </template>
     </Menubar>
-    <ErrorDialog v-if="errDialog" :errType="'Sign In'" :errMsg="errMsg" @errorClose="errDialog = false" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue'
 import Logo from '~/assets/logo-one.svg' // options: '.../logo-two.svg', '.../logo-three.svg'
-import BaseIcon from '~/components/BaseIcon.vue'
 import NotificationPanel from '~/components/NotificationPanel.vue'
 
-const supabase = useSupabaseClient()
 const router = useRouter()
 const route = useRoute()
-const { isAuthenticated, currentUser, signOut, userType } = useAuth()
+const { isAuthenticated, currentUser, signOut } = useAuth()
 
-const loading = ref(false)
-const errDialog = ref(false)
-const errMsg = ref()
 const renderKey = ref(0)
 
-const email = ref('')
-const password = ref('')
 const profileMenu = ref()
 const notificationPanel = ref()
 const notificationStore = useNotificationStore()
@@ -241,27 +226,6 @@ const navigateToSettings = () => {
   }
 }
 
-const fireAuth = async () => {
-  loading.value = true
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.value,
-      password: password.value,
-    })
-
-    if (error) {
-      await errored(error.message)
-    } else if (data?.user) {
-      await confirmed(data.user.id)
-    }
-  } catch (err) {
-    await errored('An unexpected error occurred')
-  } finally {
-    loading.value = false
-    renderKey.value++
-  }
-}
-
 const register = async () => { 
   await navigateTo('/get-started') 
 }
@@ -272,42 +236,9 @@ const handleSignOut = async () => {
     if (result.error) {
       console.error('Sign out failed:', result.error)
     }
-    email.value = ''
-    password.value = ''
   } catch (err) {
     console.error('Sign out error:', err)
   }
-}
-
-const confirmed = async (userId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single()
-
-    if (error) {
-      console.error('Error fetching user:', error)
-      return
-    }
-
-    if (data) {
-      const userStore = useUserStore()
-      await userStore.setUser(data)
-      
-      // Redirect to user dashboard
-      const { redirectToUserDashboard } = useAuth()
-      await redirectToUserDashboard()
-    }
-  } catch (err) {
-    console.error('Error in confirmed:', err)
-  }
-}
-
-const errored = async (message: string) => {
-  errMsg.value = message
-  errDialog.value = true
 }
 
 // Notification handling
@@ -387,17 +318,6 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
-.auth-inputs {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.auth-input {
-  min-width: 120px;
-}
-
 .auth-buttons {
   display: flex;
   align-items: center;
@@ -430,17 +350,6 @@ onUnmounted(() => {
     align-items: stretch;
     gap: 0.5rem;
     width: 100%;
-  }
-
-  .auth-inputs {
-    flex-direction: column;
-    width: 100%;
-    gap: 0.5rem;
-  }
-
-  .auth-input {
-    width: 100%;
-    min-width: unset;
   }
 
   .auth-buttons {
