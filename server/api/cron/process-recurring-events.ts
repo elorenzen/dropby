@@ -53,28 +53,19 @@ export default defineEventHandler(async (event) => {
         )
 
         // Calculate the target date (now + schedule_interval)
+        // Events should be created if they are scheduled to occur within this window
         const targetDate = new Date(now.getTime() + scheduleIntervalMs)
 
-        // Get the last created event for this recurring event to determine the base date
-        // Note: We check by merchant and matching start time pattern since recurring_event_id may not exist
-        const { data: lastEvent } = await client
-          .from('events')
-          .select('start')
-          .eq('merchant', recurringEvent.merchant)
-          .gte('start', recurringEvent.first_event_start)
-          .order('start', { ascending: false })
-          .limit(1)
-          .single() as { data: { start: string } | null, error: any }
+        // Use first_event_start as the anchor point for calculating all future occurrences
+        const firstEventStart = new Date(recurringEvent.first_event_start)
 
-        // Use last event start as base, or first_event_start if no events exist yet
-        const baseDate = lastEvent?.start 
-          ? new Date(lastEvent.start)
-          : new Date(recurringEvent.first_event_start)
-
-        // Calculate next event dates based on recurrence pattern
+        // Calculate all future event dates from first_event_start that fall within the schedule interval window
+        // This ensures we always create events based on when they should occur relative to NOW,
+        // not based on when the last event was created
         const nextEventDates = calculateNextEventDates(
           recurringEvent,
-          baseDate,
+          firstEventStart,
+          now,
           targetDate
         )
 
@@ -204,73 +195,29 @@ function calculateIntervalMs(amount: number, unit: 'days' | 'weeks' | 'months'):
 
 /**
  * Calculate next event dates based on recurrence pattern
+ * 
+ * @param recurringEvent - The recurring event configuration
+ * @param firstEventStart - The anchor date (first_event_start) to calculate from
+ * @param now - Current date/time
+ * @param targetDate - Maximum date to calculate up to (now + schedule_interval)
+ * @returns Array of event dates that fall within the schedule interval window
  */
 function calculateNextEventDates(
   recurringEvent: any,
-  baseDate: Date,
+  firstEventStart: Date,
+  now: Date,
   targetDate: Date
 ): Date[] {
   const dates: Date[] = []
-  const currentDate = new Date(baseDate)
-
-  // Move to the next occurrence after base date
-  if (recurringEvent.recurrence_type === 'daily') {
-    // Add recurrence_interval days
-    currentDate.setDate(currentDate.getDate() + recurringEvent.recurrence_interval)
-  } else if (recurringEvent.recurrence_type === 'weekly') {
-    // Move to next week
-    currentDate.setDate(currentDate.getDate() + (7 * recurringEvent.recurrence_interval))
-    
-    // If specific days of week are specified, adjust to those days
-    if (recurringEvent.recurrence_days_of_week && recurringEvent.recurrence_days_of_week.length > 0) {
-      // Find the next occurrence of any of the specified days
-      const targetDays = recurringEvent.recurrence_days_of_week
-      let found = false
-      let attempts = 0
-      
-      while (!found && attempts < 14) {
-        const dayOfWeek = currentDate.getDay()
-        if (targetDays.includes(dayOfWeek)) {
-          found = true
-        } else {
-          currentDate.setDate(currentDate.getDate() + 1)
-          attempts++
-        }
-      }
-    } else if (recurringEvent.recurrence_day_of_week !== null) {
-      // Move to the specific day of week
-      const targetDay = recurringEvent.recurrence_day_of_week
-      const currentDay = currentDate.getDay()
-      let daysToAdd = (targetDay - currentDay + 7) % 7
-      if (daysToAdd === 0) {
-        daysToAdd = 7 * recurringEvent.recurrence_interval
-      }
-      currentDate.setDate(currentDate.getDate() + daysToAdd)
-    }
-  } else if (recurringEvent.recurrence_type === 'monthly') {
-    // Move to next month
-    currentDate.setMonth(currentDate.getMonth() + recurringEvent.recurrence_interval)
-    
-    // Adjust to the specific day of month
-    if (recurringEvent.recurrence_day_of_month !== null) {
-      if (recurringEvent.recurrence_day_of_month === -1) {
-        // Last day of month
-        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
-        currentDate.setDate(lastDay)
-      } else if (recurringEvent.recurrence_day_of_month === 1) {
-        // First day of month
-        currentDate.setDate(1)
-      } else {
-        // Specific day of month
-        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
-        const targetDay = Math.min(recurringEvent.recurrence_day_of_month, lastDay)
-        currentDate.setDate(targetDay)
-      }
-    }
-  }
-
-  // Generate dates until we reach or exceed the target date
-  while (currentDate <= targetDate) {
+  const currentDate = new Date(firstEventStart)
+  
+  // Start from first_event_start and calculate all occurrences forward
+  // We'll filter to only include those within the schedule interval window
+  
+  const maxIterations = 1000 // Safety limit to prevent infinite loops
+  let iterations = 0
+  
+  while (iterations < maxIterations) {
     // Check if we've passed the recurrence end date
     if (recurringEvent.recurrence_end_date) {
       const endDate = new Date(recurringEvent.recurrence_end_date)
@@ -278,15 +225,25 @@ function calculateNextEventDates(
         break
       }
     }
-
-    dates.push(new Date(currentDate))
-
-    // Calculate next occurrence
+    
+    // Only include dates that:
+    // 1. Are in the future (>= now)
+    // 2. Fall within the schedule interval window (<= targetDate)
+    if (currentDate >= now && currentDate <= targetDate) {
+      dates.push(new Date(currentDate))
+    }
+    
+    // If we've passed the target date, we're done
+    if (currentDate > targetDate) {
+      break
+    }
+    
+    // Calculate next occurrence based on recurrence pattern
     if (recurringEvent.recurrence_type === 'daily') {
       currentDate.setDate(currentDate.getDate() + recurringEvent.recurrence_interval)
     } else if (recurringEvent.recurrence_type === 'weekly') {
       if (recurringEvent.recurrence_days_of_week && recurringEvent.recurrence_days_of_week.length > 0) {
-        // Find next day in the list
+        // Multiple days of week specified
         const targetDays = recurringEvent.recurrence_days_of_week.sort((a: number, b: number) => a - b)
         const currentDay = currentDate.getDay()
         const nextDayIndex = targetDays.findIndex((day: number) => day > currentDay)
@@ -300,28 +257,45 @@ function calculateNextEventDates(
           const daysToAdd = 7 - currentDay + targetDays[0] + (7 * (recurringEvent.recurrence_interval - 1))
           currentDate.setDate(currentDate.getDate() + daysToAdd)
         }
+      } else if (recurringEvent.recurrence_day_of_week !== null) {
+        // Single day of week specified
+        const targetDay = recurringEvent.recurrence_day_of_week
+        const currentDay = currentDate.getDay()
+        let daysToAdd = (targetDay - currentDay + 7) % 7
+        if (daysToAdd === 0) {
+          // Same day, move to next interval
+          daysToAdd = 7 * recurringEvent.recurrence_interval
+        }
+        currentDate.setDate(currentDate.getDate() + daysToAdd)
       } else {
+        // No specific day, just move forward by interval weeks
         currentDate.setDate(currentDate.getDate() + (7 * recurringEvent.recurrence_interval))
       }
     } else if (recurringEvent.recurrence_type === 'monthly') {
+      // Move to next month
       currentDate.setMonth(currentDate.getMonth() + recurringEvent.recurrence_interval)
       
       // Adjust to the specific day of month
       if (recurringEvent.recurrence_day_of_month !== null) {
         if (recurringEvent.recurrence_day_of_month === -1) {
+          // Last day of month
           const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
           currentDate.setDate(lastDay)
         } else if (recurringEvent.recurrence_day_of_month === 1) {
+          // First day of month
           currentDate.setDate(1)
         } else {
+          // Specific day of month
           const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
           const targetDay = Math.min(recurringEvent.recurrence_day_of_month, lastDay)
           currentDate.setDate(targetDay)
         }
       }
     }
+    
+    iterations++
   }
-
+  
   return dates
 }
 
