@@ -26,7 +26,7 @@
     </div>
 
     <!-- Payment Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
       <div class="bg-success-light rounded-lg p-4">
         <div class="flex items-center justify-between">
           <div>
@@ -72,6 +72,18 @@
             </p>
           </div>
           <i class="pi pi-check-circle text-primary text-xl"></i>
+        </div>
+      </div>
+
+      <div class="bg-accent-light rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-accent font-medium">Subscription Fees</p>
+            <p class="text-2xl font-bold text-accent-dark">
+              ${{ formatCurrency(totalSubscriptionFees) }}
+            </p>
+          </div>
+          <i class="pi pi-star text-accent text-xl"></i>
         </div>
       </div>
     </div>
@@ -137,16 +149,20 @@
           </template>
         </Column>
 
-        <Column field="merchant" header="Merchant" sortable>
-          <template #body="{ data }">
-            <span v-if="data.merchant_name" class="font-medium">{{ data.merchant_name }}</span>
-            <span v-else class="text-text-muted">—</span>
-          </template>
-        </Column>
-
         <Column field="amount" header="Amount" sortable>
           <template #body="{ data }">
-            <span class="font-bold text-success">+${{ formatCurrency(data.amount) }}</span>
+            <span 
+              v-if="data.type === 'subscription'" 
+              class="font-bold text-error"
+            >
+              -${{ formatCurrency(data.amount) }}
+            </span>
+            <span 
+              v-else 
+              class="font-bold text-success"
+            >
+              +${{ formatCurrency(data.amount) }}
+            </span>
           </template>
         </Column>
 
@@ -164,6 +180,8 @@
 </template>
 
 <script setup lang="ts">
+import { vendorPlans } from '~/constants/subscriptionPlans'
+
 interface Props {
   vendorId: string
 }
@@ -177,7 +195,6 @@ interface Payment {
   type: string
   description: string
   details?: string
-  merchant_name: string
   amount: number
   status: string
   reference: string
@@ -196,6 +213,7 @@ const selectedCategory = ref('all')
 const paymentCategories = [
   { label: 'All Categories', value: 'all' },
   { label: 'Event Payments', value: 'event' },
+  { label: 'Subscription Fees', value: 'subscription' },
   { label: 'Pending Payments', value: 'pending' },
   { label: 'Completed Payments', value: 'completed' }
 ]
@@ -208,14 +226,19 @@ const filteredPayments = computed(() => {
   if (searchQuery.value) {
     filtered = filtered.filter((payment: Payment) => 
       payment.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      payment.details?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      payment.merchant_name.toLowerCase().includes(searchQuery.value.toLowerCase())
+      payment.details?.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
 
   // Filter by category
   if (selectedCategory.value !== 'all') {
-    filtered = filtered.filter((payment: Payment) => payment.type === selectedCategory.value)
+    if (selectedCategory.value === 'pending' || selectedCategory.value === 'completed') {
+      // Filter by status for pending/completed
+      filtered = filtered.filter((payment: Payment) => payment.status === selectedCategory.value)
+    } else {
+      // Filter by type for event/subscription
+      filtered = filtered.filter((payment: Payment) => payment.type === selectedCategory.value)
+    }
   }
 
   // Filter by date range
@@ -234,7 +257,7 @@ const filteredPayments = computed(() => {
 
 const totalEarned = computed(() => {
   return payments.value
-    .filter((payment: Payment) => payment.status === 'completed')
+    .filter((payment: Payment) => payment.status === 'completed' && payment.type === 'event')
     .reduce((sum: number, payment: Payment) => sum + payment.amount, 0)
 })
 
@@ -246,6 +269,7 @@ const monthlyEarnings = computed(() => {
     .filter((payment: Payment) => {
       const paymentDate = new Date(payment.date)
       return payment.status === 'completed' && 
+             payment.type === 'event' &&
              paymentDate.getMonth() === currentMonth && 
              paymentDate.getFullYear() === currentYear
     })
@@ -260,8 +284,14 @@ const pendingPayments = computed(() => {
 
 const completedEventsCount = computed(() => {
   return payments.value
-    .filter((payment: Payment) => payment.status === 'completed')
+    .filter((payment: Payment) => payment.status === 'completed' && payment.type === 'event')
     .length
+})
+
+const totalSubscriptionFees = computed(() => {
+  return payments.value
+    .filter((payment: Payment) => payment.type === 'subscription')
+    .reduce((sum: number, payment: Payment) => sum + payment.amount, 0)
 })
 
 // Methods
@@ -282,15 +312,14 @@ const loadPayments = async () => {
       throw error
     }
 
-    // Load related event and merchant data
+    // Load related event data (no merchant data for vendor payment history)
     if (paymentsData && paymentsData.length > 0) {
       const eventIds = paymentsData.filter((p: any) => p.event_id).map((p: any) => p.event_id)
-      const merchantIds = paymentsData.filter((p: any) => p.merchant_id).map((p: any) => p.merchant_id)
       
       let eventsData: any = {}
-      let merchantsData: any = {}
       
       if (eventIds.length > 0) {
+        // Load events (without merchant information)
         const { data: events } = await supabase
           .from('events')
           .select('id, event_name, start, end, location_address')
@@ -301,22 +330,10 @@ const loadPayments = async () => {
         }, {}) || {}
       }
       
-      if (merchantIds.length > 0) {
-        const { data: merchants } = await supabase
-          .from('merchants')
-          .select('id, merchant_name')
-          .in('id', merchantIds)
-        merchantsData = merchants?.reduce((acc: any, merchant: any) => {
-          acc[merchant.id] = merchant
-          return acc
-        }, {}) || {}
-      }
-      
-      // Attach related data to payments
+      // Attach event data to payments (no merchant data)
       paymentsData = paymentsData.map((payment: any) => ({
         ...payment,
-        events: eventsData[payment.event_id],
-        merchants: merchantsData[payment.merchant_id]
+        events: eventsData[payment.event_id]
       }))
     }
 
@@ -329,17 +346,60 @@ const loadPayments = async () => {
       type: getPaymentType(payment),
       description: getPaymentDescription(payment),
       details: getPaymentDetails(payment),
-      merchant_name: getMerchantName(payment),
       amount: payment.vendor_payout || payment.amount, // Vendor receives the vendor_payout amount
       status: payment.status,
       reference: payment.stripe_payment_intent_id || payment.id,
       event_id: payment.event_id
     }))
 
+    await loadSubscriptionFees()
   } catch (error) {
     console.error('Error loading vendor payments:', error)
   } finally {
     loading.value = false
+  }
+}
+
+// Helper function to get subscription price from plan type
+const getSubscriptionPrice = (planType: string): number => {
+  const planId = `vendor-${planType}`
+  const plan = vendorPlans.find(p => p.id === planId)
+  return plan?.price || 0
+}
+
+const loadSubscriptionFees = async () => {
+  try {
+    const supabase = useSupabaseClient()
+    
+    // Load subscription data to calculate fees for vendors
+    const { data: subscriptions } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('business_id', props.vendorId)
+      .eq('business_type', 'vendor')
+      .order('created_at', { ascending: false })
+
+    if (subscriptions && subscriptions.length > 0) {
+      // Add subscription fees to payments (as negative amounts since vendor pays these)
+      const subscriptionPayments = subscriptions.map((sub: any) => {
+        const price = getSubscriptionPrice(sub.plan_type)
+        return {
+          id: `sub_${sub.id}`,
+          date: sub.created_at,
+          type: 'subscription',
+          description: `${sub.plan_type.charAt(0).toUpperCase() + sub.plan_type.slice(1)} Subscription`,
+          details: `Plan: ${sub.plan_type}, Status: ${sub.status}`,
+          amount: price,
+          status: sub.status === 'active' ? 'completed' : sub.status,
+          reference: sub.stripe_subscription_id || sub.id,
+          event_id: undefined
+        }
+      })
+
+      payments.value = [...payments.value, ...subscriptionPayments]
+    }
+  } catch (error) {
+    console.error('Error loading subscription fees:', error)
   }
 }
 
@@ -364,16 +424,10 @@ const getPaymentDetails = (payment: any): string => {
   return ''
 }
 
-const getMerchantName = (payment: any): string => {
-  if (payment.merchant_id && payment.merchants) {
-    return payment.merchants.merchant_name || 'Unknown Merchant'
-  }
-  return 'Unknown Merchant'
-}
-
 const getPaymentTypeLabel = (type: string): string => {
   switch (type) {
     case 'event': return 'Event Payment'
+    case 'subscription': return 'Subscription'
     case 'other': return 'Other'
     default: return type
   }
@@ -382,6 +436,7 @@ const getPaymentTypeLabel = (type: string): string => {
 const getPaymentTypeSeverity = (type: string): string => {
   switch (type) {
     case 'event': return 'success'
+    case 'subscription': return 'warning'
     case 'other': return 'info'
     default: return 'info'
   }
@@ -428,13 +483,14 @@ const exportAsText = () => {
       Date: formatDate(payment.date),
       Type: getPaymentTypeLabel(payment.type),
       Description: payment.description,
-      Merchant: payment.merchant_name,
-      Amount: `+$${formatCurrency(payment.amount)}`,
+      Amount: payment.type === 'subscription' 
+        ? `-$${formatCurrency(payment.amount)}` 
+        : `+$${formatCurrency(payment.amount)}`,
       Status: payment.status
     }))
     
     const csvContent = [
-      ['Date', 'Type', 'Description', 'Merchant', 'Amount', 'Status'],
+      ['Date', 'Type', 'Description', 'Amount', 'Status'],
       ...data.map((row: any) => Object.values(row))
     ].map((row: any) => row.map((cell: any) => `"${cell}"`).join(',')).join('\n')
     
