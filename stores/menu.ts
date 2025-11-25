@@ -26,7 +26,13 @@ export const useMenuStore = defineStore('menu', {
     },
     
     getTypes: (state) => {
-      return [...new Set(state.menuItems.map(item => item.type))]
+      // Extract unique, non-null categories and sort them
+      const uniqueTypes = [...new Set(
+        state.menuItems
+          .map(item => item.type)
+          .filter(type => type && type.trim() !== '')
+      )] as string[]
+      return uniqueTypes.sort()
     }
   },
   

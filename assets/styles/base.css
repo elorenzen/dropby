@@ -132,9 +132,9 @@ body {
   color: var(--primary-color-text) !important;
 }
 
-/* Orange for primary action icons */
-.p-button.p-button-primary .pi,
-.p-button:not(.p-button-outlined):not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .pi {
+/* Primary action icons - only for outlined buttons */
+.p-button.p-button-primary.p-button-outlined .pi,
+.p-button.p-button-outlined:not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .pi {
   color: var(--primary-color) !important;
 }
 
@@ -184,9 +184,12 @@ body {
   color: inherit !important;
 }
 
-/* Filled button: icon is always white */
-.p-button:not(.p-button-outlined) .p-button-icon, .p-button:not(.p-button-outlined) .pi {
-  color: #fff !important;
+/* Filled button: icon is always white (override any other rules) */
+.p-button:not(.p-button-outlined) .p-button-icon, 
+.p-button:not(.p-button-outlined) .pi,
+.p-button:not(.p-button-outlined):not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .p-button-icon,
+.p-button:not(.p-button-outlined):not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .pi {
+  color: var(--primary-color-text) !important;
 }
 
 /* Rating stars: orange for filled, gray for empty (force override) */

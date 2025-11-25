@@ -232,7 +232,6 @@
 
         <!-- MENU TAB -->
         <div v-if="activeTab === 2" class="space-y-6">
-          <h2 class="text-2xl font-bold text-text-main mb-6">Menu Management</h2>
           <MenuTable />
         </div>
 

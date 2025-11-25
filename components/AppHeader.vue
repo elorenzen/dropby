@@ -1,23 +1,30 @@
 <template>
   <div>
-    <Menubar :model="items">
+    <Menubar :model="menuItemsStart">
       <template #start>
         <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
-        <NuxtLink to="/" class="m-2 text-xl font-bold text-primary">DropBy</NuxtLink>
+        <NuxtLink
+          :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/dashboard`"
+          class="m-2 text-xl font-bold text-primary"
+        >
+          DropBy
+        </NuxtLink>
       </template>
 
       <template #item="{ item, props, hasSubmenu }">
-          <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-              <a v-ripple :href="href" v-bind="props.action" @click="navigate">
-                  <span :class="item.icon" />
-                  <span>{{ item.label }}</span>
-              </a>
-          </router-link>
-          <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
-              <span :class="item.icon" />
-              <span>{{ item.label }}</span>
-              <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
-          </a>
+        <div v-if="!isAuthenticated">
+            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+                <a v-ripple :href="href" v-bind="props.action" @click="navigate">
+                    <span :class="item.icon" />
+                    <span>{{ item.label }}</span>
+                </a>
+            </router-link>
+            <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
+                <span :class="item.icon" />
+                <span>{{ item.label }}</span>
+                <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
+            </a>
+        </div>
       </template>
       
       <template #end>
@@ -40,34 +47,6 @@
 
         <!-- Authenticated - Show Menu Items and Profile Dropdown -->
         <div v-else class="flex items-center gap-4">
-          <!-- Menu Items -->
-          <div class="flex items-center gap-4">
-            <NuxtLink 
-              :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/dashboard`"
-              class="text-text-muted hover:text-accent transition-colors flex items-center gap-2"
-              :class="isCurrentRoute('dashboard') ? 'text-accent font-medium' : ''"
-            >
-              <i class="pi pi-home"></i>
-              Dashboard
-            </NuxtLink>
-            <NuxtLink 
-              :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/events`"
-              class="text-text-muted hover:text-accent transition-colors flex items-center gap-2"
-              :class="isCurrentRoute('events') ? 'text-accent font-medium' : ''"
-            >
-              <i class="pi pi-calendar"></i>
-              Events
-            </NuxtLink>
-            <NuxtLink 
-              :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/ratings-and-reviews`"
-              class="text-text-muted hover:text-accent transition-colors flex items-center gap-2"
-              :class="isCurrentRoute('ratings-and-reviews') ? 'text-accent font-medium' : ''"
-            >
-              <i class="pi pi-star"></i>
-              Reviews
-            </NuxtLink>
-          </div>
-
           <!-- Profile Dropdown -->
           <Button 
             outlined 
@@ -112,7 +91,7 @@ const email = ref('')
 const password = ref('')
 const profileMenu = ref()
 
-const items = ref([
+const menuItemsStart = ref([
     {
         label: 'How It Works',
         command: () => {
@@ -144,54 +123,86 @@ const isCurrentRoute = (section: string) => {
   return path.includes(`/${section}`)
 }
 
+// Computed props for business type and associated ID
+const businessType = computed(() => currentUser.value?.type || null)
+const associatedIdKey = computed(() => {
+  if (!businessType.value) return null
+  return `associated_${businessType.value}_id` as keyof typeof currentUser.value
+})
+const userAssociatedId = computed(() => {
+  if (!associatedIdKey.value || !currentUser.value) return null
+  return currentUser.value[associatedIdKey.value] as string | null
+})
 
-
-// Profile menu items
-const profileMenuItems = computed(() => [
-  {
-    items: [
-      {
-        label: 'Home',
-        icon: 'pi pi-home',
-        command: () => {
-          if (currentUser.value?.type) {
-            const associatedIdKey = `associated_${currentUser.value.type}_id` as keyof typeof currentUser.value
-            const userAssociatedId = currentUser.value[associatedIdKey]
-            if (userAssociatedId) {
-              router.push(`/${currentUser.value.type}/${userAssociatedId}/dashboard`)
-            }
-          }
-        }
-      },
-      {
-        label: 'Settings',
-        icon: 'pi pi-cog',
-        command: () => {
-          navigateToSettings()
-        }
-      },
-      {
-        label: 'Sign out',
-        icon: 'pi pi-sign-out',
-        command: async () => {
-          await handleSignOut()
-        }
-      },
-    ]
+// Profile menu items - different for merchants and vendors
+const profileMenuItems = computed(() => {
+  if (!businessType.value || !userAssociatedId.value) {
+    return []
   }
-])
+
+  const basePath = `/${businessType.value}/${userAssociatedId.value}`
+  const items: any[] = [
+    {
+      label: 'Home',
+      icon: 'pi pi-home',
+      command: () => router.push(`${basePath}/dashboard`)
+    },
+    {
+      label: 'Events',
+      icon: 'pi pi-calendar',
+      command: () => router.push(`${basePath}/events`)
+    },
+    {
+      label: 'Reviews',
+      icon: 'pi pi-star',
+      command: () => router.push(`${basePath}/ratings-and-reviews`)
+    },
+    {
+      label: 'Analytics',
+      icon: 'pi pi-chart-bar',
+      command: () => router.push(`${basePath}/analytics`)
+    }
+  ]
+
+  if (businessType.value === 'merchant') {
+    items.push({
+      label: 'Food Trucks',
+      icon: 'pi pi-truck',
+      command: () => router.push('/food-trucks')
+    })
+  } else if (businessType.value === 'vendor') {
+    items.push({
+      label: 'Establishments',
+      icon: 'pi pi-building',
+      command: () => router.push('/establishments')
+    })
+  }
+
+  // Add separator and common items
+  items.push(
+    { separator: true },
+    {
+      label: 'Settings',
+      icon: 'pi pi-cog',
+      command: () => navigateToSettings()
+    },
+    {
+      label: 'Sign out',
+      icon: 'pi pi-sign-out',
+      command: async () => await handleSignOut()
+    }
+  )
+
+  return items
+})
 
 const toggleProfileMenu = (event: any) => {
   profileMenu.value.toggle(event)
 }
 
 const navigateToSettings = () => {
-  if (currentUser.value?.type) {
-    const associatedIdKey = `associated_${currentUser.value.type}_id` as keyof typeof currentUser.value
-    const userAssociatedId = currentUser.value[associatedIdKey]
-    if (userAssociatedId) {
-      router.push(`/settings/${userAssociatedId}`)
-    }
+  if (userAssociatedId.value) {
+    router.push(`/settings/${userAssociatedId.value}`)
   }
 }
 

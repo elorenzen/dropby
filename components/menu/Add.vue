@@ -1,85 +1,112 @@
 <template>
     <div>
-        <Card style="overflow: hidden;">
-            <template #content>
-                <v-row>
-                    <v-col cols="4">
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Image Section -->
+                <div class="space-y-4">
+                    <div class="relative">
                         <NuxtImg
                             :src="imageUrl"
-                            class="rounded w-full"
-                            :height="200"
-                            :width="200"
-                            sizes="sm:75px md:150px lg:200px"    
+                            class="rounded-lg w-full aspect-square object-cover border border-surface-border"
+                            sizes="sm:150px md:200px lg:250px"
                         />
-                        <v-row dense class="flex justify-center p-2 m-2">
-                            <FileUpload
-                                class="my-2 p-button-sm p-button-outlined"
-                                mode="basic"
-                                accept="image/*"
-                                :maxFileSize="1000000"
-                                @upload="addImage($event)"
-                                :auto="true"
-                                chooseLabel="Upload Image"
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <FileUpload
+                            mode="basic"
+                            accept="image/*"
+                            :maxFileSize="1000000"
+                            @upload="addImage($event)"
+                            :auto="true"
+                            chooseLabel="Upload Image"
+                            class="w-full"
+                        />
+                        <Button
+                            label="Generate Image"
+                            icon="pi pi-microchip-ai"
+                            iconPos="left"
+                            outlined
+                            size="small"
+                            class="w-full"
+                            @click="generateImage"
+                            :loading="loadingImg"
+                        />
+                        <div v-if="uploading" class="flex justify-center mt-2">
+                            <ProgressSpinner />
+                        </div>
+                    </div>
+                </div>
+                <!-- Form Fields -->
+                <div class="md:col-span-2 space-y-4">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-main mb-2">Item Name *</label>
+                            <InputText 
+                                id="item_name" 
+                                v-model="name" 
+                                class="w-full"
+                                placeholder="Enter item name"
                             />
-                            <Button
-                                size="small"
-                                label="Generate Image"
-                                icon="pi pi-microchip-ai"
-                                iconPos="left"
-                                class="p-button-outlined"
-                                @click="generateImage"
-                                :loading="loadingImg"
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-main mb-2">Menu Category *</label>
+                            <AutoComplete 
+                                v-model="type" 
+                                :suggestions="filteredCategories" 
+                                @complete="searchCategories"
+                                placeholder="Select category"
+                                class="w-full"
                             />
-                            <div v-if="uploading" class="card flex justify-center mt-4">
-                                <ProgressSpinner class="p-progress-spinner-circle" />
-                            </div>
-                        </v-row>
-                    </v-col>
-                    <v-col cols="8">
-                        <Fluid>
-                            <div class="my-2">
-                                <FloatLabel variant="on">
-                                    <InputText id="item_name" v-model="name" />
-                                    <label for="item_name">Item Name</label>
-                                </FloatLabel>
-                            </div>
-                            <div class="my-2">
-                                <AutoComplete v-model="type" :suggestions="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></AutoComplete>
-                            </div>
-                            <div class="my-2">
-                                <FloatLabel variant="on">
-                                    <Textarea id="desc" v-model="description" rows="5" cols="50" style="resize: none" />
-                                    <label for="desc">Description</label>
-                                </FloatLabel>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-main mb-2">Description</label>
+                            <div class="space-y-2">
+                                <Textarea 
+                                    id="desc" 
+                                    v-model="description" 
+                                    rows="4" 
+                                    class="w-full resize-none"
+                                    placeholder="Describe your menu item..."
+                                />
                                 <Button
-                                    size="small"
                                     label="Generate Description"
                                     icon="pi pi-microchip-ai"
                                     iconPos="left"
-                                    class="p-button-outlined"
+                                    outlined
+                                    size="small"
                                     @click="generateDescription"
                                     :loading="loadingDesc"
                                 />
                             </div>
-                            <div class="my-2">
-                                <FloatLabel variant="on">
-                                    <InputNumber v-model="price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
-                                    <label for="item_price">Price</label>
-                                </FloatLabel>
-                            </div>
-                            <div class="ma-2">
-                                <v-switch density="compact" label="Seasonal/Limited Edition" v-model="special"></v-switch>
-                            </div>
-                        </Fluid>
-                    </v-col>
-                </v-row>
-            </template>
-            <template #footer>
-                <div class="flex justify-end gap-2 ma-4">
-                    <Button class="w-full" @click="addItem" :loading="loading">Save</Button>
-                </div>  
-            </template>
-        </Card>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-main mb-2">Price *</label>
+                            <InputNumber 
+                                v-model="price" 
+                                inputId="item_price" 
+                                mode="currency" 
+                                currency="USD" 
+                                locale="en-US"
+                                class="w-full"
+                                :min="0"
+                            />
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input 
+                                type="checkbox" 
+                                id="special" 
+                                v-model="special" 
+                                class="w-4 h-4 rounded border-surface-border"
+                            />
+                            <label for="special" class="text-sm text-text-main">Seasonal/Limited Edition</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-4 border-t border-surface-border">
+                <Button class="px-8 py-3 font-semibold rounded-lg" @click="addItem" :loading="loading">Save</Button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -102,6 +129,33 @@
     const errDialog   = ref(false)
     const loadingDesc = ref(false)
     const loadingImg  = ref(false)
+    const filteredCategories = ref<string[]>([])
+
+    // Get categories from menu store
+    const allCategories = computed(() => {
+        const storeTypes = menuStore.getTypes
+        // Fallback to default categories if store is empty
+        return storeTypes && storeTypes.length > 0 
+            ? storeTypes 
+            : ['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']
+    })
+
+    // Filter categories based on search query
+    const searchCategories = (event: any) => {
+        const query = event.query.toLowerCase()
+        if (!query) {
+            filteredCategories.value = allCategories.value
+        } else {
+            filteredCategories.value = allCategories.value.filter((category: string) =>
+                category.toLowerCase().includes(query)
+            )
+        }
+    }
+
+    onMounted(() => {
+        // Initialize with all categories
+        filteredCategories.value = allCategories.value
+    })
 
     const addItem = async () => {
         loading.value = true

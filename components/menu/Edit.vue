@@ -1,72 +1,107 @@
 <template>
     <div>
-        <Card style="overflow: hidden;">
-            <template #content>
-                <v-row>
-                    <v-col cols="4">
-                        <Avatar v-if="item.image_url == ''" icon="pi pi-image" class="mr-2" size="xlarge" />
-                        <NuxtImg v-else :src="item.image_url" alt="Image" class="w-full rounded" />
-                        
-                        <v-row dense class="flex justify-center p-2 m-2">
-                            <FileUpload
-                                class="my-2 p-button-sm p-button-outlined"
-                                mode="basic"
-                                accept="image/*"
-                                :maxFileSize="1000000"
-                                @upload="updateImage($event, item.image_name)"
-                                :auto="true"
-                                chooseLabel="Upload Image"
-                            />
-                            <Button
-                                size="small"
-                                label="Generate Image"
-                                icon="pi pi-microchip-ai"
-                                iconPos="left"
-                                class="p-button-outlined"
-                                @click="generateImage"
-                                :loading="loadingImg"
-                            />
-                            <div v-if="uploading" class="card flex justify-center mt-4">
-                                <ProgressSpinner class="p-progress-spinner-circle" />
-                            </div>
-                        </v-row>
-                    </v-col>
-                    <v-col cols="8">
-                        <Fluid>
-                            <div class="my-2">
-                                <FloatLabel variant="on">
-                                    <InputText id="item_name" v-model="item.name" />
-                                    <label for="item_name">Item Name</label>
-                                </FloatLabel>
-                            </div>
-                            <div class="my-2">
-                                <AutoComplete v-model="item.type" :suggestions="['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']" placeholder="Menu Category"></AutoComplete>
-                            </div>
-                            <div class="my-2">
-                                <FloatLabel variant="on">
-                                    <Textarea id="desc" v-model="item.description" rows="5" cols="50" style="resize: none" />
-                                    <label for="desc">Description</label>
-                                </FloatLabel>
-                            </div>
-                            <div class="my-2">
-                                <FloatLabel variant="on">
-                                    <InputNumber v-model="item.price" inputId="item_price" mode="currency" currency="USD" locale="en-US" />
-                                    <label for="item_price">Price</label>
-                                </FloatLabel>
-                            </div>
-                            <div class="ma-2">
-                                <v-switch density="compact" label="Seasonal/Limited Edition" v-model="item.special"></v-switch>
-                            </div>
-                        </Fluid>
-                    </v-col>
-                </v-row>
-            </template>
-            <template #footer>
-                <div class="flex justify-end gap-2 ma-4">
-                    <Button @click="submitEdits" class="w-full" :loading="loading">Submit Edits</Button>
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Image Section -->
+                <div class="space-y-4">
+                    <div class="relative">
+                        <Avatar v-if="!item.image_url" icon="pi pi-image" size="xlarge" class="w-full aspect-square" />
+                        <NuxtImg 
+                            v-else 
+                            :src="item.image_url" 
+                            alt="Menu item image" 
+                            class="w-full aspect-square rounded-lg object-cover border border-surface-border"
+                        />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <FileUpload
+                            mode="basic"
+                            accept="image/*"
+                            :maxFileSize="1000000"
+                            @upload="updateImage($event, item.image_name)"
+                            :auto="true"
+                            chooseLabel="Upload Image"
+                            class="w-full"
+                        />
+                        <Button
+                            label="Generate Image"
+                            icon="pi pi-microchip-ai"
+                            iconPos="left"
+                            outlined
+                            size="small"
+                            class="w-full"
+                            @click="generateImage"
+                            :loading="loadingImg"
+                        />
+                        <div v-if="uploading" class="flex justify-center mt-2">
+                            <ProgressSpinner />
+                        </div>
+                    </div>
                 </div>
-            </template>
-        </Card>
+                <!-- Form Fields -->
+                <div class="md:col-span-2 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-main mb-2">Item Name *</label>
+                        <InputText 
+                            id="item_name" 
+                            v-model="item.name" 
+                            class="w-full"
+                            placeholder="Enter item name"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-main mb-2">Menu Category *</label>
+                        <AutoComplete 
+                            v-model="item.type" 
+                            :suggestions="filteredCategories" 
+                            @complete="searchCategories"
+                            placeholder="Select category"
+                            class="w-full"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-main mb-2">Description</label>
+                        <Textarea 
+                            id="desc" 
+                            v-model="item.description" 
+                            rows="4" 
+                            class="w-full resize-none"
+                            placeholder="Describe your menu item..."
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-main mb-2">Price *</label>
+                        <InputNumber 
+                            v-model="item.price" 
+                            inputId="item_price" 
+                            mode="currency" 
+                            currency="USD" 
+                            locale="en-US"
+                            class="w-full"
+                            :min="0"
+                        />
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="checkbox" 
+                            id="special" 
+                            v-model="item.special" 
+                            class="w-4 h-4 rounded border-surface-border"
+                        />
+                        <label for="special" class="text-sm text-text-main">Seasonal/Limited Edition</label>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-4 border-t border-surface-border">
+                <Button 
+                    @click="submitEdits" 
+                    class="px-8 py-3 font-semibold rounded-lg" 
+                    :loading="loading"
+                >
+                    Submit Edits
+                </Button>
+            </div>
+        </div>
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
     </div>
 </template>
@@ -83,6 +118,34 @@
     const loading      = ref(false)
     const uploading    = ref(false)
     const loadingImg   = ref(false)
+    const filteredCategories = ref<string[]>([])
+
+    // Get categories from menu store
+    const allCategories = computed(() => {
+        const storeTypes = menuStore.getTypes
+        // Fallback to default categories if store is empty
+        return storeTypes && storeTypes.length > 0 
+            ? storeTypes 
+            : ['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']
+    })
+
+    // Filter categories based on search query
+    const searchCategories = (event: any) => {
+        const query = event.query.toLowerCase()
+        if (!query) {
+            filteredCategories.value = allCategories.value
+        } else {
+            filteredCategories.value = allCategories.value.filter((category: string) =>
+                category.toLowerCase().includes(query)
+            )
+        }
+    }
+
+    onMounted(() => {
+        // Initialize with all categories
+        filteredCategories.value = allCategories.value
+    })
+
     const submitEdits = async () => {
         loading.value = true
         const itemObj = {

@@ -9,7 +9,8 @@
             <Button
                 label="Add Menu Item"
                 icon="pi pi-plus"
-                class="bg-accent text-background border-accent hover:bg-accent-dark px-6 py-3 font-semibold rounded-lg"
+                iconPos="left"
+                class="px-6 py-3 font-semibold rounded-lg"
                 @click="addDialog = true"
             />
         </div>
@@ -18,16 +19,65 @@
         <div class="flex items-center gap-2">
             <Button
                 :icon="layout === 'grid' ? 'pi pi-th-large' : 'pi pi-list'"
-                :label="layout === 'grid' ? 'Grid View' : 'List View'"
+                :label="layout === 'grid' ? 'List View' : 'Grid View'"
                 outlined
                 severity="secondary"
                 size="small"
                 @click="toggleLayout"
             />
-            <div class="text-sm text-text-muted">
-                {{ menuItems ? menuItems.length : 0 }} items
-            </div>
         </div>
+
+        <!-- Search and Filter Section -->
+        <Card class="mb-8">
+            <template #content>
+                <div class="space-y-6">
+                    <!-- Search Bar -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="pi pi-search text-color-secondary"></i>
+                        </div>
+                        <InputText 
+                            v-model="searchQuery" 
+                            placeholder="Search menu items..."
+                            class="w-full pl-10 pr-4 py-3 text-lg"
+                        />
+                    </div>
+
+                    <!-- Filter Controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-main mb-2">Filter by Type</label>
+                            <Dropdown
+                                v-model="selectedType"
+                                :options="typeOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="All types"
+                                class="w-full"
+                                :showClear="true"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-surface-border">
+                        <div class="text-sm text-text-muted">
+                            Showing {{ filteredMenuItems.length }} of {{ menuItems.length }} items
+                            <span v-if="searchQuery || selectedType" class="text-primary">
+                                (filtered)
+                            </span>
+                        </div>
+                        <div class="flex gap-2">
+                            <Button 
+                                label="Clear Filters" 
+                                outlined 
+                                @click="clearFilters"
+                                :disabled="!hasActiveFilters"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </Card>
 
         <!-- Grid View -->
         <div v-if="layout === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -40,8 +90,8 @@
                 <template #header>
                     <div class="relative">
                         <NuxtImg 
-                            :src="item.image_url" 
-                            :alt="item.name" 
+                            :src="item.image_url || ''" 
+                            :alt="item.name || ''" 
                             class="w-full h-48 object-cover rounded-t-lg"
                             loading="lazy"
                         />
@@ -57,7 +107,7 @@
                 <template #title>
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-text-main truncate">{{ item.name }}</h3>
-                        <span class="text-xl font-bold text-accent">{{ formatCurrency(item.price) }}</span>
+                        <span class="text-xl font-bold text-primary">{{ formatCurrency(item.price) }}</span>
                     </div>
                 </template>
                 <template #content>
@@ -87,22 +137,8 @@
 
         <!-- List View -->
         <div v-else>
-            <DataTable :value="filteredMenuItems" tableStyle="width: 100%" class="p-datatable-sm">
-                <template #header>
-                    <div class="flex items-center gap-4">
-                        <InputText 
-                            v-model="searchQuery" 
-                            placeholder="Search menu items..."
-                            class="w-64"
-                        />
-                        <Dropdown
-                            v-model="selectedType"
-                            :options="typeOptions"
-                            placeholder="Filter by type"
-                            class="w-40"
-                        />
-                    </div>
-                </template>
+            <!-- Menu Items Table -->
+            <DataTable :value="filteredMenuItems" tableStyle="width: 100%" class="p-datatable-sm menu-data-table">
                 <Column field="name" header="Name" sortable>
                     <template #body="{ data }">
                         <div class="flex items-center gap-3">
@@ -120,7 +156,7 @@
                 </Column>
                 <Column field="price" header="Price" sortable>
                     <template #body="{ data }">
-                        <span class="font-bold text-accent">{{ formatCurrency(data.price) }}</span>
+                        <span class="font-bold text-primary">{{ formatCurrency(data.price) }}</span>
                     </template>
                 </Column>
                 <Column field="description" header="Description">
@@ -153,16 +189,16 @@
         </div>
 
         <!-- ADD ITEM -->
-        <Dialog v-model:visible="addDialog" modal header="Add Menu Item" :style="{ width: '50rem' }">
+        <Dialog :visible="addDialog" @update:visible="addDialog = $event" modal header="Add Menu Item" :style="{ width: '50rem' }" class="menu-dialog">
             <MenuAdd :id="user.id" :vendor="user.associated_vendor_id" @created="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
         <!-- EDIT ITEM -->
-        <Dialog v-model:visible="editDialog" modal header="Edit Menu Item" :style="{ width: '50rem' }">
+        <Dialog :visible="editDialog" @update:visible="editDialog = $event" modal header="Edit Menu Item" :style="{ width: '50rem' }" class="menu-dialog">
             <MenuEdit :item="itemToEdit" :vendor="user.associated_vendor_id" @edited="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
-        <DeleteDialog v-if="deleteDialog" :itemType="'Inventory Item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+        <DeleteDialog v-if="deleteDialog" :visible="deleteDialog" :itemType="'Inventory Item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
         <Toast group="main" position="bottom-center" @close="onClose" />
     </div>
@@ -182,8 +218,8 @@ const menuItems    = computed(() => store.menuItems.filter((i:any) => i.vendor_i
 
 const addDialog    = ref(false)
 const editDialog   = ref(false)
-const itemToEdit   = ref(null)
-const itemToDelete = ref(null)
+const itemToEdit   = ref<any>(null)
+const itemToDelete = ref<any>(null)
 const deleteDialog = ref(false)
 const errDialog    = ref(false)
 const errMsg       = ref()
@@ -230,6 +266,15 @@ const filteredMenuItems = computed(() => {
     return filtered
 })
 
+const hasActiveFilters = computed(() => {
+    return searchQuery.value || selectedType.value
+})
+
+const clearFilters = () => {
+    searchQuery.value = ''
+    selectedType.value = ''
+}
+
 // Methods
 const toggleLayout = () => {
     layout.value = layout.value === 'grid' ? 'list' : 'grid'
@@ -259,18 +304,22 @@ const promptDeletion = (item:any) => {
     deleteDialog.value = true
 }
 const confirmDelete = async () => {
+    if (!itemToDelete.value) return
+    
     try {
         // Delete from database using store
         await store.deleteMenuItem(itemToDelete.value.id)
         
         // Delete image from storage
-        const { error: imgErr } = await supabase
-            .storage
-            .from('menu_images')
-            .remove([itemToDelete.value.image_name])
-        
-        if (imgErr) {
-            console.warn('Image deletion failed:', imgErr.message)
+        if (itemToDelete.value.image_name) {
+            const { error: imgErr } = await supabase
+                .storage
+                .from('menu_images')
+                .remove([itemToDelete.value.image_name])
+            
+            if (imgErr) {
+                console.warn('Image deletion failed:', imgErr.message)
+            }
         }
         
         await resetFields('Deleted')
@@ -325,8 +374,72 @@ const getStatusLabel = (status: any) => {
 const onClose = () => {
   // Toast closed functionality
 }
+
+// Load menu items on mount if store is empty
+onMounted(async () => {
+    if (store.menuItems.length === 0) {
+        try {
+            const supabase = useSupabaseClient()
+            const { data, error } = await supabase
+                .from('menu_items')
+                .select('*')
+            
+            if (error) {
+                console.error('Error loading menu items:', error)
+            } else if (data) {
+                await store.setAllMenuItems(data)
+            }
+        } catch (error) {
+            console.error('Error loading menu items:', error)
+        }
+    }
+})
 </script>
 
 <style scoped>
+/* Remove DataTable background - make it completely transparent */
+:deep(.menu-data-table),
+:deep(.menu-data-table .p-datatable-wrapper),
+:deep(.menu-data-table .p-datatable-table),
+:deep(.menu-data-table .p-datatable-thead),
+:deep(.menu-data-table .p-datatable-thead > tr),
+:deep(.menu-data-table .p-datatable-thead > tr > th),
+:deep(.menu-data-table .p-datatable-tbody),
+:deep(.menu-data-table .p-datatable-tbody > tr),
+:deep(.menu-data-table .p-datatable-tbody > tr > td) {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: var(--surface-border) !important;
+}
 
+:deep(.menu-data-table .p-datatable-thead > tr > th) {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+    border-bottom: 1px solid var(--surface-border) !important;
+}
+
+:deep(.menu-data-table .p-datatable-tbody > tr) {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+:deep(.menu-data-table .p-datatable-tbody > tr:hover) {
+    background: var(--surface-section) !important;
+    background-color: var(--surface-section) !important;
+}
+
+:deep(.menu-data-table .p-datatable-tbody > tr > td) {
+    color: var(--text-color) !important;
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove Dialog content border and background for menu forms */
+:deep(.menu-dialog .p-dialog-content),
+:deep(.menu-dialog .p-dialog-body) {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
 </style>
