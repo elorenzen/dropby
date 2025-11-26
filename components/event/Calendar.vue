@@ -327,7 +327,6 @@
       :visible="dayViewDialog"
       @update:visible="dayViewDialog = $event"
       :merchant="merchant"
-      :business-hours="businessHours"
       :pre-filled-date="dayDate"
       @event-created="onEventCreated"
     />
@@ -370,11 +369,14 @@ export default {
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const vendorStore   = useVendorStore()
+    const businessHoursStore = useBusinessHoursStore()
 
     const user          = ref(userStore.user)
     const merchant      = ref(props.userType === 'merchant' ? await merchantStore.getMerchantById(user.value?.associated_merchant_id || '') : null)
     const vendors       = ref(await vendorStore.getAllVendors)
     const merchants     = ref(await merchantStore.getAllMerchants)
+
+    // Business hours are loaded in app.vue, just use getters
 
     const events        = computed(() => {
       if (props.userType === 'merchant') {
@@ -391,8 +393,6 @@ export default {
           .sort((a:any,b:any) => Date.parse(b.start) - Date.parse(a.start))
       }
     })
-    const businessHours = ref(merchant.value ? JSON.parse(JSON.stringify((merchant.value.business_hours))) : [])
-    businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
 
     const notes         = ref(merchant.value?.notes || '')
     const dayViewDialog = ref(false)
@@ -582,31 +582,11 @@ export default {
       }
     })
 
-    const getBusinessHour = (day:number, type:any) => {
-      const hours = businessHours.value
-      switch (day) {
-        case 0:
-          return hours[6][type]
-          break;
-        case 1:
-          return hours[0][type]
-          break;
-        case 2:
-          return hours[1][type]
-          break;
-        case 3:
-          return hours[2][type]
-          break;
-        case 4:
-          return hours[3][type]
-          break;
-        case 5:
-          return hours[4][type]
-          break;
-        case 6:
-          return hours[5][type]
-          break;
+    const getBusinessHour = (day: number, type: 'open' | 'close'): string => {
+      if (!merchant.value?.id || props.userType !== 'merchant') {
+        return type === 'open' ? '09:00' : '17:00'
       }
+      return businessHoursStore.getBusinessHour(merchant.value.id, 'merchant', day, type)
     }
 
     const getStatusLabel = (status: any) => {
@@ -954,7 +934,6 @@ export default {
       loadingRejection,
       refresh,
       merchant,
-      businessHours,
       notes,
       getStatusLabel,
       onEventCreated,

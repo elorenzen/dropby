@@ -158,7 +158,6 @@
     <EventCreateRecurringEvent
       :visible="showCreateRecurringEventDialog"
       :merchant="merchant"
-      :business-hours="businessHours"
       @update:visible="showCreateRecurringEventDialog = $event"
       @recurring-event-created="onRecurringEventCreated"
     />
@@ -167,7 +166,6 @@
     <EventEditRecurringEvent
       :visible="showEditRecurringEventDialog"
       :recurring-event="selectedRecurringEventForEdit"
-      :business-hours="businessHours"
       @update:visible="showEditRecurringEventDialog = $event"
       @recurring-event-updated="onRecurringEventUpdated"
     />
@@ -194,6 +192,7 @@ definePageMeta({
 const route = useRoute()
 const merchantStore = useMerchantStore()
 const recurringEventStore = useRecurringEventStore()
+const businessHoursStore = useBusinessHoursStore()
 const toast = useToast()
 
 const merchantId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
@@ -201,9 +200,7 @@ const merchant = ref<any>(await merchantStore.getMerchantById(merchantId))
 
 await recurringEventStore.loadRecurringEventsByMerchantId(merchantId)
 
-// Business hours parsing
-const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
-businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
+// Business hours are loaded in app.vue, just use getters
 
 // Create recurring event dialog state
 const showCreateRecurringEventDialog = ref(false)

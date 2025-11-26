@@ -316,7 +316,6 @@
     <EventCreate
       :visible="showCreateEventDialog"
       :merchant="merchant"
-      :business-hours="businessHours"
       @update:visible="showCreateEventDialog = $event"
       @event-created="onEventCreated"
     />
@@ -325,7 +324,6 @@
     <EventCreateMultiple
       :visible="showCreateMultipleDialog"
       :merchant="merchant"
-      :business-hours="businessHours"
       @update:visible="showCreateMultipleDialog = $event"
       @event-created="onEventCreated"
     />
@@ -454,10 +452,6 @@ const { data: sentReviews, error: sentReviewsError } = await supabase
   .eq('sender_id', route.params.id)
   .order('created_at', { ascending: false })
 await reviewStore.setSentReviews(sentReviews || [])
-
-// Business hours parsing
-const businessHours = ref(JSON.parse(JSON.stringify((merchant.value.business_hours))))
-businessHours.value = businessHours.value.map((day: any) => JSON.parse(day))
 
 // Review dialog state
 const showWriteReviewDialog = ref(false)

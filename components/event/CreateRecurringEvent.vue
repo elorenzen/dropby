@@ -310,7 +310,6 @@ import type { Merchant } from '~/types'
 interface Props {
   visible: boolean
   merchant: Merchant
-  businessHours: any[]
   preFilledDate?: Date
 }
 
@@ -324,6 +323,9 @@ const emit = defineEmits<Emits>()
 
 const toast = useToast()
 const recurringEventStore = useRecurringEventStore()
+const businessHoursStore = useBusinessHoursStore()
+
+// Business hours are loaded in app.vue, just use getters
 
 // Reactive data
 const loading = ref(false)
@@ -414,19 +416,10 @@ const scheduleIntervalUnitLabel = computed(() => {
 
 // Helper functions
 const getBusinessHour = (day: number, type: 'open' | 'close'): string => {
-  const hours = props.businessHours
-  
-  if (!hours || !Array.isArray(hours) || hours.length === 0) {
+  if (!props.merchant?.id) {
     return type === 'open' ? '09:00' : '17:00'
   }
-  
-  const safeHours = hours.length >= 7 ? hours : Array(7).fill({ open: '09:00', close: '17:00' })
-  
-  switch (day) {
-    case 0: return safeHours[6]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 1: return safeHours[0]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 2: return safeHours[1]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 3: return safeHours[2]?.[type] || (type === 'open' ? '09:00' : '17:00')
+  return businessHoursStore.getBusinessHour(props.merchant.id, 'merchant', day, type)
     case 4: return safeHours[3]?.[type] || (type === 'open' ? '09:00' : '17:00')
     case 5: return safeHours[4]?.[type] || (type === 'open' ? '09:00' : '17:00')
     case 6: return safeHours[5]?.[type] || (type === 'open' ? '09:00' : '17:00')

@@ -309,7 +309,6 @@ import type { RecurringEvent } from '~/types'
 interface Props {
   visible: boolean
   recurringEvent: RecurringEvent | null
-  businessHours: any[]
 }
 
 interface Emits {

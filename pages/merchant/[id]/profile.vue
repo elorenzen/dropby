@@ -216,19 +216,22 @@
       </Card>
 
       <!-- Business Hours -->
-      <Card v-if="merchant.business_hours && merchant.business_hours.length > 0">
+      <Card v-if="businessHours && businessHours.length > 0">
         <template #title>
           <h2 class="text-2xl font-bold">Business Hours</h2>
         </template>
         <template #content>
           <div class="space-y-2">
             <div
-              v-for="(hours, index) in merchant.business_hours"
+              v-for="(hours, index) in businessHours"
               :key="index"
               class="flex justify-between items-center py-2 border-b border-surface-border last:border-b-0"
             >
               <span class="font-semibold text-text-main">{{ hours.day }}</span>
-              <span class="text-text-muted">{{ hours.open }} - {{ hours.close }}</span>
+              <span class="text-text-muted">
+                <span v-if="hours.open === 'Closed'">Closed</span>
+                <span v-else>{{ hours.open }} - {{ hours.close }}</span>
+              </span>
             </div>
           </div>
         </template>
@@ -243,12 +246,14 @@ import type { Merchant, Event } from '~/types'
 const route = useRoute()
 const supabase = useSupabaseClient()
 const merchantStore = useMerchantStore()
+const businessHoursStore = useBusinessHoursStore()
 const { isAuthenticated, currentUser } = useAuth()
 
 // State
 const loading = ref(true)
 const merchant = ref<Merchant | null>(null)
 const bookedEvents = ref<Event[]>([])
+const businessHours = ref<any[]>([])
 
 // SEO
 useSeoMeta({
@@ -281,6 +286,23 @@ const loadMerchantData = async () => {
         const now = new Date()
         bookedEvents.value = (events || []).filter(event => new Date(event.start) > now)
       }
+
+      // Business hours are loaded in app.vue, just use getters
+      const hours = businessHoursStore.getBusinessHours(merchant.value.id, 'merchant')
+      
+      // Format for display: Monday through Sunday
+      const dayOrder = [1, 2, 3, 4, 5, 6, 0] // Monday to Sunday
+      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+      const hoursMap = new Map(hours.map(h => [h.day_of_week, h]))
+      
+      businessHours.value = dayOrder.map((dayOfWeek, index) => {
+        const hour = hoursMap.get(dayOfWeek)
+        return {
+          day: dayNames[index],
+          open: hour?.open_time ? hour.open_time.substring(0, 5) : 'Closed',
+          close: hour?.close_time ? hour.close_time.substring(0, 5) : ''
+        }
+      })
     }
   } catch (error) {
     console.error('Error loading merchant data:', error)

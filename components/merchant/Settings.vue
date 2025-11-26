@@ -201,11 +201,19 @@
 
         <!-- BUSINESS HOURS TAB -->
         <div v-if="activeTab === 1" class="space-y-6">
-          <h2 class="text-2xl font-bold text-text-main mb-6">Business Hours</h2>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-text-main">Business Hours</h2>
+            <Button 
+              label="Save Hours" 
+              severity="success"
+              @click="saveBusinessHours" 
+              :loading="loading"
+            />
+          </div>
           
           <div class="space-y-4">
             <div v-for="(day, index) in businessHours" :key="index" class="border-b border-surface-light pb-4 last:border-b-0">
-              <div class="grid grid-cols-3 gap-6 items-center">
+              <div class="grid grid-cols-4 gap-6 items-center">
                 <div class="text-lg font-semibold text-text-main">{{ day.name }}</div>
                 <div>
                   <label class="block text-sm font-medium text-text-muted mb-2">{{ day.name }} Open</label>
@@ -215,6 +223,7 @@
                     hourFormat="12"
                     class="w-full"
                     :showIcon="false"
+                    :disabled="day.isClosed"
                   />
                 </div>
                 <div>
@@ -225,19 +234,19 @@
                     hourFormat="12"
                     class="w-full"
                     :showIcon="false"
+                    :disabled="day.isClosed"
                   />
+                </div>
+                <div class="flex items-center pt-6">
+                  <Checkbox 
+                    v-model="day.isClosed" 
+                    :binary="true"
+                    :inputId="`closed-${day.dayOfWeek}`"
+                  />
+                  <label :for="`closed-${day.dayOfWeek}`" class="ml-2 text-sm text-text-muted">Closed</label>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="flex justify-end pt-6">
-            <Button 
-              class="bg-accent text-background border-accent hover:bg-accent-dark px-8 py-3 font-semibold rounded-lg" 
-              label="Save Hours" 
-              @click="saveBusinessHours" 
-              :loading="loading"
-            />
           </div>
         </div>
 
@@ -400,12 +409,16 @@ const coordinates = ref()
 const formattedAddress = ref()
 const addressUrl = ref()
 
-// Business hours
-const businessHours = ref(
-  merchant.value?.business_hours 
-    ? JSON.parse(JSON.stringify(merchant.value.business_hours)).map((day: any) => JSON.parse(day))
-    : []
-)
+// Business hours - Initialize with default structure
+const businessHours = ref([
+  { name: 'Monday', dayOfWeek: 1, open: null, close: null, isClosed: false },
+  { name: 'Tuesday', dayOfWeek: 2, open: null, close: null, isClosed: false },
+  { name: 'Wednesday', dayOfWeek: 3, open: null, close: null, isClosed: false },
+  { name: 'Thursday', dayOfWeek: 4, open: null, close: null, isClosed: false },
+  { name: 'Friday', dayOfWeek: 5, open: null, close: null, isClosed: false },
+  { name: 'Saturday', dayOfWeek: 6, open: null, close: null, isClosed: false },
+  { name: 'Sunday', dayOfWeek: 0, open: null, close: null, isClosed: false }
+])
 
 // Tab configuration
 const tabs = [
@@ -439,7 +452,52 @@ const subscriptionLoading = ref(false)
 onMounted(async () => {
   await sdkInit()
   await checkSubscriptionStatus()
+  await loadBusinessHours()
 })
+
+// Helper function to convert TIME string (HH:MM:SS) to Date object for Calendar component
+const convertTimeStringToDate = (timeString: string): Date => {
+  const [hours, minutes, seconds] = timeString.split(':').map(Number)
+  const date = new Date()
+  date.setHours(hours, minutes, seconds || 0, 0)
+  return date
+}
+
+// Load business hours from store (data already loaded in app.vue)
+const loadBusinessHours = async () => {
+  if (!merchant.value?.id) return
+  
+  try {
+    const businessHoursStore = useBusinessHoursStore()
+    
+    // Get business hours for this merchant from store
+    const hours = businessHoursStore.getBusinessHours(merchant.value.id, 'merchant')
+    
+    // Map database records to businessHours structure
+    if (hours && hours.length > 0) {
+      const hoursMap = new Map()
+      hours.forEach((record: any) => {
+        hoursMap.set(record.day_of_week, {
+          open: record.open_time ? convertTimeStringToDate(record.open_time) : null,
+          close: record.close_time ? convertTimeStringToDate(record.close_time) : null,
+          isClosed: record.is_closed || false
+        })
+      })
+      
+      // Update businessHours with loaded data
+      businessHours.value.forEach((day) => {
+        const record = hoursMap.get(day.dayOfWeek)
+        if (record) {
+          day.open = record.open
+          day.close = record.close
+          day.isClosed = record.isClosed
+        }
+      })
+    }
+  } catch (err) {
+    console.error('Error loading business hours:', err)
+  }
+}
 
 const sdkInit = async () => {
   const config = useRuntimeConfig()
@@ -525,26 +583,49 @@ const saveEdits = async () => {
   loading.value = false
 }
 
+// Helper function to format Date object to TIME string (HH:MM:SS)
+const formatTimeForDatabase = (date: Date | null | string): string | null => {
+  if (!date) return null
+  if (typeof date === 'string') return date // Already a string
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  const seconds = date.getSeconds().toString().padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
+
 const saveBusinessHours = async () => {
   if (!merchant.value) return
   
   loading.value = true
   
-  const updates = {
-    updated_at: new Date(),
-    business_hours: businessHours.value
-  }
-
-  const { error } = await supabase
-    .from('merchants')
-    .update(updates)
-    .eq('id', merchant.value.id)
+  try {
+    // Save each day's business hours to the business_hours table
+    for (const day of businessHours.value) {
+      const isClosed = day.isClosed || (!day.open && !day.close)
+      
+      const { error } = await supabase
+        .from('business_hours')
+        .upsert({
+          business_id: merchant.value.id,
+          business_type: 'merchant',
+          day_of_week: day.dayOfWeek,
+          open_time: formatTimeForDatabase(day.open),
+          close_time: formatTimeForDatabase(day.close),
+          is_closed: isClosed,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'business_id,business_type,day_of_week'
+        })
+      
+      if (error) {
+        throw error
+      }
+    }
     
-  if (!error) {
     showToast('Business Hours Updated!', 'success')
-  } else {
+  } catch (error: any) {
     errType.value = 'Business Hours Update'
-    errMsg.value = error.message
+    errMsg.value = error.message || 'Failed to update business hours'
     errDialog.value = true
   }
   

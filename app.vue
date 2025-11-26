@@ -36,6 +36,10 @@ const menuStore = useMenuStore()
 const { data: menuData } = await supabase.from('menu_items').select()
 await menuStore.setAllMenuItems(menuData)
 
+const businessHoursStore = useBusinessHoursStore()
+const { data: businessHoursData } = await supabase.from('business_hours').select()
+await businessHoursStore.setBusinessHours(businessHoursData)
+
 const subscribeToEvents = async () => {
   supabase
     .channel('events')

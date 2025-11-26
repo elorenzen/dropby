@@ -119,7 +119,6 @@ import type { Merchant } from '~/types'
 interface Props {
   visible: boolean
   merchant: Merchant
-  businessHours: any[]
   preFilledDate?: Date
 }
 
@@ -133,6 +132,7 @@ const emit = defineEmits<Emits>()
 
 const toast = useToast()
 const eventStore = useEventStore()
+const businessHoursStore = useBusinessHoursStore()
 
 // Reactive data
 const loading = ref(false)
@@ -156,37 +156,14 @@ const canCreateEvent = computed(() => {
   // && eventValue.value && eventValue.value > 0 // COMMENTED OUT - Feature under consideration
 })
 
+// Business hours are loaded in app.vue, just use getters
+
 // Helper functions
 const getBusinessHour = (day: number, type: 'open' | 'close'): string => {
-  const hours = props.businessHours
-  
-  // Check if business hours exist and are valid
-  if (!hours || !Array.isArray(hours) || hours.length === 0) {
-    // Default to 9am-5pm if no business hours
+  if (!props.merchant?.id) {
     return type === 'open' ? '09:00' : '17:00'
   }
-  
-  // Ensure we have all 7 days of business hours
-  const safeHours = hours.length >= 7 ? hours : Array(7).fill({ open: '09:00', close: '17:00' })
-  
-  switch (day) {
-    case 0: // Sunday
-      return safeHours[6]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 1: // Monday
-      return safeHours[0]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 2: // Tuesday
-      return safeHours[1]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 3: // Wednesday
-      return safeHours[2]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 4: // Thursday
-      return safeHours[3]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 5: // Friday
-      return safeHours[4]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 6: // Saturday
-      return safeHours[5]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    default:
-      return type === 'open' ? '09:00' : '17:00'
-  }
+  return businessHoursStore.getBusinessHour(props.merchant.id, 'merchant', day, type)
 }
 
 // Methods
