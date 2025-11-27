@@ -90,7 +90,7 @@
             id="event-notes" 
             v-model="eventNotes" 
             rows="3" 
-            placeholder="Add any special notes or requirements for this event..."
+            placeholder="e.g., Setup time: 8am, Special dietary requirements, Parking instructions..."
             class="w-full resize-none"
           />
         </div>
@@ -420,11 +420,6 @@ const getBusinessHour = (day: number, type: 'open' | 'close'): string => {
     return type === 'open' ? '09:00' : '17:00'
   }
   return businessHoursStore.getBusinessHour(props.merchant.id, 'merchant', day, type)
-    case 4: return safeHours[3]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 5: return safeHours[4]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    case 6: return safeHours[5]?.[type] || (type === 'open' ? '09:00' : '17:00')
-    default: return type === 'open' ? '09:00' : '17:00'
-  }
 }
 
 const toggleDayOfWeek = (day: number) => {

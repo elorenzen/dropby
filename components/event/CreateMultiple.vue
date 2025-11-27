@@ -79,7 +79,7 @@
             id="event-notes" 
             v-model="eventNotes" 
             rows="4" 
-            placeholder="Add any special notes or requirements for these events..."
+            placeholder="e.g., Setup time: 8am, Special dietary requirements, Parking instructions..."
             class="w-full resize-none"
           />
         </div>
@@ -133,7 +133,7 @@
                     <Textarea 
                       v-model="perDateSettings[index].notes" 
                       rows="3" 
-                      placeholder="Optional notes for this event..."
+                      placeholder="e.g., Setup time: 8am, Special dietary requirements, Parking instructions..."
                       class="w-full resize-none"
                       size="small"
                     />
@@ -221,7 +221,7 @@
                   <Textarea 
                     v-model="event.notes" 
                     rows="2" 
-                    placeholder="Optional notes..."
+                    placeholder="e.g., Setup time: 8am, Special dietary requirements, Parking instructions..."
                     class="w-full resize-none"
                     size="small"
                   />

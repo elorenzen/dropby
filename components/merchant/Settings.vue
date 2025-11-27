@@ -166,7 +166,7 @@
                   rows="4" 
                   class="w-full rounded-lg px-4 py-3 focus:ring-2" 
                   style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
-                  placeholder="Instructions for vendors..."
+                  placeholder="e.g., Setup time: 8am, Special dietary requirements, Parking instructions, Loading dock location..."
                 />
               </div>
 

@@ -85,7 +85,7 @@
           id="event-notes" 
           v-model="eventNotes" 
           rows="4" 
-          placeholder="Add any special notes or requirements for this event..."
+          placeholder="e.g., Setup time: 8am, Special dietary requirements, Parking instructions..."
           class="w-full resize-none"
         />
       </div>
