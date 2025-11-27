@@ -2,8 +2,109 @@
   <div>
     <FullCalendar :options="calendarOptions" />
   
-    <!-- Event Details Dialog - Only show if there's an event -->
-    <Dialog v-if="eventOnDay" :visible="dayViewDialog" @update:visible="dayViewDialog = $event" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '42rem' }">
+    <!-- Multiple Events List Dialog - Show when there are 3+ events on a day -->
+    <Dialog v-if="eventsOnDay && eventsOnDay.length >= 3" :visible="multipleEventsDialog" @update:visible="(val) => { multipleEventsDialog = val; if (!val) dayViewDialog = false; }" modal :header="new Date(dayDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })" :style="{ width: '90vw', maxWidth: '600px' }">
+      <div class="space-y-4">
+        <p class="text-text-muted mb-4">
+          {{ eventsOnDay.length }} event{{ eventsOnDay.length !== 1 ? 's' : '' }} on this day:
+        </p>
+        
+        <div class="space-y-3 max-h-[60vh] overflow-y-auto">
+          <Card 
+            v-for="event in eventsOnDay" 
+            :key="event.id"
+            class="event-list-item"
+          >
+            <template #content>
+              <div class="space-y-3">
+                <!-- Event Time and Status -->
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="font-semibold text-text-main">
+                      {{ new Date(event.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) }} - 
+                      {{ new Date(event.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) }}
+                    </p>
+                    <p class="text-sm text-text-muted mt-1">
+                      {{ userType === 'merchant' ? getVendorProp(event.vendor, 'vendor_name') || 'Open Event' : getMerchantName(event.merchant) }}
+                    </p>
+                  </div>
+                  <Tag :value="userType === 'vendor' ? getVendorStatusLabel(event) : event.status.toUpperCase()" :severity="userType === 'vendor' ? getVendorStatusSeverity(event) : getStatusLabel(event)" />
+                </div>
+                
+                <!-- Location -->
+                <div v-if="event.location_address" class="flex items-center gap-2 text-sm text-text-muted">
+                  <i class="pi pi-map-marker"></i>
+                  <span>{{ event.location_address }}</span>
+                </div>
+                
+                <!-- Notes -->
+                <div v-if="event.notes" class="text-sm text-text-muted">
+                  <i class="pi pi-file-edit mr-2"></i>
+                  {{ event.notes }}
+                </div>
+                
+                <!-- Action Buttons for Vendor -->
+                <div v-if="userType === 'vendor'" class="pt-2">
+                  <Button 
+                    v-if="event.status === 'open' && 
+                          new Date(event.start) > new Date() && 
+                          (!event.pending_requests || !event.pending_requests.includes(vendor?.id)) &&
+                          event.status !== 'completed'"
+                    label="Request Event" 
+                    severity="success" 
+                    size="small"
+                    @click="requestEventFromList(event)"
+                    :loading="loadingRequest === event.id"
+                  />
+                  
+                  <Button 
+                    v-else-if="event.pending_requests && 
+                              event.pending_requests.includes(vendor?.id) &&
+                              event.vendor !== vendor?.id"
+                    label="Cancel Request" 
+                    severity="danger" 
+                    outlined
+                    size="small"
+                    @click="cancelRequestFromList(event)"
+                    :loading="loadingRequest === event.id"
+                  />
+                  
+                  <div 
+                    v-else-if="event.status === 'booked' && event.vendor === vendor?.id"
+                    class="text-sm text-success"
+                  >
+                    <i class="pi pi-check-circle mr-1"></i>
+                    Event confirmed
+                  </div>
+                </div>
+                
+                <!-- Action Buttons for Merchant -->
+                <div v-if="userType === 'merchant'" class="pt-2 flex gap-2">
+                  <Button 
+                    label="View Details" 
+                    severity="secondary" 
+                    outlined
+                    size="small"
+                    @click="viewEventDetails(event)"
+                  />
+                  <Button 
+                    v-if="event.status === 'open'"
+                    label="Delete" 
+                    severity="danger" 
+                    outlined
+                    size="small"
+                    @click="deleteEventFromList(event)"
+                  />
+                </div>
+              </div>
+            </template>
+          </Card>
+        </div>
+      </div>
+    </Dialog>
+
+    <!-- Event Details Dialog - Only show if there's a single event -->
+    <Dialog v-if="eventOnDay && (!eventsOnDay || eventsOnDay.length < 3)" :visible="dayViewDialog && !multipleEventsDialog" @update:visible="(val) => { dayViewDialog = val; if (!val) multipleEventsDialog = false; }" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '42rem' }">
       <!-- MERCHANT VIEW - BOOKED EVENT -->
       <div v-if="userType === 'merchant' && (eventOnDay.status === 'booked' || eventOnDay.status === 'completed' || eventOnDay.status === 'closed')" class="space-y-4">
         <!-- Event Time and Status -->
@@ -396,12 +497,15 @@ export default {
 
     const notes         = ref(merchant.value?.notes || '')
     const dayViewDialog = ref(false)
+    const multipleEventsDialog = ref(false)
+    const eventsOnDay = ref<any[]>([])
     const usageLimitReached = ref(false)
     const usageLimitObject = ref()
     const showPaymentDialog = ref(false)
     const dayId         = ref()
     const dayDate       = ref()
     const eventOnDay    = ref()
+    const loadingRequest = ref<string | null>(null)
 
     const errType       = ref()
     const errMsg        = ref()
@@ -464,25 +568,76 @@ export default {
       }
     }
 
-    // Convert events to FullCalendar format
+    // Group events by day and create summary events for days with 3+ events
     const fullCalendarEvents = computed(() => {
-      return events.value.map((event: any) => ({
-        id: event.id,
-        title: getEventTitle(event),
-        start: event.start,
-        end: event.end,
-        backgroundColor: getEventColor(event),
-        borderColor: getEventColor(event),
-        textColor: 'var(--text-color)',
-        extendedProps: {
-          status: event.status,
-          notes: event.notes,
-          location_address: event.location_address,
-          location_url: event.location_url,
-          pending_requests: event.pending_requests || [],
-          vendor_name: event.vendor_name
+      // Group events by day
+      const eventsByDay = new Map<string, any[]>()
+      
+      events.value.forEach((event: any) => {
+        const dayKey = new Date(event.start).toDateString()
+        if (!eventsByDay.has(dayKey)) {
+          eventsByDay.set(dayKey, [])
         }
-      }))
+        eventsByDay.get(dayKey)!.push(event)
+      })
+      
+      const calendarEvents: any[] = []
+      
+      eventsByDay.forEach((dayEvents, dayKey) => {
+        if (dayEvents.length >= 3) {
+          // Create a single summary event for days with 3+ events
+          const firstEvent = dayEvents[0]
+          calendarEvents.push({
+            id: `summary-${dayKey}`,
+            title: `${dayEvents.length} events`,
+            start: firstEvent.start,
+            end: firstEvent.end,
+            backgroundColor: 'var(--primary-color)',
+            borderColor: 'var(--primary-color)',
+            textColor: 'var(--text-color)',
+            extendedProps: {
+              isSummary: true,
+              eventCount: dayEvents.length,
+              allEvents: dayEvents.map((e: any) => ({
+                id: e.id,
+                status: e.status,
+                notes: e.notes,
+                location_address: e.location_address,
+                location_url: e.location_url,
+                pending_requests: e.pending_requests || [],
+                vendor: e.vendor,
+                merchant: e.merchant,
+                start: e.start,
+                end: e.end
+              }))
+            }
+          })
+        } else {
+          // Show individual events for days with <3 events
+          dayEvents.forEach((event: any) => {
+            calendarEvents.push({
+              id: event.id,
+              title: getEventTitle(event),
+              start: event.start,
+              end: event.end,
+              backgroundColor: getEventColor(event),
+              borderColor: getEventColor(event),
+              textColor: 'var(--text-color)',
+              extendedProps: {
+                status: event.status,
+                notes: event.notes,
+                location_address: event.location_address,
+                location_url: event.location_url,
+                pending_requests: event.pending_requests || [],
+                vendor_name: event.vendor_name,
+                isSummary: false
+              }
+            })
+          })
+        }
+      })
+      
+      return calendarEvents
     })
 
     // Get event color based on status
@@ -509,43 +664,71 @@ export default {
 
     // Handle date click
     const handleDateClick = (arg: any) => {
-      console.log('Date clicked:', arg.dateStr)
-      console.log('Date object:', arg.date)
       dayId.value = arg.dateStr
       dayDate.value = arg.date
       
-      // Check if there's an event on selected day
-      eventOnDay.value = events.value
-        .find((e: any) => new Date(e.start).toDateString() === new Date(arg.date).toDateString())
-
-      console.log('Found event on date:', eventOnDay.value)
-      console.log('dayDate set to:', dayDate.value)
-      console.log('Setting dayViewDialog to true from date click')
-
-      // Always open the main dialog - it will show appropriate content based on eventOnDay
-      dayViewDialog.value = true
-      console.log('dayViewDialog after date click:', dayViewDialog.value)
+      // Find all events on the selected day
+      const dayEvents = events.value.filter((e: any) => 
+        new Date(e.start).toDateString() === new Date(arg.date).toDateString()
+      )
+      
+      if (dayEvents.length >= 3) {
+        // Show multiple events dialog
+        eventsOnDay.value = dayEvents.sort((a: any, b: any) => 
+          new Date(a.start).getTime() - new Date(b.start).getTime()
+        )
+        multipleEventsDialog.value = true
+        dayViewDialog.value = false
+      } else if (dayEvents.length === 1) {
+        // Show single event dialog
+        eventOnDay.value = dayEvents[0]
+        eventsOnDay.value = []
+        multipleEventsDialog.value = false
+        dayViewDialog.value = true
+      } else if (dayEvents.length === 2) {
+        // For 2 events, show the first one (or could show list, but keeping simple for now)
+        eventOnDay.value = dayEvents[0]
+        eventsOnDay.value = []
+        multipleEventsDialog.value = false
+        dayViewDialog.value = true
+      } else {
+        // No events - show create dialog for merchants
+        eventOnDay.value = null
+        eventsOnDay.value = []
+        multipleEventsDialog.value = false
+        if (props.userType === 'merchant') {
+          dayViewDialog.value = true
+        }
+      }
     }
 
     // Handle event click
     const handleEventClick = (arg: any) => {
-      console.log('Event clicked:', arg.event)
       const event = arg.event
       const eventData = event.extendedProps
       
+      // Check if this is a summary event (3+ events on a day)
+      if (eventData.isSummary && eventData.allEvents) {
+        dayDate.value = new Date(event.start)
+        // Get full event data from events array
+        eventsOnDay.value = eventData.allEvents
+          .map((e: any) => events.value.find((ev: any) => ev.id === e.id))
+          .filter(Boolean)
+          .sort((a: any, b: any) => new Date(a.start).getTime() - new Date(b.start).getTime())
+        multipleEventsDialog.value = true
+        dayViewDialog.value = false
+        return
+      }
+      
+      // Single event click
       dayId.value = event.id
       dayDate.value = event.start
       
       // Find the full event data
       eventOnDay.value = events.value.find((e: any) => e.id === event.id)
-      
-      console.log('Found event:', eventOnDay.value)
-      console.log('Setting dayViewDialog to true')
-      
-      // Don't show create dialog for event clicks, just show the event details
+      eventsOnDay.value = []
+      multipleEventsDialog.value = false
       dayViewDialog.value = true
-      
-      console.log('dayViewDialog after setting:', dayViewDialog.value)
       
       // Force a re-render by updating the refresh counter
       refresh.value++
@@ -566,7 +749,7 @@ export default {
         dateClick: handleDateClick,
         eventClick: handleEventClick,
         height: 'auto',
-        dayMaxEvents: true,
+        dayMaxEvents: 2, // Show max 2 events, then show summary for 3+
         moreLinkClick: 'popover',
         eventDisplay: 'block',
         displayEventTime: false,
@@ -632,6 +815,7 @@ export default {
     const cancelDelete = () => { deleteDialog.value = false }
     const resetFields = async (action: any) => {
         dayViewDialog.value = false
+        multipleEventsDialog.value = false
         toast.add({ severity: 'success', summary: 'Success', detail: `Event ${action}!`, group: 'main', life: 6000 })
         notes.value = ''
         refresh.value++
@@ -915,13 +1099,174 @@ export default {
       }
     }
 
+    // Request event from multiple events list
+    const requestEventFromList = async (event: any) => {
+      if (!props.vendor?.id || !event) return
+      
+      loadingRequest.value = event.id
+      try {
+        // Check usage limit before allowing request
+        const usageCheck = await $fetch('/api/usage/check', {
+          method: 'POST',
+          body: {
+            businessId: props.vendor.id,
+            businessType: 'vendor',
+            usageType: 'requests',
+            requiredAmount: 1
+          }
+        }) as any
+
+        if (!usageCheck.allowed) {
+          showUsageLimitReached(usageCheck)
+          loadingRequest.value = null
+          return
+        }
+
+        let reqArr = event.pending_requests || []
+        reqArr.push(props.vendor.id)
+        
+        const updates = {
+          updated_at: new Date().toISOString(),
+          pending_requests: reqArr
+        }
+        
+        await eventStore.updateEvent(event.id, updates)
+        
+        // Increment usage after successful request
+        await $fetch('/api/usage/increment', {
+          method: 'POST',
+          body: {
+            businessId: props.vendor.id,
+            businessType: 'vendor',
+            usageType: 'requests',
+            incrementAmount: 1
+          }
+        })
+
+        // Create notification for merchant
+        const notificationStore = useNotificationStore()
+        const currentUser = useSupabaseUser()
+        const merchantUserIds = await userStore.getUserIdsFromBusiness(event.merchant, 'merchant')
+        const vendorData = await vendorStore.getVendorById(props.vendor.id)
+        
+        for (const merchantUserId of merchantUserIds) {
+          try {
+            await notificationStore.createNotification({
+              recipient_id: merchantUserId,
+              sender_id: currentUser.value?.id || null,
+              sender_business_id: props.vendor.id,
+              sender_business_type: 'vendor',
+              action_type: 'event_request_sent',
+              entity_type: 'event',
+              entity_id: event.id,
+              title: 'New Event Request',
+              message: `${vendorData?.vendor_name || 'A vendor'} requested to work your event on ${new Date(event.start).toLocaleDateString()}`,
+              metadata: {
+                event_id: event.id,
+                vendor_id: props.vendor.id,
+                vendor_name: vendorData?.vendor_name,
+                event_date: event.start
+              }
+            })
+          } catch (notifError) {
+            console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
+          }
+        }
+
+        // Send email notification to merchant
+        try {
+          await $fetch(`/api/sendEventRequestNotification?eventId=${event.id}&vendorId=${props.vendor.id}&merchantId=${event.merchant}`)
+        } catch (emailErr) {
+          console.error('Email notification failed:', emailErr)
+        }
+        
+        // Update the event in the list
+        const eventIndex = eventsOnDay.value.findIndex((e: any) => e.id === event.id)
+        if (eventIndex !== -1) {
+          eventsOnDay.value[eventIndex] = { ...event, pending_requests: reqArr }
+        }
+        
+        toast.add({
+          severity: 'success',
+          summary: 'Request Sent',
+          detail: `Request sent for event on ${new Date(event.start).toLocaleDateString()}`,
+          group: 'main',
+          life: 3000
+        })
+        
+        refresh.value++
+      } catch (error: any) {
+        errType.value = 'Event Request'
+        errMsg.value = error.message || 'Failed to request event'
+        errDialog.value = true
+      } finally {
+        loadingRequest.value = null
+      }
+    }
+
+    // Cancel request from multiple events list
+    const cancelRequestFromList = async (event: any) => {
+      if (!props.vendor?.id || !event) return
+      
+      loadingRequest.value = event.id
+      try {
+        let reqArr = event.pending_requests || []
+        reqArr = reqArr.filter((id: any) => id !== props.vendor.id)
+        
+        const updates = {
+          updated_at: new Date().toISOString(),
+          pending_requests: reqArr
+        }
+        
+        await eventStore.updateEvent(event.id, updates)
+        
+        // Update the event in the list
+        const eventIndex = eventsOnDay.value.findIndex((e: any) => e.id === event.id)
+        if (eventIndex !== -1) {
+          eventsOnDay.value[eventIndex] = { ...event, pending_requests: reqArr }
+        }
+        
+        toast.add({
+          severity: 'info',
+          summary: 'Request Cancelled',
+          detail: `Request cancelled for event on ${new Date(event.start).toLocaleDateString()}`,
+          group: 'main',
+          life: 3000
+        })
+        
+        refresh.value++
+      } catch (error: any) {
+        errType.value = 'Event Request'
+        errMsg.value = error.message || 'Failed to cancel request'
+        errDialog.value = true
+      } finally {
+        loadingRequest.value = null
+      }
+    }
+
+    // View event details from list (for merchants)
+    const viewEventDetails = (event: any) => {
+      eventOnDay.value = event
+      eventsOnDay.value = []
+      multipleEventsDialog.value = false
+      dayViewDialog.value = true
+    }
+
+    // Delete event from list (for merchants)
+    const deleteEventFromList = async (event: any) => {
+      eventOnDay.value = event
+      promptDeletion()
+    }
+
     const onClose = () => {
       // Toast closed functionality
     }
 
-    return {
+      return {
       calendarOptions,
       dayViewDialog,
+      multipleEventsDialog,
+      eventsOnDay,
       dayId,
       dayDate,
       eventOnDay,
@@ -930,6 +1275,7 @@ export default {
       errDialog,
       deleteDialog,
       loading,
+      loadingRequest,
       loadingApproval,
       loadingRejection,
       refresh,
@@ -952,6 +1298,10 @@ export default {
       getVendorStatusSeverity,
       requestEvent,
       cancelRequest,
+      requestEventFromList,
+      cancelRequestFromList,
+      viewEventDetails,
+      deleteEventFromList,
       // Usage limit dialog
       usageLimitReached,
       usageLimitObject,
@@ -1033,5 +1383,14 @@ export default {
   background-color: var(--text-md-gray);
   border-color: var(--text-md-gray);
   opacity: 0.8;
+}
+
+.event-list-item {
+  transition: all 0.2s ease;
+}
+
+.event-list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 </style>
