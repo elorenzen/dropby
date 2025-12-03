@@ -23,39 +23,39 @@
     </div>
 
     <!-- Recurring Events Card -->
-    <Card>
+    <SearchAndFilter
+      :has-active-filters="!!filters.keyword"
+      @clear-filters="clearFilters"
+    >
       <template #title>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
-              <i class="pi pi-calendar text-primary"></i>
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-text-main">Recurring Event Schedules</h3>
-              <p class="text-sm text-text-muted">Total schedules: {{ recurringEvents.length }}</p>
-            </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center">
+            <i class="pi pi-calendar text-primary"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-text-main">Recurring Event Schedules</h3>
           </div>
         </div>
       </template>
-      <template #content>
-        <!-- Filters Section -->
-        <div class="mb-6">
-          <div class="flex items-end gap-4">
-            <!-- Search Bar -->
-            <div class="flex-1">
-              <FloatLabel>
-                <span class="p-input-icon-left w-full">
-                  <InputText 
-                    id="search-filter"
-                    v-model="filters.keyword" 
-                    class="w-full"
-                  />
-                </span>
-                <label for="search-filter">Search recurring events...</label>
-              </FloatLabel>
+
+      <template #subtitle>
+        <p class="text-sm text-text-muted">Total schedules: {{ recurringEvents.length }}</p>
+      </template>
+          <template #search-bar>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="pi pi-search text-color-secondary"></i>
+              </div>
+              <InputText 
+                v-model="filters.keyword" 
+                placeholder="Search recurring events..."
+                class="w-full pl-10 pr-4"
+                size="small"
+              />
             </div>
-            
-            <!-- Sort By -->
+          </template>
+
+          <template #sort-by>
             <div class="w-48">
               <FloatLabel>
                 <Select 
@@ -65,23 +65,15 @@
                   optionLabel="label" 
                   optionValue="value"
                   class="w-full"
+                  size="small"
                 />
                 <label for="sort-filter">Sort by</label>
               </FloatLabel>
             </div>
-            
-            <!-- Clear Filters -->
-            <Button 
-              @click="clearFilters"
-              label="Clear Filters"
-              severity="secondary"
-              outlined
-              size="small"
-            />
-          </div>
-        </div>
+          </template>
+        </SearchAndFilter>
 
-        <div v-if="filteredRecurringEvents.length > 0" class="space-y-4">
+    <div v-if="filteredRecurringEvents.length > 0" class="space-y-4 mt-6">
           <EventBaseListCard 
             v-for="recurringEvent in filteredRecurringEvents" 
             :key="recurringEvent.id"
@@ -149,8 +141,6 @@
           <p class="text-primary-dark font-medium">No recurring events</p>
           <p class="text-sm text-primary-dark">Create a recurring event schedule to get started</p>
         </div>
-      </template>
-    </Card>
 
     <Toast group="main" position="bottom-center" @close="onClose" />
     

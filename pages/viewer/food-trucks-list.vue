@@ -12,78 +12,75 @@
       </div>
 
       <!-- Search and Filter Section -->
-      <Card class="mb-8">
-        <template #content>
-          <div class="space-y-6">
-            <!-- Search Bar -->
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="pi pi-search text-color-secondary"></i>
-              </div>
-              <InputText 
-                v-model="searchQuery" 
-                placeholder="Search by vendor name..."
-                class="w-full pl-10 pr-4 py-3 text-lg"
-                @input="onSearchInput"
-              />
+      <SearchAndFilter
+        class="mb-8"
+        :has-active-filters="hasActiveFilters"
+        @clear-filters="clearAllFilters"
+      >
+        <template #search-bar>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="pi pi-search text-color-secondary"></i>
             </div>
-
-            <!-- Sort and Filter Controls -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
-                <Select 
-                  v-model="sortBy" 
-                  :options="sortOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  placeholder="Sort by"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Filter by Cuisine</label>
-                <MultiSelect 
-                  v-model="selectedCuisines" 
-                  :options="cuisineOptions" 
-                  placeholder="All cuisines" 
-                  class="w-full"
-                  :showClear="true"
-                  display="chip"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Filter by Rating</label>
-                <Select 
-                  v-model="minRating" 
-                  :options="ratingOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  placeholder="Minimum rating"
-                  class="w-full"
-                />
-              </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-surface-border">
-              <div class="text-sm text-text-muted">
-                Showing {{ filteredVendors.length }} of {{ vendors.length }} vendors
-                <span v-if="searchQuery || selectedCuisines.length > 0 || minRating" class="text-primary">
-                  (filtered)
-                </span>
-              </div>
-              <div class="flex gap-2">
-                <Button 
-                  label="Clear Filters" 
-                  outlined 
-                  @click="clearAllFilters"
-                  :disabled="!hasActiveFilters"
-                />
-              </div>
-            </div>
+            <InputText 
+              v-model="searchQuery" 
+              placeholder="Search by vendor name..."
+              class="w-full pl-10 pr-4"
+              size="small"
+              @input="onSearchInput"
+            />
           </div>
         </template>
-      </Card>
+
+        <template #filters>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Filter by Cuisine</label>
+            <MultiSelect 
+              v-model="selectedCuisines" 
+              :options="cuisineOptions" 
+              placeholder="All cuisines" 
+              class="w-full"
+              :showClear="true"
+              display="chip"
+              size="small"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Filter by Rating</label>
+            <Select 
+              v-model="minRating" 
+              :options="ratingOptions" 
+              optionLabel="label" 
+              optionValue="value" 
+              placeholder="Minimum rating"
+              class="w-full"
+              size="small"
+            />
+          </div>
+        </template>
+
+        <template #sort-by>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
+            <Select 
+              v-model="sortBy" 
+              :options="sortOptions" 
+              optionLabel="label" 
+              optionValue="value" 
+              placeholder="Sort by"
+              class="w-full"
+              size="small"
+            />
+          </div>
+        </template>
+
+        <template #results-count>
+          Showing {{ filteredVendors.length }} of {{ vendors.length }} vendors
+          <span v-if="searchQuery || selectedCuisines.length > 0 || minRating" class="text-primary">
+            (filtered)
+          </span>
+        </template>
+      </SearchAndFilter>
 
       <!-- Vendors List with Expansion Panels -->
       <div v-if="filteredVendors.length > 0" class="space-y-4">
@@ -399,7 +396,7 @@ const clearAllFilters = () => {
 }
 
 const hasActiveFilters = computed(() => {
-  return searchQuery.value || selectedCuisines.value.length > 0 || minRating.value !== null
+  return !!(searchQuery.value || selectedCuisines.value.length > 0 || minRating.value !== null)
 })
 </script>
 

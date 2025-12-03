@@ -15,68 +15,62 @@
             />
         </div>
 
-        <!-- View Toggle -->
-        <div class="flex items-center gap-2">
-            <Button
-                :icon="layout === 'grid' ? 'pi pi-th-large' : 'pi pi-list'"
-                :label="layout === 'grid' ? 'List View' : 'Grid View'"
-                outlined
-                severity="secondary"
-                size="small"
-                @click="toggleLayout"
-            />
-        </div>
-
         <!-- Search and Filter Section -->
-        <Card class="mb-8">
-            <template #content>
-                <div class="space-y-6">
-                    <!-- Search Bar -->
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="pi pi-search text-color-secondary"></i>
-                        </div>
-                        <InputText 
-                            v-model="searchQuery" 
-                            placeholder="Search menu items..."
-                            class="w-full pl-10 pr-4 py-3 text-lg"
-                        />
+        <SearchAndFilter
+            class="mb-8"
+            :has-active-filters="hasActiveFilters"
+            @clear-filters="clearFilters"
+        >
+            <template #search-bar>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="pi pi-search text-color-secondary"></i>
                     </div>
-
-                    <!-- Filter Controls -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-text-main mb-2">Filter by Type</label>
-                            <Select
-                                v-model="selectedType"
-                                :options="typeOptions"
-                                optionLabel="label"
-                                optionValue="value"
-                                placeholder="All types"
-                                class="w-full"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-surface-border">
-                        <div class="text-sm text-text-muted">
-                            Showing {{ filteredMenuItems.length }} of {{ menuItems.length }} items
-                            <span v-if="searchQuery || selectedType" class="text-primary">
-                                (filtered)
-                            </span>
-                        </div>
-                        <div class="flex gap-2">
-                            <Button 
-                                label="Clear Filters" 
-                                outlined 
-                                @click="clearFilters"
-                                :disabled="!hasActiveFilters"
-                            />
-                        </div>
-                    </div>
+                    <InputText 
+                        v-model="searchQuery" 
+                        placeholder="Search menu items..."
+                        class="w-full pl-10 pr-4"
+                        size="small"
+                    />
                 </div>
             </template>
-        </Card>
+
+            <template #sort-by>
+                <div class="w-48">
+                    <Button
+                        :icon="layout === 'grid' ? 'pi pi-list' : 'pi pi-th-large'"
+                        :label="layout === 'grid' ? 'List View' : 'Grid View'"
+                        outlined
+                        severity="secondary"
+                        size="small"
+                        class="w-full"
+                        @click="toggleLayout"
+                    />
+                </div>
+            </template>
+
+            <template #filters>
+                <div>
+                    <label class="block text-sm font-medium text-text-main mb-2">Meal Type</label>
+                    <Select
+                        v-model="selectedType"
+                        :options="typeOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="All types"
+                        class="w-full"
+                        size="small"
+                    />
+                </div>
+            </template>
+
+            <template #results-count>
+                Showing {{ filteredMenuItems.length }} of {{ menuItems.length }} items
+                <span v-if="searchQuery || selectedType" class="text-primary">
+                    (filtered)
+                </span>
+            </template>
+        </SearchAndFilter>
 
         <!-- Grid View -->
         <div v-if="layout === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -266,7 +260,7 @@ const filteredMenuItems = computed(() => {
 })
 
 const hasActiveFilters = computed(() => {
-    return searchQuery.value || selectedType.value
+    return !!(searchQuery.value || selectedType.value)
 })
 
 const clearFilters = () => {

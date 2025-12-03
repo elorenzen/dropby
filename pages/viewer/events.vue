@@ -41,91 +41,84 @@
         </Card>
       </div>
 
-      <Card class="mb-8">
-        <template #content>
-          <div class="space-y-6">
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="pi pi-search text-color-secondary"></i>
-              </div>
-              <InputText 
-                v-model="filters.keyword" 
-                placeholder="Search events, food trucks, cuisines, or locations..."
-                class="w-full pl-10 pr-4 py-3 text-lg"
-              />
+      <SearchAndFilter
+        class="mb-8"
+        :has-active-filters="hasActiveFilters"
+        @clear-filters="clearFilters"
+      >
+        <template #search-bar>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="pi pi-search text-color-secondary"></i>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Cuisine Type</label>
-                <MultiSelect 
-                  v-model="filters.cuisines" 
-                  :options="cuisineOptions" 
-                  placeholder="All cuisines" 
-                  class="w-full"
-                  :showClear="true"
-                  display="chip"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Date Range</label>
-                <Calendar 
-                  v-model="filters.dateRange" 
-                  selectionMode="range" 
-                  placeholder="Select dates"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Distance</label>
-                <Select 
-                  v-model="filters.distance" 
-                  :options="distanceOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  placeholder="Any distance"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
-                <Select 
-                  v-model="filters.sortBy" 
-                  :options="sortOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  placeholder="Sort by"
-                  class="w-full"
-                />
-              </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-surface-border">
-              <div class="text-sm text-text-muted">
-                Showing {{ filteredEvents.length }} of {{ totalEvents }} events
-                <span v-if="filters.keyword || filters.cuisines.length > 0 || filters.dateRange" class="text-primary">
-                  (filtered)
-                </span>
-              </div>
-              <div class="flex gap-2">
-                <Button 
-                  label="Clear Filters" 
-                  outlined 
-                  @click="clearFilters"
-                  :disabled="!hasActiveFilters"
-                />
-                <Button 
-                  label="Save Search" 
-                  severity="secondary"
-                  outlined
-                  @click="saveSearch"
-                  :disabled="!hasActiveFilters"
-                />
-              </div>
-            </div>
+            <InputText 
+              v-model="filters.keyword" 
+              placeholder="Search events, food trucks, cuisines, or locations..."
+              class="w-full pl-10 pr-4"
+              size="small"
+            />
           </div>
         </template>
-      </Card>
+
+        <template #filters>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Cuisine Type</label>
+            <MultiSelect 
+              v-model="filters.cuisines" 
+              :options="cuisineOptions" 
+              placeholder="All cuisines" 
+              class="w-full"
+              :showClear="true"
+              display="chip"
+              size="small"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Date Range</label>
+            <Calendar 
+              v-model="filters.dateRange" 
+              selectionMode="range" 
+              placeholder="Select dates"
+              class="w-full"
+              size="small"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Distance</label>
+            <Select 
+              v-model="filters.distance" 
+              :options="distanceOptions" 
+              optionLabel="label" 
+              optionValue="value" 
+              placeholder="Any distance"
+              class="w-full"
+              size="small"
+            />
+          </div>
+        </template>
+
+        <template #sort-by>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
+            <Select 
+              v-model="filters.sortBy" 
+              :options="sortOptions" 
+              optionLabel="label" 
+              optionValue="value" 
+              placeholder="Sort by"
+              class="w-full"
+              size="small"
+            />
+          </div>
+        </template>
+
+        <template #results-count>
+          Showing {{ filteredEvents.length }} of {{ totalEvents }} events
+          <span v-if="filters.keyword || filters.cuisines.length > 0 || filters.dateRange" class="text-primary">
+            (filtered)
+          </span>
+        </template>
+      </SearchAndFilter>
     </div>
 
     <div v-if="filteredEvents.length > 0" class="space-y-6">
@@ -644,10 +637,10 @@ const clearFilters = () => {
 }
 
 const hasActiveFilters = computed(() => {
-  return filters.value.keyword || 
+  return !!(filters.value.keyword || 
          filters.value.cuisines.length > 0 || 
          filters.value.dateRange || 
-         filters.value.distance
+         filters.value.distance)
 })
 
 const getDirections = (event: Event) => {

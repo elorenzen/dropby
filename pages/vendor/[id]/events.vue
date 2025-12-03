@@ -81,41 +81,42 @@
     </Card>
 
     <!-- Open Events Card -->
-    <Card class="mb-6">
+    <SearchAndFilter
+      class="mb-6"
+      :has-active-filters="!!(openEventsFilters.keyword || openEventsFilters.dateRange)"
+      @clear-filters="clearOpenEventsFilters"
+    >
       <template #title>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
-              <i class="pi pi-calendar text-success"></i>
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-text-main">Open Events</h3>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-text-muted">Total events: {{ filteredOpenEvents.length }}</span>
-              </div>
-            </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+            <i class="pi pi-calendar text-success"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-text-main">Open Events</h3>
           </div>
         </div>
       </template>
-      <template #content>
-        <!-- Filters Section -->
-        <div class="mb-6">
-          <div class="flex items-end gap-4">
-            <!-- Search Bar -->
-            <div class="flex-1">
-              <FloatLabel>
-                <span class="p-input-icon-left w-full">
-                  <InputText 
-                    id="open-events-search-filter"
-                    v-model="openEventsFilters.keyword" 
-                    class="w-full"
-                  />
-                </span>
-                <label for="open-events-search-filter">Search by merchant name, location, or cuisine...</label>
-              </FloatLabel>
+
+      <template #subtitle>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-text-muted">Total events: {{ filteredOpenEvents.length }}</span>
+        </div>
+      </template>
+          <template #search-bar>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="pi pi-search text-color-secondary"></i>
+              </div>
+              <InputText 
+                v-model="openEventsFilters.keyword" 
+                placeholder="Search by merchant name, location, or cuisine..."
+                class="w-full pl-10 pr-4"
+                size="small"
+              />
             </div>
-            
-            <!-- Date Range Filter -->
+          </template>
+
+          <template #filters>
             <div class="w-48">
               <FloatLabel>
                 <Select 
@@ -125,12 +126,14 @@
                   optionLabel="label" 
                   optionValue="value"
                   class="w-full"
+                  size="small"
                 />
                 <label for="open-events-date-filter">Date Range</label>
               </FloatLabel>
             </div>
-            
-            <!-- Sort By -->
+          </template>
+
+          <template #sort-by>
             <div class="w-48">
               <FloatLabel>
                 <Select 
@@ -140,23 +143,15 @@
                   optionLabel="label" 
                   optionValue="value"
                   class="w-full"
+                  size="small"
                 />
                 <label for="open-events-sort-filter">Sort by</label>
               </FloatLabel>
             </div>
-            
-            <!-- Clear Filters -->
-            <Button 
-              @click="clearOpenEventsFilters"
-              label="Clear Filters"
-              severity="secondary"
-              outlined
-              size="small"
-            />
-          </div>
-        </div>
+          </template>
+        </SearchAndFilter>
 
-        <div v-if="filteredOpenEvents.length > 0" class="space-y-4">
+    <div v-if="filteredOpenEvents.length > 0" class="space-y-4 mt-6">
           <EventBaseListCard 
             v-for="event in filteredOpenEvents" 
             :key="event.id"
@@ -208,70 +203,56 @@
           <p class="text-success font-medium">No open events available</p>
           <p class="text-sm text-success-dark">Check back later for new opportunities</p>
         </div>
-      </template>
-    </Card>
 
     <!-- Past Events Card -->
-    <Card>
+    <SearchAndFilter
+      :has-active-filters="!!pastEventsFilters.keyword"
+      @clear-filters="clearPastEventsFilters"
+    >
       <template #title>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-surface-section flex items-center justify-center">
-              <i class="pi pi-history text-color-secondary"></i>
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-text-main">Past Events</h3>
-            </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-surface-section flex items-center justify-center">
+            <i class="pi pi-history text-color-secondary"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-text-main">Past Events</h3>
           </div>
         </div>
       </template>
-      <template #content>
-        <!-- Filters Section -->
-        <div class="mb-6">
-          <div class="flex items-end gap-4">
-            <!-- Search Bar -->
-            <div class="flex-1">
-              <FloatLabel>
-                <span class="p-input-icon-left w-full">
-                  <InputText 
-                    id="past-events-search-filter"
-                    v-model="pastEventsFilters.keyword" 
-                    class="w-full"
-                  />
-                </span>
-                <label for="past-events-search-filter">Search by merchant name...</label>
-              </FloatLabel>
-            </div>
-            
 
-            
-            <!-- Sort By -->
-            <div class="w-48">
-              <FloatLabel>
-                <Select 
-                  id="past-events-sort-filter"
-                  v-model="pastEventsFilters.sortBy" 
-                  :options="sortOptions" 
-                  optionLabel="label" 
-                  optionValue="value"
-                  class="w-full"
-                />
-                <label for="past-events-sort-filter">Sort by</label>
-              </FloatLabel>
-            </div>
-            
-            <!-- Clear Filters -->
-            <Button 
-              @click="clearPastEventsFilters"
-              label="Clear Filters"
-              severity="secondary"
-              outlined
+      <template #search-bar>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="pi pi-search text-color-secondary"></i>
+          </div>
+          <InputText 
+            v-model="pastEventsFilters.keyword" 
+            placeholder="Search by merchant name..."
+            class="w-full pl-10 pr-4"
+            size="small"
+          />
+        </div>
+      </template>
+
+      <template #sort-by>
+        <div class="w-48">
+          <FloatLabel>
+            <Select 
+              id="past-events-sort-filter"
+              v-model="pastEventsFilters.sortBy" 
+              :options="sortOptions" 
+              optionLabel="label" 
+              optionValue="value"
+              class="w-full"
               size="small"
             />
-          </div>
+            <label for="past-events-sort-filter">Sort by</label>
+          </FloatLabel>
         </div>
+      </template>
+    </SearchAndFilter>
 
-        <div v-if="filteredPastEvents.length > 0" class="space-y-4">
+    <div v-if="filteredPastEvents.length > 0" class="space-y-4 mt-6">
           <EventBaseListCard 
             v-for="event in filteredPastEvents" 
             :key="event.id"
@@ -320,8 +301,6 @@
           <p class="text-color-secondary font-medium">No past events</p>
           <p class="text-sm text-color-secondary">Completed events will appear here</p>
         </div>
-      </template>
-    </Card>
 
     <Toast group="main" position="bottom-center" @close="onClose" />
 

@@ -12,92 +12,90 @@
       </div>
 
       <!-- Search and Filter Section -->
-      <Card class="mb-8">
-        <template #content>
-          <div class="space-y-6">
-            <!-- Search Bar -->
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="pi pi-search text-color-secondary"></i>
-              </div>
-              <InputText 
-                v-model="searchQuery" 
-                placeholder="Search by merchant name..."
-                class="w-full pl-10 pr-4 py-3 text-lg"
-                @input="onSearchInput"
-              />
+      <SearchAndFilter
+        class="mb-8"
+        :has-active-filters="hasActiveFilters"
+        @clear-filters="clearAllFilters"
+      >
+        <template #search-bar>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="pi pi-search text-color-secondary"></i>
             </div>
+            <InputText 
+              v-model="searchQuery" 
+              placeholder="Search by merchant name..."
+              class="w-full pl-10 pr-4"
+              size="small"
+              @input="onSearchInput"
+            />
+          </div>
+        </template>
 
-            <!-- Sort and Filter Controls -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
-                <Select 
-                  v-model="sortBy" 
-                  :options="sortOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  placeholder="Sort by"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Filter by Rating</label>
-                <Select 
-                  v-model="minRating" 
-                  :options="ratingOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  placeholder="Minimum rating"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Distance</label>
-                <Select 
-                  v-model="maxDistance" 
-                  :options="distanceOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  placeholder="Max distance"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-main mb-2">Location</label>
-                <Button
-                  v-if="!locationPermission"
-                  label="Enable Location"
-                  icon="pi pi-map-marker"
-                  outlined
-                  @click="requestLocation"
-                  class="w-full"
-                />
-                <div v-else class="text-sm text-text-muted w-full text-center py-2">
-                  <i class="pi pi-check-circle text-success"></i> Location enabled
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-surface-border">
-              <div class="text-sm text-text-muted">
-                Showing {{ filteredMerchants.length }} of {{ merchantsWithDistance.length }} establishments
-                <span v-if="searchQuery || minRating || maxDistance" class="text-primary">
-                  (filtered)
-                </span>
-              </div>
-              <div class="flex gap-2">
-                <Button 
-                  label="Clear Filters" 
-                  outlined 
-                  @click="clearAllFilters"
-                  :disabled="!hasActiveFilters"
-                />
-              </div>
+        <template #filters>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Filter by Rating</label>
+            <Select 
+              v-model="minRating" 
+              :options="ratingOptions" 
+              optionLabel="label" 
+              optionValue="value" 
+              placeholder="Minimum rating"
+              class="w-full"
+              size="small"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Distance</label>
+            <Select 
+              v-model="maxDistance" 
+              :options="distanceOptions" 
+              optionLabel="label" 
+              optionValue="value" 
+              placeholder="Max distance"
+              class="w-full"
+              size="small"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Location</label>
+            <Button
+              v-if="!locationPermission"
+              label="Enable Location"
+              icon="pi pi-map-marker"
+              outlined
+              @click="requestLocation"
+              class="w-full"
+              size="small"
+            />
+            <div v-else class="text-sm text-text-muted w-full text-center py-2">
+              <i class="pi pi-check-circle text-success"></i> Location enabled
             </div>
           </div>
         </template>
-      </Card>
+
+        <template #sort-by>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Sort By</label>
+            <Select 
+              v-model="sortBy" 
+              :options="sortOptions" 
+              optionLabel="label" 
+              optionValue="value" 
+              placeholder="Sort by"
+              class="w-full"
+              size="small"
+            />
+          </div>
+        </template>
+
+        <template #results-count>
+          Showing {{ filteredMerchants.length }} of {{ merchantsWithDistance.length }} establishments
+          <span v-if="searchQuery || minRating || maxDistance" class="text-primary">
+            (filtered)
+          </span>
+        </template>
+      </SearchAndFilter>
 
       <!-- Merchants List with Expansion Panels -->
       <div v-if="filteredMerchants.length > 0" class="space-y-4">
@@ -539,7 +537,7 @@ const clearAllFilters = () => {
 }
 
 const hasActiveFilters = computed(() => {
-  return searchQuery.value || minRating.value !== null || maxDistance.value !== null
+  return !!(searchQuery.value || minRating.value !== null || maxDistance.value !== null)
 })
 
 const openMapUrl = (url: string | null) => {

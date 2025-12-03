@@ -115,67 +115,68 @@
     </Card>
 
     <!-- All Events Card -->
-    <Card>
+    <SearchAndFilter
+      :has-active-filters="!!(eventFilters.keyword || (eventFilters.status && eventFilters.status.length > 0))"
+      @clear-filters="clearEventFilters"
+    >
       <template #title>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
-              <i class="pi pi-calendar text-success"></i>
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-text-main">All Events</h3>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-text-muted">Total events: {{ filteredEvents.length }} |</span>
-                <span v-if="openEventsCount > 0" class="text-error font-medium">open: {{ openEventsCount }}</span>
-                <span v-if="openEventsCount > 0 && bookedEventsCount > 0" class="text-text-muted">|</span>
-                <span v-if="bookedEventsCount > 0" class="text-success font-medium">booked: {{ bookedEventsCount }}</span>
-                <span v-if="(openEventsCount > 0 || bookedEventsCount > 0) && completedEventsCount > 0" class="text-text-muted">|</span>
-                <span v-if="completedEventsCount > 0" class="text-success font-medium">completed: {{ completedEventsCount }}</span>
-                <span v-if="(openEventsCount > 0 || bookedEventsCount > 0 || completedEventsCount > 0) && (cancelledEventsCount > 0 || closedEventsCount > 0)" class="text-text-muted">|</span>
-                <span v-if="cancelledEventsCount > 0" class="text-warning font-medium">cancelled: {{ cancelledEventsCount }}</span>
-                <span v-if="cancelledEventsCount > 0 && closedEventsCount > 0" class="text-text-muted">|</span>
-                <span v-if="closedEventsCount > 0" class="text-md-gray font-medium">closed: {{ closedEventsCount }}</span>
-              </div>
-            </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+            <i class="pi pi-calendar text-success"></i>
           </div>
-          <div class="flex items-center gap-2">
-            <Button 
-              @click="showCreateEventDialog = true"
-              label="Create Event"
-              severity="success"
-              outlined
-              size="small"
-            />
-            <Button 
-              v-if="canCreateDateRangeEvents"
-              @click="showCreateMultipleDialog = true"
-              label="Create Multiple"
-              icon="pi pi-calendar-plus"
-              severity="success"
-              size="small"
-            />
+          <div>
+            <h3 class="text-xl font-semibold text-text-main">All Events</h3>
           </div>
         </div>
       </template>
-      <template #content>
-        <!-- Filters Section -->
-        <div class="mb-6">
-          <div class="flex items-end gap-4">
-            <!-- Search Bar -->
-            <div class="flex-1">
-              <FloatLabel>
-                <span class="p-input-icon-left w-full">
-                  <InputText 
-                    id="search-filter"
-                    v-model="eventFilters.keyword" 
-                    class="w-full"
-                  />
-                </span>
-                <label for="search-filter">Search by food truck name...</label>
-              </FloatLabel>
+
+      <template #subtitle>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-text-muted">Total events: {{ filteredEvents.length }} |</span>
+          <span v-if="openEventsCount > 0" class="text-error font-medium">open: {{ openEventsCount }}</span>
+          <span v-if="openEventsCount > 0 && bookedEventsCount > 0" class="text-text-muted">|</span>
+          <span v-if="bookedEventsCount > 0" class="text-success font-medium">booked: {{ bookedEventsCount }}</span>
+          <span v-if="(openEventsCount > 0 || bookedEventsCount > 0) && completedEventsCount > 0" class="text-text-muted">|</span>
+          <span v-if="completedEventsCount > 0" class="text-success font-medium">completed: {{ completedEventsCount }}</span>
+          <span v-if="(openEventsCount > 0 || bookedEventsCount > 0 || completedEventsCount > 0) && (cancelledEventsCount > 0 || closedEventsCount > 0)" class="text-text-muted">|</span>
+          <span v-if="cancelledEventsCount > 0" class="text-warning font-medium">cancelled: {{ cancelledEventsCount }}</span>
+          <span v-if="cancelledEventsCount > 0 && closedEventsCount > 0" class="text-text-muted">|</span>
+          <span v-if="closedEventsCount > 0" class="text-md-gray font-medium">closed: {{ closedEventsCount }}</span>
+        </div>
+      </template>
+
+      <template #actions>
+        <Button 
+          @click="showCreateEventDialog = true"
+          label="Create Event"
+          severity="success"
+          outlined
+          size="small"
+        />
+        <Button 
+          v-if="canCreateDateRangeEvents"
+          @click="showCreateMultipleDialog = true"
+          label="Create Multiple"
+          icon="pi pi-calendar-plus"
+          severity="success"
+          size="small"
+        />
+      </template>
+          <template #search-bar>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="pi pi-search text-color-secondary"></i>
+              </div>
+              <InputText 
+                v-model="eventFilters.keyword" 
+                placeholder="Search by food truck name..."
+                class="w-full pl-10 pr-4"
+                size="small"
+              />
             </div>
-            
-            <!-- Status Filter -->
+          </template>
+
+          <template #filters>
             <div class="w-56">
               <FloatLabel>
                 <MultiSelect 
@@ -188,12 +189,14 @@
                   placeholder="Select Statuses"
                   :maxSelectedLabels="3"
                   class="w-full"
+                  size="small"
                 />
                 <label for="status-filter">Status</label>
               </FloatLabel>
             </div>
-            
-            <!-- Sort By -->
+          </template>
+
+          <template #sort-by>
             <div class="w-48">
               <FloatLabel>
                 <Select 
@@ -203,23 +206,15 @@
                   optionLabel="label" 
                   optionValue="value"
                   class="w-full"
+                  size="small"
                 />
                 <label for="sort-filter">Sort by</label>
               </FloatLabel>
             </div>
-            
-            <!-- Clear Filters -->
-            <Button 
-              @click="clearEventFilters"
-              label="Clear Filters"
-              severity="secondary"
-              outlined
-              size="small"
-            />
-          </div>
-        </div>
+          </template>
+        </SearchAndFilter>
 
-        <div v-if="filteredEvents.length > 0" class="space-y-4">
+    <div v-if="filteredEvents.length > 0" class="space-y-4 mt-6">
           <EventBaseListCard 
             v-for="event in filteredEvents" 
             :key="event.id"
@@ -296,8 +291,6 @@
           <p class="text-success font-medium">No events</p>
           <p class="text-sm text-success-dark">Create new events to get started</p>
         </div>
-      </template>
-    </Card>
 
     <Toast group="main" position="bottom-center" @close="onClose" />
     
