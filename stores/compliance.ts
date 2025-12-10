@@ -442,21 +442,30 @@ export const useComplianceStore = defineStore('compliance', () => {
   const getDefaultRequirements = (businessType: 'vendor' | 'merchant'): ComplianceRequirement[] => {
     if (businessType === 'vendor') {
       return [
-        { id: 'business_license', business_type: 'vendor', category: 'business_license', title: 'Business License', description: 'State or local business license', required: true, order_index: 1 },
-        { id: 'health_permit', business_type: 'vendor', category: 'health_permit', title: 'Health Permit', description: 'County health department permit', required: true, order_index: 2 },
-        { id: 'health_inspection', business_type: 'vendor', category: 'health_inspection', title: 'Health Inspection Grade', description: 'Current health inspection grade/certificate', required: true, order_index: 3 },
-        { id: 'servsafe_manager', business_type: 'vendor', category: 'servsafe_manager', title: 'Manager ServSafe Certificate', description: 'Manager-level food safety certification', required: true, order_index: 4 },
-        { id: 'insurance', business_type: 'vendor', category: 'insurance', title: 'Insurance Certificate', description: 'General liability and vehicle insurance', required: true, order_index: 5 },
-        { id: 'vehicle_registration', business_type: 'vendor', category: 'vehicle_registration', title: 'Vehicle Registration', description: 'Food truck vehicle registration', required: true, order_index: 6 }
-      ]
+        { id: 'business_license', business_type: 'vendor', category: 'business_license', title: 'Business License', description: 'Register your food truck as a legitimate business entity (LLC or other business structure)', required: true, order_index: 1 },
+        { id: 'ein', business_type: 'vendor', category: 'ein', title: 'Employer Identification Number (EIN)', description: 'Obtain this from the IRS for tax purposes', required: true, order_index: 2 },
+        { id: 'mobile_food_vendor_license', business_type: 'vendor', category: 'mobile_food_vendor_license', title: 'Mobile Food Vendor License (MFVL)', description: 'Required to sell food on public property. This license varies by municipality', required: true, order_index: 3 },
+        { id: 'vehicle_registration', business_type: 'vendor', category: 'vehicle_registration', title: 'Vehicle Registration', description: 'Ensure your food truck is properly registered with the state', required: true, order_index: 4 },
+        { id: 'food_handlers_permit', business_type: 'vendor', category: 'food_handlers_permit', title: 'Food Handler\'s Permit', description: 'Certification that you understand food safety practices', required: true, order_index: 5 },
+        { id: 'health_department_permit', business_type: 'vendor', category: 'health_department_permit', title: 'Health Department Permit', description: 'Required to ensure your food truck meets health and safety regulations', required: true, order_index: 6 },
+        { id: 'commissary_agreement', business_type: 'vendor', category: 'commissary_agreement', title: 'Commissary Agreement', description: 'If you prepare food in a separate location, you may need an agreement with that facility', required: false, order_index: 7 },
+        { id: 'liability_insurance', business_type: 'vendor', category: 'liability_insurance', title: 'Liability Insurance', description: 'Liability insurance to protect your business and comply with local regulations', required: true, order_index: 8 },
+        { id: 'parking_permits', business_type: 'vendor', category: 'parking_permits', title: 'Parking Permits', description: 'Depending on your location, you may need specific permits for where you can park and operate your food truck', required: false, order_index: 9 }
+      ] as ComplianceRequirement[]
     } else {
+      // Merchants (Breweries, Wine Bars, Brewpubs, etc.)
       return [
-        { id: 'business_license', business_type: 'merchant', category: 'business_license', title: 'Business License', description: 'State or local business license', required: true, order_index: 1 },
-        { id: 'health_permit', business_type: 'merchant', category: 'health_permit', title: 'Health Permit', description: 'County health department permit', required: true, order_index: 2 },
-        { id: 'health_inspection', business_type: 'merchant', category: 'health_inspection', title: 'Health Inspection Grade', description: 'Current health inspection grade/certificate', required: true, order_index: 3 },
-        { id: 'insurance', business_type: 'merchant', category: 'insurance', title: 'Insurance Certificate', description: 'General liability insurance', required: true, order_index: 4 },
-        { id: 'fire_safety', business_type: 'merchant', category: 'fire_safety', title: 'Fire Safety Certificate', description: 'Fire department safety inspection', required: true, order_index: 5 }
-      ]
+        { id: 'business_license', business_type: 'merchant', category: 'business_license', title: 'Business License', description: 'Proof of business structure (e.g., LLC, corporation)', required: true, order_index: 1 },
+        { id: 'ein', business_type: 'merchant', category: 'ein', title: 'Employer Identification Number (EIN)', description: 'Required for tax purposes', required: true, order_index: 2 },
+        { id: 'certificate_of_occupancy', business_type: 'merchant', category: 'certificate_of_occupancy', title: 'Certificate of Occupancy', description: 'Confirms the business location meets local zoning laws', required: true, order_index: 3 },
+        { id: 'federal_brewers_notice', business_type: 'merchant', category: 'federal_brewers_notice', title: 'Federal Brewer\'s Notice', description: 'Required for breweries to operate legally under federal law', required: false, order_index: 4 },
+        { id: 'state_brewery_permit', business_type: 'merchant', category: 'state_brewery_permit', title: 'State Brewery Permit', description: 'Issued by the Texas Alcoholic Beverage Commission (TABC) for manufacturing beer', required: false, order_index: 5 },
+        { id: 'wine_beer_retailer_bg', business_type: 'merchant', category: 'wine_beer_retailer_bg', title: 'Wine and Beer Retailer\'s Permit (BG)', description: 'Allows selling beer and wine for on-premises consumption (e.g., bars, restaurants)', required: false, order_index: 6 },
+        { id: 'wine_beer_retailer_bq', business_type: 'merchant', category: 'wine_beer_retailer_bq', title: 'Wine and Beer Retailer\'s Off-Premise Permit (BQ)', description: 'Required for retail sales where consumption is not allowed on-site (e.g., grocery stores)', required: false, order_index: 7 },
+        { id: 'brewpub_license', business_type: 'merchant', category: 'brewpub_license', title: 'Brewpub License', description: 'Necessary if selling beer on-site at a brewery', required: false, order_index: 8 },
+        { id: 'liability_insurance', business_type: 'merchant', category: 'liability_insurance', title: 'Liability Insurance', description: 'General liability insurance to protect your business', required: true, order_index: 9 },
+        { id: 'fire_safety', business_type: 'merchant', category: 'fire_safety', title: 'Fire Safety Certificate', description: 'Fire department safety inspection for fixed establishment', required: true, order_index: 10 }
+      ] as ComplianceRequirement[]
     }
   }
 

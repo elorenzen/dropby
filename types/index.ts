@@ -230,7 +230,7 @@ export interface ComplianceRequirement {
   description: string | null
   required: boolean
   order_index: number | null
-  created_at: string
+  created_at?: string | null
 }
 
 // ============================================================================
