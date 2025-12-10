@@ -5,7 +5,7 @@
         <div class="card-header">
           <Logo class="w-12 h-12" :fontControlled="false" style="color: var(--primary-color);" />
           <h1 class="text-2xl font-bold text-primary">Set New Password</h1>
-          <p class="text-color-secondary text-center">Enter your new password below.</p>
+          <p class="text-color-secondary text-center description-text">Enter your new password below.</p>
         </div>
       </template>
       <template #content>
@@ -344,6 +344,11 @@ const resetPassword = async () => {
   box-shadow: none !important;
 }
 
+.description-text {
+  margin: 0;
+  padding: 0 1rem;
+}
+
 @media (max-width: 768px) {
   .reset-password-container {
     padding: 1rem;
@@ -351,6 +356,10 @@ const resetPassword = async () => {
   
   .reset-password-card {
     max-width: 100%;
+  }
+  
+  .description-text {
+    padding: 0 0.5rem;
   }
 }
 </style>
