@@ -83,15 +83,48 @@ export default defineEventHandler(async (event) => {
             </div>
         `
 
-        // Send email to both parties if they have email addresses
-        const recipients = ['eric.lorenzen@gmail.com'] // Default for testing
+        // Get all user emails from both merchant and vendor businesses
+        // Users must have available_to_contact = true and email IS NOT NULL
+        const recipients: string[] = []
         
-        if (merchantData.email) {
-            recipients.push(merchantData.email)
+        // Get merchant user emails
+        const { data: merchantUsers, error: merchantUsersError } = await client
+            .from('users')
+            .select('email')
+            .eq('associated_merchant_id', query.merchantId)
+            .eq('available_to_contact', true)
+            .not('email', 'is', null)
+        
+        if (!merchantUsersError && merchantUsers) {
+            merchantUsers.forEach((user: any) => {
+                if (user.email && !recipients.includes(user.email)) {
+                    recipients.push(user.email)
+                }
+            })
         }
         
-        if (vendorData.email) {
-            recipients.push(vendorData.email)
+        // Get vendor user emails
+        const { data: vendorUsers, error: vendorUsersError } = await client
+            .from('users')
+            .select('email')
+            .eq('associated_vendor_id', query.vendorId)
+            .eq('available_to_contact', true)
+            .not('email', 'is', null)
+        
+        if (!vendorUsersError && vendorUsers) {
+            vendorUsers.forEach((user: any) => {
+                if (user.email && !recipients.includes(user.email)) {
+                    recipients.push(user.email)
+                }
+            })
+        }
+        
+        // Only send if we have at least one recipient
+        if (recipients.length === 0) {
+            throw createError({
+                statusCode: 400,
+                statusMessage: 'No email addresses found for merchant or vendor users (available for contact)'
+            })
         }
 
         const emailData = await resend.emails.send({

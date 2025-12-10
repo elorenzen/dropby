@@ -92,11 +92,37 @@ export default defineEventHandler(async (event) => {
             </div>
         `
 
-        // Send email to merchant
-        const recipients = ['eric.lorenzen@gmail.com'] // Default for testing
+        // Get all merchant user emails
+        // Users must have available_to_contact = true and email IS NOT NULL
+        const { data: merchantUsers, error: merchantUsersError } = await client
+            .from('users')
+            .select('email')
+            .eq('associated_merchant_id', query.merchantId)
+            .eq('available_to_contact', true)
+            .not('email', 'is', null)
         
-        if (merchantData.email) {
-            recipients.push(merchantData.email)
+        if (merchantUsersError) {
+            throw createError({
+                statusCode: 500,
+                statusMessage: 'Failed to fetch merchant users'
+            })
+        }
+        
+        const recipients: string[] = []
+        if (merchantUsers && merchantUsers.length > 0) {
+            merchantUsers.forEach((user: any) => {
+                if (user.email && !recipients.includes(user.email)) {
+                    recipients.push(user.email)
+                }
+            })
+        }
+        
+        // Only send if we have at least one recipient
+        if (recipients.length === 0) {
+            throw createError({
+                statusCode: 400,
+                statusMessage: 'No merchant user email addresses found (available for contact)'
+            })
         }
 
         const emailData = await resend.emails.send({
