@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen" style="background: var(--surface-ground); color: var(--text-color);">
+  <div class="min-h-screen" style="background: var(--p-surface-ground); color: var(--p-text-color);">
     <!-- Header -->
-    <div class="border-b px-8 py-6" style="border-color: var(--surface-border);">
-      <h1 class="text-3xl font-bold mb-1" style="color: var(--text-color);">Merchant Settings</h1>
+    <div class="border-b px-8 py-6" style="border-color: var(--p-surface-border);">
+      <h1 class="text-3xl font-bold mb-1" style="color: var(--p-text-color);">Merchant Settings</h1>
       <p class="text-sm" style="color: var(--text-md-gray);">Manage your business profile, hours, payments, and compliance</p>
     </div>
 
     <div class="flex">
       <!-- Sidebar Navigation -->
-      <div class="w-64 border-r min-h-screen" style="border-color: var(--surface-border);">
+      <div class="w-64 border-r min-h-screen" style="border-color: var(--p-surface-border);">
         <nav class="p-6">
           <ul class="space-y-2">
             <li v-for="(tab, index) in tabs" :key="index">
@@ -34,7 +34,7 @@
       <div class="flex-1 p-8">
         <!-- GENERAL INFORMATION TAB -->
         <div v-if="activeTab === 0" class="space-y-6">
-          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">General Information</h2>
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">General Information</h2>
           
           <div class="flex gap-8">
             <!-- Image Upload Section -->
@@ -70,7 +70,7 @@
                   <InputText 
                     v-model="merchant.merchant_name" 
                     class="w-full rounded-lg px-4 py-3 focus:ring-2" 
-                    style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                    style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                     placeholder="Enter business name"
                   />
                 </div>
@@ -83,7 +83,7 @@
                     <input
                       ref="streetRef"
                       class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2"
-                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                       :placeholder="merchant.formatted_address || 'Enter address'"
                     />
                   </div>
@@ -97,7 +97,7 @@
                     <InputText 
                       v-model="merchant.phone" 
                       class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
-                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                       placeholder="Phone number"
                     />
                   </div>
@@ -111,7 +111,7 @@
                     <InputText 
                       v-model="merchant.email" 
                       class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
-                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                       placeholder="Email address"
                     />
                   </div>
@@ -125,7 +125,7 @@
                     <InputText 
                       v-model="merchant.website" 
                       class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
-                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                       placeholder="Website URL"
                     />
                   </div>
@@ -139,7 +139,7 @@
                     <InputText 
                       v-model="merchant.instagram" 
                       class="w-full rounded-lg pl-10 pr-4 py-3 focus:ring-2" 
-                      style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                      style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                       placeholder="Instagram handle"
                     />
                   </div>
@@ -153,7 +153,7 @@
                   v-model="merchant.merchant_description" 
                   rows="4" 
                   class="w-full rounded-lg px-4 py-3 focus:ring-2" 
-                  style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                  style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                   placeholder="Describe your business..."
                 />
               </div>
@@ -165,7 +165,7 @@
                   v-model="merchant.notes" 
                   rows="4" 
                   class="w-full rounded-lg px-4 py-3 focus:ring-2" 
-                  style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+                  style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
                   placeholder="e.g., Setup time: 8am, Special dietary requirements, Parking instructions, Loading dock location..."
                 />
               </div>
@@ -365,7 +365,7 @@
 
         <!-- USER MANAGEMENT TAB -->
         <div v-if="activeTab === 4" class="space-y-6">
-          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">User Management</h2>
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">User Management</h2>
           <AssociatedUsers />
         </div>
       </div>
@@ -865,69 +865,5 @@ const formatDate = (dateString: string) => {
 </script>
 
 <style scoped>
-:deep(.p-calendar) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
-}
-
-:deep(.p-calendar input) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
-}
-
-:deep(.p-multiselect) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
-}
-
-:deep(.p-multiselect-label) {
-  color: var(--text-color) !important;
-}
-
-:deep(.p-multiselect-trigger) {
-  color: var(--text-md-gray) !important;
-}
-
-:deep(.p-dropdown) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
-}
-
-:deep(.p-dropdown-label) {
-  color: var(--text-color) !important;
-}
-
-:deep(.p-dropdown-trigger) {
-  color: var(--text-md-gray) !important;
-}
-
-:deep(.p-fileupload) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-}
-
-:deep(.p-fileupload-choose) {
-  background: var(--surface-overlay) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
-}
-
-:deep(.p-fileupload-choose:hover) {
-  background: var(--surface-section) !important;
-}
-
-:deep(.p-toast) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-}
-
-:deep(.p-toast-message) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
-}
+/* PrimeVue handles all component styling by default - only override if absolutely necessary */
 </style>

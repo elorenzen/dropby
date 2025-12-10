@@ -1,6 +1,6 @@
 <template>
-    <div class="card flex justify-center" style="background-color: var(--surface-ground) !important;">
-        <Stepper :value="currentStep" class="basis-[60rem]" style="background-color: var(--surface-ground) !important;">
+    <div class="card flex justify-center" style="background-color: var(--p-surface-ground) !important;">
+        <Stepper :value="currentStep" class="basis-[60rem]" style="background-color: var(--p-surface-ground) !important;">
             <StepList>
                 <Step value="1">Business Type</Step>
                 <Step value="2" :disabled="!step1Valid">Primary User Information</Step>
@@ -9,7 +9,7 @@
                 <Step value="5" :disabled="!step1Valid || !step2Valid || !step3Valid || !step4Valid">Review</Step>
             </StepList>
             <StepPanels>
-                <StepPanel v-slot="{ activateCallback }" value="1" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="1" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">What type of business are you?</h2>
                         <p class="text-color-secondary">This helps us customize your experience</p>
@@ -67,7 +67,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="2" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="2" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Tell us about yourself</h2>
                         <p class="text-color-secondary">Primary contact information</p>
@@ -128,7 +128,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="3" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="3" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Business Information</h2>
                         <p class="text-color-secondary">Tell us about your {{ type }}</p>
@@ -147,7 +147,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="4" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="4" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div v-if="type" class="plan-selection-container">
                         <div class="text-center mb-6">
                             <h2 class="text-3xl font-bold text-color mb-2">Choose Your Plan</h2>
@@ -211,7 +211,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="5" class="p-8 bg-surface-ground" style="background-color: var(--surface-ground) !important; background: var(--surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="5" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Review Your Information</h2>
                         <p class="text-color-secondary">Please review before submitting</p>
@@ -780,8 +780,8 @@ const throwErr = (title: string, msg: string) => {
 :deep([data-pc-section="content"] *),
 :deep([data-pc-name="stepperpanel"]),
 :deep([data-pc-name="stepperpanel"] *) {
-    background-color: var(--surface-ground) !important;
-    background: var(--surface-ground) !important;
+    background-color: var(--p-surface-ground) !important;
+    background: var(--p-surface-ground) !important;
 }
 
 /* Target ALL possible PrimeVue StepPanel elements */
@@ -790,8 +790,8 @@ const throwErr = (title: string, msg: string) => {
 :deep(.p-stepper-panel[data-p-panel]),
 :deep(.p-stepper .p-stepper-panels),
 :deep(.p-stepper .p-stepper-panels *) {
-    background-color: var(--surface-ground) !important;
-    background: var(--surface-ground) !important;
+    background-color: var(--p-surface-ground) !important;
+    background: var(--p-surface-ground) !important;
 }
 
 /* Override any white or light backgrounds specifically */
@@ -801,8 +801,8 @@ const throwErr = (title: string, msg: string) => {
 :deep([data-pc-section="content"]),
 :deep(.p-stepper-panels),
 :deep(.p-stepper-panels *) {
-    background-color: var(--surface-ground) !important;
-    background: var(--surface-ground) !important;
+    background-color: var(--p-surface-ground) !important;
+    background: var(--p-surface-ground) !important;
 }
 
 /* Plan Selection Styles */
@@ -829,13 +829,13 @@ const throwErr = (title: string, msg: string) => {
 }
 
 .plan-card {
-    background: var(--surface-card);
+    background: var(--p-surface-card);
     padding: 2rem;
     border-radius: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    border: 1px solid var(--surface-border);
+    border: 1px solid var(--p-surface-border);
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -845,7 +845,7 @@ const throwErr = (title: string, msg: string) => {
 }
 
 .plan-card.featured:not(.selected) {
-    border: 1px solid var(--surface-border);
+    border: 1px solid var(--p-surface-border);
     box-shadow: none;
 }
 
@@ -870,7 +870,7 @@ const throwErr = (title: string, msg: string) => {
 .plan-divider {
     width: 100%;
     height: 1px;
-    background: var(--surface-border);
+    background: var(--p-surface-border);
 }
 
 .plan-price {
@@ -904,16 +904,14 @@ const throwErr = (title: string, msg: string) => {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: var(--text-color-secondary);
 }
 
 .plan-features .icon-success {
-    color: var(--success-color);
+    color: var(--p-success-color);
     font-size: 1.125rem;
 }
 
 .plan-features span {
-    color: var(--text-color);
     line-height: 1.6;
 }
 
@@ -931,24 +929,24 @@ const throwErr = (title: string, msg: string) => {
 }
 
 :deep(.p-toggleswitch-slider) {
-    background: #495057 !important;
-    border: 1px solid #495057 !important;
+    background: var(--p-surface-400) !important;
+    border: 1px solid var(--p-surface-400) !important;
     border-radius: 30px !important;
 }
 
 :deep(.p-toggleswitch-slider:before) {
-    background: #ffffff !important;
+    background: var(--p-surface-card) !important;
     width: 1.25rem !important;
     height: 1.25rem !important;
 }
 
 :deep(.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider) {
-    background: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
+    background: var(--p-primary-color) !important;
+    border-color: var(--p-primary-color) !important;
 }
 
 :deep(.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider:before) {
-    background: #ffffff !important;
+    background: var(--p-primary-contrast-color, var(--p-surface-card)) !important;
     transform: translateX(1.25rem) !important;
 }
 

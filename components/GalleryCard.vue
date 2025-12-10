@@ -49,8 +49,8 @@
 
 <style scoped>
 .gallery-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-surface-border);
   border-radius: 1.25rem;
   box-shadow: var(--card-shadow);
   overflow: hidden;
@@ -63,7 +63,7 @@
 .gallery-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 40px 0 rgba(0,0,0,0.55);
-  border-color: var(--primary-color);
+  border-color: var(--p-primary-color);
 }
 
 /* Card Header */
@@ -96,7 +96,7 @@
   left: 0;
   right: 0;
   height: 60px;
-  background: linear-gradient(transparent, rgba(from var(--surface-ground) r g b / 0.7));
+  background: linear-gradient(transparent, rgba(from var(--p-surface-ground) r g b / 0.7));
   pointer-events: none;
 }
 
@@ -119,7 +119,6 @@
 .business-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--heading-color);
   margin: 0;
   line-height: 1.3;
   flex: 1;
@@ -134,7 +133,6 @@
 
 .location-info {
   margin-bottom: 1rem;
-  color: var(--text-color-secondary);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -157,7 +155,6 @@
 }
 
 .description-text {
-  color: var(--text-color-secondary);
   font-size: 0.875rem;
   line-height: 1.5;
   margin: 0;
@@ -205,17 +202,7 @@
   font-size: 0.875rem;
 }
 
-:deep(.p-rating .p-rating-icon) {
-  color: var(--primary-color);
-}
-
-:deep(.p-rating .p-rating-icon.p-icon) {
-  color: var(--text-color-secondary);
-}
-
-:deep(.p-rating .p-rating-option-active .p-rating-icon.p-icon) {
-  color: var(--primary-color);
-}
+/* PrimeVue handles rating colors by default */
 
 /* Button styling */
 :deep(.p-button.p-button-sm) {

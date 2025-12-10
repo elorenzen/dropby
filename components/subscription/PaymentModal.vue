@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(from var(--surface-ground) r g b / 0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-      <div class="modal-content" style="background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+    <div v-if="visible" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(from var(--p-surface-ground) r g b / 0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+      <div class="modal-content" style="background: var(--p-surface-card); border: 1px solid var(--p-surface-border); border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 20px 20px 0 20px;">
           <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: var(--heading-color);">Complete Payment for {{ planName }}</h3>
           <button @click="closeModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-md-gray); transition: color 0.2s;" onmouseover="this.style.color='var(--heading-color)'" onmouseout="this.style.color='var(--text-md-gray)'">×</button>
@@ -235,7 +235,7 @@ const initializePaymentForm = async () => {
       style: {
         base: {
           fontSize: '16px',
-          color: 'var(--text-color)',
+          color: 'var(--p-text-color)',
           backgroundColor: 'transparent',
           '::placeholder': {
             color: 'var(--text-md-gray)',

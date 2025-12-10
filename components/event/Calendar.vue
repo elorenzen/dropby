@@ -594,7 +594,7 @@ export default {
             end: firstEvent.end,
             backgroundColor: 'var(--primary-color)',
             borderColor: 'var(--primary-color)',
-            textColor: 'var(--text-color)',
+            textColor: 'var(--p-text-color)',
             extendedProps: {
               isSummary: true,
               eventCount: dayEvents.length,
@@ -622,7 +622,7 @@ export default {
               end: event.end,
               backgroundColor: getEventColor(event),
               borderColor: getEventColor(event),
-              textColor: 'var(--text-color)',
+              textColor: 'var(--p-text-color)',
               extendedProps: {
                 status: event.status,
                 notes: event.notes,
@@ -1318,11 +1318,11 @@ export default {
 
 <style scoped>
 :deep(.fc-today) {
-  background-color: rgba(from var(--warning-color) r g b / 0.1) !important;
+  background-color: rgba(from var(--p-warn-color) r g b / 0.1) !important;
 }
 
 :deep(.today-highlight) {
-  background-color: rgba(from var(--warning-color) r g b / 0.1) !important;
+  background-color: rgba(from var(--p-warn-color) r g b / 0.1) !important;
 }
 
 :deep(.fc-event) {
@@ -1360,28 +1360,28 @@ export default {
 }
 
 :deep(.fc-button-primary) {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  background-color: var(--p-primary-color);
+  border-color: var(--p-primary-color);
 }
 
 :deep(.fc-button-primary:hover) {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  background-color: var(--p-primary-color);
+  border-color: var(--p-primary-color);
   opacity: 0.8;
 }
 
 :deep(.fc-button-primary:focus) {
-  box-shadow: 0 0 0 2px rgba(from var(--primary-color) r g b / 0.2);
+  box-shadow: 0 0 0 2px rgba(from var(--p-primary-color) r g b / 0.2);
 }
 
 :deep(.fc-today-button) {
-  background-color: var(--text-md-gray);
-  border-color: var(--text-md-gray);
+  background-color: #9ca3af;
+  border-color: #9ca3af;
 }
 
 :deep(.fc-today-button:hover) {
-  background-color: var(--text-md-gray);
-  border-color: var(--text-md-gray);
+  background-color: #9ca3af;
+  border-color: #9ca3af;
   opacity: 0.8;
 }
 

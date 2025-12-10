@@ -406,9 +406,8 @@
   
 <style scoped>
 .analytics-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--p-surface-card) !important;
+  border: 1px solid var(--p-surface-border) !important;
 }
 
 .analytics-icon {

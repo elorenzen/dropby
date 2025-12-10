@@ -1,4 +1,5 @@
-import Aura from '@primevue/themes/aura'
+import DropByTheme from './assets/themes/dropby-theme'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
@@ -51,16 +52,11 @@ export default defineNuxtConfig({
     '~/assets/styles/base.css'
   ],
   primevue: {
+    importTheme: { from: '~/assets/themes/dropby-theme.ts' },
     options: {
-      theme: {
-        preset: Aura,
-        options: {
-          colorScheme: 'dark', // Force dark mode
-          primaryColor: '#1E40AF', // Navy Blue - Premium Event Platform
-          accentColor: '#D97706', // Amber/Gold accent
-          darkModeSelector: ".p-dark"
-        },
-      },
+      ripple: true,
+      inputVariant: 'filled',
+      theme: DropByTheme
     },
   },
   postcss: {

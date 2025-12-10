@@ -788,17 +788,17 @@ const addEventMarkers = () => {
 
 const getMarkerIcon = (status: string) => {
   const colors = {
-    open: '#10B981', // green
-    booked: '#F59E0B', // orange
-    completed: '#EF4444' // red
+    open: 'var(--p-success-color)', // green
+    booked: 'var(--p-warn-color)', // orange
+    completed: 'var(--p-danger-color)' // red
   }
   
   return {
     path: google.maps.SymbolPath.CIRCLE,
     scale: 10,
-    fillColor: colors[status as keyof typeof colors] || '#6B7280',
+    fillColor: colors[status as keyof typeof colors] || 'var(--p-surface-500)',
     fillOpacity: 0.8,
-    strokeColor: '#FFFFFF',
+    strokeColor: 'var(--p-surface-card)',
     strokeWeight: 2
   }
 }
@@ -854,9 +854,9 @@ onMounted(async () => {
 
 <style scoped>
 .cta-primary-btn {
-  background-color: #1a1a1a !important;
-  border: 2px solid #1a1a1a !important;
-  color: #ffffff !important;
+  background-color: var(--p-primary-color) !important;
+  border: 2px solid var(--p-primary-color) !important;
+  color: var(--p-primary-contrast-color, #ffffff) !important;
   font-size: 1.1rem !important;
   font-weight: 600 !important;
   padding: 0.75rem 1.5rem !important;
@@ -868,16 +868,16 @@ onMounted(async () => {
 }
 
 .cta-primary-btn:hover {
-  background-color: #000000 !important;
-  border-color: #000000 !important;
+  background-color: var(--p-primary-hover-color, var(--p-primary-color)) !important;
+  border-color: var(--p-primary-hover-color, var(--p-primary-color)) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
 }
 
 .cta-secondary-btn {
   background-color: transparent !important;
-  border: 2px solid #ffffff !important;
-  color: #ffffff !important;
+  border: 2px solid var(--p-primary-color) !important;
+  color: var(--p-primary-color) !important;
   font-size: 1.1rem !important;
   font-weight: 600 !important;
   padding: 0.75rem 1.5rem !important;
@@ -889,7 +889,8 @@ onMounted(async () => {
 }
 
 .cta-secondary-btn:hover {
-  background-color: rgba(255,255,255,0.1) !important;
+  background-color: var(--p-primary-color) !important;
+  color: var(--p-primary-contrast-color, #ffffff) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 }

@@ -12,6 +12,10 @@ useHead({
 		return title ? `${title} | DropBy` : "DropBy";
 	},
 });
+
+// Initialize theme system
+useTheme()
+
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 

@@ -7,7 +7,7 @@
     <div class="notification-panel">
       <!-- Header -->
       <div class="flex items-center justify-between mb-4 pb-3 border-b">
-        <h3 class="text-lg font-semibold" style="color: var(--text-color);">Notifications</h3>
+        <h3 class="text-lg font-semibold" style="color: var(--p-text-color);">Notifications</h3>
         <div class="flex items-center gap-2">
           <Button
             v-if="unreadCount > 0"
@@ -53,7 +53,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-start justify-between gap-2">
-                <h4 class="font-medium text-sm" style="color: var(--text-color);">
+                <h4 class="font-medium text-sm" style="color: var(--p-text-color);">
                   {{ notification.title }}
                 </h4>
                 <span 
@@ -210,17 +210,16 @@ defineExpose({
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-surface-border);
 }
 
 .notification-item:hover {
-  background-color: var(--surface-hover);
+  background-color: var(--p-surface-hover);
 }
 
 .notification-item.unread {
-  background-color: var(--primary-color);
-  background-color: rgba(from var(--primary-color) r g b / 0.05);
-  border-left: 3px solid var(--primary-color);
+  background-color: rgba(from var(--p-primary-color) r g b / 0.05);
+  border-left: 3px solid var(--p-primary-color);
 }
 
 .notification-icon {
@@ -231,15 +230,15 @@ defineExpose({
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: var(--surface-ground);
-  color: var(--primary-color);
+  background-color: var(--p-surface-ground);
+  color: var(--p-primary-color);
 }
 
 .unread-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--primary-color);
+  background-color: var(--p-primary-color);
   flex-shrink: 0;
   margin-top: 4px;
 }
@@ -249,16 +248,16 @@ defineExpose({
 }
 
 .notifications-list::-webkit-scrollbar-track {
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
 }
 
 .notifications-list::-webkit-scrollbar-thumb {
-  background: var(--surface-border);
+  background: var(--p-surface-border);
   border-radius: 3px;
 }
 
 .notifications-list::-webkit-scrollbar-thumb:hover {
-  background: var(--text-color-secondary);
+  background: var(--p-text-color-secondary);
 }
 </style>
 

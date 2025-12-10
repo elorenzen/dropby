@@ -397,35 +397,24 @@ onMounted(async () => {
 :deep(.menu-data-table .p-datatable-thead),
 :deep(.menu-data-table .p-datatable-thead > tr),
 :deep(.menu-data-table .p-datatable-thead > tr > th),
+/* Custom transparent datatable styling */
 :deep(.menu-data-table .p-datatable-tbody),
 :deep(.menu-data-table .p-datatable-tbody > tr),
 :deep(.menu-data-table .p-datatable-tbody > tr > td) {
     background: transparent !important;
     background-color: transparent !important;
-    border-color: var(--surface-border) !important;
+    border-color: var(--p-surface-border) !important;
 }
 
 :deep(.menu-data-table .p-datatable-thead > tr > th) {
     background: transparent !important;
     background-color: transparent !important;
-    color: var(--text-color) !important;
-    border-bottom: 1px solid var(--surface-border) !important;
-}
-
-:deep(.menu-data-table .p-datatable-tbody > tr) {
-    background: transparent !important;
-    background-color: transparent !important;
+    border-bottom: 1px solid var(--p-surface-border) !important;
 }
 
 :deep(.menu-data-table .p-datatable-tbody > tr:hover) {
-    background: var(--surface-section) !important;
-    background-color: var(--surface-section) !important;
-}
-
-:deep(.menu-data-table .p-datatable-tbody > tr > td) {
-    color: var(--text-color) !important;
-    background: transparent !important;
-    background-color: transparent !important;
+    background: var(--p-surface-section) !important;
+    background-color: var(--p-surface-section) !important;
 }
 
 /* Remove Dialog content border and background for menu forms */

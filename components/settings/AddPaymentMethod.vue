@@ -9,7 +9,7 @@
         <InputText 
           v-model="formData.title" 
           class="w-full rounded-lg px-4 py-3 focus:ring-2" 
-          style="background: var(--surface-card); border-color: var(--surface-border); color: var(--text-color);"
+          style="background: var(--p-surface-card); border-color: var(--p-surface-border); color: var(--p-text-color);"
           placeholder="e.g., My Business Card, Personal Visa"
         />
       </div>
@@ -19,7 +19,7 @@
         <label class="block text-sm font-medium mb-2" style="color: var(--text-md-gray);">
           Card Details
         </label>
-        <div id="card-element" class="p-4 border rounded-lg min-h-[60px]" style="border-color: var(--surface-border); background: var(--surface-card);"></div>
+        <div id="card-element" class="p-4 border rounded-lg min-h-[60px]" style="border-color: var(--p-surface-border); background: var(--p-surface-card);"></div>
         <div v-if="cardError" class="text-error text-sm mt-2">{{ cardError }}</div>
       </div>
 
@@ -127,7 +127,7 @@ const initializeCardElement = async () => {
       style: {
         base: {
           fontSize: '16px',
-          color: 'var(--text-color)',
+          color: 'var(--p-text-color)',
           backgroundColor: 'transparent',
           '::placeholder': {
             color: 'var(--text-md-gray)',

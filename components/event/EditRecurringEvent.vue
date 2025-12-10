@@ -593,35 +593,13 @@ const updateRecurringEvent = async () => {
 </script>
 
 <style scoped>
-/* Edit Recurring Event Dialog Styles */
-:deep(.edit-recurring-event-dialog .p-dialog-header) {
-  border-bottom: 1px solid rgb(229 231 235);
-  padding: 1.5rem;
-}
-
+/* Custom dialog content overflow - PrimeVue handles dialog padding/borders, calendar width, and textarea styling */
 :deep(.edit-recurring-event-dialog .p-dialog-content) {
-  padding: 1.5rem;
   overflow-x: hidden;
-}
-
-:deep(.edit-recurring-event-dialog .p-dialog-footer) {
-  border-top: 1px solid rgb(229 231 235);
-  padding: 1rem 1.5rem;
 }
 
 :deep(.edit-recurring-event-dialog .p-calendar) {
   width: 100%;
-}
-
-:deep(.edit-recurring-event-dialog .p-textarea) {
-  border-radius: 0.5rem;
-  border: 1px solid rgb(209 213 219);
-  transition: border-color 0.2s ease;
-}
-
-:deep(.edit-recurring-event-dialog .p-textarea:focus) {
-  border-color: rgb(249 115 22);
-  box-shadow: 0 0 0 3px rgb(254 215 170);
 }
 
 :deep(.edit-recurring-event-dialog .p-inputnumber) {

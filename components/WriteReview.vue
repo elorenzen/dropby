@@ -217,38 +217,14 @@ const submitReview = async () => {
 </script>
 
 <style scoped>
-/* Review Dialog Styles */
-:deep(.review-dialog .p-dialog-header) {
-  border-bottom: 1px solid var(--surface-border);
-  padding: 1.5rem;
-}
-
-:deep(.review-dialog .p-dialog-content) {
-  padding: 1.5rem;
-}
-
-:deep(.review-dialog .p-dialog-footer) {
-  border-top: 1px solid var(--surface-border);
-  padding: 1rem 1.5rem;
-}
-
+/* Review Dialog Styles - only custom overrides needed */
 :deep(.review-dialog .p-rating .p-rating-item .p-rating-icon) {
   font-size: 1.5rem;
 }
 
-:deep(.review-dialog .p-textarea) {
-  border-radius: 0.5rem;
-  border: 1px solid var(--surface-border);
-  transition: border-color 0.2s ease;
-}
-
-:deep(.review-dialog .p-textarea:focus) {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(from var(--accent-color) r g b / 0.2);
-}
-
+/* Custom error state for textarea - PrimeVue handles default styling */
 :deep(.review-dialog .p-textarea.border-red-500) {
-  border-color: var(--error-color);
-  box-shadow: 0 0 0 3px rgba(from var(--error-color) r g b / 0.2);
+  border-color: var(--p-danger-color);
+  box-shadow: 0 0 0 3px rgba(from var(--p-danger-color) r g b / 0.2);
 }
 </style> 

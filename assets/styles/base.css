@@ -1,108 +1,88 @@
-/* PrimeVue Dark Theme Overrides for DropBy */
+/* DropBy Custom Styles */
+/* 
+ * FILE SEPARATION:
+ * - assets/themes/dropby-theme.ts: PrimeVue theme configuration (TypeScript)
+ *   → Generates CSS variables and component styles via PrimeVue's theming system
+ * - assets/styles/base.css: App-specific CSS (this file)
+ *   → Custom utility classes, layout styles, and overrides
+ * 
+ * The theme file is the single source of truth for colors. This file references
+ * PrimeVue's generated CSS variables (--p-*) rather than duplicating color values.
+ */
 
 /*
-CHAT GPT PALETTE SUGGESTIONS:
-1) - CURRENT
-Primary: #7C3AED (Purple) - Creativity, luxury, memorable experiences
-Secondary: #DC2626 (Red) - Urgency, action, excitement
-Accent: #F59E0B (Amber) - Celebration, warmth, success
-
-2)
-Primary: #0EA5E9 (Sky Blue) - Innovation, clarity, digital connection
-Secondary: #10B981 (Emerald) - Growth, success, positive results
-Accent: #F97316 (Orange) - Energy, enthusiasm, action
-
-3)
-Primary: #1E40AF (Navy Blue) - Professionalism, reliability, premium service
-Secondary: #059669 (Emerald) - Success, growth, positive partnerships
-Accent: #D97706 (Amber) - Premium, celebration, memorable events
-
-4)
-Primary: #0891B2 (Cyan) - Fresh, modern, efficient scheduling
-Secondary: #7C2D12 (Red-Brown) - Grounded, reliable, food-focused
-Accent: #CA8A04 (Gold) - Success, premium, celebration
-
-*/
+ * COLOR PALETTE OPTIONS (for reference)
+ * 
+ * NOTE: Active palette is defined in assets/themes/dropby-theme.ts
+ * These options are kept here for easy reference when switching palettes.
+ * 
+ * 1) Purple/Red/Amber
+ *    Primary: #7C3AED (Purple) - Creativity, luxury, memorable experiences
+ *    Secondary: #DC2626 (Red) - Urgency, action, excitement
+ *    Accent: #F59E0B (Amber) - Celebration, warmth, success
+ *
+ * 2) Sky Blue/Emerald/Orange
+ *    Primary: #0EA5E9 (Sky Blue) - Innovation, clarity, digital connection
+ *    Secondary: #10B981 (Emerald) - Growth, success, positive results
+ *    Accent: #F97316 (Orange) - Energy, enthusiasm, action
+ *
+ * 3) Navy Blue/Emerald/Amber
+ *    Primary: #1E40AF (Navy Blue) - Professionalism, reliability, premium service
+ *    Secondary: #059669 (Emerald) - Success, growth, positive partnerships
+ *    Accent: #D97706 (Amber) - Premium, celebration, memorable events
+ *
+ * 4) CURRENT - Cyan/Red-Brown/Gold
+ *    Primary: #0891B2 (Cyan) - Fresh, modern, efficient scheduling
+ *    Secondary: #7C2D12 (Red-Brown) - Grounded, reliable, food-focused
+ *    Accent: #CA8A04 (Gold) - Success, premium, celebration
+ * 
+ * To switch palettes: Edit dropbyColors in assets/themes/dropby-theme.ts
+ */
 
 :root {
-  --primary-color: #0891B2;
-  --primary-color-text: #fff;
-  --highlight-bg: #0891B2;
-  --highlight-text-color: #fff;
-
-  --secondary-color: #7C2D12;
-  
-  --accent-color: #CA8A04;
-  --success-color: #10B981;
-
-  --warning-color: #F97316;
-  --error-color: #EF4444;
-
-  /* Surfaces */
-  --surface-ground: #18191b;
-  --surface-section: #232428;
-  --surface-card: #232428;
-  --surface-overlay: #232428;
-  --surface-border: #33343a;
-
-  /* Text */
-  --text-color: #f5f6fa;
-  --text-color-secondary: #b0b3b8;
-  --heading-color: #fff;
-
-  /* Shadows */
   --card-shadow: 0 4px 32px 0 rgba(0,0,0,0.45);
+  --card-shadow-hover: 0 12px 48px 0 rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.13);
 }
 
+/* Dark mode class - add .p-dark to html/body to enable dark mode */
+/* PrimeVue handles dark mode automatically via theme */
+
+/* Body styling - use PrimeVue surface colors */
+/* PrimeVue uses --p-surface-ground which maps to surface.900 */
 body {
-  background: var(--surface-ground) !important;
-  color: var(--text-color) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff)) !important;
+  color: var(--p-text-color) !important;
 }
 
-.p-card, .p-dialog, .p-panel, .p-carousel-item {
-  background: var(--surface-card) !important;
-  color: var(--text-color) !important;
+/* HTML element background */
+html {
+  background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff)) !important;
+}
+
+/* Background and text utility classes using PrimeVue theme variables */
+.bg-background {
+  background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff)) !important;
+}
+
+.text-text-main {
+  color: var(--p-text-color) !important;
+}
+
+.text-text-muted {
+  color: var(--p-text-muted-color, var(--p-text-color-secondary)) !important;
+}
+
+/* Card customizations - only what's needed beyond PrimeVue defaults */
+.p-card {
   border-radius: 1.25rem !important;
   box-shadow: var(--card-shadow) !important;
-  border: 1px solid var(--surface-border) !important;
+  margin-bottom: 2rem !important;
 }
 
-.p-card-title, h1, h2, h3, h4, h5, h6 {
-  color: var(--heading-color) !important;
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
-}
-
-.p-button, .p-button:focus, .p-button:active {
-  background: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: var(--primary-color-text) !important;
-  box-shadow: 0 2px 8px 0 rgba(30,64,175,0.15) !important;
-}
-
-.p-button.p-button-outlined {
-  background: transparent !important;
-  color: var(--primary-color) !important;
-  border: 2px solid var(--primary-color) !important;
-}
-
-.p-link, a {
-  color: var(--primary-color) !important;
-}
-
-.p-carousel-indicators .p-carousel-indicator.p-highlight button {
-  background: var(--primary-color) !important;
-}
-
-.p-carousel-indicators .p-carousel-indicator button {
-  background: var(--surface-border) !important;
-}
-
-.p-carousel {
-  padding-bottom: 2rem;
-}
-
-.p-card-content, .p-card-subtitle, .p-dialog-content, .p-panel-content {
-  color: var(--text-color-secondary) !important;
 }
 
 /* Global page content padding */
@@ -122,26 +102,7 @@ body {
   margin-bottom: 2rem !important;
 }
 
-/* Icon color consistency */
-.p-button .pi,
-.p-menuitem-icon,
-.p-menubar .pi,
-.p-tabmenu .pi,
-.p-carousel .pi,
-.p-badge .pi {
-  color: var(--primary-color-text) !important;
-}
-
-/* Primary action icons - only for outlined buttons */
-.p-button.p-button-primary.p-button-outlined .pi,
-.p-button.p-button-outlined:not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .pi {
-  color: var(--primary-color) !important;
-}
-
-/* Menu and dropdown icons */
-.p-menuitem-icon, .p-menubar .pi {
-  color: var(--primary-color-text) !important;
-}
+/* Icon colors - PrimeVue handles most of this, only override what's needed */
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
@@ -150,23 +111,7 @@ body {
   }
 } 
 
-/* Button icon color: always match text */
-.p-button .pi {
-  color: inherit !important;
-}
-
-/* Force button icon to always match button text color */
-.p-button .p-button-icon, .p-button .pi {
-  color: currentColor !important;
-}
-
-/* Rating stars: orange for filled, gray for empty */
-.p-rating .pi-star-fill {
-  color: var(--primary-color) !important;
-}
-.p-rating .pi-star {
-  color: #888 !important;
-}
+/* Rating stars - PrimeVue handles this via theme */
 
 /* Gallery card spacing in carousel */
 .p-carousel .p-card {
@@ -176,29 +121,7 @@ body {
   margin-right: 0 !important;
 } 
 
-/* Outlined button: set color on button, icon inherits */
-.p-button.p-button-outlined {
-  color: #1E40AF !important;
-}
-.p-button.p-button-outlined .p-button-icon, .p-button.p-button-outlined .pi {
-  color: inherit !important;
-}
-
-/* Filled button: icon is always white (override any other rules) */
-.p-button:not(.p-button-outlined) .p-button-icon, 
-.p-button:not(.p-button-outlined) .pi,
-.p-button:not(.p-button-outlined):not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .p-button-icon,
-.p-button:not(.p-button-outlined):not(.p-button-secondary):not(.p-button-danger):not(.p-button-help):not(.p-button-info):not(.p-button-warn):not(.p-button-contrast):not(.p-button-text) .pi {
-  color: var(--primary-color-text) !important;
-}
-
-/* Rating stars: orange for filled, gray for empty (force override) */
-.p-rating .p-rating-icon.p-icon, .p-rating .p-rating-icon.pi {
-  color: #888 !important;
-}
-.p-rating .p-rating-option-active .p-rating-icon.p-icon, .p-rating .p-rating-option-active .p-rating-icon.pi {
-  color: var(--primary-color) !important;
-}
+/* Button and rating styling handled by PrimeVue theme */
 
 /* Gallery carousel item spacing and sizing */
 .gallery-carousel-item {
@@ -262,8 +185,8 @@ body {
 }
 
 .gallery-carousel-item {
-  background: #26282e !important;
-  border: none !important;
+  background: var(--p-surface-card) !important;
+  border: 1px solid var(--p-surface-border) !important;
   box-shadow: 0 6px 32px 0 rgba(0,0,0,0.22), 0 1.5px 4px rgba(0,0,0,0.10);
   border-radius: 1.1rem !important;
   min-height: 420px;
@@ -302,175 +225,70 @@ body {
   overflow: visible !important;
 }
 
-/* Secondary color outlined buttons */
-.p-button.p-button-outlined[style*="--secondary-color"] {
-  border-color: var(--secondary-color) !important;
-  color: var(--secondary-color) !important;
-}
+/* Secondary color buttons - handled by PrimeVue theme */
 
-.p-button.p-button-outlined[style*="--secondary-color"] .p-button-icon,
-.p-button.p-button-outlined[style*="--secondary-color"] .pi {
-  color: var(--secondary-color) !important;
-}
+/* --- CUSTOM UTILITY CLASSES --- */
+/* 
+ * These use PrimeVue's generated CSS variables from dropby-theme.ts
+ * PrimeVue generates variables with prefix 'p' based on semantic tokens.
+ * 
+ * NOTE: If these variables don't work, inspect the generated CSS in browser
+ * devtools to see the actual variable names PrimeVue creates, then update accordingly.
+ * The key principle: colors come from dropby-theme.ts, not duplicated here.
+ */
 
-/* Force secondary color on buttons with inline styles */
-.p-button[style*="border-color: var(--secondary-color)"] {
-  border-color: var(--secondary-color) !important;
-  color: var(--secondary-color) !important;
-}
+/* Primary Color Utilities - uses PrimeVue theme tokens */
+.text-primary { color: var(--p-primary-color) !important; }
+.bg-primary { background-color: var(--p-primary-color) !important; }
+.border-primary { border-color: var(--p-primary-color) !important; }
 
-.p-button[style*="border-color: var(--secondary-color)"] .p-button-icon,
-.p-button[style*="border-color: var(--secondary-color)"] .pi {
-  color: var(--secondary-color) !important;
-}
+.text-primary-dark { color: var(--p-primary-600) !important; }
+.bg-primary-light { background-color: var(--p-primary-50) !important; }
+.bg-primary-dark { background-color: var(--p-primary-700) !important; }
+.border-primary-light { border-color: var(--p-primary-200) !important; }
 
-/* --- CUSTOM UTILITY CLASSES FOR CONSISTENT THEMING --- */
+/* Success Color Utilities */
+.text-success { color: var(--p-success-color) !important; }
+.bg-success { background-color: var(--p-success-color) !important; }
+.border-success { border-color: var(--p-success-color) !important; }
 
-/* Primary Color Utilities */
-.text-primary { color: var(--primary-color) !important; }
-.bg-primary { background-color: var(--primary-color) !important; }
-.border-primary { border-color: var(--primary-color) !important; }
-
-/* Primary Color with Dark Mode Support */
-.text-primary-dark { 
-  color: var(--primary-color) !important; 
-}
-.dark .text-primary-dark { 
-  color: #60A5FA !important; /* Lighter blue for dark mode */
-}
-
-.bg-primary-light { 
-  background-color: rgba(from var(--primary-color) r g b / 0.1) !important; 
-}
-.dark .bg-primary-light { 
-  background-color: rgba(from var(--primary-color) r g b / 0.2) !important; 
-}
-
-.bg-primary-dark { 
-  background-color: rgba(from var(--primary-color) r g b / 0.9) !important; 
-}
-.dark .bg-primary-dark { 
-  background-color: rgba(from var(--primary-color) r g b / 0.8) !important; 
-}
-
-.border-primary-light { 
-  border-color: rgba(from var(--primary-color) r g b / 0.2) !important; 
-}
-.dark .border-primary-light { 
-  border-color: rgba(from var(--primary-color) r g b / 0.3) !important; 
-}
-
-/* Secondary/Success Color Utilities */
-.text-success { color: var(--success-color) !important; }
-.bg-success { background-color: var(--success-color) !important; }
-.border-success { border-color: var(--success-color) !important; }
-
-.text-success-dark { 
-  color: var(--success-color) !important; 
-}
-.dark .text-success-dark { 
-  color: #34D399 !important; /* Lighter green for dark mode */
-}
-
-.bg-success-light { 
-  background-color: rgba(from var(--success-color) r g b / 0.1) !important; 
-}
-.dark .bg-success-light { 
-  background-color: rgba(from var(--success-color) r g b / 0.2) !important; 
-}
-
-.bg-success-dark { 
-  background-color: rgba(from var(--success-color) r g b / 0.9) !important; 
-}
-.dark .bg-success-dark { 
-  background-color: rgba(from var(--success-color) r g b / 0.8) !important; 
-}
-
-.border-success-light { 
-  border-color: rgba(from var(--success-color) r g b / 0.2) !important; 
-}
-.dark .border-success-light { 
-  border-color: rgba(from var(--success-color) r g b / 0.3) !important; 
-}
+.text-success-dark { color: var(--p-success-600) !important; }
+.bg-success-light { background-color: var(--p-success-50) !important; }
+.bg-success-dark { background-color: var(--p-success-700) !important; }
+.border-success-light { border-color: var(--p-success-200) !important; }
 
 /* Accent/Warning Color Utilities */
-.text-accent { color: var(--accent-color) !important; }
-.bg-accent { background-color: var(--accent-color) !important; }
-.border-accent { border-color: var(--accent-color) !important; }
+.text-accent { color: var(--p-warn-color) !important; }
+.bg-accent { background-color: var(--p-warn-color) !important; }
+.border-accent { border-color: var(--p-warn-color) !important; }
 
-.text-accent-dark { 
-  color: var(--accent-color) !important; 
-}
-.dark .text-accent-dark { 
-  color: #FBBF24 !important; /* Lighter amber for dark mode */
-}
-
-.bg-accent-light { 
-  background-color: rgba(from var(--accent-color) r g b / 0.1) !important; 
-}
-.dark .bg-accent-light { 
-  background-color: rgba(from var(--accent-color) r g b / 0.2) !important; 
-}
-
-.bg-accent-dark { 
-  background-color: rgba(from var(--accent-color) r g b / 0.9) !important; 
-}
-.dark .bg-accent-dark { 
-  background-color: rgba(from var(--accent-color) r g b / 0.8) !important; 
-}
-
-.border-accent-light { 
-  border-color: rgba(from var(--accent-color) r g b / 0.2) !important; 
-}
-.dark .border-accent-light { 
-  border-color: rgba(from var(--accent-color) r g b / 0.3) !important; 
-}
-
-/* Icon Color Utilities */
-.icon-primary { color: var(--primary-color) !important; }
-.icon-success { color: var(--success-color) !important; }
-.icon-accent { color: var(--accent-color) !important; }
-.icon-error { color: var(--error-color) !important; }
+.text-accent-dark { color: var(--p-warn-600) !important; }
+.bg-accent-light { background-color: var(--p-warn-50) !important; }
+.bg-accent-dark { background-color: var(--p-warn-700) !important; }
+.border-accent-light { border-color: var(--p-warn-200) !important; }
 
 /* Error Color Utilities */
-.text-error { color: var(--error-color) !important; }
-.bg-error { background-color: var(--error-color) !important; }
-.border-error { border-color: var(--error-color) !important; }
+.text-error { color: var(--p-danger-color) !important; }
+.bg-error { background-color: var(--p-danger-color) !important; }
+.border-error { border-color: var(--p-danger-color) !important; }
 
-.text-error-dark { 
-  color: var(--error-color) !important; 
-}
-.dark .text-error-dark { 
-  color: #F87171 !important; /* Lighter red for dark mode */
-}
+.text-error-dark { color: var(--p-danger-600) !important; }
+.bg-error-light { background-color: var(--p-danger-50) !important; }
+.bg-error-dark { background-color: var(--p-danger-700) !important; }
+.border-error-light { border-color: var(--p-danger-200) !important; }
 
-.bg-error-light { 
-  background-color: rgba(from var(--error-color) r g b / 0.1) !important; 
-}
-.dark .bg-error-light { 
-  background-color: rgba(from var(--error-color) r g b / 0.2) !important; 
-}
-
-.bg-error-dark { 
-  background-color: rgba(from var(--error-color) r g b / 0.9) !important; 
-}
-.dark .bg-error-dark { 
-  background-color: rgba(from var(--error-color) r g b / 0.8) !important; 
-}
-
-.border-error-light { 
-  border-color: rgba(from var(--error-color) r g b / 0.2) !important; 
-}
-.dark .border-error-light { 
-  border-color: rgba(from var(--error-color) r g b / 0.3) !important; 
-}
+/* Icon Color Utilities */
+.icon-primary { color: var(--p-primary-color) !important; }
+.icon-success { color: var(--p-success-color) !important; }
+.icon-accent { color: var(--p-warn-color) !important; }
+.icon-error { color: var(--p-danger-color) !important; }
 
 /* Gradient Utilities */
 .gradient-primary { 
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%) !important; 
+  background: linear-gradient(135deg, var(--p-primary-color) 0%, var(--p-success-color) 100%) !important; 
 }
 .gradient-accent { 
-  background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%) !important; 
+  background: linear-gradient(135deg, var(--p-warn-color) 0%, var(--p-primary-color) 100%) !important; 
 }
 
 /* Essential Gray Classes Used in App */
@@ -486,14 +304,14 @@ body {
 
 .text-md-gray { color: #9ca3af !important; }
 
-.dark .bg-lt-gray { background-color: #1f2937 !important; }
-.dark .bg-md-gray { background-color: #374151 !important; }
-.dark .bg-gray { background-color: #4b5563 !important; }
-.dark .bg-dk-gray { background-color: #f3f4f6 !important; }
-.dark .bg-xdk-gray { background-color: #f9fafb !important; }
+.p-dark .bg-lt-gray { background-color: #1f2937 !important; }
+.p-dark .bg-md-gray { background-color: #374151 !important; }
+.p-dark .bg-gray { background-color: #4b5563 !important; }
+.p-dark .bg-dk-gray { background-color: #f3f4f6 !important; }
+.p-dark .bg-xdk-gray { background-color: #f9fafb !important; }
 
-.dark .border-lt-gray { border-color: #374151 !important; }
-.dark .border-md-gray { border-color: #4b5563 !important; }
-.dark .border-dk-gray { border-color: #f3f4f6 !important; }
+.p-dark .border-lt-gray { border-color: #374151 !important; }
+.p-dark .border-md-gray { border-color: #4b5563 !important; }
+.p-dark .border-dk-gray { border-color: #f3f4f6 !important; }
 
-.dark .text-md-gray { color: #6b7280 !important; } 
+.p-dark .text-md-gray { color: #6b7280 !important; } 

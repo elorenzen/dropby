@@ -567,108 +567,62 @@ const openMapUrl = (url: string | null) => {
 }
 
 /* Force dark theme on accordion root only - don't affect other components */
+/* Custom card-like accordion styling */
 :deep(.p-accordion),
-:deep([data-pc-name="accordion"]),
-:deep([data-pc-section="root"]) {
+:deep([data-pc-name="accordion"]) {
   background: transparent !important;
   border: none !important;
-  color: var(--text-color) !important;
 }
 
-/* Scope accordion styles to only affect elements inside .p-accordion */
+/* Transform accordion tabs into cards */
 :deep(.p-accordion .p-accordion-tab),
 :deep([data-pc-name="accordion"] [data-pc-name="accordiontab"]) {
   margin-bottom: 1rem;
-  background: var(--surface-card) !important;
-  border: 1px solid var(--surface-border) !important;
-  border-width: 1px !important;
-  border-style: solid !important;
-  border-color: var(--surface-border) !important;
+  background: var(--p-surface-card) !important;
+  border: 1px solid var(--p-surface-border) !important;
   border-radius: 1.25rem !important;
   box-shadow: var(--card-shadow) !important;
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
-:deep(.p-accordion .p-accordion-tab:hover),
-:deep([data-pc-name="accordion"] [data-pc-name="accordiontab"]:hover) {
+:deep(.p-accordion .p-accordion-tab:hover) {
   transform: translateY(-2px);
   box-shadow: 0 8px 40px 0 rgba(0,0,0,0.55) !important;
-  border-color: var(--primary-color) !important;
+  border-color: var(--p-primary-color) !important;
 }
 
-:deep(.p-accordion .p-accordion-header),
-:deep([data-pc-name="accordion"] [data-pc-section="header"]) {
+/* Custom header styling for card appearance */
+:deep(.p-accordion .p-accordion-header) {
   padding: 1.25rem 1.5rem !important;
-  background: var(--surface-card) !important;
-  border: none !important;
-  border-bottom: 1px solid var(--surface-border) !important;
+  border-bottom: 1px solid var(--p-surface-border) !important;
   border-radius: 1.25rem 1.25rem 0 0 !important;
-  margin-bottom: 0 !important;
-  color: var(--text-color) !important;
 }
 
-:deep(.p-accordion .p-accordion-header:first-child),
-:deep([data-pc-name="accordion"] [data-pc-section="header"]:first-child) {
-  border-top-left-radius: 1.25rem !important;
-  border-top-right-radius: 1.25rem !important;
-}
-
-:deep(.p-accordion .p-accordion-header:last-child),
-:deep([data-pc-name="accordion"] [data-pc-section="header"]:last-child) {
-  border-bottom-left-radius: 1.25rem !important;
-  border-bottom-right-radius: 1.25rem !important;
-}
-
-:deep(.p-accordion .p-accordion-content),
-:deep([data-pc-name="accordion"] [data-pc-section="content"]) {
-  padding: 1.5rem !important;
-  background: var(--surface-card) !important;
-  border: none !important;
-  border-top: 1px solid var(--surface-border) !important;
-  border-radius: 0 0 1.25rem 1.25rem !important;
-  color: var(--text-color) !important;
-}
-
-/* Ensure borders are visible on accordion tab elements only */
-:deep(.p-accordion .p-accordion-tab > *),
-:deep([data-pc-name="accordion"] [data-pc-name="accordiontab"] > *) {
-  border-color: var(--surface-border) !important;
-}
-
-:deep(.p-accordion .p-accordion-header .p-accordion-header-link),
-:deep([data-pc-name="accordion"] [data-pc-section="headerlink"]) {
+/* Remove default link styling - PrimeVue handles colors */
+:deep(.p-accordion .p-accordion-header .p-accordion-header-link) {
   padding: 0 !important;
   background: transparent !important;
   border: none !important;
-  color: var(--text-color) !important;
 }
 
-:deep(.p-accordion .p-accordion-header .p-accordion-header-link:hover),
-:deep([data-pc-name="accordion"] [data-pc-section="headerlink"]:hover) {
-  background: transparent !important;
-  color: var(--text-color) !important;
-}
-
-:deep(.p-accordion .p-accordion-header .p-accordion-header-link:focus),
-:deep([data-pc-name="accordion"] [data-pc-section="headerlink"]:focus) {
-  background: transparent !important;
+:deep(.p-accordion .p-accordion-header .p-accordion-header-link:focus) {
   box-shadow: none !important;
-  color: var(--text-color) !important;
 }
 
-:deep(.p-accordion .p-accordion-header .p-accordion-header-link:active),
-:deep([data-pc-name="accordion"] [data-pc-section="headerlink"]:active) {
-  background: transparent !important;
-  color: var(--text-color) !important;
+/* Custom content styling */
+:deep(.p-accordion .p-accordion-content) {
+  padding: 1.5rem !important;
+  border-top: 1px solid var(--p-surface-border) !important;
+  border-radius: 0 0 1.25rem 1.25rem !important;
 }
 
-/* Override any white backgrounds that might be set inline or by PrimeVue - scoped to accordions only */
+/* Override inline styles that might conflict */
 :deep(.p-accordion .p-accordion-tab[style*="background"]),
 :deep(.p-accordion .p-accordion-header[style*="background"]),
 :deep(.p-accordion .p-accordion-content[style*="background"]) {
-  background: var(--surface-card) !important;
-  background-color: var(--surface-card) !important;
+  background: var(--p-surface-card) !important;
+  background-color: var(--p-surface-card) !important;
 }
 
 :deep(.p-rating) {

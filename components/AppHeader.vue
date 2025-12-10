@@ -103,7 +103,7 @@ import NotificationPanel from '~/components/NotificationPanel.vue'
 const router = useRouter()
 const route = useRoute()
 const { isAuthenticated, currentUser, signOut } = useAuth()
-
+const { isDark, toggleTheme } = useTheme()
 const renderKey = ref(0)
 
 const profileMenu = ref()
@@ -207,6 +207,14 @@ const profileMenuItems = computed(() => {
       command: () => navigateToSettings()
     },
     {
+      label: `${isDark.value ? 'Light Mode' : 'Dark Mode'}`,
+      icon: `${isDark.value ? 'pi pi-sun' : 'pi pi-moon'}`,
+      command: () => {
+        toggleTheme()
+        renderKey.value++ // Force menu re-render
+      }
+    },
+    {
       label: 'Sign out',
       icon: 'pi pi-sign-out',
       command: async () => await handleSignOut()
@@ -278,35 +286,22 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Make the header background match the card color */
+/* Custom header styling - rounded bottom corners and shadow */
 .p-menubar {
-  background: var(--surface-card) !important;
+  background: var(--p-surface-card) !important;
   border-radius: 0 0 1.25rem 1.25rem;
   box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
   border: none;
 }
 
-/* Active link styling */
-.text-accent {
-  color: var(--primary-color) !important;
-}
-
-/* Custom styling for menu items */
+/* Custom menu item spacing */
 :deep(.p-menubar-root-list) {
   gap: 1rem;
 }
 
-:deep(.p-menubar-root-list > .p-menuitem > .p-menuitem-link) {
-  color: var(--text-color-secondary);
-  transition: color 0.2s ease;
-}
-
-:deep(.p-menubar-root-list > .p-menuitem > .p-menuitem-link:hover) {
-  color: var(--primary-color);
-}
-
+/* PrimeVue handles menu item colors and hover states by default */
+/* Only override highlight state if needed */
 :deep(.p-menubar-root-list > .p-menuitem > .p-menuitem-link.p-highlight) {
-  color: var(--primary-color);
   font-weight: 500;
 }
 

@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen" style="background: var(--surface-ground); color: var(--text-color);">
+  <div class="min-h-screen" style="background: var(--p-surface-ground); color: var(--p-text-color);">
     <!-- Header -->
-    <div class="border-b px-8 py-6" style="border-color: var(--surface-border);">
-      <h1 class="text-3xl font-bold mb-1" style="color: var(--text-color);">Vendor Settings</h1>
-      <p class="text-sm" style="color: var(--text-md-gray);">Manage your business profile, hours, menu, and associated users</p>
+    <div class="border-b px-8 py-6" style="border-color: var(--p-surface-border);">
+      <h1 class="text-3xl font-bold mb-1" style="color: var(--p-text-color);">Vendor Settings</h1>
+      <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">Manage your business profile, hours, menu, and associated users</p>
     </div>
 
     <div class="flex">
       <!-- Sidebar Navigation -->
-      <div class="w-64 border-r min-h-screen" style="border-color: var(--surface-border);">
+      <div class="w-64 border-r min-h-screen" style="border-color: var(--p-surface-border);">
         <nav class="p-6">
           <ul class="space-y-2">
             <li v-for="(tab, index) in tabs" :key="index">
@@ -246,7 +246,7 @@
 
         <!-- COMPLIANCE & DOCUMENTS TAB -->
         <div v-if="activeTab === 3" class="space-y-6">
-          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">Compliance & Documents</h2>
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">Compliance & Documents</h2>
           <ComplianceUpload :business-id="vendor.id" business-type="vendor" />
         </div>
 
@@ -355,7 +355,7 @@
 
         <!-- USER MANAGEMENT TAB -->
         <div v-if="activeTab === 5" class="space-y-6">
-          <h2 class="text-2xl font-bold mb-6" style="color: var(--text-color);">User Management</h2>
+          <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">User Management</h2>
           <AssociatedUsers />
         </div>
       </div>
@@ -733,25 +733,25 @@ const openSubscriptionModal = () => {
 
 <style scoped>
 :deep(.p-calendar) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-card) !important;
+  border-color: var(--p-surface-border) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-calendar input) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-card) !important;
+  border-color: var(--p-surface-border) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-multiselect) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-card) !important;
+  border-color: var(--p-surface-border) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-multiselect-label) {
-  color: var(--text-color) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-multiselect-trigger) {
@@ -759,25 +759,25 @@ const openSubscriptionModal = () => {
 }
 
 :deep(.p-inputnumber) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-card) !important;
+  border-color: var(--p-surface-border) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-inputnumber-input) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-card) !important;
+  border-color: var(--p-surface-border) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-dropdown) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-card) !important;
+  border-color: var(--p-surface-border) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-dropdown-label) {
-  color: var(--text-color) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-dropdown-trigger) {
@@ -785,28 +785,17 @@ const openSubscriptionModal = () => {
 }
 
 :deep(.p-fileupload) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
+  background: var(--p-surface-card) !important;
+  border-color: var(--p-surface-border) !important;
 }
 
 :deep(.p-fileupload-choose) {
-  background: var(--surface-overlay) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-overlay) !important;
+  border-color: var(--p-surface-border) !important;
+  color: var(--p-text-color) !important;
 }
 
 :deep(.p-fileupload-choose:hover) {
-  background: var(--surface-section) !important;
-}
-
-:deep(.p-toast) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-}
-
-:deep(.p-toast-message) {
-  background: var(--surface-card) !important;
-  border-color: var(--surface-border) !important;
-  color: var(--text-color) !important;
+  background: var(--p-surface-section) !important;
 }
 </style>

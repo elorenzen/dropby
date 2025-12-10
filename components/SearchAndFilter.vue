@@ -99,16 +99,9 @@ const handleClearFilters = () => {
 </script>
 
 <style scoped>
+/* Custom card styling - PrimeVue handles default padding */
 :deep(.p-card) {
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-}
-
-:deep(.p-card .p-card-title) {
-  padding: 1.5rem 1.5rem 0.5rem 1.5rem;
-}
-
-:deep(.p-card .p-card-content) {
-  padding: 0.5rem 1.5rem 1.5rem 1.5rem;
 }
 </style>

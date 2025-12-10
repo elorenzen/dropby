@@ -525,7 +525,7 @@ useSeoMeta({
 }
 
 .plan-features span {
-  color: var(--text-color);
+  color: var(--p-text-color);
   line-height: 1.6;
 }
 
