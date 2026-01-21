@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/process-recurring-events",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/process-completed-events",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

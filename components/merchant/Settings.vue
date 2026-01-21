@@ -304,38 +304,30 @@
 
           <!-- Bottom Row: Subscription Status -->
           <div v-if="!hasActiveSubscription" class="mb-8">
-            <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
+            <div class="bg-accent rounded-lg p-6" style="color: var(--p-primary-color-text);">
               <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 bg-surface-card/20 rounded-full flex items-center justify-center">
-                  <i class="pi pi-star text-xl"></i>
+                <div class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-light opacity-30">
+                  <i class="pi pi-star text-xl" style="color: var(--p-primary-color-text);"></i>
                 </div>
                 <div>
-                  <h3 class="text-xl font-semibold">Upgrade Your Plan</h3>
-                  <p class="text-accent-dark">Get unlimited events and premium features</p>
+                  <h3 class="text-xl font-semibold" style="color: var(--p-primary-color-text);">Upgrade Your Plan</h3>
+                  <p style="color: var(--p-primary-color-text); opacity: 0.9;">Get unlimited events and premium features</p>
                 </div>
               </div>
-              <p class="text-accent-dark mb-4">
+              <p class="mb-4" style="color: var(--p-primary-color-text); opacity: 0.9;">
                 You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and priority support.
               </p>
               <Button
                 label="View Plans"
                 icon="pi pi-arrow-right"
-                class="bg-surface-card text-accent hover:bg-accent-light"
+                style="background: var(--p-surface-card); color: var(--p-warn-color);"
+                class="hover:opacity-90"
                 @click="openSubscriptionModal"
               />
             </div>
           </div>
         </div>
 
-        <!-- Subscription Plans Section (shown when no active subscription) -->
-        <div v-if="!hasActiveSubscription" class="mt-8">
-          <SubscriptionPlans 
-            :userTypeProp="'merchant'"
-            :currentPlanId="currentSubscription?.plan_type || 'free'"
-            :loading="subscriptionLoading"
-            @plan-selected="handlePlanSelection" 
-          />
-        </div>
 
         <!-- Subscription Plans Modal -->
         <Dialog

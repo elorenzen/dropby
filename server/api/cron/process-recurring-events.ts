@@ -3,9 +3,8 @@ import type { RecurringEvent } from '~/types'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Verify this is a legitimate cron request
     const authHeader = getHeader(event, 'authorization')
-    const expectedToken = process.env.CRON_SECRET_TOKEN
+    const expectedToken = process.env.CRON_SECRET
     
     if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
       throw createError({

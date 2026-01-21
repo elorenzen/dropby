@@ -21,28 +21,35 @@ const user = useSupabaseUser()
 
 // === DISPATCH STORE ACTIONS ===
 const userStore = useUserStore()
-const { data: userData } = await supabase.from('users').select()
-await userStore.setAllUsers(userData)
+if (user.value) {
+  const { data: userData } = await supabase
+    .from('users')
+    .select()
+    .eq('id', user.value.id)
+  await userStore.setUser(userData?.[0] || null)
+} else {
+  await userStore.setUser(null)
+}
 
 const merchantStore = useMerchantStore()
 const { data: merchantData } = await supabase.from('merchants').select()
-await merchantStore.setAllMerchants(merchantData)
+await merchantStore.setAllMerchants(merchantData || [])
 
 const vendorStore = useVendorStore()
 const { data: vendorData } = await supabase.from('vendors').select()
-await vendorStore.setAllVendors(vendorData)
+await vendorStore.setAllVendors(vendorData || [])
 
 const eventStore = useEventStore()
 const { data: eventData } = await supabase.from('events').select()
-await eventStore.setAllEvents(eventData)
+await eventStore.setAllEvents(eventData || [])
 
 const menuStore = useMenuStore()
 const { data: menuData } = await supabase.from('menu_items').select()
-await menuStore.setAllMenuItems(menuData)
+await menuStore.setAllMenuItems(menuData || [])
 
 const businessHoursStore = useBusinessHoursStore()
 const { data: businessHoursData } = await supabase.from('business_hours').select()
-await businessHoursStore.setBusinessHours(businessHoursData)
+await businessHoursStore.setBusinessHours(businessHoursData || [])
 
 const subscribeToEvents = async () => {
   supabase
@@ -54,7 +61,7 @@ const subscribeToEvents = async () => {
       },
       async (payload:any) => {
         const { data: eventData } = await supabase.from('events').select()
-        await eventStore.setAllEvents(eventData)
+        await eventStore.setAllEvents(eventData || [])
       })
     .subscribe()
 }
@@ -69,7 +76,7 @@ const subscribeToMerchants = async () => {
       },
       async (payload:any) => {
         const { data: merchantData } = await supabase.from('merchants').select()
-        await merchantStore.setAllMerchants(merchantData)
+        await merchantStore.setAllMerchants(merchantData || [])
       })
     .subscribe()
 }
@@ -84,7 +91,7 @@ const subscribeToVendors = async () => {
       },
       async (payload:any) => {
         const { data: vendorData } = await supabase.from('vendors').select()
-        await vendorStore.setAllVendors(vendorData)
+        await vendorStore.setAllVendors(vendorData || [])
       })
     .subscribe()
 }
@@ -98,8 +105,13 @@ const subscribeToUsers = async () => {
         event: '*', schema: 'public', table: 'users'
       },
       async (payload:any) => {
-        const { data: userData } = await supabase.from('users').select()
-        await userStore.setAllUsers(userData)
+        if (user.value) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select()
+            .eq('id', user.value.id)
+          await userStore.setUser(userData?.[0] || null)
+        }
       })
     .subscribe()
 }
@@ -114,18 +126,9 @@ const subscribeToMenuItems = async () => {
       },
       async (payload:any) => {
         const { data: menuData } = await supabase.from('menu_items').select()
-        await menuStore.setAllMenuItems(menuData)
+        await menuStore.setAllMenuItems(menuData || [])
       })
     .subscribe()
-}
-
-if (user.value) {
-  const { data } = await supabase
-      .from('users')
-      .select()
-      .eq('id', user.value.id)
-  const foundUser = data ? data[0] : null
-  await userStore.setUser(foundUser)
 }
 
 // Check for incomplete/unpaid subscriptions after user is loaded
