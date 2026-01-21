@@ -458,13 +458,10 @@ export const useComplianceStore = defineStore('compliance', () => {
         { id: 'business_license', business_type: 'merchant', category: 'business_license', title: 'Business License', description: 'Proof of business structure (e.g., LLC, corporation)', required: true, order_index: 1 },
         { id: 'ein', business_type: 'merchant', category: 'ein', title: 'Employer Identification Number (EIN)', description: 'Required for tax purposes', required: true, order_index: 2 },
         { id: 'certificate_of_occupancy', business_type: 'merchant', category: 'certificate_of_occupancy', title: 'Certificate of Occupancy', description: 'Confirms the business location meets local zoning laws', required: true, order_index: 3 },
-        { id: 'federal_brewers_notice', business_type: 'merchant', category: 'federal_brewers_notice', title: 'Federal Brewer\'s Notice', description: 'Required for breweries to operate legally under federal law', required: false, order_index: 4 },
-        { id: 'state_brewery_permit', business_type: 'merchant', category: 'state_brewery_permit', title: 'State Brewery Permit', description: 'Issued by the Texas Alcoholic Beverage Commission (TABC) for manufacturing beer', required: false, order_index: 5 },
+        { id: 'liability_insurance', business_type: 'merchant', category: 'liability_insurance', title: 'Liability Insurance', description: 'General liability insurance to protect your business', required: true, order_index: 4 },
+        { id: 'fire_safety', business_type: 'merchant', category: 'fire_safety', title: 'Fire Safety Certificate', description: 'Fire department safety inspection for fixed establishment', required: true, order_index: 5 },
         { id: 'wine_beer_retailer_bg', business_type: 'merchant', category: 'wine_beer_retailer_bg', title: 'Wine and Beer Retailer\'s Permit (BG)', description: 'Allows selling beer and wine for on-premises consumption (e.g., bars, restaurants)', required: false, order_index: 6 },
-        { id: 'wine_beer_retailer_bq', business_type: 'merchant', category: 'wine_beer_retailer_bq', title: 'Wine and Beer Retailer\'s Off-Premise Permit (BQ)', description: 'Required for retail sales where consumption is not allowed on-site (e.g., grocery stores)', required: false, order_index: 7 },
-        { id: 'brewpub_license', business_type: 'merchant', category: 'brewpub_license', title: 'Brewpub License', description: 'Necessary if selling beer on-site at a brewery', required: false, order_index: 8 },
-        { id: 'liability_insurance', business_type: 'merchant', category: 'liability_insurance', title: 'Liability Insurance', description: 'General liability insurance to protect your business', required: true, order_index: 9 },
-        { id: 'fire_safety', business_type: 'merchant', category: 'fire_safety', title: 'Fire Safety Certificate', description: 'Fire department safety inspection for fixed establishment', required: true, order_index: 10 }
+        { id: 'brewpub_license', business_type: 'merchant', category: 'brewpub_license', title: 'Brewpub License', description: 'Required if selling beer on-site at a brewery', required: false, order_index: 7 }
       ] as ComplianceRequirement[]
     }
   }
