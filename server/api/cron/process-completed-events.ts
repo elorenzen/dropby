@@ -31,10 +31,12 @@ export default defineEventHandler(async (event) => {
       .lt('end', oneHourAgo.toISOString())
 
     if (eventsError) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: `Failed to fetch ended events: ${eventsError.message}`
-      })
+      return {
+        success: false,
+        message: `Failed to fetch ended events: ${eventsError.message}`,
+        error: eventsError,
+        timestamp: now.toISOString()
+      }
     }
 
     if (!endedEvents || endedEvents.length === 0) {
