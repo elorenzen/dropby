@@ -1,6 +1,9 @@
 <template>
   <div class="page-content">
-    <div class="section">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="false" :show-list="true" :list-rows="6" />
+
+    <div v-else class="section">
       <div class="text-center mb-8">
         <h1 class="font-bold text-4xl md:text-5xl mb-4 bg-gradient-to-r from-accent to-error bg-clip-text text-transparent">
           Find Amazing Bars & Taprooms
@@ -252,6 +255,7 @@
 
 <script setup lang="ts">
 import type { Merchant, Event, Vendor } from '~/types'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 
 type MerchantWithDistance = Merchant & {
   distance?: number
@@ -265,9 +269,22 @@ const merchStore = useMerchantStore()
 const eventStore = useEventStore()
 const vendorStore = useVendorStore()
 
-const merchants = merchStore.getAllMerchants
-const events = eventStore.getAllEvents
-const vendors = vendorStore.getAllVendors
+const loading = ref(true)
+const merchants = computed(() => merchStore.getAllMerchants)
+const events = computed(() => eventStore.getAllEvents)
+const vendors = computed(() => vendorStore.getAllVendors)
+
+onMounted(async () => {
+  try {
+    await Promise.all([
+      merchStore.allMerchants.length === 0 ? merchStore.loadMerchants() : Promise.resolve(),
+      eventStore.allEvents.length === 0 ? eventStore.loadEvents() : Promise.resolve(),
+      vendorStore.allVendors.length === 0 ? vendorStore.loadVendors() : Promise.resolve()
+    ])
+  } finally {
+    loading.value = false
+  }
+})
 
 // Search state
 const searchQuery = ref('')
@@ -374,10 +391,10 @@ const requestLocation = async () => {
 // Add distance to merchants if location is available
 const merchantsWithDistance = computed((): MerchantWithDistance[] => {
   if (!userLocation.value || !locationPermission.value) {
-    return merchants as MerchantWithDistance[]
+    return merchants.value as MerchantWithDistance[]
   }
   
-  return merchants.map((merchant: Merchant): MerchantWithDistance => {
+  return merchants.value.map((merchant: Merchant): MerchantWithDistance => {
     if (merchant.coordinates) {
       try {
         const coords = typeof merchant.coordinates === 'string' 
@@ -405,8 +422,8 @@ const merchantEventsMap = computed(() => {
   const map: Record<string, Event[]> = {}
   const now = new Date()
   
-  merchants.forEach((merchant: Merchant) => {
-    const merchantEvents = events.filter((event: Event) => {
+  merchants.value.forEach((merchant: Merchant) => {
+    const merchantEvents = events.value.filter((event: Event) => {
       if (event.merchant !== merchant.id) return false
       if (event.status !== 'booked' && event.status !== 'open') return false
       const eventStart = new Date(event.start)
@@ -482,7 +499,7 @@ const filteredMerchants = computed((): MerchantWithDistance[] => {
 // Helper functions
 const getVendorName = (vendorId: string | null): string => {
   if (!vendorId) return ''
-  const vendor = vendors.find((v: Vendor) => v.id === vendorId)
+  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
   return vendor?.vendor_name || 'Unknown Vendor'
 }
 

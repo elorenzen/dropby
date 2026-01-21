@@ -8,9 +8,9 @@
 
 <script setup lang="ts">
 useHead({
-	titleTemplate(title) {
-		return title ? `${title} | DropBy` : "DropBy";
-	},
+  titleTemplate(title) {
+    return title ? `${title} | DropBy` : "DropBy";
+  },
 });
 
 // Initialize theme system
@@ -19,7 +19,8 @@ useTheme()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 
-// === DISPATCH STORE ACTIONS ===
+// === LOAD USER DATA ONLY ===
+// Other data (merchants, vendors, events, etc.) is loaded lazily by pages that need it
 const userStore = useUserStore()
 if (user.value) {
   const { data: userData } = await supabase
@@ -31,37 +32,27 @@ if (user.value) {
   await userStore.setUser(null)
 }
 
+// Store references for real-time subscriptions
 const merchantStore = useMerchantStore()
-const { data: merchantData } = await supabase.from('merchants').select()
-await merchantStore.setAllMerchants(merchantData || [])
-
 const vendorStore = useVendorStore()
-const { data: vendorData } = await supabase.from('vendors').select()
-await vendorStore.setAllVendors(vendorData || [])
-
 const eventStore = useEventStore()
-const { data: eventData } = await supabase.from('events').select()
-await eventStore.setAllEvents(eventData || [])
-
 const menuStore = useMenuStore()
-const { data: menuData } = await supabase.from('menu_items').select()
-await menuStore.setAllMenuItems(menuData || [])
 
-const businessHoursStore = useBusinessHoursStore()
-const { data: businessHoursData } = await supabase.from('business_hours').select()
-await businessHoursStore.setBusinessHours(businessHoursData || [])
+// === REAL-TIME SUBSCRIPTIONS ===
+// These update the stores when data changes, but only if data was already loaded
 
 const subscribeToEvents = async () => {
   supabase
     .channel('events')
     .on(
       'postgres_changes',
-      {
-        event: '*', schema: 'public', table: 'events'
-      },
-      async (payload:any) => {
-        const { data: eventData } = await supabase.from('events').select()
-        await eventStore.setAllEvents(eventData || [])
+      { event: '*', schema: 'public', table: 'events' },
+      async (payload: any) => {
+        // Only refresh if events were already loaded
+        if (eventStore.allEvents.length > 0) {
+          const { data: eventData } = await supabase.from('events').select()
+          await eventStore.setAllEvents(eventData || [])
+        }
       })
     .subscribe()
 }
@@ -71,12 +62,13 @@ const subscribeToMerchants = async () => {
     .channel('merchants')
     .on(
       'postgres_changes',
-      {
-        event: '*', schema: 'public', table: 'merchants'
-      },
-      async (payload:any) => {
-        const { data: merchantData } = await supabase.from('merchants').select()
-        await merchantStore.setAllMerchants(merchantData || [])
+      { event: '*', schema: 'public', table: 'merchants' },
+      async (payload: any) => {
+        // Only refresh if merchants were already loaded
+        if (merchantStore.allMerchants.length > 0) {
+          const { data: merchantData } = await supabase.from('merchants').select()
+          await merchantStore.setAllMerchants(merchantData || [])
+        }
       })
     .subscribe()
 }
@@ -86,12 +78,13 @@ const subscribeToVendors = async () => {
     .channel('vendors')
     .on(
       'postgres_changes',
-      {
-        event: '*', schema: 'public', table: 'vendors'
-      },
-      async (payload:any) => {
-        const { data: vendorData } = await supabase.from('vendors').select()
-        await vendorStore.setAllVendors(vendorData || [])
+      { event: '*', schema: 'public', table: 'vendors' },
+      async (payload: any) => {
+        // Only refresh if vendors were already loaded
+        if (vendorStore.allVendors.length > 0) {
+          const { data: vendorData } = await supabase.from('vendors').select()
+          await vendorStore.setAllVendors(vendorData || [])
+        }
       })
     .subscribe()
 }
@@ -101,10 +94,8 @@ const subscribeToUsers = async () => {
     .channel('users')
     .on(
       'postgres_changes',
-      {
-        event: '*', schema: 'public', table: 'users'
-      },
-      async (payload:any) => {
+      { event: '*', schema: 'public', table: 'users' },
+      async (payload: any) => {
         if (user.value) {
           const { data: userData } = await supabase
             .from('users')
@@ -121,12 +112,13 @@ const subscribeToMenuItems = async () => {
     .channel('menu_items')
     .on(
       'postgres_changes',
-      {
-        event: '*', schema: 'public', table: 'menu_items'
-      },
-      async (payload:any) => {
-        const { data: menuData } = await supabase.from('menu_items').select()
-        await menuStore.setAllMenuItems(menuData || [])
+      { event: '*', schema: 'public', table: 'menu_items' },
+      async (payload: any) => {
+        // Only refresh if menu items were already loaded
+        if (menuStore.menuItems.length > 0) {
+          const { data: menuData } = await supabase.from('menu_items').select()
+          await menuStore.setAllMenuItems(menuData || [])
+        }
       })
     .subscribe()
 }
@@ -163,24 +155,18 @@ const checkUnpaidSubscription = async () => {
     }
   } catch (error) {
     // No unpaid subscription found, or error - continue normally
-    console.log('No unpaid subscription found or error:', error)
   }
 }
 
 onMounted(async () => {
+  // Set up real-time subscriptions
   await subscribeToEvents()
   await subscribeToUsers()
   await subscribeToVendors()
   await subscribeToMerchants()
   await subscribeToMenuItems()
   
-  // Check for unpaid subscriptions after everything is loaded
+  // Check for unpaid subscriptions
   await checkUnpaidSubscription()
 })
-// console.log('user: ', user.user)
-        // Get necessary script for Map initializtion (google maps API key required!!)
-        // if (process.server) {
-        //     const runtimeConfig = useRuntimeConfig();
-        //     useHead({ script: [{ src: `https://maps.googleapis.com/maps/api/js?key=${runtimeConfig.public.gMapKey}&v=weekly`, defer: true }] });
-        // }
 </script>

@@ -1,6 +1,9 @@
 <template>
   <div class="page-content">
-    <div class="section">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="false" :show-list="true" :list-rows="6" />
+
+    <div v-else class="section">
       <div class="text-center mb-8">
         <h1 class="font-bold text-4xl md:text-5xl mb-4 bg-gradient-to-r from-accent to-error bg-clip-text text-transparent">
           Find Amazing Food Trucks
@@ -220,6 +223,7 @@
 
 <script setup lang="ts">
 import type { Vendor, Event, Merchant } from '~/types'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 
 definePageMeta({
   alias: '/food-trucks'
@@ -229,9 +233,26 @@ const vendorStore = useVendorStore()
 const eventStore = useEventStore()
 const merchantStore = useMerchantStore()
 
-const vendors = vendorStore.getAllVendors
-const events = eventStore.getAllEvents
-const merchants = merchantStore.getAllMerchants
+// Loading state
+const loading = ref(true)
+
+// Reactive references to store data
+const vendors = computed(() => vendorStore.getAllVendors)
+const events = computed(() => eventStore.getAllEvents)
+const merchants = computed(() => merchantStore.getAllMerchants)
+
+// Load data on mount
+onMounted(async () => {
+  try {
+    await Promise.all([
+      vendorStore.allVendors.length === 0 ? vendorStore.loadVendors() : Promise.resolve(),
+      eventStore.allEvents.length === 0 ? eventStore.loadEvents() : Promise.resolve(),
+      merchantStore.allMerchants.length === 0 ? merchantStore.loadMerchants() : Promise.resolve()
+    ])
+  } finally {
+    loading.value = false
+  }
+})
 
 // Search state
 const searchQuery = ref('')
@@ -253,7 +274,7 @@ const sortOptions = [
 // Get unique cuisines from all vendors
 const cuisineOptions = computed(() => {
   const cuisines = new Set<string>()
-  vendors.forEach((vendor: Vendor) => {
+  vendors.value.forEach((vendor: Vendor) => {
     if (vendor.cuisine) {
       vendor.cuisine.forEach((c: string) => cuisines.add(c))
     }
@@ -275,8 +296,8 @@ const vendorEventsMap = computed(() => {
   const map: Record<string, Event[]> = {}
   const now = new Date()
   
-  vendors.forEach((vendor: Vendor) => {
-    const vendorEvents = events.filter((event: Event) => {
+  vendors.value.forEach((vendor: Vendor) => {
+    const vendorEvents = events.value.filter((event: Event) => {
       if (event.vendor !== vendor.id) return false
       if (event.status !== 'booked' && event.status !== 'open') return false
       const eventStart = new Date(event.start)
@@ -292,7 +313,7 @@ const vendorEventsMap = computed(() => {
 
 // Filtered vendors
 const filteredVendors = computed(() => {
-  let filtered = [...vendors]
+  let filtered = [...vendors.value]
 
   // Search filter
   if (searchQuery.value) {
@@ -341,7 +362,7 @@ const filteredVendors = computed(() => {
 // Helper functions
 const getMerchantName = (merchantId: string | null): string => {
   if (!merchantId) return ''
-  const merchant = merchants.find((m: Merchant) => m.id === merchantId)
+  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
   return merchant?.merchant_name || 'Unknown Establishment'
 }
 
