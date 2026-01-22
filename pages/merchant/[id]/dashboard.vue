@@ -5,13 +5,13 @@
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold text-text-main mb-2">
-              Welcome back, {{ user?.first_name || 'Merchant' }}! 👋
+              Welcome back, {{ user?.first_name || 'Merchant' }}!
             </h1>
             <p class="text-text-muted text-lg">
-              Here's what's happening with {{ merchant?.name || 'your business' }} today
+              Here's what's happening with {{ merchant?.merchant_name || 'your business' }} today
             </p>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4 desktop-only">
             <Button 
               icon="pi pi-arrow-left" 
               @click="navigateToEvents"
@@ -21,6 +21,15 @@
           </div>
         </div>
       </div>
+      
+      <!-- Event Create Dialog -->
+      <EventCreate 
+        v-if="merchant"
+        :visible="showCreateDialog"
+        @update:visible="showCreateDialog = $event"
+        :merchant="merchant"
+        @event-created="onEventCreated"
+      />
   
       <!-- Analytics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -117,8 +126,11 @@
           </Card>
         </div>
   
-        <!-- Right Column - Activity & Charts -->
+        <!-- Right Column - Quick Actions, Activity & Charts -->
         <div class="space-y-6">
+          <!-- Quick Actions -->
+          <QuickActions user-type="merchant" @create-event="openCreateEventDialog" />
+          
           <!-- Recent Activity -->
           <Card>
             <template #title>
@@ -160,6 +172,8 @@
   </template>
   
   <script setup lang="ts">
+  import EventCreate from '~/components/event/Create.vue'
+  
   definePageMeta({
     middleware: ['auth']
   })
@@ -170,6 +184,9 @@
   const merchantStore = useMerchantStore()
   const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
   const subcriptionStore = useSubscriptionStore()
+  
+  // Create event dialog state
+  const showCreateDialog = ref(false)
 
   const timelineStore = useTimelineStore()
   const { data: timelineData, error: timelineError } = await supabase
@@ -294,6 +311,16 @@
   
   const navigateToRatings = () => {
     navigateTo(`/merchant/${route.params.id}/ratings-and-reviews`)
+  }
+  
+  const openCreateEventDialog = () => {
+    showCreateDialog.value = true
+  }
+  
+  const onEventCreated = () => {
+    showCreateDialog.value = false
+    // Refresh analytics
+    loadAnalytics()
   }
   
   const toggleMenu = (event: Event) => {
@@ -438,5 +465,12 @@
   transform: scale(1.05);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   border-color: rgba(var(--primary-color-rgb), 0.5);
+}
+
+/* Hide redundant buttons on mobile since we have bottom nav */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
 }
 </style>

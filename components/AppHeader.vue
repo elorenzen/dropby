@@ -1,54 +1,51 @@
 <template>
   <div>
-    <Menubar :model="menuItemsStart">
+    <!-- Authenticated users: Menubar with nav items -->
+    <Menubar v-if="isAuthenticated" :model="authenticatedMenuItems" class="app-header-authenticated">
       <template #start>
-        <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
         <NuxtLink
           :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/dashboard`"
           class="m-2 text-xl font-bold text-primary"
         >
-          DropBy
+        <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
         </NuxtLink>
       </template>
 
-      <template #item="{ item, props, hasSubmenu }">
-        <div v-if="!isAuthenticated">
-            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-                <a v-ripple :href="href" v-bind="props.action" @click="navigate">
-                    <span :class="item.icon" />
-                    <span>{{ item.label }}</span>
-                </a>
-            </router-link>
-            <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
-                <span :class="item.icon" />
-                <span>{{ item.label }}</span>
-                <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
-            </a>
-        </div>
+      <template #item="{ item, props }">
+        <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+          <a 
+            v-ripple 
+            :href="href" 
+            v-bind="props.action" 
+            @click="navigate"
+            :class="{ 'nav-item-active': item.isActive }"
+          >
+            <span :class="item.icon" />
+            <span class="ml-2">{{ item.label }}</span>
+          </a>
+        </router-link>
       </template>
       
       <template #end>
-        <!-- Not Authenticated - Show Login/Signup -->
-        <div v-if="!isAuthenticated" class="auth-section">
-          <div class="auth-buttons">
-            <Button
-              outlined
-              @click="navigateTo('/login')"
-              class="auth-button"
-              size="small"
-            >Login</Button>
-
-            <Button
-              outlined
-              @click="register"
-              class="auth-button"
-              size="small"
-            >Sign Up</Button>
-          </div>
-        </div>
-
-        <!-- Authenticated - Show Menu Items and Profile Dropdown -->
-        <div v-else class="authenticated-section">
+        <div class="header-actions">
+          <!-- Create Event / Find Events CTA -->
+          <Button
+            v-if="businessType === 'merchant'"
+            @click="$emit('create-event')"
+            label="Create Event"
+            icon="pi pi-plus"
+            size="small"
+            class="header-cta"
+          />
+          <Button
+            v-else-if="businessType === 'vendor'"
+            @click="navigateToFindEvents"
+            label="Find Events"
+            icon="pi pi-search"
+            size="small"
+            class="header-cta"
+          />
+          
           <!-- Notification Bell -->
           <div class="relative">
             <Button 
@@ -60,13 +57,12 @@
               aria-haspopup="true" 
               aria-controls="notification_panel"
               class="header-icon-button"
-              style="border-color: var(--secondary-color); color: var(--secondary-color); position: relative;" 
             />
             <Badge 
               v-if="unreadCount > 0" 
               :value="unreadCount > 99 ? '99+' : unreadCount"
               severity="danger"
-              style="position: absolute; top: -8px; right: -8px; min-width: 20px; height: 20px; font-size: 11px;"
+              class="notification-badge"
             />
           </div>
           <NotificationPanel ref="notificationPanel" />
@@ -81,7 +77,6 @@
             aria-haspopup="true" 
             aria-controls="profile_menu" 
             class="header-icon-button"
-            style="border-color: var(--secondary-color); color: var(--secondary-color);" 
           />
           <Menu
             ref="profileMenu"
@@ -93,12 +88,58 @@
         </div>
       </template>
     </Menubar>
+
+    <!-- Non-authenticated users: Menubar with public navigation -->
+    <Menubar v-else :model="menuItemsStart">
+      <template #start><Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
+        <NuxtLink
+          to="/"
+          class="m-2 text-xl font-bold text-primary"
+        >
+          <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
+        </NuxtLink>
+      </template>
+
+      <template #item="{ item, props, hasSubmenu }">
+        <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+            <a v-ripple :href="href" v-bind="props.action" @click="navigate">
+                <span :class="item.icon" />
+                <span>{{ item.label }}</span>
+            </a>
+        </router-link>
+        <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
+            <span :class="item.icon" />
+            <span>{{ item.label }}</span>
+            <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
+        </a>
+      </template>
+      
+      <template #end>
+        <div class="auth-buttons">
+          <Button
+            outlined
+            @click="navigateTo('/login')"
+            class="auth-button"
+            size="small"
+          >Login</Button>
+
+          <Button
+            outlined
+            @click="register"
+            class="auth-button"
+            size="small"
+          >Sign Up</Button>
+        </div>
+      </template>
+    </Menubar>
   </div>
 </template>
 
 <script setup lang="ts">
 import Logo from '~/assets/logo-one.svg' // options: '.../logo-two.svg', '.../logo-three.svg'
 import NotificationPanel from '~/components/NotificationPanel.vue'
+
+defineEmits(['create-event'])
 
 const router = useRouter()
 const route = useRoute()
@@ -110,6 +151,50 @@ const profileMenu = ref()
 const notificationPanel = ref()
 const notificationStore = useNotificationStore()
 const notificationChannel = ref<any>(null)
+
+// Authenticated menu items using PrimeVue MenuItem format with route
+const authenticatedMenuItems = computed(() => {
+  if (!businessType.value || !userAssociatedId.value) return []
+  const base = `/${businessType.value}/${userAssociatedId.value}`
+  const path = route.path
+  
+  return [
+    { 
+      label: 'Dashboard', 
+      icon: 'pi pi-home', 
+      route: `${base}/dashboard`,
+      isActive: path.endsWith('/dashboard')
+    },
+    { 
+      label: 'Events', 
+      icon: 'pi pi-calendar', 
+      route: `${base}/events`,
+      isActive: path.includes('/events') || path.includes('/recurring-events')
+    },
+    { 
+      label: 'Analytics', 
+      icon: 'pi pi-chart-bar', 
+      route: `${base}/analytics`,
+      isActive: path.includes('/analytics')
+    },
+    { 
+      label: 'Reviews', 
+      icon: 'pi pi-star', 
+      route: `${base}/ratings-and-reviews`,
+      isActive: path.includes('/ratings-and-reviews')
+    },
+    { 
+      label: 'Settings', 
+      icon: 'pi pi-cog', 
+      route: `/settings/${userAssociatedId.value}`,
+      isActive: path.includes('/settings')
+    }
+  ]
+})
+
+const navigateToFindEvents = () => {
+  router.push('/viewer/events')
+}
 
 const menuItemsStart = ref([
     {
@@ -286,49 +371,54 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Custom header styling - rounded bottom corners and shadow */
-.p-menubar {
+/* Authenticated header - sticky with PrimeVue Menubar */
+.app-header-authenticated {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-bottom: 1px solid var(--p-surface-border) !important;
+}
+
+/* Active nav item styling */
+:deep(.nav-item-active) {
+  color: var(--primary-color) !important;
+  font-weight: 600;
+}
+
+/* Non-authenticated menubar styling */
+.p-menubar:not(.app-header-authenticated) {
   background: var(--p-surface-card) !important;
   border-radius: 0 0 1.25rem 1.25rem;
   box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
   border: none;
 }
 
-/* Custom menu item spacing */
+/* Menu item spacing */
 :deep(.p-menubar-root-list) {
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
-/* PrimeVue handles menu item colors and hover states by default */
-/* Only override highlight state if needed */
-:deep(.p-menubar-root-list > .p-menuitem > .p-menuitem-link.p-highlight) {
-  font-weight: 500;
-}
-
-/* Authentication section styling */
-.auth-section {
+/* Header actions container */
+.header-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
+}
+
+.header-cta {
+  margin-right: 0.5rem;
 }
 
 .auth-buttons {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
 .auth-button {
   white-space: nowrap;
-}
-
-/* Authenticated section styling */
-.authenticated-section {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
 }
 
 .header-icon-button {
@@ -338,26 +428,22 @@ onUnmounted(() => {
   padding: 0 !important;
 }
 
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+
 /* Mobile responsive styles */
 @media (max-width: 768px) {
-  .auth-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-    width: 100%;
+  .header-cta {
+    display: none;
   }
 
-  .auth-buttons {
-    width: 100%;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .auth-button {
-    width: 100%;
-  }
-
-  .authenticated-section {
+  .header-actions {
     gap: 0.5rem;
   }
 
@@ -366,49 +452,15 @@ onUnmounted(() => {
     width: 2.25rem;
     height: 2.25rem;
   }
-
-  /* Ensure PrimeVue Menubar mobile menu works well */
-  :deep(.p-menubar-button) {
-    margin-left: auto;
+  
+  /* Hide nav items on mobile - use bottom nav instead */
+  :deep(.p-menubar-root-list) {
+    display: none !important;
   }
-
-  :deep(.p-menubar-mobile-active .p-menubar-root-list) {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  :deep(.p-menubar-mobile-active .p-menubar-root-list > .p-menuitem) {
-    width: 100%;
-  }
-
-  :deep(.p-menubar-mobile-active .p-menubar-root-list > .p-menuitem > .p-menuitem-link) {
-    width: 100%;
-    padding: 0.75rem 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .auth-section {
-    gap: 0.5rem;
-  }
-
-  .authenticated-section {
-    gap: 0.375rem;
-  }
-
-  .header-icon-button {
-    min-width: 2rem;
-    width: 2rem;
-    height: 2rem;
-  }
-
-  /* Hide text labels on very small screens, show only icons */
-  :deep(.p-menubar .p-menubar-start) {
-    flex: 1;
-  }
-
-  :deep(.p-menubar .p-menubar-start .text-xl) {
-    font-size: 1rem;
+  
+  /* Hide hamburger menu on mobile for authenticated users */
+  .app-header-authenticated :deep(.p-menubar-button) {
+    display: none !important;
   }
 }
 </style>

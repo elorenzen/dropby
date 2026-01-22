@@ -13,14 +13,37 @@ const route = useRoute()
 const userStore = useUserStore()
 const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
-const user:any = userStore.getUser
+const user: any = userStore.getUser
 const type = user?.type
-const business = ref(
-    type === 'merchant' ?
-    await merchantStore.getMerchantById(route.params.id) :
-    await vendorStore.getVendorById(route.params.id)
-)
-useSeoMeta({ title: () => `Settings | ${business.value[`${type}_name`]}` })
+
+// Load business data - handle case where stores might not have data yet
+const business = ref<any>(null)
+
+if (type === 'merchant') {
+    // Try to get from store first, then load if needed
+    let merchantData = await merchantStore.getMerchantById(route.params.id as string)
+    if (!merchantData) {
+        // Load merchants if not already loaded
+        await merchantStore.loadMerchants()
+        merchantData = await merchantStore.getMerchantById(route.params.id as string)
+    }
+    business.value = merchantData
+} else if (type === 'vendor') {
+    let vendorData = await vendorStore.getVendorById(route.params.id as string)
+    if (!vendorData) {
+        await vendorStore.loadVendors()
+        vendorData = await vendorStore.getVendorById(route.params.id as string)
+    }
+    business.value = vendorData
+}
+
+// Safe title with fallback
+const businessName = computed(() => {
+    if (!business.value || !type) return 'Settings'
+    return business.value[`${type}_name`] || 'Settings'
+})
+
+useSeoMeta({ title: () => `Settings | ${businessName.value}` })
 </script>
 
 <style scoped>

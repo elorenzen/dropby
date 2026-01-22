@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-text-main mb-2">
-            Welcome back, {{ user?.first_name || 'Vendor' }}! 🚚
+            Welcome back, {{ user?.first_name || 'Vendor' }}!
           </h1>
           <p class="text-text-muted text-lg">
             Here's what's happening with {{ vendor?.vendor_name || 'your food truck' }} today
@@ -163,8 +163,11 @@
         </Card>
       </div>
 
-      <!-- Right Column - Activity & Quick Actions -->
+      <!-- Right Column - Quick Actions & Activity -->
       <div class="space-y-6">
+        <!-- Quick Actions -->
+        <QuickActions user-type="vendor" />
+        
         <!-- Recent Activity -->
         <Card>
           <template #title>
