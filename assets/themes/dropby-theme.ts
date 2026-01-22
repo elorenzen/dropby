@@ -5,58 +5,52 @@ import Aura from '@primevue/themes/aura'
  * DropBy Custom Theme
  * Based on Aura preset with custom color palette
  * Supports easy light/dark mode switching with separate color palettes
- */
-
-/*
- * COLOR PALETTE OPTIONS:
- * 
- * 1) Purple/Red/Amber
- *    Primary: #7C3AED (Purple) - Creativity, luxury, memorable experiences
- *    Secondary: #DC2626 (Red) - Urgency, action, excitement
- *    Accent: #F59E0B (Amber) - Celebration, warmth, success
  *
- * 2) Sky Blue/Emerald/Orange
- *    Primary: #0EA5E9 (Sky Blue) - Innovation, clarity, digital connection
- *    Secondary: #10B981 (Emerald) - Growth, success, positive results
- *    Accent: #F97316 (Orange) - Energy, enthusiasm, action
- *
- * 3) Navy Blue/Emerald/Amber
- *    Primary: #1E40AF (Navy Blue) - Professionalism, reliability, premium service
- *    Secondary: #059669 (Emerald) - Success, growth, positive partnerships
- *    Accent: #D97706 (Amber) - Premium, celebration, memorable events
- *
- * 4) CURRENT - Cyan/Red-Brown/Gold
- *    Primary: #0891B2 (Cyan) - Fresh, modern, efficient scheduling
- *    Secondary: #7C2D12 (Red-Brown) - Grounded, reliable, food-focused
- *    Accent: #CA8A04 (Gold) - Success, premium, celebration
+ * CURRENT - Food Truck Theme (Warm Orange/Deep Red/Golden Amber)
+ *    Primary: #F97316 (Warm Orange) - Appetizing, energetic, food-focused
+ *    Secondary: #991B1B (Deep Red/Burgundy) - Wine bars, sophistication, drinking establishments
+ *    Accent: #F59E0B (Golden Amber) - Celebration, success, premium experiences
  */
 
 // Color palettes - same base colors, but can be adjusted for light/dark
-// Currently using Option 4 - Change values below to switch palettes
 const dropbyColors = {
-  primary: '#0891B2',      // Cyan - Fresh, modern, efficient scheduling (Option 4)
-  secondary: '#7C2D12',    // Red-Brown - Grounded, reliable, food-focused (Option 4)
-  accent: '#CA8A04',       // Gold - Success, premium, celebration (Option 4)
-  success: '#10B981',     // Emerald - Growth, success
-  warning: '#F97316',      // Orange - Energy, enthusiasm
-  error: '#EF4444',        // Red - Errors, alerts
+  primary: '#F97316',      // Warm Orange - Appetizing, energetic, food-focused
+  secondary: '#991B1B',    // Deep Red/Burgundy - Wine bars, sophistication, drinking establishments
+  accent: '#F59E0B',       // Golden Amber - Celebration, success, premium experiences
+  success: '#10B981',      // Emerald - Growth, success
+  warning: '#F59E0B',      // Golden Amber - Warnings, attention (matches accent)
+  error: '#DC2626',        // Red - Errors, alerts
 }
 
 const DropByPreset = definePreset(Aura, {
   semantic: {
-    // Primary color palette - shared between light/dark
+    // Primary color palette - Warm Orange (food-focused)
     primary: {
-      50: '#e0f7fa',
-      100: '#b2ebf2',
-      200: '#80deea',
-      300: '#4dd0e1',
-      400: '#26c6da',
-      500: dropbyColors.primary, // #0891B2
-      600: '#0288d1',
-      700: '#0277bd',
-      800: '#01579b',
-      900: '#004d40',
-      950: '#001f1f'
+      50: '#fff7ed',
+      100: '#ffedd5',
+      200: '#fed7aa',
+      300: '#fdba74',
+      400: '#fb923c',
+      500: dropbyColors.primary, // #F97316
+      600: '#ea580c',
+      700: '#c2410c',
+      800: '#9a3412',
+      900: '#7c2d12',
+      950: '#431407'
+    },
+    // Secondary color palette - Deep Red/Burgundy (wine bars, drinking establishments)
+    secondary: {
+      50: '#fef2f2',
+      100: '#fee2e2',
+      200: '#fecaca',
+      300: '#fca5a5',
+      400: '#f87171',
+      500: dropbyColors.secondary, // #991B1B
+      600: '#dc2626',
+      700: '#b91c1c',
+      800: '#991b1b',
+      900: '#7f1d1d',
+      950: '#450a0a'
     },
     // Success color (Emerald)
     success: {
@@ -72,14 +66,14 @@ const DropByPreset = definePreset(Aura, {
       900: '#064e3b',
       950: '#022c22'
     },
-    // Warning/Accent color (Gold/Amber)
+    // Warning/Accent color (Golden Amber)
     warn: {
       50: '#fffbeb',
       100: '#fef3c7',
       200: '#fde68a',
       300: '#fcd34d',
       400: '#fbbf24',
-      500: dropbyColors.accent, // #CA8A04
+      500: dropbyColors.accent, // #F59E0B
       600: '#d97706',
       700: '#b45309',
       800: '#92400e',
@@ -106,25 +100,31 @@ const DropByPreset = definePreset(Aura, {
       light: {
         // Light mode: use darker shades (500-700) for better contrast on light backgrounds
         primary: {
-          color: '{primary.500}', // #0891B2 - base cyan
+          color: '{primary.500}', // #F97316 - warm orange
           contrastColor: '#ffffff',
           hoverColor: '{primary.600}',
           activeColor: '{primary.700}'
         },
+        secondary: {
+          color: '{secondary.500}', // #991B1B - deep red/burgundy
+          contrastColor: '#ffffff',
+          hoverColor: '{secondary.600}',
+          activeColor: '{secondary.700}'
+        },
         success: {
-          color: '{success.500}', // #10B981 - base emerald
+          color: '{success.500}', // #10B981 - emerald
           contrastColor: '#ffffff',
           hoverColor: '{success.600}',
           activeColor: '{success.700}'
         },
         warn: {
-          color: '{warn.500}', // #CA8A04 - base gold
+          color: '{warn.500}', // #F59E0B - golden amber
           contrastColor: '#ffffff',
           hoverColor: '{warn.600}',
           activeColor: '{warn.700}'
         },
         danger: {
-          color: '{danger.500}', // #EF4444 - base red
+          color: '{danger.500}', // #DC2626 - red for errors/alerts
           contrastColor: '#ffffff',
           hoverColor: '{danger.600}',
           activeColor: '{danger.700}'
@@ -133,10 +133,16 @@ const DropByPreset = definePreset(Aura, {
       dark: {
         // Dark mode: use lighter shades (300-400) for better contrast on dark backgrounds
         primary: {
-          color: '{primary.400}', // #26c6da - lighter cyan for dark mode
+          color: '{primary.400}', // #fb923c - lighter orange for dark mode
           contrastColor: '#ffffff',
           hoverColor: '{primary.300}',
           activeColor: '{primary.500}'
+        },
+        secondary: {
+          color: '{secondary.400}', // #f87171 - lighter red for dark mode
+          contrastColor: '#ffffff',
+          hoverColor: '{secondary.300}',
+          activeColor: '{secondary.500}'
         },
         success: {
           color: '{success.400}', // #34d399 - lighter emerald for dark mode
@@ -145,7 +151,7 @@ const DropByPreset = definePreset(Aura, {
           activeColor: '{success.500}'
         },
         warn: {
-          color: '{warn.400}', // #fbbf24 - lighter gold for dark mode
+          color: '{warn.400}', // #fbbf24 - lighter amber for dark mode
           contrastColor: '#1f2937',
           hoverColor: '{warn.300}',
           activeColor: '{warn.500}'
