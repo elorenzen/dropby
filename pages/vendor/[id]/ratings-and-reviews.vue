@@ -11,54 +11,13 @@
             Manage and view all ratings for {{ vendor?.vendor_name || 'your food truck' }}
           </p>
         </div>
-        <div class="flex items-center gap-4">
-          <Button 
-            icon="pi pi-arrow-left" 
-            @click="navigateToDashboard"
-            outlined 
-            label="Back to Dashboard"
-          />
+        <div class="flex flex-col items-end gap-2">
+          <p class="text-2xl font-bold text-text-main">Your Rating:</p>
+          <Tag severity="info" rounded>
+              <p class="text-3xl font-bold text-text-main">{{ analytics.establishmentRating }} / 5</p>
+          </Tag>
         </div>
       </div>
-    </div>
-
-    <!-- Analytics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <Card>
-        <template #content>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-text-muted text-sm font-medium">Average Establishment Rating</p>
-              <p class="text-3xl font-bold text-text-main">{{ analytics.establishmentRating }}</p>
-              <div class="flex items-center mt-1">
-                <Rating v-model="analytics.establishmentRating" readonly :cancel="false" />
-                <span class="text-text-muted text-sm ml-2">({{ analytics.establishmentReviews }} reviews)</span>
-              </div>
-            </div>
-            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-light">
-              <i class="pi pi-building icon-primary"></i>
-            </div>
-          </div>
-        </template>
-      </Card>
-
-      <Card>
-        <template #content>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-text-muted text-sm font-medium">Average User Rating</p>
-              <p class="text-3xl font-bold text-text-main">{{ analytics.userRating }}</p>
-              <div class="flex items-center mt-1">
-                <Rating v-model="analytics.userRating" readonly :cancel="false" />
-                <span class="text-text-muted text-sm ml-2">({{ analytics.userReviews }} reviews)</span>
-              </div>
-            </div>
-            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-success-light">
-              <i class="pi pi-users icon-success"></i>
-            </div>
-          </div>
-        </template>
-      </Card>
     </div>
 
     <!-- Pending Reviews Notification -->
@@ -92,14 +51,14 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
                 <NuxtImg 
-                  :src="getMerchantProp(event.merchant, 'avatar_url')" 
-                  :alt="getMerchantProp(event.merchant, 'merchant_name')" 
+                  :src="getMerchantProp(event.merchant || '', 'avatar_url')" 
+                  :alt="getMerchantProp(event.merchant || '', 'merchant_name')" 
                   class="w-12 h-12 rounded-full"
                 />
                 <div class="min-w-0">
-                  <p class="font-semibold truncate">{{ getMerchantProp(event.merchant, 'merchant_name') }}</p>
-                  <p class="text-sm text-text-muted truncate">Event Date: {{ new Date(event.day_id).toLocaleDateString() }}</p>
-                  <p class="text-xs text-text-muted">Event Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
+                  <p class="font-semibold truncate">{{ getMerchantProp(event.merchant || '', 'merchant_name') }}</p>
+                  <p class="text-sm text-text-muted truncate">Event Date: {{ getEventProp(event.id, 'day_id') ? new Date(getEventProp(event.id, 'day_id')).toLocaleDateString() : 'N/A' }}</p>
+                  <p class="text-xs text-text-muted">Event Time: {{ getEventTime(event.id) }}</p>
                 </div>
               </div>
               <Button 
@@ -129,13 +88,14 @@
               <!-- Left: Event Data -->
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
                 <NuxtImg 
-                  :src="getMerchantProp(review.recipient_id || '', 'avatar_url')" 
-                  :alt="getMerchantProp(review.recipient_id || '', 'merchant_name')" 
+                  :src="review.merchant_avatar || ''" 
+                  :alt="review.merchant_name || ''" 
                   class="w-12 h-12 rounded-full"
                 />
                 <div class="min-w-0">
-                  <p class="font-semibold truncate">{{ getMerchantProp(review.recipient_id || '', 'merchant_name') }}</p>
-                  <p class="text-sm text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
+                  <p class="font-semibold truncate">{{ review.merchant_name || 'N/A' }}</p>
+                  <p class="text-sm text-text-muted">{{ review.event_id ? (getEventProp(review.event_id, 'day_id') ? new Date(getEventProp(review.event_id, 'day_id')).toLocaleDateString() : 'N/A') : 'N/A' }}</p>
+                  <p class="text-xs text-text-muted">{{ review.event_id ? getEventTime(review.event_id) : 'N/A' }}</p>
                 </div>
               </div>
               
@@ -172,18 +132,18 @@
       </template>
       <template #content>
         <div class="space-y-3">
-          <div v-for="review in receivedReviews" :key="review.id" class="bg-white dark:bg-xdk-gray rounded-lg p-4 border border-md-gray dark:border-dk-gray">
+          <div v-for="review in receivedReviews" :key="review.id" class="bg-surface-card rounded-lg p-4 border border-surface-border">
             <div class="flex items-start gap-4">
               <!-- Left: Reviewer Data -->
               <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
                 <NuxtImg 
-                  :src="getMerchantProp(review.sender_id || '', 'avatar_url')" 
-                  :alt="getMerchantProp(review.sender_id || '', 'name')" 
+                  :src="review.merchant_avatar || ''" 
+                  :alt="review.merchant_name || ''" 
                   class="w-12 h-12 rounded-full"
                 />
                 <div class="min-w-0">
-                  <p class="font-semibold truncate text-text-main">{{ getMerchantProp(review.sender_id || '', 'merchant_name') }}</p>
-                  <p class="text-sm text-text-muted">{{ review.event_date ? new Date(review.event_date).toLocaleDateString() : 'N/A' }}</p>
+                  <p class="font-semibold truncate text-text-main">{{ review.merchant_name || 'N/A' }}</p>
+                  <p class="text-sm text-text-muted">{{ review.event_id ? (getEventProp(review.event_id, 'day_id') ? new Date(getEventProp(review.event_id, 'day_id')).toLocaleDateString() : 'N/A') : 'N/A' }}</p>
                   <p class="text-xs text-text-muted">{{ review.event_id ? getEventTime(review.event_id) : 'N/A' }}</p>
                 </div>
               </div>
@@ -238,7 +198,17 @@ const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const vendorStore = useVendorStore()
 const merchantStore = useMerchantStore()
+
+if (merchantStore.allMerchants.length === 0) {
+  await merchantStore.loadMerchants()
+}
+
 const vendor = ref<any>(await vendorStore.getVendorById(route.params.id))
+
+const eventStore = useEventStore()
+if (eventStore.allEvents.length === 0) {
+  await eventStore.loadEvents()
+}
 
 const reviewStore = useReviewStore()
 
@@ -258,21 +228,30 @@ const { data: sentReviewsData, error: sentReviewsError } = await supabase
 await reviewStore.setSentReviews(sentReviewsData || [])
 
 const getMerchantProp = (merchantId: string, prop: string): string => {
+  if (!merchantId) return ''
   const allMerchants = merchantStore.getAllMerchants
   const merchant = allMerchants.find((m: any) => m.id === merchantId)
-  return merchant?.[prop] || ''
+  return (merchant?.[prop as keyof typeof merchant] as string) || ''
+}
+
+const getEventProp = (eventId: string, prop: string): string => {
+  if (!eventId) return ''
+  const allEvents = eventStore.getAllEvents
+  const event = allEvents.find((e: Event) => e.id === eventId)
+  return (event?.[prop as keyof typeof event] as string) || ''
 }
 
 // Transform database reviews to display format
-const transformReviewForDisplay = (review: any): Review => {
-  // Find the event to get date/time information
-  const event = events.value.find((e: Event) => e.id === review.event_id)
+const transformReviewForDisplay = (review: any, isReceived: boolean = true): DisplayReview => {
+  // For received reviews: sender_id is the merchant who wrote the review
+  // For sent reviews: recipient_id is the merchant who received the review
+  const merchantId = isReceived ? review.sender_id : review.recipient_id
   
   return {
     id: review.id,
-    merchant_avatar: getMerchantProp(review.recipient_id, 'avatar_url'),
-    merchant_name: getMerchantProp(review.recipient_id, 'name'),
-    event_date: event?.day_id || '',
+    merchant_avatar: getMerchantProp(merchantId, 'avatar_url'),
+    merchant_name: getMerchantProp(merchantId, 'merchant_name'),
+    event_date: getEventProp(review.event_id, 'day_id'),
     comment: review.content,
     rating: review.rating,
     created_at: review.created_at,
@@ -281,14 +260,13 @@ const transformReviewForDisplay = (review: any): Review => {
     sender_id: review.sender_id,
     recipient_id: review.recipient_id,
     content: review.content
-  }
+  } as DisplayReview
 }
 
-const receivedReviews = computed(() => reviewStore.getReceivedReviews.map(transformReviewForDisplay))
-const sentReviews = computed(() => reviewStore.getSentReviews.map(transformReviewForDisplay))
+const receivedReviews = computed<DisplayReview[]>(() => reviewStore.getReceivedReviews.map((r: any) => transformReviewForDisplay(r, true)))
+const sentReviews = computed<DisplayReview[]>(() => reviewStore.getSentReviews.map((r: any) => transformReviewForDisplay(r, false)))
 
-const eventStore = useEventStore()
-const events = ref<Event[]>(eventStore.getAllEvents)
+const events = computed<Event[]>(() => eventStore.getAllEvents)
 const completedVendorEvents = ref<Event[]>(events.value.filter((event: Event) => event.vendor === (route.params.id as string) && event.status === 'completed'))
 const pendingReviews = computed(() => completedVendorEvents.value.filter((event: Event) => {
   // Check if this event's id is NOT in the sentReviews array
@@ -297,13 +275,21 @@ const pendingReviews = computed(() => completedVendorEvents.value.filter((event:
 
 import type { Event, Review } from '~/types'
 
+// Extended Review type for display with merchant/vendor data
+interface DisplayReview extends Review {
+  merchant_avatar?: string
+  merchant_name?: string
+  vendor_avatar?: string
+  vendor_name?: string
+  comment?: string
+  event_date?: string
+}
+
 // Analytics data
-const analytics = ref({
+const analytics = computed(() => ({
   establishmentRating: receivedReviews.value.length > 0 ? receivedReviews.value.reduce((sum, review) => sum + review.rating, 0) / receivedReviews.value.length : 0,
-  establishmentReviews: receivedReviews.value.length,
-  userRating: 4.4,
-  userReviews: 23
-})
+  establishmentReviews: receivedReviews.value.length
+}))
 
 const openWriteReviewDialog = ref(false)
 const selectedEvent = ref<Event | null>(null)
@@ -313,20 +299,18 @@ const showPendingReviews = ref(false)
 
 // Delete review state
 const showDeleteDialog = ref(false)
-const selectedReviewForDelete = ref<Review | null>(null)
+const selectedReviewForDelete = ref<DisplayReview | null>(null)
 
 const getEventTime = (eventId: string): string => {
-  const event = events.value.find((event: Event) => event.id === eventId)
-  if (!event) return 'N/A'
-  return `${new Date(event.start).toLocaleTimeString()} - ${new Date(event.end).toLocaleTimeString()}`
+  const start = getEventProp(eventId, 'start')
+  const end = getEventProp(eventId, 'end')
+  if (!start || !end) return 'N/A'
+  return `${new Date(start).toLocaleTimeString()} - ${new Date(end).toLocaleTimeString()}`
 }
 
 
 
 // Methods
-const navigateToDashboard = () => {
-  navigateTo(`/vendor/${route.params.id}/dashboard`)
-}
 
 const onReviewSubmitted = () => {
   // Refresh the reviews data
@@ -334,7 +318,7 @@ const onReviewSubmitted = () => {
   console.log('Review submitted successfully')
 }
 
-const openDeleteDialog = (review: Review) => {
+const openDeleteDialog = (review: DisplayReview) => {
     selectedReviewForDelete.value = review
     showDeleteDialog.value = true
 }

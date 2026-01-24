@@ -264,15 +264,20 @@ const bookedEvents = ref(await eventStore.getBookedEventsByVendorId(vendor.value
 const pendingEvents = ref(await eventStore.getPendingEventsByVendorId(vendor.value?.id || ''))
 const loading = ref(false)
 
-// Analytics data
+// Analytics data - initialize with received reviews data
+const receivedReviewsData = reviewStore.getReceivedReviews
+const initialAverageRating = receivedReviewsData.length > 0
+  ? Math.round((receivedReviewsData.reduce((sum: number, review: any) => sum + review.rating, 0) / receivedReviewsData.length) * 10) / 10
+  : 0
+
 const analytics = ref({
   totalEvents: 0,
   eventsGrowth: 0,
   upcomingEvents: 0,
   upcomingWeek: 0,
   pendingRequests: 0,
-  averageRating: 0,
-  totalRatings: 0
+  averageRating: initialAverageRating,
+  totalRatings: receivedReviewsData.length
 })
 
 // Usage tracking data

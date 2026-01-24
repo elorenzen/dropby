@@ -217,6 +217,11 @@
   const menu = ref()
   
   // Analytics data (move above menuItems)
+  const receivedReviewsData = reviewStore.getReceivedReviews
+  const initialAverageRating = receivedReviewsData.length > 0
+    ? Math.round((receivedReviewsData.reduce((sum: number, review: any) => sum + review.rating, 0) / receivedReviewsData.length) * 10) / 10
+    : 0
+  
   const analytics = ref({
     totalEvents: 24,
     eventsGrowth: 12,
@@ -224,8 +229,8 @@
     bookedEvents: 0,
     upcomingWeek: 0,
     pendingRequests: 0,
-    averageRating: 4.2,
-    totalRatings: 18
+    averageRating: initialAverageRating,
+    totalRatings: receivedReviewsData.length
   })
   
   useSeoMeta({ title: () => `Dashboard | ${merchant.value?.merchant_name || 'Merchant'}` })
@@ -383,6 +388,17 @@
         } else {
           analytics.value.eventsGrowth = Math.round(((thisMonthEvents - lastMonthEvents) / lastMonthEvents) * 100)
         }
+      }
+      
+      // Calculate average rating from received reviews
+      const receivedReviewsData = reviewStore.getReceivedReviews
+      if (receivedReviewsData.length > 0) {
+        const totalRating = receivedReviewsData.reduce((sum: number, review: any) => sum + review.rating, 0)
+        analytics.value.averageRating = Math.round((totalRating / receivedReviewsData.length) * 10) / 10
+        analytics.value.totalRatings = receivedReviewsData.length
+      } else {
+        analytics.value.averageRating = 0
+        analytics.value.totalRatings = 0
       }
     } catch (error) {
       console.error('Error loading analytics:', error)
