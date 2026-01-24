@@ -50,29 +50,29 @@
         </div>
         
         <!-- Pending Reviews List -->
-        <div v-if="showPendingReviews" class="mt-4 space-y-3">
-          <div v-for="event in pendingReviews" :key="event.id" class="bg-surface-card rounded-lg p-4 border border-accent-light">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
-                <NuxtImg 
-                  :src="getVendorProp(event.vendor || '', 'avatar_url')" 
-                  :alt="getVendorProp(event.vendor || '', 'vendor_name')" 
-                  class="w-12 h-12 rounded-full"
-                />
-                <div class="min-w-0">
-                  <p class="font-semibold truncate">{{ getVendorProp(event.vendor || '', 'vendor_name') }}</p>
-                  <p class="text-sm text-text-muted truncate">Event Date: {{ getEventProp(event.id, 'day_id') ? new Date(getEventProp(event.id, 'day_id')).toLocaleDateString() : 'N/A' }}</p>
-                  <p class="text-xs text-text-muted">Event Time: {{ getEventTime(event.id) }}</p>
-                </div>
-              </div>
+        <div v-if="showPendingReviews" class="mt-4 space-y-2">
+          <ReviewCard
+            v-for="event in pendingReviews"
+            :key="event.id"
+            :avatar="getVendorProp(event.vendor || '', 'avatar_url')"
+            :name="getVendorProp(event.vendor || '', 'vendor_name')"
+            :event-date="getEventProp(event.id, 'day_id')"
+            :event-time="getEventTime(event.id)"
+            border-class="bg-surface-card border border-accent-light"
+            :compact="true"
+          >
+            <template #middle>
+              <p class="text-sm text-text-muted line-clamp-2">{{ getVendorProp(event.vendor || '', 'vendor_description') || 'No description available' }}</p>
+            </template>
+            <template #actions>
               <Button 
                 @click="openWriteReviewDialog = true; selectedEvent = event"
                 label="Write Review"
                 severity="warning"
                 size="small"
               />
-            </div>
-          </div>
+            </template>
+          </ReviewCard>
         </div>
       </template>
     </Card>
