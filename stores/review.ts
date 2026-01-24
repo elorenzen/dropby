@@ -5,6 +5,7 @@ export const useReviewStore = defineStore('review', {
   state: () => ({
     receivedReviews: [] as Review[],
     sentReviews: [] as Review[],
+    currentUserId: null as string | null,
     loading: false,
     creating: false,
     updating: false
@@ -68,21 +69,51 @@ export const useReviewStore = defineStore('review', {
         })
         
         // Create notification for recipient
+        // Need to determine if recipient is merchant or vendor to get user IDs
         const notificationStore = useNotificationStore()
-        await notificationStore.createNotification({
-          recipient_id: data.recipient_id,
-          sender_id: data.sender_id,
-          action_type: 'review_received',
-          entity_type: 'review',
-          entity_id: data.id,
-          title: 'New Review Received',
-          message: `You received a ${data.rating}-star review`,
-          metadata: {
-            review_id: data.id,
-            rating: data.rating,
-            event_id: data.event_id
+        const userStore = useUserStore()
+        const currentUser = useSupabaseUser()
+        const merchantStore = useMerchantStore()
+        const vendorStore = useVendorStore()
+        
+        // Load merchants/vendors if not already loaded
+        if (merchantStore.allMerchants.length === 0) {
+          await merchantStore.loadMerchants()
+        }
+        if (vendorStore.allVendors.length === 0) {
+          await vendorStore.loadVendors()
+        }
+        
+        // Check if recipient is a merchant or vendor
+        const isMerchant = merchantStore.getAllMerchants.some((m: any) => m.id === data.recipient_id)
+        const businessType = isMerchant ? 'merchant' : 'vendor'
+        
+        // Get user IDs for the recipient business
+        const recipientUserIds = await userStore.getUserIdsFromBusiness(data.recipient_id, businessType)
+        
+        // Create notification for each user associated with the recipient business
+        for (const recipientUserId of recipientUserIds) {
+          try {
+            await notificationStore.createNotification({
+              recipient_id: recipientUserId,
+              sender_id: currentUser.value?.id || null,
+              sender_business_id: data.sender_id,
+              sender_business_type: businessType === 'merchant' ? 'vendor' : 'merchant',
+              action_type: 'review_received',
+              entity_type: 'review',
+              entity_id: data.id,
+              title: 'New Review Received',
+              message: `You received a ${data.rating}-star review`,
+              metadata: {
+                review_id: data.id,
+                rating: data.rating,
+                event_id: data.event_id
+              }
+            })
+          } catch (notifError) {
+            console.error('Failed to create notification for recipient user:', recipientUserId, notifError)
           }
-        })
+        }
         
         return data
       } catch (error) {
@@ -195,6 +226,7 @@ export const useReviewStore = defineStore('review', {
         
         this.receivedReviews = received || []
         this.sentReviews = sent || []
+        this.currentUserId = userId
         
         return { received: this.receivedReviews, sent: this.sentReviews }
       } catch (error) {

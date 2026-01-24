@@ -87,44 +87,28 @@
       </template>
       <template #content>
         <div class="space-y-3">
-          <div v-for="review in sentReviews" :key="review.id" class="bg-surface-card rounded-lg p-4 border border-surface-border">
-            <div class="flex items-start gap-4">
-              <!-- Left: Event Data -->
-              <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
-                <NuxtImg 
-                  :src="review.vendor_avatar" 
-                  :alt="review.vendor_name" 
-                  class="w-12 h-12 rounded-full"
-                />
-                <div class="min-w-0">
-                  <p class="font-semibold truncate">{{ review.vendor_name }}</p>
-                  <p class="text-sm text-text-muted">{{ review.event_id ? (getEventProp(review.event_id, 'day_id') ? new Date(getEventProp(review.event_id, 'day_id')).toLocaleDateString() : 'N/A') : 'N/A' }}</p>
-                  <p class="text-xs text-text-muted">{{ review.event_id ? getEventTime(review.event_id) : 'N/A' }}</p>
-                </div>
-              </div>
-              
-              <!-- Middle: Review Content -->
-              <div class="flex-1 min-w-0 border-l border-r border-surface-border px-4">
-                <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
-              </div>
-              
-              <!-- Right: Review Metadata -->
-              <div class="flex flex-col items-end gap-2 min-w-0 flex-shrink-0">
-                <div class="flex items-center gap-2">
-                  <Rating v-model="review.rating" readonly :cancel="false" />
-                  <Button 
-                    icon="pi pi-trash" 
-                    severity="danger" 
-                    text 
-                    size="small"
-                    @click="openDeleteDialog(review)"
-                    class="text-error hover:text-error-dark"
-                  />
-                </div>
-                <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
-              </div>
-            </div>
-          </div>
+          <ReviewCard
+            v-for="review in sentReviews"
+            :key="review.id"
+            :avatar="review.vendor_avatar"
+            :name="review.vendor_name"
+            :event-date="review.event_id ? getEventProp(review.event_id, 'day_id') : null"
+            :event-time="review.event_id ? getEventTime(review.event_id) : 'N/A'"
+            :comment="review.comment"
+            :rating="review.rating"
+            :created-at="review.created_at"
+          >
+            <template #actions>
+              <Button 
+                icon="pi pi-trash" 
+                severity="danger" 
+                text 
+                size="small"
+                @click="openDeleteDialog(review)"
+                class="text-error hover:text-error-dark"
+              />
+            </template>
+          </ReviewCard>
         </div>
       </template>
     </Card>
@@ -136,34 +120,17 @@
       </template>
       <template #content>
         <div class="space-y-3">
-          <div v-for="review in receivedReviews" :key="review.id" class="bg-surface-card rounded-lg p-4 border border-surface-border">
-            <div class="flex items-start gap-4">
-              <!-- Left: Reviewer Data -->
-              <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
-                <NuxtImg 
-                  :src="review.vendor_avatar || ''" 
-                  :alt="review.vendor_name || ''" 
-                  class="w-12 h-12 rounded-full"
-                />
-                <div class="min-w-0">
-                  <p class="font-semibold truncate text-text-main">{{ review.vendor_name || 'N/A' }}</p>
-                  <p class="text-sm text-text-muted">{{ review.event_id ? (getEventProp(review.event_id, 'day_id') ? new Date(getEventProp(review.event_id, 'day_id')).toLocaleDateString() : 'N/A') : 'N/A' }}</p>
-                  <p class="text-xs text-text-muted">{{ review.event_id ? getEventTime(review.event_id) : 'N/A' }}</p>
-                </div>
-              </div>
-              
-              <!-- Middle: Review Content -->
-              <div class="flex-1 min-w-0 border-l border-r border-surface-border px-4">
-                <p class="text-sm leading-relaxed italic">"{{ review.comment }}"</p>
-              </div>
-              
-              <!-- Right: Review Metadata -->
-              <div class="flex flex-col items-end gap-2 min-w-0 flex-shrink-0">
-                <Rating v-model="review.rating" readonly :cancel="false" />
-                <p class="text-xs text-text-muted text-right">Reviewed on {{ new Date(review.created_at).toLocaleDateString() }}</p>
-              </div>
-            </div>
-          </div>
+          <ReviewCard
+            v-for="review in receivedReviews"
+            :key="review.id"
+            :avatar="review.vendor_avatar"
+            :name="review.vendor_name"
+            :event-date="review.event_id ? getEventProp(review.event_id, 'day_id') : null"
+            :event-time="review.event_id ? getEventTime(review.event_id) : 'N/A'"
+            :comment="review.comment"
+            :rating="review.rating"
+            :created-at="review.created_at"
+          />
         </div>
       </template>
     </Card>
@@ -276,13 +243,13 @@
 <script setup lang="ts">
 import { useToast } from 'primevue/usetoast'
 import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
+import ReviewCard from '~/components/ReviewCard.vue'
 const toast = useToast()
 definePageMeta({
   middleware: ['auth']
 })
 
 const route = useRoute()
-const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 import { v4 as uuidv4 } from 'uuid'
 const vendorStore = useVendorStore()
@@ -301,21 +268,6 @@ if (eventStore.allEvents.length === 0) {
 }
 
 const reviewStore = useReviewStore()
-
-// Load reviews from database
-const { data: receivedReviewsData, error: receivedReviewsError } = await supabase
-  .from('reviews')
-  .select('*')
-  .eq('recipient_id', route.params.id as string)
-  .order('created_at', { ascending: false })
-await reviewStore.setReceivedReviews(receivedReviewsData || [])
-
-const { data: sentReviewsData, error: sentReviewsError } = await supabase
-  .from('reviews')
-  .select('*')
-  .eq('sender_id', route.params.id as string)
-  .order('created_at', { ascending: false })
-await reviewStore.setSentReviews(sentReviewsData || [])
 
 // Transform database reviews to display format
 const transformReviewForDisplay = (review: any, isReceived: boolean = true): DisplayReview => {
@@ -521,23 +473,13 @@ const submitReview = async () => {
     }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Load reviews for this user
+  await reviewStore.loadReviewsForUser(route.params.id as string)
   loading.value = false
   
   console.log('Pending reviews:', pendingReviews.value)
   console.log('Sent reviews:', sentReviews.value)
-  console.log('Received reviews data:', receivedReviewsData)
-  console.log('Sent reviews data:', sentReviewsData)
-
-  // Subscribe to real-time updates for reviews
-  supabase
-    .channel('reviews')
-    .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'reviews' }, 
-      async (payload: any) => {
-        await reviewStore.loadReviewsForUser(route.params.id as string)
-      })
-    .subscribe()
 })
 
 useSeoMeta({ title: () => `Ratings & Reviews | ${merchant.value?.merchant_name || 'Merchant'}` })
