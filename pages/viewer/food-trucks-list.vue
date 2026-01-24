@@ -48,7 +48,7 @@
               size="small"
             />
           </div>
-          <div>
+          <div v-if="isAuthenticated">
             <label class="block text-sm font-medium text-text-main mb-2">Filter by Rating</label>
             <Select 
               v-model="minRating" 
@@ -79,7 +79,7 @@
 
         <template #results-count>
           Showing {{ filteredVendors.length }} of {{ vendors.length }} vendors
-          <span v-if="searchQuery || selectedCuisines.length > 0 || minRating" class="text-primary">
+          <span v-if="searchQuery || selectedCuisines.length > 0 || (isAuthenticated && minRating)" class="text-primary">
             (filtered)
           </span>
         </template>
@@ -102,9 +102,20 @@
                   />
                   <div class="min-w-0 flex-1">
                     <h3 class="font-semibold text-lg text-text-main truncate">{{ vendor.vendor_name }}</h3>
-                    <div class="flex items-center gap-2 mt-1">
-                      <Rating :model-value="vendor.average_merchant_rating || 0" :readonly="true" :cancel="false" />
-                      <span class="text-sm text-text-muted">({{ vendor.average_merchant_rating || 0 }})</span>
+                    <div v-if="isAuthenticated" class="flex items-center gap-2 mt-1">
+                      <div class="flex items-center gap-0.5">
+                        <i 
+                          v-for="star in 5" 
+                          :key="star"
+                          :class="[
+                            'pi',
+                            star <= Math.floor(getVendorRating(vendor.id)) ? 'pi-star-fill text-accent' : 
+                            star === Math.ceil(getVendorRating(vendor.id)) && getVendorRating(vendor.id) % 1 >= 0.5 ? 'pi-star-half text-accent' :
+                            'pi-star text-text-muted'
+                          ]"
+                        ></i>
+                      </div>
+                      <span class="text-sm text-text-muted">({{ getVendorReviewCount(vendor.id) }})</span>
                     </div>
                     <div class="flex flex-wrap gap-1 mt-2">
                       <Badge
@@ -232,6 +243,8 @@ definePageMeta({
 const vendorStore = useVendorStore()
 const eventStore = useEventStore()
 const merchantStore = useMerchantStore()
+const reviewStore = useReviewStore()
+const { isAuthenticated } = useAuth()
 
 // Loading state
 const loading = ref(true)
@@ -247,7 +260,8 @@ onMounted(async () => {
     await Promise.all([
       vendorStore.allVendors.length === 0 ? vendorStore.loadVendors() : Promise.resolve(),
       eventStore.allEvents.length === 0 ? eventStore.loadEvents() : Promise.resolve(),
-      merchantStore.allMerchants.length === 0 ? merchantStore.loadMerchants() : Promise.resolve()
+      merchantStore.allMerchants.length === 0 ? merchantStore.loadMerchants() : Promise.resolve(),
+      reviewStore.allReviews.length === 0 ? reviewStore.loadAllReviews() : Promise.resolve()
     ])
   } finally {
     loading.value = false
@@ -262,14 +276,23 @@ const minRating = ref<number | null>(null)
 const expandedPanels = ref<number[]>([])
 
 // Sort options
-const sortOptions = [
-  { label: 'Name (A-Z)', value: 'name' },
-  { label: 'Name (Z-A)', value: 'name-desc' },
-  { label: 'Rating (High to Low)', value: 'rating-desc' },
-  { label: 'Rating (Low to High)', value: 'rating-asc' },
-  { label: 'Most Events', value: 'events-desc' },
-  { label: 'Least Events', value: 'events-asc' }
-]
+const sortOptions = computed(() => {
+  const baseOptions = [
+    { label: 'Name (A-Z)', value: 'name' },
+    { label: 'Name (Z-A)', value: 'name-desc' },
+    { label: 'Most Events', value: 'events-desc' },
+    { label: 'Least Events', value: 'events-asc' }
+  ]
+  
+  if (isAuthenticated.value) {
+    baseOptions.splice(2, 0, 
+      { label: 'Rating (High to Low)', value: 'rating-desc' },
+      { label: 'Rating (Low to High)', value: 'rating-asc' }
+    )
+  }
+  
+  return baseOptions
+})
 
 // Get unique cuisines from all vendors
 const cuisineOptions = computed(() => {
@@ -329,10 +352,10 @@ const filteredVendors = computed(() => {
     )
   }
 
-  // Rating filter
-  if (minRating.value !== null) {
+  // Rating filter (only if authenticated)
+  if (isAuthenticated.value && minRating.value !== null) {
     filtered = filtered.filter((vendor: Vendor) => 
-      (vendor.average_merchant_rating || 0) >= minRating.value!
+      getVendorRating(vendor.id) >= minRating.value!
     )
   }
 
@@ -344,9 +367,9 @@ const filteredVendors = computed(() => {
       case 'name-desc':
         return (b.vendor_name || '').localeCompare(a.vendor_name || '')
       case 'rating-desc':
-        return (b.average_merchant_rating || 0) - (a.average_merchant_rating || 0)
+        return isAuthenticated.value ? getVendorRating(b.id) - getVendorRating(a.id) : 0
       case 'rating-asc':
-        return (a.average_merchant_rating || 0) - (b.average_merchant_rating || 0)
+        return isAuthenticated.value ? getVendorRating(a.id) - getVendorRating(b.id) : 0
       case 'events-desc':
         return (vendorEventsMap.value[b.id]?.length || 0) - (vendorEventsMap.value[a.id]?.length || 0)
       case 'events-asc':
@@ -360,6 +383,14 @@ const filteredVendors = computed(() => {
 })
 
 // Helper functions
+const getVendorRating = (vendorId: string): number => {
+  return reviewStore.getAverageRatingForBusiness(vendorId)
+}
+
+const getVendorReviewCount = (vendorId: string): number => {
+  return reviewStore.getReviewsForBusiness(vendorId).length
+}
+
 const getMerchantName = (merchantId: string | null): string => {
   if (!merchantId) return ''
   const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
@@ -417,7 +448,7 @@ const clearAllFilters = () => {
 }
 
 const hasActiveFilters = computed(() => {
-  return !!(searchQuery.value || selectedCuisines.value.length > 0 || minRating.value !== null)
+  return !!(searchQuery.value || selectedCuisines.value.length > 0 || (isAuthenticated.value && minRating.value !== null))
 })
 </script>
 

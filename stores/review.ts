@@ -5,6 +5,7 @@ export const useReviewStore = defineStore('review', {
   state: () => ({
     receivedReviews: [] as Review[],
     sentReviews: [] as Review[],
+    allReviews: [] as Review[],
     currentUserId: null as string | null,
     loading: false,
     creating: false,
@@ -33,10 +34,24 @@ export const useReviewStore = defineStore('review', {
     // Existing actions
     async setReceivedReviews(reviews: Review[]) {
       this.receivedReviews = reviews
+      // Update allReviews with received reviews
+      reviews.forEach(review => {
+        const existingIndex = this.allReviews.findIndex(r => r.id === review.id)
+        if (existingIndex === -1) {
+          this.allReviews.push(review)
+        }
+      })
     },
     
     async setSentReviews(reviews: Review[]) {
       this.sentReviews = reviews
+      // Update allReviews with sent reviews
+      reviews.forEach(review => {
+        const existingIndex = this.allReviews.findIndex(r => r.id === review.id)
+        if (existingIndex === -1) {
+          this.allReviews.push(review)
+        }
+      })
     },
 
     // New actions to replace direct Supabase calls
@@ -58,6 +73,9 @@ export const useReviewStore = defineStore('review', {
         } else {
           this.receivedReviews.unshift(data)
         }
+        
+        // Add to allReviews for viewer pages
+        this.allReviews.unshift(data)
         
         const timelineStore = useTimelineStore()
         await timelineStore.createTimelineItem({
@@ -141,11 +159,17 @@ export const useReviewStore = defineStore('review', {
         // Update local state
         const sentIndex = this.sentReviews.findIndex(r => r.id === reviewId)
         const receivedIndex = this.receivedReviews.findIndex(r => r.id === reviewId)
+        const allIndex = this.allReviews.findIndex(r => r.id === reviewId)
         
         if (sentIndex !== -1) {
           this.sentReviews[sentIndex] = { ...this.sentReviews[sentIndex], ...data }
         } else if (receivedIndex !== -1) {
           this.receivedReviews[receivedIndex] = { ...this.receivedReviews[receivedIndex], ...data }
+        }
+        
+        // Update allReviews
+        if (allIndex !== -1) {
+          this.allReviews[allIndex] = { ...this.allReviews[allIndex], ...data }
         }
 
         const timelineStore = useTimelineStore()
@@ -184,6 +208,7 @@ export const useReviewStore = defineStore('review', {
 
         this.sentReviews = this.sentReviews.filter(r => r.id !== reviewId)
         this.receivedReviews = this.receivedReviews.filter(r => r.id !== reviewId)
+        this.allReviews = this.allReviews.filter(r => r.id !== reviewId)
         
         const timelineStore = useTimelineStore()
         await timelineStore.createTimelineItem({
@@ -254,6 +279,40 @@ export const useReviewStore = defineStore('review', {
         console.error('Error loading event reviews:', error)
         throw error
       }
+    },
+
+    async loadAllReviews() {
+      this.loading = true
+      try {
+        const supabase = useSupabaseClient()
+        
+        const { data, error } = await supabase
+          .from('reviews')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        
+        // Store all reviews in a separate state for lookup
+        this.allReviews = data || []
+        return data || []
+      } catch (error) {
+        console.error('Error loading all reviews:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    getReviewsForBusiness(businessId: string): Review[] {
+      return this.allReviews.filter((review: Review) => review.recipient_id === businessId)
+    },
+
+    getAverageRatingForBusiness(businessId: string): number {
+      const reviews = this.getReviewsForBusiness(businessId)
+      if (reviews.length === 0) return 0
+      const total = reviews.reduce((sum, review) => sum + review.rating, 0)
+      return Math.round((total / reviews.length) * 10) / 10
     }
   }
 })

@@ -36,7 +36,7 @@
         </template>
 
         <template #filters>
-          <div>
+          <div v-if="isAuthenticated">
             <label class="block text-sm font-medium text-text-main mb-2">Filter by Rating</label>
             <Select 
               v-model="minRating" 
@@ -94,7 +94,7 @@
 
         <template #results-count>
           Showing {{ filteredMerchants.length }} of {{ merchantsWithDistance.length }} establishments
-          <span v-if="searchQuery || minRating || maxDistance" class="text-primary">
+          <span v-if="searchQuery || (isAuthenticated && minRating) || maxDistance" class="text-primary">
             (filtered)
           </span>
         </template>
@@ -117,9 +117,20 @@
                   />
                   <div class="min-w-0 flex-1">
                     <h3 class="font-bold text-xl md:text-2xl text-text-main mb-2 leading-tight break-words">{{ merchant.merchant_name }}</h3>
-                    <div class="flex items-center gap-2 mt-1">
-                      <Rating :model-value="merchant.average_vendor_rating || 0" :readonly="true" :cancel="false" />
-                      <span class="text-sm text-text-muted">({{ merchant.average_vendor_rating || 0 }})</span>
+                    <div v-if="isAuthenticated" class="flex items-center gap-2 mt-1">
+                      <div class="flex items-center gap-0.5">
+                        <i 
+                          v-for="star in 5" 
+                          :key="star"
+                          :class="[
+                            'pi',
+                            star <= Math.floor(getMerchantRating(merchant.id)) ? 'pi-star-fill text-accent' : 
+                            star === Math.ceil(getMerchantRating(merchant.id)) && getMerchantRating(merchant.id) % 1 >= 0.5 ? 'pi-star-half text-accent' :
+                            'pi-star text-text-muted'
+                          ]"
+                        ></i>
+                      </div>
+                      <span class="text-sm text-text-muted">({{ getMerchantReviewCount(merchant.id) }})</span>
                     </div>
                     <div class="flex items-center gap-2 mt-2">
                       <i class="pi pi-map-marker text-text-muted text-sm"></i>
@@ -268,6 +279,8 @@ definePageMeta({
 const merchStore = useMerchantStore()
 const eventStore = useEventStore()
 const vendorStore = useVendorStore()
+const reviewStore = useReviewStore()
+const { isAuthenticated } = useAuth()
 
 const loading = ref(true)
 const merchants = computed(() => merchStore.getAllMerchants)
@@ -279,7 +292,8 @@ onMounted(async () => {
     await Promise.all([
       merchStore.allMerchants.length === 0 ? merchStore.loadMerchants() : Promise.resolve(),
       eventStore.allEvents.length === 0 ? eventStore.loadEvents() : Promise.resolve(),
-      vendorStore.allVendors.length === 0 ? vendorStore.loadVendors() : Promise.resolve()
+      vendorStore.allVendors.length === 0 ? vendorStore.loadVendors() : Promise.resolve(),
+      reviewStore.allReviews.length === 0 ? reviewStore.loadAllReviews() : Promise.resolve()
     ])
   } finally {
     loading.value = false
@@ -298,16 +312,25 @@ const userLocation = ref<{lat: number, lng: number} | null>(null)
 const locationPermission = ref<boolean>(false)
 
 // Sort options
-const sortOptions = [
-  { label: 'Name (A-Z)', value: 'name' },
-  { label: 'Name (Z-A)', value: 'name-desc' },
-  { label: 'Rating (High to Low)', value: 'rating-desc' },
-  { label: 'Rating (Low to High)', value: 'rating-asc' },
-  { label: 'Distance (Nearest)', value: 'distance-asc' },
-  { label: 'Distance (Farthest)', value: 'distance-desc' },
-  { label: 'Most Events', value: 'events-desc' },
-  { label: 'Least Events', value: 'events-asc' }
-]
+const sortOptions = computed(() => {
+  const baseOptions = [
+    { label: 'Name (A-Z)', value: 'name' },
+    { label: 'Name (Z-A)', value: 'name-desc' },
+    { label: 'Distance (Nearest)', value: 'distance-asc' },
+    { label: 'Distance (Farthest)', value: 'distance-desc' },
+    { label: 'Most Events', value: 'events-desc' },
+    { label: 'Least Events', value: 'events-asc' }
+  ]
+  
+  if (isAuthenticated.value) {
+    baseOptions.splice(2, 0, 
+      { label: 'Rating (High to Low)', value: 'rating-desc' },
+      { label: 'Rating (Low to High)', value: 'rating-asc' }
+    )
+  }
+  
+  return baseOptions
+})
 
 // Rating options
 const ratingOptions = [
@@ -448,10 +471,10 @@ const filteredMerchants = computed((): MerchantWithDistance[] => {
     )
   }
 
-  // Rating filter
-  if (minRating.value !== null) {
+  // Rating filter (only if authenticated)
+  if (isAuthenticated.value && minRating.value !== null) {
     filtered = filtered.filter((merchant: MerchantWithDistance) => 
-      (merchant.average_vendor_rating || 0) >= minRating.value!
+      getMerchantRating(merchant.id) >= minRating.value!
     )
   }
 
@@ -471,9 +494,9 @@ const filteredMerchants = computed((): MerchantWithDistance[] => {
       case 'name-desc':
         return (b.merchant_name || '').localeCompare(a.merchant_name || '')
       case 'rating-desc':
-        return (b.average_vendor_rating || 0) - (a.average_vendor_rating || 0)
+        return isAuthenticated.value ? getMerchantRating(b.id) - getMerchantRating(a.id) : 0
       case 'rating-asc':
-        return (a.average_vendor_rating || 0) - (b.average_vendor_rating || 0)
+        return isAuthenticated.value ? getMerchantRating(a.id) - getMerchantRating(b.id) : 0
       case 'distance-asc':
         if (!a.distance && !b.distance) return 0
         if (!a.distance) return 1
@@ -497,6 +520,14 @@ const filteredMerchants = computed((): MerchantWithDistance[] => {
 })
 
 // Helper functions
+const getMerchantRating = (merchantId: string): number => {
+  return reviewStore.getAverageRatingForBusiness(merchantId)
+}
+
+const getMerchantReviewCount = (merchantId: string): number => {
+  return reviewStore.getReviewsForBusiness(merchantId).length
+}
+
 const getVendorName = (vendorId: string | null): string => {
   if (!vendorId) return ''
   const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
@@ -554,7 +585,7 @@ const clearAllFilters = () => {
 }
 
 const hasActiveFilters = computed(() => {
-  return !!(searchQuery.value || minRating.value !== null || maxDistance.value !== null)
+  return !!(searchQuery.value || (isAuthenticated.value && minRating.value !== null) || maxDistance.value !== null)
 })
 
 const openMapUrl = (url: string | null) => {
