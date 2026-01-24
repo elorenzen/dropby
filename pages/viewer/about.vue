@@ -5,7 +5,7 @@
       <div class="hero-content">
         <h1 class="hero-title">How It Works</h1>
         <p class="hero-description">
-          DropBy connects bars with food trucks to create amazing events. 
+          DropBy connects drinking establishments with food trucks to create amazing events. 
           Learn how our platform helps businesses collaborate and grow together.
         </p>
       </div>
@@ -14,7 +14,7 @@
     <!-- How It Works for Merchants -->
     <div class="section">
       <div class="section-header">
-        <h2 class="section-title">For Merchants (Bars & Establishments)</h2>
+        <h2 class="section-title">For Merchants (Breweries, Wine Bars & Establishments)</h2>
         <p class="section-subtitle">Find food trucks and create events that drive traffic</p>
       </div>
       
@@ -289,7 +289,7 @@ definePageMeta({
 
 useSeoMeta({ 
   title: 'How It Works - DropBy',
-  description: 'Learn how DropBy connects bars with food trucks to create amazing events and grow your business together.'
+  description: 'Learn how DropBy connects drinking establishments with food trucks to create amazing events and grow your business together.'
 })
 </script>
 

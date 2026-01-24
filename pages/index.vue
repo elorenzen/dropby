@@ -17,8 +17,12 @@
                         <span class="block">great drinks</span>
                     </h1>
                     <p class="hero-description">
-                        Discover the best food trucks at your favorite breweries and bars. 
-                        Great food, great drinks, all in one place.
+                        <span class="block">
+                            Pull up to your local spots, breweries and lots. 
+                        </span>
+                        <span class="block">
+                            Great food, great drinks, all in one place.
+                        </span>
                     </p>
                     <div class="hero-actions">
                         <NuxtLink to="/events">
@@ -52,8 +56,11 @@
         <!-- User Type Selection Section -->
         <div class="section user-type-section">
             <div class="section-header">
-                <h2 class="section-title">How Can We Help You?</h2>
-                <p class="section-subtitle">Choose your path to discover amazing food and events</p>
+                <h2 class="section-title">Ready to get started?</h2>
+                <p class="section-subtitle">
+                    Join DropBy today and start creating unforgettable events that bring communities together.
+                    Choose your path to discover amazing food and events.
+                </p>
             </div>
             
             <div class="user-type-grid">
@@ -63,7 +70,7 @@
                     </div>
                     <h3>I'm Looking for Food & Events</h3>
                     <p class="mission-statement">
-                        Discover amazing food trucks at your favorite breweries, bars, and restaurants. 
+                        Discover amazing food trucks at your favorite breweries, wine bars, and wherever else yo can expect to find food trucks. 
                         Find events near you, explore menus, read reviews, and never miss out on great food experiences. 
                         Perfect for food lovers who want to know where the best food trucks will be.
                     </p>
@@ -87,7 +94,7 @@
                     </div>
                     <h3>I'm a Merchant</h3>
                     <p class="mission-statement">
-                        For breweries, restaurants, bars, and other establishments. Schedule food truck events, 
+                        For breweries, wine bars, and other drinking establishments. Schedule food truck events, 
                         attract more customers, and create memorable experiences. Manage your calendar, connect with 
                         trusted vendors, and grow your business with exciting food events.
                     </p>
@@ -142,42 +149,6 @@
                         </template>
                     </Button>
                 </NuxtLink>
-            </div>
-        </div>
-
-        <!-- Galleries Section -->
-        <div class="section">
-            <HomeGalleries />
-        </div>
-
-        <!-- CTA Section -->
-        <div class="section cta-section">
-            <div class="cta-content">
-                <h2>Ready to Get Started?</h2>
-                <p>Join DropBy today and start creating unforgettable events that bring communities together.</p>
-                <div class="cta-buttons">
-                    <NuxtLink to="/get-started">
-                        <Button 
-                            label="Get Started" 
-                            class="primary-cta"
-                        >
-                            <template #icon>
-                                <BaseIcon name="rocket" color="#fff" size="20" />
-                            </template>
-                        </Button>
-                    </NuxtLink>
-                    <NuxtLink to="/about">
-                        <Button 
-                            label="Learn More" 
-                            outlined
-                            class="secondary-cta"
-                        >
-                            <template #icon>
-                                <BaseIcon name="info-circle" color="var(--primary-color)" size="20" />
-                            </template>
-                        </Button>
-                    </NuxtLink>
-                </div>
             </div>
         </div>
     </div>

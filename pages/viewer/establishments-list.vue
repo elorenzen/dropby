@@ -6,11 +6,10 @@
     <div v-else class="section">
       <div class="text-center mb-8">
         <h1 class="font-bold text-4xl md:text-5xl mb-4 bg-gradient-to-r from-accent to-error bg-clip-text text-transparent">
-          Find Amazing Bars & Taprooms
+          Find Amazing Breweries, Wine Bars & Locations with Food Trucks
         </h1>
         <p class="text-lg md:text-xl text-text-muted max-w-3xl mx-auto leading-relaxed">
-          Discover where your favorite bars and taprooms are located. 
-          Find bars and taprooms near you and never miss out on amazing experiences!
+          Discover where your favorite breweries, wine bars and other drinking establishments are located.
         </p>
       </div>
 
