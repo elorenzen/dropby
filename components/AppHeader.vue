@@ -372,6 +372,7 @@ onUnmounted(() => {
 
 <style scoped>
 /* Authenticated header - sticky with PrimeVue Menubar */
+/* Use theme surface colors consistently - no overrides */
 .app-header-authenticated {
   position: sticky !important;
   top: 0 !important;
@@ -379,12 +380,24 @@ onUnmounted(() => {
   border-radius: 0 !important;
   border: none !important;
   border-bottom: 1px solid var(--p-surface-border) !important;
+  background-color: var(--p-surface-card) !important;
+  color: var(--p-text-color) !important;
 }
 
 /* Active nav item styling */
 :deep(.nav-item-active) {
-  color: var(--primary-color) !important;
+  color: var(--p-primary-color) !important;
   font-weight: 600;
+}
+
+/* Menu items use theme text colors - PrimeVue handles light/dark automatically */
+.app-header-authenticated :deep(.p-menubar-root-list > .p-menubar-item > .p-menubar-link) {
+  color: var(--p-text-color);
+}
+
+.app-header-authenticated :deep(.p-menubar-root-list > .p-menubar-item > .p-menubar-link:hover) {
+  background-color: var(--p-surface-hover);
+  color: var(--p-text-color);
 }
 
 /* Non-authenticated menubar styling */
@@ -427,6 +440,8 @@ onUnmounted(() => {
   height: 2.5rem;
   padding: 0 !important;
 }
+
+/* Header icon buttons use theme colors - PrimeVue handles light/dark automatically */
 
 .notification-badge {
   position: absolute;

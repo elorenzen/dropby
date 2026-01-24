@@ -47,23 +47,30 @@
 /* Dark mode class - add .p-dark to html/body to enable dark mode */
 /* PrimeVue handles dark mode automatically via theme */
 
+/* LIGHT MODE: Only fix navy blue background - change to white */
+:root:not(.p-dark) {
+  --p-surface-ground: #ffffff !important;
+  --p-surface-900: #ffffff !important;
+}
+
 /* Body styling - use PrimeVue surface colors */
 /* PrimeVue uses --p-surface-ground which maps to surface.900 */
 body {
   transition: background-color 0.3s ease, color 0.3s ease;
-  background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff)) !important;
-  color: var(--p-text-color) !important;
+  background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff));
+  color: var(--p-text-color);
 }
 
 /* HTML element background */
 html {
-  background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff)) !important;
+  background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff));
 }
 
 /* Background and text utility classes using PrimeVue theme variables */
 .bg-background {
   background-color: var(--p-surface-ground, var(--p-surface-900, #ffffff)) !important;
 }
+
 
 .text-text-main {
   color: var(--p-text-color) !important;
@@ -291,27 +298,45 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(135deg, var(--p-warn-color) 0%, var(--p-primary-color) 100%) !important; 
 }
 
-/* Essential Gray Classes Used in App */
-.bg-lt-gray { background-color: #f9fafb !important; }
-.bg-md-gray { background-color: #f3f4f6 !important; }
-.bg-gray { background-color: #e5e7eb !important; }
-.bg-dk-gray { background-color: #374151 !important; }
-.bg-xdk-gray { background-color: #1f2937 !important; }
+/* Secondary Color Utilities - uses PrimeVue theme tokens */
+.text-secondary { color: var(--p-secondary-color) !important; }
+.bg-secondary { background-color: var(--p-secondary-color) !important; }
+.border-secondary { border-color: var(--p-secondary-color) !important; }
 
-.border-lt-gray { border-color: #f3f4f6 !important; }
-.border-md-gray { border-color: #e5e7eb !important; }
-.border-dk-gray { border-color: #374151 !important; }
+.text-secondary-dark { color: var(--p-secondary-600) !important; }
+.bg-secondary-light { background-color: var(--p-secondary-50) !important; }
+.bg-secondary-dark { background-color: var(--p-secondary-700) !important; }
+.border-secondary-light { border-color: var(--p-secondary-200) !important; }
 
-.text-md-gray { color: #9ca3af !important; }
+/* Essential Surface Classes - uses warm orange/burgundy theme colors (NO GRAY/BLUE) */
+.bg-lt-gray { background-color: var(--p-primary-50) !important; } /* Light orange tint */
+.bg-md-gray { background-color: var(--p-primary-100) !important; } /* Medium light orange tint */
+.bg-gray { background-color: var(--p-primary-200) !important; } /* Medium orange tint */
+.bg-dk-gray { background-color: var(--p-primary-400) !important; } /* Medium orange */
+.bg-xdk-gray { background-color: var(--p-secondary-100) !important; } /* Light burgundy tint */
 
-.p-dark .bg-lt-gray { background-color: #1f2937 !important; }
-.p-dark .bg-md-gray { background-color: #374151 !important; }
-.p-dark .bg-gray { background-color: #4b5563 !important; }
-.p-dark .bg-dk-gray { background-color: #f3f4f6 !important; }
-.p-dark .bg-xdk-gray { background-color: #f9fafb !important; }
+.border-lt-gray { border-color: var(--p-primary-100) !important; }
+.border-md-gray { border-color: var(--p-primary-200) !important; }
+.border-dk-gray { border-color: var(--p-primary-400) !important; }
 
-.p-dark .border-lt-gray { border-color: #374151 !important; }
-.p-dark .border-md-gray { border-color: #4b5563 !important; }
-.p-dark .border-dk-gray { border-color: #f3f4f6 !important; }
+/* Define --text-md-gray CSS variable that adapts to light/dark mode */
+:root {
+  --text-md-gray: var(--p-text-color-secondary, var(--p-surface-600));
+}
 
-.p-dark .text-md-gray { color: #6b7280 !important; } 
+:root.p-dark {
+  --text-md-gray: var(--p-text-color-secondary, #d1d5db);
+}
+
+.text-md-gray { color: var(--text-md-gray) !important; }
+
+/* Dark mode - use burgundy/orange tints */
+.p-dark .bg-lt-gray { background-color: var(--p-secondary-900) !important; } /* Dark burgundy */
+.p-dark .bg-md-gray { background-color: var(--p-secondary-800) !important; } /* Medium dark burgundy */
+.p-dark .bg-gray { background-color: var(--p-secondary-700) !important; } /* Medium burgundy */
+.p-dark .bg-dk-gray { background-color: var(--p-primary-600) !important; } /* Medium orange */
+.p-dark .bg-xdk-gray { background-color: var(--p-secondary-500) !important; } /* Base burgundy */
+
+.p-dark .border-lt-gray { border-color: var(--p-secondary-800) !important; }
+.p-dark .border-md-gray { border-color: var(--p-secondary-700) !important; }
+.p-dark .border-dk-gray { border-color: var(--p-primary-600) !important; }

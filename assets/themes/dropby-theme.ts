@@ -152,7 +152,7 @@ const DropByPreset = definePreset(Aura, {
         },
         warn: {
           color: '{warn.400}', // #fbbf24 - lighter amber for dark mode
-          contrastColor: '#1f2937',
+          contrastColor: '#7f1d1d', // Dark burgundy for better contrast
           hoverColor: '{warn.300}',
           activeColor: '{warn.500}'
         },
@@ -166,39 +166,40 @@ const DropByPreset = definePreset(Aura, {
     }
   },
   // Surface colors - different for light and dark modes
+  // NO BLUE OR GRAY - Only warm orange/burgundy tints
   surface: {
     colorScheme: {
       light: {
-        // Light mode surfaces - light grays and whites
-        0: '#ffffff',      // Cards, dialogs - white
-        50: '#f8f9fa',    // Very light gray
-        100: '#f1f3f5',   // Light gray
-        200: '#e9ecef',   // Light gray border
-        300: '#dee2e6',   // Medium light gray
-        400: '#ced4da',   // Medium gray
-        500: '#adb5bd',   // Medium gray
-        600: '#868e96',   // Dark gray text
-        700: '#495057',   // Darker gray text
-        800: '#343a40',   // Very dark gray text
-        850: '#2d3238',   // Almost black
-        900: '#ffffff',   // Ground/background - WHITE for light mode
-        950: '#f8f9fa'    // Alternative light background
+        // Light mode surfaces - light orange content, white page background
+        0: '#ffedd5',      // Cards, dialogs - light orange tint (primary.100)
+        50: '#fff7ed',    // Very light orange tint (primary.50)
+        100: '#ffedd5',   // Light orange tint (primary.100)
+        200: '#fed7aa',   // Medium light orange border (primary.200)
+        300: '#fdba74',   // Medium light orange (primary.300)
+        400: '#fb923c',   // Medium orange (primary.400)
+        500: '#7c2d12',   // Dark orange/burgundy for text (primary.900)
+        600: '#9a3412',   // Darker orange text (primary.800)
+        700: '#c2410c',   // Very dark orange text (primary.700)
+        800: '#7f1d1d',   // Dark burgundy text (secondary.900)
+        850: '#991B1B',   // Deep burgundy (secondary.500)
+        900: '#ffffff',   // Ground/background - PURE WHITE for light mode page
+        950: '#fff7ed'    // Alternative light background (primary.50 - warm orange tint)
       },
       dark: {
-        // Dark mode surfaces - your custom dark palette
-        0: '#232428',      // Cards, dialogs
-        50: '#2d3238',
-        100: '#343a40',
-        200: '#3d4248',
-        300: '#495057',
-        400: '#5a6068',
-        500: '#6b7280',
-        600: '#868e96',
-        700: '#9ca3af',
-        800: '#b0b3b8',
-        850: '#232428',    // Your custom dark surface
-        900: '#18191b',    // Your custom dark ground (background)
-        950: '#0d0e0f'
+        // Dark mode surfaces - ALL DARK, cards darker than page for contrast
+        0: '#1a0f0f',      // Cards, dialogs - very dark burgundy (darker than page)
+        50: '#2a1a1a',     // Dark burgundy tint
+        100: '#3d2525',    // Medium dark burgundy tint
+        200: '#4a2d2d',    // Lighter dark burgundy tint
+        300: '#5a3a3a',    // Medium dark burgundy
+        400: '#7c2d12',    // Dark orange (primary.900)
+        500: '#9a3412',    // Medium dark orange (primary.800)
+        600: '#c2410c',    // Medium orange (primary.700)
+        700: '#ea580c',    // Lighter orange (primary.600)
+        800: '#fb923c',    // Light orange (primary.400)
+        850: '#1a0f0f',    // Dark burgundy-tinted surface
+        900: '#0d0e0f',    // Very dark burgundy-tinted background (page)
+        950: '#000000'     // Almost black
       }
     }
   }
