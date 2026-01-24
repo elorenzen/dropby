@@ -1,5 +1,9 @@
 <template>
   <div class="min-h-screen bg-background p-6">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
+
+    <div v-else>
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
@@ -189,12 +193,13 @@
         </template>
       </Card>
     </div>
-
+      </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Line, Bar, Doughnut } from 'vue-chartjs'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -260,6 +265,9 @@ const hexToRgba = (hex: string, opacity: number): string => {
   const b = parseInt(hex.slice(5, 7), 16)
   return `rgba(${r}, ${g}, ${b}, ${opacity})`
 }
+
+// Loading state
+const loading = ref(true)
 
 // Period selection
 const selectedPeriod = ref('30d')
@@ -796,13 +804,16 @@ const countEventStatuses = (events: any[]) => {
 
 
 // Watch for period changes
-watch(selectedPeriod, () => {
-  loadAnalyticsData()
+watch(selectedPeriod, async () => {
+  loading.value = true
+  await loadAnalyticsData()
+  loading.value = false
 })
 
 // Load data on mount
-onMounted(() => {
-  loadAnalyticsData()
+onMounted(async () => {
+  await loadAnalyticsData()
+  loading.value = false
 })
 
 // Set page title

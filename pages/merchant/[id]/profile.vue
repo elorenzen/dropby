@@ -1,9 +1,7 @@
 <template>
   <div class="min-h-screen bg-background p-6">
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <ProgressSpinner />
-    </div>
+    <PageSkeleton v-if="loading" :show-stats="false" :show-list="false" />
 
     <!-- Not Found State -->
     <div v-else-if="!merchant" class="flex flex-col items-center justify-center min-h-screen">
@@ -242,6 +240,7 @@
 
 <script setup lang="ts">
 import type { Merchant, Event } from '~/types'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 
 const route = useRoute()
 const supabase = useSupabaseClient()

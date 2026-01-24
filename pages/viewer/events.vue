@@ -1,6 +1,9 @@
 <template>
   <div class="page-content">
-    <div class="section">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="true" :show-list="true" :list-rows="6" />
+
+    <div v-else class="section">
       <div class="text-center mb-8">
         <h1 class="font-bold text-4xl md:text-5xl mb-4 bg-gradient-to-r from-accent to-error bg-clip-text text-transparent">
           Find Amazing Food Truck Events
@@ -308,7 +311,7 @@
       </div>
     </div>
 
-    <div v-else-if="!loading" class="text-center py-12">
+    <div v-else-if="filteredEvents.length === 0" class="text-center py-12">
       <div class="w-24 h-24 rounded-full bg-surface-section flex items-center justify-center mx-auto mb-6">
         <i class="pi pi-search text-4xl text-color-secondary"></i>
       </div>
@@ -322,11 +325,6 @@
       </div>
     </div>
 
-    <div v-if="loading" class="text-center py-12">
-      <ProgressSpinner size="large" />
-      <p class="mt-4 text-text-muted">Loading events...</p>
-    </div>
-
     <EventDetailsDialog 
       :visible="showEventDialog" 
       :event="selectedEvent"
@@ -337,6 +335,7 @@
 
 <script setup lang="ts">
 import BaseIcon from '~/components/BaseIcon.vue'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 import type { Event, Merchant, Vendor } from '~/types'
 
 definePageMeta({

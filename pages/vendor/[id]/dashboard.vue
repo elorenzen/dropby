@@ -1,5 +1,9 @@
 <template>
   <div class="min-h-screen bg-background p-6">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
+
+    <div v-else>
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
@@ -205,9 +209,8 @@
         </Card>
       </div>
     </div>
-
-
-    </div>
+      </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -262,7 +265,7 @@ const refreshKey = ref(0)
 const allEvents = ref(eventStore.getAllOpenEvents)
 const bookedEvents = ref(await eventStore.getBookedEventsByVendorId(vendor.value?.id || ''))
 const pendingEvents = ref(await eventStore.getPendingEventsByVendorId(vendor.value?.id || ''))
-const loading = ref(false)
+const loading = ref(true)
 
 // Analytics data - initialize with received reviews data
 const receivedReviewsData = reviewStore.getReceivedReviews
@@ -575,7 +578,8 @@ watchEffect(() => {
 
 // Load data on mount
 onMounted(async () => {
-  loadAnalytics()
+  await loadAnalytics()
+  loading.value = false
 
   // Subscribe to real-time updates for reviews
   supabase

@@ -1,5 +1,9 @@
 <template>
     <div class="min-h-screen bg-background p-6">
+      <!-- Loading State -->
+      <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
+
+      <div v-else>
       <!-- Header Section -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
@@ -168,11 +172,13 @@
           </Card>
         </div>
       </div>
+      </div>
     </div>
   </template>
   
   <script setup lang="ts">
   import EventCreate from '~/components/event/Create.vue'
+  import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
   
   definePageMeta({
     middleware: ['auth']
@@ -184,6 +190,8 @@
   const merchantStore = useMerchantStore()
   const merchant = ref<any>(await merchantStore.getMerchantById(route.params.id))
   const subcriptionStore = useSubscriptionStore()
+  
+  const loading = ref(true)
   
   // Create event dialog state
   const showCreateDialog = ref(false)
@@ -406,7 +414,8 @@
   }
   
   onMounted(async () => {
-    loadAnalytics()
+    await loadAnalytics()
+    loading.value = false
 
     // Subscribe to real-time updates for reviews
     supabase

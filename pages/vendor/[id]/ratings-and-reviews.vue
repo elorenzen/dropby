@@ -1,5 +1,9 @@
 <template>
   <div class="min-h-screen bg-background p-6">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="false" :show-list="true" :list-rows="4" />
+
+    <div v-else>
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
@@ -183,11 +187,13 @@
       @delete-cancel="closeDeleteDialog"
       @delete-confirm="confirmDeleteReview"
     />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useToast } from 'primevue/usetoast'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 const toast = useToast()
 definePageMeta({
   middleware: ['auth']
@@ -267,6 +273,7 @@ const receivedReviews = computed<DisplayReview[]>(() => reviewStore.getReceivedR
 const sentReviews = computed<DisplayReview[]>(() => reviewStore.getSentReviews.map((r: any) => transformReviewForDisplay(r, false)))
 
 const events = computed<Event[]>(() => eventStore.getAllEvents)
+const loading = ref(true)
 const completedVendorEvents = ref<Event[]>(events.value.filter((event: Event) => event.vendor === (route.params.id as string) && event.status === 'completed'))
 const pendingReviews = computed(() => completedVendorEvents.value.filter((event: Event) => {
   // Check if this event's id is NOT in the sentReviews array
@@ -362,6 +369,8 @@ const confirmDeleteReview = async () => {
 }
 
 onMounted(() => {
+  loading.value = false
+  
   console.log('Pending reviews:', pendingReviews.value)
   console.log('Sent reviews:', sentReviews.value)
   console.log('Received reviews data:', receivedReviewsData)

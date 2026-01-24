@@ -1,5 +1,9 @@
 <template>
   <div class="min-h-screen bg-background p-6">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
+
+    <div v-else>
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
@@ -154,10 +158,12 @@
       </template>
     </Card>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { Line, Bar } from 'vue-chartjs'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -192,6 +198,8 @@ const route = useRoute()
 const vendorStore = useVendorStore()
 const vendor = ref<any>(null)
 const supabase = useSupabaseClient()
+
+const loading = ref(true)
 
 // Period selection
 const selectedPeriod = ref('30d')
@@ -658,13 +666,16 @@ const countBookingHours = (events: any[]) => {
 }
 
 // Watch for period changes
-watch(selectedPeriod, () => {
-  loadAnalyticsData()
+watch(selectedPeriod, async () => {
+  loading.value = true
+  await loadAnalyticsData()
+  loading.value = false
 })
 
 // Load data on mount
 onMounted(async () => {
   await loadAnalyticsData()
+  loading.value = false
 })
 
 // Set page title

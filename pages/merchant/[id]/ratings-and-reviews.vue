@@ -1,5 +1,9 @@
 <template>
   <div class="min-h-screen bg-background p-6">
+    <!-- Loading State -->
+    <PageSkeleton v-if="loading" :show-stats="false" :show-list="true" :list-rows="4" />
+
+    <div v-else>
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
@@ -265,11 +269,13 @@
       @delete-cancel="closeDeleteDialog"
       @delete-confirm="confirmDeleteReview"
     />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useToast } from 'primevue/usetoast'
+import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 const toast = useToast()
 definePageMeta({
   middleware: ['auth']
@@ -371,7 +377,7 @@ const analytics = computed(() => {
 
 const review = ref('')
 const rating = ref(0)
-const loading = ref(false)
+const loading = ref(true)
 const showValidation = ref(false)
 
 const openWriteReviewDialog = ref(false)
@@ -516,6 +522,8 @@ const submitReview = async () => {
 }
 
 onMounted(() => {
+  loading.value = false
+  
   console.log('Pending reviews:', pendingReviews.value)
   console.log('Sent reviews:', sentReviews.value)
   console.log('Received reviews data:', receivedReviewsData)
