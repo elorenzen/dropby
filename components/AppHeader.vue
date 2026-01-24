@@ -100,17 +100,18 @@
         </NuxtLink>
       </template>
 
-      <template #item="{ item, props, hasSubmenu }">
+      <template #item="{ item, props, hasSubmenu, root }">
         <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
             <a v-ripple :href="href" v-bind="props.action" @click="navigate">
                 <span :class="item.icon" />
                 <span>{{ item.label }}</span>
+                <span v-if="hasSubmenu" :class="['ml-auto', root ? 'pi pi-angle-down' : 'pi pi-angle-right']" />
             </a>
         </router-link>
         <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
             <span :class="item.icon" />
             <span>{{ item.label }}</span>
-            <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
+            <span v-if="hasSubmenu" :class="['ml-auto', root ? 'pi pi-angle-down' : 'pi pi-angle-right']" />
         </a>
       </template>
       
@@ -196,31 +197,36 @@ const navigateToFindEvents = () => {
   router.push('/viewer/events')
 }
 
-const menuItemsStart = ref([
-    {
-        label: 'How It Works',
-        command: () => {
-            router.push('/about');
-        }
+const menuItemsStart = computed(() => {
+  const path = route.path
+  
+  return [
+    { 
+      label: 'How It Works', 
+      icon: 'pi pi-info-circle',
+      route: '/viewer/about',
+      isActive: path.includes('/about')
     },
-    {
-        label: 'Explore',
-        items: [
-            {
-                label: 'Events',
-                command: () => { router.push('/events') }
-            },
-            {
-                label: 'Food Trucks',
-                command: () => { router.push('/food-trucks') }
-            },
-            {
-                label: 'Establishments',
-                command: () => { router.push('/establishments')}
-            }
-        ]
+    { 
+      label: 'Events', 
+      icon: 'pi pi-calendar',
+      route: '/events',
+      isActive: path.includes('/events')
+    },
+    { 
+      label: 'Food Trucks', 
+      icon: 'pi pi-truck',
+      route: '/food-trucks',
+      isActive: path.includes('/food-trucks')
+    },
+    { 
+      label: 'Establishments', 
+      icon: 'pi pi-building',
+      route: '/establishments',
+      isActive: path.includes('/establishments')
     }
-]);
+  ]
+})
 
 // Check if current route matches the given section
 const isCurrentRoute = (section: string) => {
