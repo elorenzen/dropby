@@ -479,6 +479,11 @@ export default {
 
     // Business hours are loaded in app.vue, just use getters
 
+    // Load events if store is empty
+    if (eventStore.allEvents.length === 0) {
+      await eventStore.loadEvents()
+    }
+
     const events        = computed(() => {
       if (props.userType === 'merchant') {
         return eventStore.allEvents

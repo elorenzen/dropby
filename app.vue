@@ -37,6 +37,7 @@ const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
 const eventStore = useEventStore()
 const menuStore = useMenuStore()
+const reviewStore = useReviewStore()
 
 // === REAL-TIME SUBSCRIPTIONS ===
 // These update the stores when data changes, but only if data was already loaded
@@ -123,6 +124,21 @@ const subscribeToMenuItems = async () => {
     .subscribe()
 }
 
+const subscribeToReviews = async () => {
+  supabase
+    .channel('reviews')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'reviews' },
+      async (payload: any) => {
+        // Only refresh if reviews were already loaded for a user
+        if (reviewStore.currentUserId) {
+          await reviewStore.loadReviewsForUser(reviewStore.currentUserId)
+        }
+      })
+    .subscribe()
+}
+
 // Check for incomplete/unpaid subscriptions after user is loaded
 const checkUnpaidSubscription = async () => {
   if (!user.value) return
@@ -165,6 +181,7 @@ onMounted(async () => {
   await subscribeToVendors()
   await subscribeToMerchants()
   await subscribeToMenuItems()
+  await subscribeToReviews()
   
   // Check for unpaid subscriptions
   await checkUnpaidSubscription()

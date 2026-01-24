@@ -16,7 +16,6 @@
             v-if="canCreateRecurringEvents"
             @click="viewRecurringEvents"
             label="Recurring Events"
-            severity="success"
             outlined
             size="small"
           />
@@ -147,18 +146,10 @@
 
       <template #actions>
         <Button 
-          @click="showCreateEventDialog = true"
-          label="Create Event"
-          severity="success"
-          outlined
-          size="small"
-        />
-        <Button 
           v-if="canCreateDateRangeEvents"
           @click="showCreateMultipleDialog = true"
           label="Create Multiple"
           icon="pi pi-calendar-plus"
-          severity="success"
           size="small"
         />
       </template>
