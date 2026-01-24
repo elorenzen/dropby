@@ -1,11 +1,18 @@
 <template>
-    <div class="page-content">
-        <!-- Hero Section with Image -->
+    <div>
+        <!-- Hero Section with Full-Width Image and Overlaid Text -->
         <div class="hero-container">
-            <div class="hero-content-section">
+            <img
+                src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2074&auto=format&fit=crop"
+                alt="Food trucks and events"
+                class="hero-image"
+            />
+            <div class="hero-gradient-overlay"></div>
+            <div class="hero-content">
                 <div class="hero-text">
                     <h1 class="hero-title">
-                        <span class="block">Where great</span>
+                        <span class="block font-bold text-primary">DropBy,</span>
+                        <span class="block">where great</span>
                         <span class="block">food meets</span>
                         <span class="block">great drinks</span>
                     </h1>
@@ -38,15 +45,9 @@
                     </div>
                 </div>
             </div>
-            <div class="hero-image-section">
-                <div class="hero-image-overlay"></div>
-                <img
-                    src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2074&auto=format&fit=crop"
-                    alt="Food trucks and events"
-                    class="hero-image"
-                />
-            </div>
         </div>
+
+    <div class="page-content">
 
         <!-- User Type Selection Section -->
         <div class="section user-type-section">
@@ -180,6 +181,7 @@
             </div>
         </div>
     </div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -188,25 +190,69 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
 </script>
 
 <style scoped>
-/* Hero Section with Image */
+/* Hero Section with Full-Width Image and Overlaid Text */
 .hero-container {
-    display: flex;
-    min-height: 70vh;
     position: relative;
+    width: 100%;
+    min-height: 70vh;
     overflow: hidden;
-    border-radius: 2rem;
     margin-bottom: 4rem;
-    background: var(--surface-ground);
 }
 
-.hero-content-section {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
+.hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    /* Mask image: fade from left (transparent - shows background) to right (opaque - shows image) */
+    -webkit-mask-image: -webkit-gradient(linear, left top, right top, 
+        from(rgba(0,0,0,0)), to(rgba(0,0,0,1)));
+    mask-image: linear-gradient(to right, 
+        rgba(0,0,0,0) 0%,
+        rgba(0,0,0,0) 25%,
+        rgba(0,0,0,0.3) 40%,
+        rgba(0,0,0,0.6) 60%,
+        rgba(0,0,0,0.9) 80%,
+        rgba(0,0,0,1) 100%
+    );
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+.hero-gradient-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--p-surface-ground, #ffffff);
+    z-index: 0;
+}
+
+/* Light mode: White background */
+:root:not(.p-dark) .hero-gradient-overlay {
+    background: #ffffff;
+}
+
+/* Dark mode: Dark background */
+html.p-dark .hero-gradient-overlay {
+    background: var(--p-surface-ground);
+}
+
+.hero-content {
     position: relative;
     z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
 }
 
 .hero-text {
@@ -236,30 +282,13 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
     line-height: 1.6;
 }
 
+
 .hero-actions {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
 }
 
-.hero-image-section {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-image-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, var(--surface-ground) 0%, transparent 100%);
-    z-index: 1;
-}
-
-.hero-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
 
 .primary-cta {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%) !important;
@@ -432,23 +461,21 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
 /* Responsive Design */
 @media (max-width: 1024px) {
     .hero-container {
-        flex-direction: column;
-        min-height: auto;
+        min-height: 60vh;
     }
     
-    .hero-content-section {
-        order: 2;
-        padding: 2rem;
+    .hero-content {
+        padding: 3rem 2rem;
+        min-height: 60vh;
     }
     
-    .hero-image-section {
-        order: 1;
-        height: 50vh;
-        min-height: 300px;
-    }
-    
-    .hero-image-overlay {
-        background: linear-gradient(0deg, var(--surface-ground) 0%, transparent 100%);
+    .hero-gradient-overlay {
+        background: linear-gradient(to bottom, 
+            var(--p-surface-ground, #ffffff) 0%, 
+            rgba(255, 255, 255, 0.6) 40%,
+            rgba(255, 255, 255, 0.2) 60%,
+            transparent 100%
+        );
     }
     
     .user-type-grid {
@@ -515,9 +542,13 @@ useSeoMeta({ title: 'DropBy - Event Scheduling Made Easy' })
         font-size: 2rem;
     }
     
-    .hero-image-section {
-        height: 40vh;
-        min-height: 250px;
+    .hero-container {
+        min-height: 50vh;
+    }
+    
+    .hero-content {
+        padding: 2rem 1.5rem;
+        min-height: 50vh;
     }
 }
 </style>

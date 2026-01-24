@@ -91,7 +91,7 @@
 
     <!-- Non-authenticated users: Menubar with public navigation -->
     <Menubar v-else :model="menuItemsStart">
-      <template #start><Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
+      <template #start>
         <NuxtLink
           to="/"
           class="m-2 text-xl font-bold text-primary"
