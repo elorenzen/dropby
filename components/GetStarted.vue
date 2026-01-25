@@ -676,15 +676,12 @@ const submit = async () => {
         }
 
         // Get the business's stripe_customer_id if it exists
+        // The business was just created, so get it from the returned data
         let stripeCustomerId: string | null = null
         try {
-            const { data: businessData } = await supabase
-                .from(`${type.value}s`)
-                .select('stripe_customer_id')
-                .eq('id', typeId)
-                .single()
-
-            stripeCustomerId = businessData?.stripe_customer_id || null
+            if (businessData) {
+                stripeCustomerId = (businessData as any).stripe_customer_id || null
+            }
         } catch (error: any) {
             console.error('Error getting business stripe_customer_id:', error)
             // Continue without Stripe customer ID for free subscription

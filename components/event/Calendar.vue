@@ -25,7 +25,7 @@
                       {{ new Date(event.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) }}
                     </p>
                     <p class="text-sm text-text-muted mt-1">
-                      {{ userType === 'merchant' ? getVendorProp(event.vendor, 'vendor_name') || 'Open Event' : getMerchantName(event.merchant) }}
+                      {{ userType === 'merchant' ? getVendorProp(event.vendor, 'vendor_name') || 'Open Event' : getMerchantProp(event.merchant, 'merchant_name') || 'Establishment' }}
                     </p>
                   </div>
                   <Tag :value="userType === 'vendor' ? getVendorStatusLabel(event) : event.status.toUpperCase()" :severity="userType === 'vendor' ? getVendorStatusSeverity(event) : getStatusLabel(event)" />
@@ -275,7 +275,7 @@
         <!-- Merchant Info -->
         <div class="space-y-1">
           <label class="text-sm font-medium text-md-gray">Establishment</label>
-          <p class="text-white">{{ getMerchantName(eventOnDay.merchant) }}</p>
+          <p class="text-white">{{ getMerchantProp(eventOnDay.merchant, 'merchant_name') || 'Establishment' }}</p>
         </div>
         
         <!-- Location -->
@@ -305,7 +305,6 @@
                   (!eventOnDay.pending_requests || !eventOnDay.pending_requests.includes(vendor?.id)) &&
                   eventOnDay.status !== 'completed'"
             label="Request Event" 
-            severity="success" 
             class="flex-1" 
             @click="requestEvent"
             :loading="loading"
@@ -474,6 +473,13 @@ export default {
 
     const user          = ref(userStore.user)
     const merchant      = ref(props.userType === 'merchant' ? await merchantStore.getMerchantById(user.value?.associated_merchant_id || '') : null)
+    
+    // Load vendors if store is empty
+    if (vendorStore.allVendors.length === 0) {
+      await vendorStore.loadVendors()
+    }
+    
+    const vendor        = ref(props.userType === 'vendor' ? await vendorStore.getVendorById(user.value?.associated_vendor_id || '') : null)
     const vendors       = ref(await vendorStore.getAllVendors)
     const merchants     = ref(await merchantStore.getAllMerchants)
 
@@ -492,7 +498,7 @@ export default {
       } else {
         // For vendors, show all events they can see (open events + their booked events)
         const allEvents = eventStore.allEvents
-        const vendorEvents = allEvents.filter((e: any) => e.vendor === props.vendor?.id)
+        const vendorEvents = allEvents.filter((e: any) => e.vendor === vendor.value?.id)
         const openEvents = allEvents.filter((e: any) => e.status === 'open')
         return [...vendorEvents, ...openEvents]
           .filter((event, index, self) => self.findIndex(e => e.id === event.id) === index) // Remove duplicates
@@ -831,8 +837,12 @@ export default {
     }
 
     const getVendorProp = (vendorId: string, prop: string): string => {
-      const vendor = vendors.value.find((v: any) => v.id === vendorId)
-      return String(vendor?.[prop as keyof typeof vendor] || '')
+      return vendorStore.getVendorProp(vendorId, prop)
+    }
+
+    const getMerchantProp = (merchantId: string | null, prop: string): string => {
+      if (!merchantId) return ''
+      return merchantStore.getMerchantProp(merchantId, prop)
     }
     const approveRequest = async (vendorId: string) => {
         loadingApproval.value = vendorId
@@ -918,16 +928,11 @@ export default {
             loadingRejection.value = ''
         }
     }
-    // Vendor-specific helper functions
-    const getMerchantName = (merchantId: string) => {
-      const merchant = merchants.value.find((m: any) => m.id === merchantId)
-      return merchant?.merchant_name || 'Establishment'
-    }
 
     const getVendorStatusLabel = (event: any) => {
-      if (event.status === 'booked' && event.vendor === props.vendor?.id) {
+      if (event.status === 'booked' && event.vendor === vendor.value?.id) {
         return 'BOOKED'
-      } else if (event.pending_requests && event.pending_requests.includes(props.vendor?.id)) {
+      } else if (event.pending_requests && event.pending_requests.includes(vendor.value?.id)) {
         return 'PENDING'
       } else if (event.status === 'open') {
         return 'AVAILABLE'
@@ -936,9 +941,9 @@ export default {
     }
 
     const getVendorStatusSeverity = (event: any) => {
-      if (event.status === 'booked' && event.vendor === props.vendor?.id) {
+      if (event.status === 'booked' && event.vendor === vendor.value?.id) {
         return 'success'
-      } else if (event.pending_requests && event.pending_requests.includes(props.vendor?.id)) {
+      } else if (event.pending_requests && event.pending_requests.includes(vendor.value?.id)) {
         return 'warn'
       } else if (event.status === 'open') {
         return 'info'
@@ -992,82 +997,32 @@ export default {
     }
 
     const requestEvent = async () => {
-      if (!props.vendor?.id || !eventOnDay.value) return
-      
       loading.value = true
+
       try {
-        // Check usage limit before allowing request
-        const usageCheck = await $fetch('/api/usage/check', {
-          method: 'POST',
-          body: {
-            businessId: props.vendor.id,
-            businessType: 'vendor',
-            usageType: 'requests',
-            requiredAmount: 1
-          }
-        }) as any
-
-        if (!usageCheck.allowed) {
-          showUsageLimitReached(usageCheck)
-          return
-        }
-
-        let reqArr = eventOnDay.value.pending_requests || []
-        reqArr.push(props.vendor.id)
-        
-        const updates = {
-          updated_at: new Date().toISOString(),
-          pending_requests: reqArr
+        if (!vendor.value?.id || !eventOnDay.value) {
+          throw new Error('Vendor or event information is missing')
         }
         
-        await eventStore.updateEvent(eventOnDay.value.id, updates)
+        const result = await eventStore.requestEvent(eventOnDay.value.id, vendor.value.id, { sendEmail: true })
         
-        // Increment usage after successful request
-        await $fetch('/api/usage/increment', {
-          method: 'POST',
-          body: {
-            businessId: props.vendor.id,
-            businessType: 'vendor',
-            usageType: 'requests',
-            incrementAmount: 1
-          }
-        })
-
-        // Create notification for merchant
-        const notificationStore = useNotificationStore()
-        const currentUser = useSupabaseUser()
-        const merchantUserIds = await userStore.getUserIdsFromBusiness(eventOnDay.value.merchant, 'merchant')
-        const vendorData = await vendorStore.getVendorById(props.vendor.id)
-        
-        for (const merchantUserId of merchantUserIds) {
-          try {
-            await notificationStore.createNotification({
-              recipient_id: merchantUserId,
-              sender_id: currentUser.value?.id || null,
-              sender_business_id: props.vendor.id,
-              sender_business_type: 'vendor',
-              action_type: 'event_request_sent',
-              entity_type: 'event',
-              entity_id: eventOnDay.value.id,
-              title: 'New Event Request',
-              message: `${vendorData?.vendor_name || 'A vendor'} requested to work your event on ${new Date(eventOnDay.value.start).toLocaleDateString()}`,
-              metadata: {
-                event_id: eventOnDay.value.id,
-                vendor_id: props.vendor.id,
-                vendor_name: vendorData?.vendor_name,
-                event_date: eventOnDay.value.start
-              }
+        if (!result.success) {
+          if (result.error === 'usage_limit') {
+            showUsageLimitReached({ usageLimit: result.usageLimit })
+          } else if (result.error === 'already_requested') {
+            toast.add({
+              severity: 'warn',
+              summary: 'Already Requested',
+              detail: 'You have already requested this event.',
+              group: 'main',
+              life: 3000
             })
-          } catch (notifError) {
-            console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
+          } else {
+            errType.value = 'Event Request'
+            errMsg.value = result.message || 'Failed to request event'
+            errDialog.value = true
           }
-        }
-
-        // Send email notification to merchant
-        try {
-          await $fetch(`/api/sendEventRequestNotification?eventId=${eventOnDay.value.id}&vendorId=${props.vendor.id}&merchantId=${eventOnDay.value.merchant}`)
-        } catch (emailErr) {
-          console.error('Email notification failed:', emailErr)
+          return
         }
         
         await resetFields('requested')
@@ -1081,12 +1036,12 @@ export default {
     }
 
     const cancelRequest = async () => {
-      if (!props.vendor?.id || !eventOnDay.value) return
+      if (!vendor.value?.id || !eventOnDay.value) return
       
       loading.value = true
       try {
         let reqArr = eventOnDay.value.pending_requests || []
-        reqArr = reqArr.filter((id: any) => id !== props.vendor.id)
+        reqArr = reqArr.filter((id: any) => id !== vendor.value.id)
         
         const updates = {
           updated_at: new Date().toISOString(),
@@ -1106,89 +1061,36 @@ export default {
 
     // Request event from multiple events list
     const requestEventFromList = async (event: any) => {
-      if (!props.vendor?.id || !event) return
+      if (!vendor.value?.id || !event) return
       
       loadingRequest.value = event.id
       try {
-        // Check usage limit before allowing request
-        const usageCheck = await $fetch('/api/usage/check', {
-          method: 'POST',
-          body: {
-            businessId: props.vendor.id,
-            businessType: 'vendor',
-            usageType: 'requests',
-            requiredAmount: 1
+        const result = await eventStore.requestEvent(event.id, vendor.value.id, { sendEmail: true })
+        
+        if (!result.success) {
+          if (result.error === 'usage_limit') {
+            showUsageLimitReached({ usageLimit: result.usageLimit })
+          } else if (result.error === 'already_requested') {
+            toast.add({
+              severity: 'warn',
+              summary: 'Already Requested',
+              detail: 'You have already requested this event.',
+              group: 'main',
+              life: 3000
+            })
+          } else {
+            errType.value = 'Event Request'
+            errMsg.value = result.message || 'Failed to request event'
+            errDialog.value = true
           }
-        }) as any
-
-        if (!usageCheck.allowed) {
-          showUsageLimitReached(usageCheck)
           loadingRequest.value = null
           return
-        }
-
-        let reqArr = event.pending_requests || []
-        reqArr.push(props.vendor.id)
-        
-        const updates = {
-          updated_at: new Date().toISOString(),
-          pending_requests: reqArr
-        }
-        
-        await eventStore.updateEvent(event.id, updates)
-        
-        // Increment usage after successful request
-        await $fetch('/api/usage/increment', {
-          method: 'POST',
-          body: {
-            businessId: props.vendor.id,
-            businessType: 'vendor',
-            usageType: 'requests',
-            incrementAmount: 1
-          }
-        })
-
-        // Create notification for merchant
-        const notificationStore = useNotificationStore()
-        const currentUser = useSupabaseUser()
-        const merchantUserIds = await userStore.getUserIdsFromBusiness(event.merchant, 'merchant')
-        const vendorData = await vendorStore.getVendorById(props.vendor.id)
-        
-        for (const merchantUserId of merchantUserIds) {
-          try {
-            await notificationStore.createNotification({
-              recipient_id: merchantUserId,
-              sender_id: currentUser.value?.id || null,
-              sender_business_id: props.vendor.id,
-              sender_business_type: 'vendor',
-              action_type: 'event_request_sent',
-              entity_type: 'event',
-              entity_id: event.id,
-              title: 'New Event Request',
-              message: `${vendorData?.vendor_name || 'A vendor'} requested to work your event on ${new Date(event.start).toLocaleDateString()}`,
-              metadata: {
-                event_id: event.id,
-                vendor_id: props.vendor.id,
-                vendor_name: vendorData?.vendor_name,
-                event_date: event.start
-              }
-            })
-          } catch (notifError) {
-            console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
-          }
-        }
-
-        // Send email notification to merchant
-        try {
-          await $fetch(`/api/sendEventRequestNotification?eventId=${event.id}&vendorId=${props.vendor.id}&merchantId=${event.merchant}`)
-        } catch (emailErr) {
-          console.error('Email notification failed:', emailErr)
         }
         
         // Update the event in the list
         const eventIndex = eventsOnDay.value.findIndex((e: any) => e.id === event.id)
-        if (eventIndex !== -1) {
-          eventsOnDay.value[eventIndex] = { ...event, pending_requests: reqArr }
+        if (eventIndex !== -1 && result.event) {
+          eventsOnDay.value[eventIndex] = result.event
         }
         
         toast.add({
@@ -1211,24 +1113,24 @@ export default {
 
     // Cancel request from multiple events list
     const cancelRequestFromList = async (event: any) => {
-      if (!props.vendor?.id || !event) return
+      if (!vendor.value?.id || !event) return
       
       loadingRequest.value = event.id
       try {
-        let reqArr = event.pending_requests || []
-        reqArr = reqArr.filter((id: any) => id !== props.vendor.id)
+        const result = await eventStore.withdrawRequest(event.id, vendor.value.id)
         
-        const updates = {
-          updated_at: new Date().toISOString(),
-          pending_requests: reqArr
+        if (!result.success) {
+          errType.value = 'Event Request'
+          errMsg.value = result.message || 'Failed to cancel request'
+          errDialog.value = true
+          loadingRequest.value = null
+          return
         }
-        
-        await eventStore.updateEvent(event.id, updates)
         
         // Update the event in the list
         const eventIndex = eventsOnDay.value.findIndex((e: any) => e.id === event.id)
-        if (eventIndex !== -1) {
-          eventsOnDay.value[eventIndex] = { ...event, pending_requests: reqArr }
+        if (eventIndex !== -1 && result.event) {
+          eventsOnDay.value[eventIndex] = result.event
         }
         
         toast.add({
@@ -1273,6 +1175,7 @@ export default {
       multipleEventsDialog,
       eventsOnDay,
       dayId,
+      getMerchantProp,
       dayDate,
       eventOnDay,
       errType,
@@ -1298,7 +1201,6 @@ export default {
       rejectRequest,
       onClose,
       // Vendor-specific functions
-      getMerchantName,
       getVendorStatusLabel,
       getVendorStatusSeverity,
       requestEvent,
@@ -1316,6 +1218,14 @@ export default {
       handlePaymentSuccess,
       handleSubscriptionUpgraded,
       handlePaymentDialogClosed
+    }
+  },
+  
+  async mounted() {
+    // Ensure events are loaded on mount
+    const eventStore = useEventStore()
+    if (eventStore.allEvents.length === 0) {
+      await eventStore.loadEvents()
     }
   }
 }

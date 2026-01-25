@@ -189,21 +189,26 @@
                 if (data) item.value.image_url = data.publicUrl
 
                 // 2. Replace fields on menu document in Db
-                const { error: dbErr } = await supabase
-                    .from('menu_items')
-                    .update({ image_url: data.publicUrl, image_name: filePath })
-                    .eq('id', item.value.id)
+                const menuStore = useMenuStore()
+                await menuStore.updateMenuItem(item.value.id, { 
+                  image_url: data.publicUrl, 
+                  image_name: filePath 
+                })
                 
                 // 3. Finally, delete old file from storage
-                if (!dbErr) {
+                try {
                     const { error: storageDeleteErr } = await supabase
                         .storage
                         .from('menu_images')
                         .remove([oldFileName])
                     
                     if (storageDeleteErr) throwErr('Menu Item Image Upload', storageDeleteErr.message)
+                } catch (storageError: any) {
+                    console.error('Error deleting old file:', storageError)
                 }
-            } else throwErr('Menu Item Image Upload', uploadError.message)
+            } else {
+                throwErr('Menu Item Image Upload', uploadError.message)
+            }
         }
         uploading.value = false
     }

@@ -26,6 +26,12 @@ export const useVendorStore = defineStore('vendor', {
         .filter(vendor => vendor.average_merchant_rating > 0)
         .sort((a, b) => b.average_merchant_rating - a.average_merchant_rating)
         .slice(0, limit)
+    },
+
+    getVendorProp: (state) => (vendorId: string, prop: string): string => {
+      if (!vendorId) return ''
+      const vendor = state.allVendors.find((v: Vendor) => v.id === vendorId)
+      return (vendor?.[prop as keyof typeof vendor] as string) || ''
     }
   },
   

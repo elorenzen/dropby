@@ -374,6 +374,7 @@ const toast = useToast()
 const supabase = useSupabaseClient()
 const vendorStore = useVendorStore()
 const userStore = useUserStore()
+const businessHoursStore = useBusinessHoursStore()
 const user: any = userStore.getUser
 const assocId = user[`associated_${user.type}_id`]
 const vendor: any = ref(await vendorStore.getVendorById(assocId))
@@ -462,8 +463,6 @@ const loadBusinessHours = async () => {
   if (!vendor.value?.id) return
   
   try {
-    const businessHoursStore = useBusinessHoursStore()
-    
     // Get business hours for this vendor from store
     const hours = businessHoursStore.getBusinessHours(vendor.value.id, 'vendor')
     
@@ -546,16 +545,11 @@ const checkSubscriptionStatus = async () => {
     const vendorId = route.params.id as string
     
     // Check for business subscription (not user subscription)
-    const { data: subscriptionData } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('business_id', vendorId)
-      .eq('business_type', 'vendor')
-      .eq('status', 'active')
-      .single()
-
-    currentSubscription.value = subscriptionData
-    hasActiveSubscription.value = !!subscriptionData
+    const subscriptionStore = useSubscriptionStore()
+    await subscriptionStore.setActiveSubscription(vendorId, 'vendor')
+    
+    currentSubscription.value = subscriptionStore.getActiveSubscription
+    hasActiveSubscription.value = !!subscriptionStore.getActiveSubscription
   } catch (error) {
     console.error('Error checking subscription status:', error)
     hasActiveSubscription.value = false
@@ -583,46 +577,33 @@ const saveEdits = async () => {
   
   loading.value = true
   
-  const updates = {
-    updated_at: new Date(),
-    vendor_name: vendor.value.vendor_name,
-    cuisine: vendor.value.cuisine,
-    vendor_description: vendor.value.vendor_description,
-    phone: vendor.value.phone,
-    website: vendor.value.website,
-    instagram: vendor.value.instagram,
-    email: vendor.value.email,
-    service_radius: radius.value,
-    base_latitude: baseLat.value,
-    base_longitude: baseLng.value,
-    formatted_address: formattedAddr.value
-  }
+  try {
+    const updates = {
+      updated_at: new Date().toISOString(),
+      vendor_name: vendor.value.vendor_name,
+      cuisine: vendor.value.cuisine,
+      vendor_description: vendor.value.vendor_description,
+      phone: vendor.value.phone,
+      website: vendor.value.website,
+      instagram: vendor.value.instagram,
+      email: vendor.value.email,
+      service_radius: radius.value,
+      base_latitude: baseLat.value,
+      base_longitude: baseLng.value,
+      formatted_address: formattedAddr.value
+    }
 
-  const { error } = await supabase
-    .from('vendors')
-    .update(updates)
-    .eq('id', vendor.value.id)
+    await vendorStore.updateVendor(vendor.value.id, updates)
     
-  if (!error) {
     editDialog.value = false
     toast.add({ severity: 'success', summary: 'Success', detail: 'Information Updated!', group: 'main', life: 6000 })
-  } else {
+  } catch (error: any) {
     errType.value = "Settings Update(s)"
-    errMsg.value = error.message
+    errMsg.value = error.message || 'Failed to update vendor information'
     errDialog.value = true
+  } finally {
+    loading.value = false
   }
-  
-  loading.value = false
-}
-
-// Helper function to format Date object to TIME string (HH:MM:SS)
-const formatTimeForDatabase = (date: Date | null | string): string | null => {
-  if (!date) return null
-  if (typeof date === 'string') return date // Already a string
-  const hours = date.getHours().toString().padStart(2, '0')
-  const minutes = date.getMinutes().toString().padStart(2, '0')
-  const seconds = date.getSeconds().toString().padStart(2, '0')
-  return `${hours}:${minutes}:${seconds}`
 }
 
 const saveBusinessHours = async () => {
@@ -631,37 +612,16 @@ const saveBusinessHours = async () => {
   loading.value = true
   
   try {
-    // Save each day's business hours to the business_hours table
-    for (const day of businessHours.value) {
-      const isClosed = day.isClosed || (!day.open && !day.close)
-      
-      const { error } = await supabase
-        .from('business_hours')
-        .upsert({
-          business_id: vendor.value.id,
-          business_type: 'vendor',
-          day_of_week: day.dayOfWeek,
-          open_time: formatTimeForDatabase(day.open),
-          close_time: formatTimeForDatabase(day.close),
-          is_closed: isClosed,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'business_id,business_type,day_of_week'
-        })
-      
-      if (error) {
-        throw error
-      }
-    }
+    await businessHoursStore.updateBusinessHours(vendor.value.id, 'vendor', businessHours.value)
     
     toast.add({ severity: 'success', summary: 'Success', detail: 'Business Hours Updated!', group: 'main', life: 6000 })
   } catch (error: any) {
     errType.value = 'Business Hours Update'
     errMsg.value = error.message || 'Failed to update business hours'
     errDialog.value = true
+  } finally {
+    loading.value = false
   }
-  
-  loading.value = false
 }
 
 const setFormattedOpen = (e: any, i: any) => {

@@ -186,9 +186,9 @@
                             <i class="pi pi-map-marker text-primary"></i>
                             <span class="text-text-muted">{{ event.location_address }}</span>
                           </div>
-                          <div v-if="getMerchantName(event.merchant)" class="flex items-center gap-3">
+                          <div v-if="getMerchantProp(event.merchant, 'merchant_name')" class="flex items-center gap-3">
                             <i class="pi pi-building text-primary"></i>
-                            <span class="text-text-muted">At {{ getMerchantName(event.merchant) }}</span>
+                            <span class="text-text-muted">At {{ getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Establishment' }}</span>
                           </div>
                         </div>
                         <div class="flex flex-col gap-2">
@@ -243,6 +243,12 @@ definePageMeta({
 const vendorStore = useVendorStore()
 const eventStore = useEventStore()
 const merchantStore = useMerchantStore()
+
+// Helper functions
+const getMerchantProp = (merchantId: string | null, prop: string): string => {
+  if (!merchantId) return ''
+  return merchantStore.getMerchantProp(merchantId, prop)
+}
 const reviewStore = useReviewStore()
 const { isAuthenticated } = useAuth()
 
@@ -391,11 +397,6 @@ const getVendorReviewCount = (vendorId: string): number => {
   return reviewStore.getReviewsForBusiness(vendorId).length
 }
 
-const getMerchantName = (merchantId: string | null): string => {
-  if (!merchantId) return ''
-  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
-  return merchant?.merchant_name || 'Unknown Establishment'
-}
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)

@@ -168,7 +168,6 @@ definePageMeta({
 })
 
 const route = useRoute()
-const user = useSupabaseUser()
 const vendorStore = useVendorStore()
 const merchantStore = useMerchantStore()
 
@@ -186,17 +185,11 @@ if (eventStore.allEvents.length === 0) {
 const reviewStore = useReviewStore()
 
 const getMerchantProp = (merchantId: string, prop: string): string => {
-  if (!merchantId) return ''
-  const allMerchants = merchantStore.getAllMerchants
-  const merchant = allMerchants.find((m: any) => m.id === merchantId)
-  return (merchant?.[prop as keyof typeof merchant] as string) || ''
+  return merchantStore.getMerchantProp(merchantId, prop)
 }
 
 const getEventProp = (eventId: string, prop: string): string => {
-  if (!eventId) return ''
-  const allEvents = eventStore.getAllEvents
-  const event = allEvents.find((e: Event) => e.id === eventId)
-  return (event?.[prop as keyof typeof event] as string) || ''
+  return eventStore.getEventProp(eventId, prop)
 }
 
 // Transform database reviews to display format

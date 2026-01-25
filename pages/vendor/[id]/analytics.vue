@@ -196,6 +196,7 @@ definePageMeta({
 
 const route = useRoute()
 const vendorStore = useVendorStore()
+const eventStore = useEventStore()
 const vendor = ref<any>(null)
 const supabase = useSupabaseClient()
 
@@ -311,13 +312,15 @@ const loadAnalyticsData = async () => {
     const vendorId = vendor.value.id
     const periodStart = getPeriodStart(selectedPeriod.value)
 
-    // Get all events where this vendor has pending requests OR is booked
-    const { data: allEvents } = await supabase
-      .from('events')
-      .select('*')
-      .order('created_at', { ascending: true })
+    // Ensure events are loaded
+    if (eventStore.allEvents.length === 0) {
+      await eventStore.loadEvents()
+    }
 
-    if (!allEvents) return
+    // Get all events where this vendor has pending requests OR is booked
+    const allEvents = eventStore.getEventsForAnalytics(vendorId, 'vendor')
+
+    if (!allEvents || allEvents.length === 0) return
 
     // Filter events by period - use event start date (when event happened) for filtering
     const periodEvents = selectedPeriod.value === 'all' 

@@ -299,74 +299,13 @@ const totalProcessingFees = computed(() => {
   }, 0)
 })
 
+const paymentStore = usePaymentStore()
+
 // Methods
 const loadPayments = async () => {
   loading.value = true
   try {
-    const supabase = useSupabaseClient()
-    
-    // Load payments from the payments table - start with simple query
-    let { data: paymentsData, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('merchant_id', props.merchantId)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error with simple query:', error)
-      // Try alternative field name
-      const { data: altData, error: altError } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('payer_id', props.merchantId)
-        .order('created_at', { ascending: false })
-      
-      if (altError) {
-        console.error('Error with alternative query:', altError)
-        throw altError
-      }
-      paymentsData = altData
-    }
-
-    // Now load related data separately to avoid relationship conflicts
-    if (paymentsData && paymentsData.length > 0) {
-      const eventIds = paymentsData.filter((p: any) => p.event_id).map((p: any) => p.event_id)
-      const vendorIds = paymentsData.filter((p: any) => p.vendor_id).map((p: any) => p.vendor_id)
-      
-      let eventsData: any = {}
-      let vendorsData: any = {}
-      
-      if (eventIds.length > 0) {
-        const { data: events } = await supabase
-          .from('events')
-          .select('id, event_name, event_date, vendor_id')
-          .in('id', eventIds)
-        eventsData = events?.reduce((acc: any, event: any) => {
-          acc[event.id] = event
-          return acc
-        }, {}) || {}
-      }
-      
-      if (vendorIds.length > 0) {
-        const { data: vendors } = await supabase
-          .from('vendors')
-          .select('id, vendor_name')
-          .in('id', vendorIds)
-        vendorsData = vendors?.reduce((acc: any, vendor: any) => {
-          acc[vendor.id] = vendor
-          return acc
-        }, {}) || {}
-      }
-      
-      // Attach related data to payments
-      paymentsData = paymentsData.map((payment: any) => ({
-        ...payment,
-        events: eventsData[payment.event_id],
-        vendors: vendorsData[payment.vendor_id]
-      }))
-    }
-
-    if (error && !paymentsData) throw error
+    const paymentsData = await paymentStore.loadPaymentsForMerchant(props.merchantId)
 
     console.log('Payments data loaded:', paymentsData)
 
@@ -401,17 +340,12 @@ const getSubscriptionPrice = (planType: string, businessType: string): number =>
   return plan?.price || 0
 }
 
+const subscriptionStore = useSubscriptionStore()
+
 const loadSubscriptionFees = async () => {
   try {
-    const supabase = useSupabaseClient()
-    
     // Load subscription data to calculate fees
-    const { data: subscriptions } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('business_id', props.merchantId)
-      .eq('business_type', 'merchant')
-      .order('created_at', { ascending: false })
+    const subscriptions = await subscriptionStore.loadSubscriptionsForBusiness(props.merchantId, 'merchant')
 
     if (subscriptions && subscriptions.length > 0) {
       // Add subscription fees to payments

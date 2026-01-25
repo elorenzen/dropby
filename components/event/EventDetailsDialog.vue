@@ -10,7 +10,7 @@
       <div class="flex items-start justify-between border-b border-surface-border pb-6">
         <div class="flex-1">
           <h2 class="text-3xl font-bold text-color mb-3 leading-tight">
-            {{ getMerchantName(event.merchant) }} | {{ getVendorName(event.vendor) }}
+            {{ getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Merchant' }} | {{ getVendorProp(event.vendor, 'vendor_name') || 'Unknown Vendor' }}
           </h2>
           <div class="flex items-center gap-6 text-base">
             <div class="flex items-center gap-2">
@@ -39,8 +39,8 @@
         <div class="relative">
           <div class="w-full h-80 bg-surface-section rounded-xl overflow-hidden shadow-lg">
             <NuxtImg
-              :src="getMerchantImage(event.merchant)"
-              :alt="getMerchantName(event.merchant)"
+              :src="getMerchantProp(event.merchant, 'avatar_url') || '/images/default-merchant.jpg'"
+              :alt="getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Merchant'"
               class="w-full h-full object-cover"
               loading="lazy"
             />
@@ -167,27 +167,24 @@ const emit = defineEmits<{
 }>()
 
 // Store data
-const { merchants, vendors } = storeToRefs(useMerchantStore())
+const merchantStore = useMerchantStore()
+const vendorStore = useVendorStore()
 
 // Helper functions
-const getMerchantName = (merchantId: string) => {
-  const merchant = merchants.value.find(m => m.id === merchantId)
-  return merchant?.merchant_name || 'Unknown Merchant'
+const getMerchantProp = (merchantId: string | null, prop: string): string => {
+  if (!merchantId) return ''
+  return merchantStore.getMerchantProp(merchantId, prop)
 }
 
-const getVendorName = (vendorId: string) => {
-  const vendor = vendors.value.find(v => v.id === vendorId)
-  return vendor?.vendor_name || 'Unknown Vendor'
+const getVendorProp = (vendorId: string | null, prop: string): string => {
+  if (!vendorId) return ''
+  return vendorStore.getVendorProp(vendorId, prop)
 }
 
-const getMerchantImage = (merchantId: string) => {
-  const merchant = merchants.value.find(m => m.id === merchantId)
-  return merchant?.avatar_url || '/images/default-merchant.jpg'
-}
-
-const getVendorCuisines = (vendorId: string) => {
-  const vendor = vendors.value.find(v => v.id === vendorId)
-  return vendor?.cuisines || []
+const getVendorCuisines = (vendorId: string | null): string[] => {
+  if (!vendorId) return []
+  const vendor = vendorStore.allVendors.find((v: any) => v.id === vendorId)
+  return (vendor?.cuisine as string[]) || []
 }
 
 const getEventStatus = (event: Event) => {
@@ -241,7 +238,7 @@ const getDirections = (event: Event) => {
 
 const shareEvent = (event: Event) => {
   const eventUrl = `${window.location.origin}/events`
-  const eventText = `Check out this food truck event: ${getMerchantName(event.merchant)} | ${getVendorName(event.vendor)} on ${formatFullDate(event.start)}`
+  const eventText = `Check out this food truck event: ${getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Merchant'} | ${getVendorProp(event.vendor, 'vendor_name') || 'Unknown Vendor'} on ${formatFullDate(event.start)}`
   
   if (navigator.share) {
     navigator.share({
@@ -260,7 +257,7 @@ const addToCalendar = (event: Event) => {
   const startDate = new Date(event.start)
   const endDate = new Date(event.end)
   
-  const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`${getMerchantName(event.merchant)} | ${getVendorName(event.vendor)}`)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.notes || '')}&location=${encodeURIComponent(event.location_address || '')}`
+  const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`${getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Merchant'} | ${getVendorProp(event.vendor, 'vendor_name') || 'Unknown Vendor'}`)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.notes || '')}&location=${encodeURIComponent(event.location_address || '')}`
   
   window.open(calendarUrl, '_blank')
 }

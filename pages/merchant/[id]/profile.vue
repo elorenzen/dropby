@@ -205,7 +205,7 @@
                     ${{ event.event_value }}
                   </div>
                   -->
-                  <Tag v-if="event.vendor && getVendorName(event.vendor)" :value="getVendorName(event.vendor)" severity="success" />
+                  <Tag v-if="event.vendor && getVendorProp(event.vendor, 'vendor_name')" :value="getVendorProp(event.vendor, 'vendor_name') || ''" severity="success" />
                 </div>
               </div>
             </div>
@@ -245,6 +245,14 @@ import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 const route = useRoute()
 const supabase = useSupabaseClient()
 const merchantStore = useMerchantStore()
+const vendorStore = useVendorStore()
+
+// Helper functions
+const getVendorProp = (vendorId: string | null, prop: string): string => {
+  if (!vendorId) return ''
+  return vendorStore.getVendorProp(vendorId, prop)
+}
+const eventStore = useEventStore()
 const businessHoursStore = useBusinessHoursStore()
 const { isAuthenticated, currentUser } = useAuth()
 
@@ -270,21 +278,18 @@ const loadMerchantData = async () => {
     merchant.value = merchantData || null
 
     if (merchant.value) {
-      // Load booked events for this merchant
-      const { data: events, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('merchant', route.params.id)
-        .eq('status', 'booked')
-        .order('start', { ascending: true })
-
-      if (error) {
-        console.error('Error loading events:', error)
-      } else {
-        // Filter to only show future events
-        const now = new Date()
-        bookedEvents.value = (events || []).filter(event => new Date(event.start) > now)
+      // Ensure events are loaded
+      if (eventStore.allEvents.length === 0) {
+        await eventStore.loadEvents()
       }
+
+      // Get booked events for this merchant using store
+      const allEvents = eventStore.getEventsForProfile(route.params.id as string, 'merchant')
+      const bookedEventsList = allEvents.filter((e: Event) => e.status === 'booked')
+      
+      // Filter to only show future events
+      const now = new Date()
+      bookedEvents.value = bookedEventsList.filter((event: Event) => new Date(event.start) > now)
 
       // Business hours are loaded in app.vue, just use getters
       const hours = businessHoursStore.getBusinessHours(merchant.value.id, 'merchant')
@@ -358,11 +363,6 @@ const getDomainName = (url: string) => {
   }
 }
 
-const getVendorName = (vendorId: string) => {
-  const vendorStore = useVendorStore()
-  const vendor = vendorStore.getAllVendors.find((v: any) => v.id === vendorId)
-  return vendor?.vendor_name || null
-}
 
 const canSeeEventValue = (event: Event) => {
   if (!isAuthenticated.value || !currentUser.value) return false

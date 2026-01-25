@@ -243,6 +243,32 @@ export const useUserStore = defineStore('user', {
         console.error('Error getting user IDs from business:', error)
         return []
       }
+    },
+
+    /**
+     * Load user data from database by user ID
+     */
+    async loadUser(userId: string) {
+      this.loading = true
+      try {
+        const supabase = useSupabaseClient()
+        
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single()
+
+        if (error) throw error
+        
+        this.user = data
+        return data
+      } catch (error) {
+        console.error('Error loading user:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

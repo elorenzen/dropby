@@ -223,6 +223,7 @@ import type { User, Vendor } from '~/types'
 const supabase = useSupabaseClient()
 const userStore = useUserStore()
 const vendorStore = useVendorStore()
+const merchantStore = useMerchantStore()
 const eventStore = useEventStore()
 const route = useRoute()
 
@@ -232,28 +233,11 @@ const subscriptionStore = useSubscriptionStore()
 
 // Load timeline data
 const timelineStore = useTimelineStore()
-const { data: timelineData, error: timelineError } = await supabase
-  .from('timeline_items')
-  .select('*')
-  .eq('owner_id', route.params.id)
-  .order('created_at', { ascending: false })
-await timelineStore.setTimeline(timelineData || [])
+await timelineStore.loadTimeline(route.params.id as string)
 
 // Load review data
 const reviewStore = useReviewStore()
-const { data: receivedReviews, error: receivedReviewsError } = await supabase
-  .from('reviews')
-  .select('*')
-  .eq('recipient_id', route.params.id)
-  .order('created_at', { ascending: false })
-await reviewStore.setReceivedReviews(receivedReviews || [])
-
-const { data: sentReviews, error: sentReviewsError } = await supabase
-  .from('reviews')
-  .select('*')
-  .eq('sender_id', route.params.id)
-  .order('created_at', { ascending: false })
-await reviewStore.setSentReviews(sentReviews || [])
+await reviewStore.loadReviewsForBusiness(route.params.id as string, 'vendor')
 
 await subscriptionStore.setActiveSubscription(route.params.id as string, 'vendor')
 const activeSubscription = subscriptionStore.getActiveSubscription
@@ -314,10 +298,7 @@ const getTimeAgo = (date: Date): string => {
 
 // Helper function to get merchant properties
 const getMerchantProp = (merchantId: string, prop: string): string => {
-  const merchantStore = useMerchantStore()
-  const allMerchants = merchantStore.getAllMerchants
-  const merchant = allMerchants.find((m: any) => m.id === merchantId)
-  return merchant?.[prop as keyof typeof merchant] || ''
+  return merchantStore.getMerchantProp(merchantId, prop)
 }
 
 // Recent activity data - now computed from timeline with fallback
@@ -474,10 +455,12 @@ const loadAnalytics = async () => {
     // Get events for this vendor
     if (!vendor.value?.id) return
     
-    const { data: events } = await supabase
-      .from('events')
-      .select('*')
-      .eq('vendor', vendor.value.id)
+    // Ensure events are loaded
+    if (eventStore.allEvents.length === 0) {
+      await eventStore.loadEvents()
+    }
+    
+    const events = eventStore.allEvents.filter((e: Event) => e.vendor === vendor.value.id)
     
     if (events) {
       const now = new Date()
@@ -489,9 +472,7 @@ const loadAnalytics = async () => {
       analytics.value.upcomingEvents = bookedEvents.filter((e: any) => new Date(e.start) > now).length
       
       // Get all events where this vendor has pending requests
-      const { data: allEvents } = await supabase
-        .from('events')
-        .select('*')
+      const allEvents = eventStore.allEvents
       
       // Calculate pending requests for future events with open status that have pending requests
       const futureOpenEventsWithRequests = allEvents?.filter((e: any) => 
@@ -587,18 +568,8 @@ onMounted(async () => {
     .on('postgres_changes',
       { event: '*', schema: 'public', table: 'reviews' }, 
       async (payload: any) => {
-        const { data: newReceivedReviews } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('recipient_id', route.params.id)
-          .order('created_at', { ascending: false })
-        await reviewStore.setReceivedReviews(newReceivedReviews || [])
-        const { data: newSentReviews } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('sender_id', route.params.id)
-          .order('created_at', { ascending: false })
-        await reviewStore.setSentReviews(newSentReviews || [])
+        // Reload review data when there are changes
+        await reviewStore.loadReviewsForBusiness(route.params.id as string, 'vendor')
         
         // Reload analytics to update ratings
         loadAnalytics()
@@ -612,12 +583,7 @@ onMounted(async () => {
       { event: '*', schema: 'public', table: 'timeline_items' }, 
       async (payload: any) => {
         // Reload timeline data when there are changes
-        const { data: newTimelineData } = await supabase
-          .from('timeline_items')
-          .select('*')
-          .eq('owner_id', route.params.id)
-          .order('created_at', { ascending: false })
-        await timelineStore.setTimeline(newTimelineData || [])
+        await timelineStore.loadTimeline(route.params.id as string)
       })
     .subscribe()
 })

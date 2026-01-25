@@ -315,7 +315,7 @@
                     ${{ event.event_value }}
                   </div>
                   -->
-                  <Tag v-if="event.merchant && getMerchantName(event.merchant)" :value="getMerchantName(event.merchant)" severity="info" />
+                  <Tag v-if="event.merchant && getMerchantProp(event.merchant, 'merchant_name')" :value="getMerchantProp(event.merchant, 'merchant_name') || ''" severity="info" />
                 </div>
               </div>
             </div>
@@ -370,8 +370,16 @@ import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 const route = useRoute()
 const supabase = useSupabaseClient()
 const vendorStore = useVendorStore()
+const merchantStore = useMerchantStore()
+const eventStore = useEventStore()
 const menuStore = useMenuStore()
 const { isAuthenticated, currentUser } = useAuth()
+
+// Helper functions
+const getMerchantProp = (merchantId: string | null, prop: string): string => {
+  if (!merchantId) return ''
+  return merchantStore.getMerchantProp(merchantId, prop)
+}
 
 // State
 const loading = ref(true)
@@ -402,21 +410,18 @@ const loadVendorData = async () => {
       await menuStore.loadMenuItems(vendor.value.id)
       menuItems.value = menuStore.getMenuItemsByVendor(vendor.value.id)
 
-      // Load booked events for this vendor
-      const { data: events, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('vendor', route.params.id)
-        .eq('status', 'booked')
-        .order('start', { ascending: true })
-
-      if (error) {
-        console.error('Error loading events:', error)
-      } else {
-        // Filter to only show future events
-        const now = new Date()
-        bookedEvents.value = (events || []).filter(event => new Date(event.start) > now)
+      // Ensure events are loaded
+      if (eventStore.allEvents.length === 0) {
+        await eventStore.loadEvents()
       }
+
+      // Get booked events for this vendor using store
+      const allEvents = eventStore.getEventsForProfile(route.params.id as string, 'vendor')
+      const bookedEventsList = allEvents.filter((e: Event) => e.status === 'booked')
+      
+      // Filter to only show future events
+      const now = new Date()
+      bookedEvents.value = bookedEventsList.filter((event: Event) => new Date(event.start) > now)
     }
   } catch (error) {
     console.error('Error loading vendor data:', error)
@@ -473,11 +478,6 @@ const getDomainName = (url: string) => {
   }
 }
 
-const getMerchantName = (merchantId: string) => {
-  const merchantStore = useMerchantStore()
-  const merchant = merchantStore.getAllMerchants.find((m: any) => m.id === merchantId)
-  return merchant?.merchant_name || null
-}
 
 const toggleMenuLayout = () => {
   menuLayout.value = menuLayout.value === 'grid' ? 'list' : 'grid'

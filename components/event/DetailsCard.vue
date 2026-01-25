@@ -124,7 +124,7 @@
             <h4 class="font-semibold text-color text-lg">{{ getVendorProp(event.vendor, 'vendor_name') }}</h4>
             <p class="text-md-gray mb-2">{{ getVendorProp(event.vendor, 'description') || 'No description available' }}</p>
             <div class="flex items-center gap-2 mb-3">
-              <Tag v-for="cuisine in getVendorCuisines(event.vendor)" :key="cuisine" :value="cuisine" severity="info" size="small" />
+              <Tag v-for="cuisine in (props.getVendorCuisines(event.vendor))" :key="cuisine" :value="cuisine" severity="info" size="small" />
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>

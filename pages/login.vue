@@ -124,26 +124,14 @@ const fireAuth = async () => {
   }
 }
 
+const userStore = useUserStore()
+
 const confirmed = async (userId: string) => {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single()
-
-    if (error) {
-      console.error('Error fetching user:', error)
-      return
-    }
-
-    if (data) {
-      const userStore = useUserStore()
-      await userStore.setUser(data)
-      
-      // Redirect to user dashboard
-      await redirectToUserDashboard()
-    }
+    await userStore.loadUser(userId)
+    
+    // Redirect to user dashboard
+    await redirectToUserDashboard()
   } catch (err) {
     console.error('Error in confirmed:', err)
   }

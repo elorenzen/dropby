@@ -44,64 +44,47 @@
       </template>
       <template #content>
         <div v-if="pendingRequests.length > 0" class="space-y-4">
-          <EventBaseListCard 
-            v-for="event in pendingRequests" 
-            :key="event.id"
-            class="border-primary-light"
-            :show-status-badge="false"
-          >
-            <template #vendor-avatar>
-              <div class="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
-                <i class="pi pi-calendar icon-primary"></i>
-              </div>
-            </template>
-            
-            <template #event-content>
-              <p class="font-semibold text-text-main truncate mb-1">Event on {{ new Date(event.start).toLocaleDateString() }}</p>
+          <div v-for="event in pendingRequests" :key="event.id" class="space-y-3">
+            <div class="mb-4 pb-3 border-b border-primary-light">
+              <p class="mb-1">Event on {{ new Date(event.start).toLocaleDateString() }}</p>
               <p class="text-xs text-text-muted">Time: {{ new Date(event.start).toLocaleTimeString() }} - {{ new Date(event.end).toLocaleTimeString() }}</p>
-              <p class="text-xs text-text-muted mb-2">Location: {{ event.location_address || 'No address specified' }}</p>
-              
-              <!-- Vendor Requests List -->
-              <div class="space-y-3">
-                <p class="text-sm font-medium text-primary-dark">
-                  {{ event.pending_requests?.length || 0 }} vendor{{ (event.pending_requests?.length || 0) !== 1 ? 's' : '' }} requesting this event:
-                </p>
-                <div v-for="vendorId in event.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-primary-light rounded-lg border border-primary-light">
-                  <div class="flex items-center gap-3">
-                    <NuxtImg 
-                      :src="getVendorProp(vendorId, 'avatar_url')" 
-                      :alt="getVendorProp(vendorId, 'vendor_name')" 
-                      class="w-10 h-10 rounded-full"
-                    />
-                    <div>
-                      <p class="font-medium text-text-main">{{ getVendorProp(vendorId, 'vendor_name') }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <Button 
-                      @click="rejectRequest(event, vendorId)"
-                      label="Reject"
-                      severity="danger"
-                      outlined
-                      size="small"
-                      :loading="loadingRejection === `${event.id}-${vendorId}`"
-                    />
-                    <Button 
-                      @click="approveRequest(event, vendorId)"
-                      label="Approve"
-                      severity="success"
-                      size="small"
-                      :loading="loadingApproval === `${event.id}-${vendorId}`"
-                    />
-                  </div>
-                </div>
-              </div>
-            </template>
+              <p class="text-xs text-text-muted">Location: {{ event.location_address || 'No address specified' }}</p>
+              <p class="text-sm font-medium text-primary-dark mt-2">
+                {{ event.pending_requests?.length || 0 }} vendor{{ (event.pending_requests?.length || 0) !== 1 ? 's' : '' }} requesting this event:
+              </p>
+            </div>
             
-            <template #action-buttons>
-              <!-- No action buttons needed here since they're per vendor -->
-            </template>
-          </EventBaseListCard>
+            <ReviewCard
+              v-for="vendorId in event.pending_requests"
+              :key="`${event.id}-${vendorId}`"
+              :avatar="getVendorProp(vendorId, 'avatar_url')"
+              :name="getVendorProp(vendorId, 'vendor_name')"
+              :event-date="event.start"
+              :event-time="`${new Date(event.start).toLocaleTimeString()} - ${new Date(event.end).toLocaleTimeString()}`"
+              border-class="bg-primary-light border-primary-light"
+            >
+              <template #middle>
+                <p class="text-sm text-text-muted">{{ getVendorProp(vendorId, 'vendor_description') || 'No description available' }}</p>
+              </template>
+              
+              <template #actions>
+                <Button 
+                  @click="rejectRequest(event, vendorId)"
+                  label="Reject"
+                  severity="danger"
+                  outlined
+                  size="small"
+                  :loading="loadingRejection === `${event.id}-${vendorId}`"
+                />
+                <Button 
+                  @click="approveRequest(event, vendorId)"
+                  label="Approve"
+                  size="small"
+                  :loading="loadingApproval === `${event.id}-${vendorId}`"
+                />
+              </template>
+            </ReviewCard>
+          </div>
         </div>
         <div v-else class="text-center py-8">
           <div class="w-16 h-16 rounded-full bg-primary-light mx-auto mb-4 flex items-center justify-center">
@@ -416,6 +399,16 @@ const loadingRejection = ref<string | null>(null)
 
 // Check and set active subscription on mount if not already set
 onMounted(async () => {
+  // Load events if store is empty
+  if (eventStore.allEvents.length === 0) {
+    await eventStore.loadEvents()
+  }
+  
+  // Load vendors if store is empty
+  if (vendorStore.allVendors.length === 0) {
+    await vendorStore.loadVendors()
+  }
+  
   if (!subscriptionStore.activeSubscription) {
     try {
       await subscriptionStore.setActiveSubscription(String(route.params.id), 'merchant')
@@ -430,12 +423,7 @@ onMounted(async () => {
 const eventMenu = ref()
 
 // Fetch review data for this merchant
-const { data: sentReviews, error: sentReviewsError } = await supabase
-  .from('reviews')
-  .select('*')
-  .eq('sender_id', route.params.id)
-  .order('created_at', { ascending: false })
-await reviewStore.setSentReviews(sentReviews || [])
+await reviewStore.loadReviewsForBusiness(route.params.id as string, 'merchant')
 
 // Review dialog state
 const showWriteReviewDialog = ref(false)
@@ -502,7 +490,7 @@ const filterByKeyword = (events: Event[], keyword: string): Event[] => {
   const searchTerm = keyword.toLowerCase()
   return events.filter((event: Event) => {
     const vendorName = getVendorProp(event.vendor || '', 'vendor_name').toLowerCase()
-    const cuisines = getVendorCuisines(event.vendor || '').join(' ').toLowerCase()
+    const cuisines = getVendorCuisines(event.vendor).join(' ').toLowerCase()
     const location = event.location_address?.toLowerCase() || ''
     return vendorName.includes(searchTerm) || cuisines.includes(searchTerm) || location.includes(searchTerm)
   })
@@ -578,17 +566,15 @@ const closedEventsCount = computed(() =>
 // Helper functions
 const getVendorProp = (vendorId: string | null, prop: string): string => {
   if (!vendorId) return ''
-  const allVendors = vendorStore.getAllVendors as Vendor[]
-  const vendor = allVendors.find((v: Vendor) => v.id === vendorId)
-  return vendor?.[prop as keyof Vendor] as string || ''
+  return vendorStore.getVendorProp(vendorId, prop)
 }
 
 const getVendorCuisines = (vendorId: string | null): string[] => {
   if (!vendorId) return []
-  const allVendors = vendorStore.getAllVendors as Vendor[]
-  const vendor = allVendors.find((v: Vendor) => v.id === vendorId)
-  return vendor?.cuisine || []
+  const vendor = vendorStore.allVendors.find((v: Vendor) => v.id === vendorId)
+  return (vendor?.cuisine as string[]) || []
 }
+
 
 const getEventStatus = (event: Event): string => {
   const now = new Date()
@@ -653,17 +639,12 @@ const approveRequest = async (event: Event, vendorId: string) => {
   loadingApproval.value = `${event.id}-${vendorId}`
   
   try {
-    const { error } = await supabase
-      .from('events')
-      .update({
-        status: 'booked',
-        vendor: vendorId,
-        pending_requests: null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', event.id)
-    
-    if (error) throw error
+    await eventStore.updateEvent(event.id, {
+      status: 'booked',
+      vendor: vendorId,
+      pending_requests: null,
+      updated_at: new Date().toISOString()
+    })
     
     // Create timeline item for event booked
     const timelineStore = useTimelineStore()
@@ -718,15 +699,10 @@ const rejectRequest = async (event: Event, vendorId: string) => {
     const currentRequests = event.pending_requests || []
     const updatedRequests = currentRequests.filter((id: string) => id !== vendorId)
     
-    const { error } = await supabase
-      .from('events')
-      .update({
-        pending_requests: updatedRequests.length > 0 ? updatedRequests : null,
-        updated_at: new Date().toISOString()
-      } as any)
-      .eq('id', event.id)
-    
-    if (error) throw error
+    await eventStore.updateEvent(event.id, {
+      pending_requests: updatedRequests.length > 0 ? updatedRequests : null,
+      updated_at: new Date().toISOString()
+    })
     
     showToast('info', 'Request Rejected', `Rejected ${getVendorProp(vendorId, 'vendor_name')} for the event`)
   } catch (error) {

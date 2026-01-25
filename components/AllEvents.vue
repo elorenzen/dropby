@@ -19,7 +19,7 @@
                 </template></Column>
             <Column field="merchant_name" header="Establishment">
                 <template #body="slotProps">
-                    {{ getMerchantName(slotProps.data.merchant) }}
+                    {{ getMerchantProp(slotProps.data.merchant, 'merchant_name') || 'Unknown Merchant' }}
                 </template>
             </Column>
             <Column field="location_address" header="Location">
@@ -70,17 +70,18 @@
     const props  = defineProps(['vendor'])
     const vendor = ref(props.vendor)
 
-    const supabase      = useSupabaseClient()
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
-    const vendorStore   = useVendorStore()
-    const notificationStore = useNotificationStore()
-    const currentUser   = useSupabaseUser()
     const toast         = useToast()
     const events        = eventStore.getAllOpenEvents
     const merchants     = merchantStore.getAllMerchants
     const user          = userStore.getUser
+
+    const getMerchantProp = (merchantId: string | null, prop: string): string => {
+      if (!merchantId) return ''
+      return merchantStore.getMerchantProp(merchantId, prop)
+    }
 
     const selectedEvt      = ref()
     const selectedMerchant = ref()
@@ -113,10 +114,6 @@
                 return null;
         }
     };
-    const getMerchantName = (id: any) => {
-        const found = merchants.find(merchant => merchant.id === id)
-        if (found) return found.merchant_name
-    }
     const selectRow = (event: any) => {
         selectedEvt.value = event.data
         console.log('event: ', selectedEvt.value)
@@ -126,92 +123,39 @@
     const requestEvent = async () => {
         loading.value = true
         try {
-            // Check usage limit before allowing request
-            const usageCheck = await $fetch('/api/usage/check', {
-                method: 'POST',
-                body: {
-                    businessId: vendor.value,
-                    businessType: 'vendor',
-                    usageType: 'requests',
-                    requiredAmount: 1
+            const result = await eventStore.requestEvent(selectedEvt.value.id, vendor.value)
+            
+            if (!result.success) {
+                if (result.error === 'usage_limit') {
+                    toast.add({
+                        severity: 'warn',
+                        summary: 'Usage Limit Reached',
+                        detail: `You've reached your monthly limit of ${result.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
+                        life: 5000
+                    })
+                } else if (result.error === 'already_requested') {
+                    toast.add({
+                        severity: 'warn',
+                        summary: 'Already Requested',
+                        detail: 'You have already requested this event.',
+                        life: 3000
+                    })
+                } else {
+                    errDialog.value = true
+                    errMsg.value = result.message || 'Failed to request event'
                 }
-            }) as any
-
-            if (!usageCheck.allowed) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Usage Limit Reached',
-                    detail: `You've reached your monthly limit of ${usageCheck.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
-                    life: 5000
-                })
                 return
             }
 
-            let reqArr =
-                selectedEvt.value.pending_requests ?
-                selectedEvt.value.pending_requests : []
-
-            reqArr.push(vendor.value)
-            const updates = {
-                updated_at: new Date().toISOString(),
-                pending_requests: reqArr
-            }
-            
-            try {
-                await eventStore.updateEvent(selectedEvt.value.id, updates)
-                
-                // Increment usage after successful request
-                await $fetch('/api/usage/increment', {
-                    method: 'POST',
-                    body: {
-                        businessId: vendor.value,
-                        businessType: 'vendor',
-                        usageType: 'requests',
-                        incrementAmount: 1
-                    }
-                })
-
-                // Create notification for merchant
-                const merchantUserIds = await userStore.getUserIdsFromBusiness(selectedEvt.value.merchant, 'merchant')
-                const vendorData = await vendorStore.getVendorById(vendor.value)
-                
-                for (const merchantUserId of merchantUserIds) {
-                    try {
-                        await notificationStore.createNotification({
-                            recipient_id: merchantUserId,
-                            sender_id: currentUser.value?.id || null,
-                            sender_business_id: vendor.value,
-                            sender_business_type: 'vendor',
-                            action_type: 'event_request_sent',
-                            entity_type: 'event',
-                            entity_id: selectedEvt.value.id,
-                            title: 'New Event Request',
-                            message: `${vendorData?.vendor_name || 'A vendor'} requested to work your event on ${new Date(selectedEvt.value.start).toLocaleDateString()}`,
-                            metadata: {
-                                event_id: selectedEvt.value.id,
-                                vendor_id: vendor.value,
-                                vendor_name: vendorData?.vendor_name,
-                                event_date: selectedEvt.value.start
-                            }
-                        })
-                    } catch (notifError) {
-                        console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
-                    }
-                }
-
-                openViewDialog.value = false
-                selectedEvt.value = ''
-                selectedMerchant.value = ''
-                snacktext.value = 'Event requested!'
-                snackbar.value = true
-            } catch (updateError: any) {
-                errDialog.value = true
-                errMsg.value = updateError.message || 'Failed to update event'
-            }
-        } catch (error) {
+            openViewDialog.value = false
+            selectedEvt.value = ''
+            selectedMerchant.value = ''
+            snacktext.value = 'Event requested!'
+            snackbar.value = true
+        } catch (error: any) {
             console.error('Error requesting event:', error)
             errDialog.value = true
-            errMsg.value = 'An unexpected error occurred'
+            errMsg.value = error.message || 'An unexpected error occurred'
         } finally {
             loading.value = false
         }

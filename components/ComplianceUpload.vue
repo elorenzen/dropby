@@ -323,14 +323,13 @@ const documentInfo = ref<DocumentInfo>({
 const existingDocuments = ref<any[]>([])
 
 const loadDocuments = async () => {
-  const { data, error } = await supabase
-    .from('compliance_documents')
-    .select('*')
-    .eq('business_id', props.businessId)
-    .eq('business_type', props.businessType)
-  
-  if (!error && data) {
-    existingDocuments.value = data
+  try {
+    await complianceStore.loadDocuments(props.businessId)
+    existingDocuments.value = complianceStore.documents.filter(
+      (doc: any) => doc.business_id === props.businessId && doc.business_type === props.businessType
+    )
+  } catch (error) {
+    console.error('Error loading documents:', error)
   }
 }
 
@@ -463,35 +462,9 @@ const uploadDocument = async () => {
 
 // Load documents and requirements on mount
 onMounted(async () => {
-  // Clear any existing documents for testing
-  await clearTestData()
-  
   loadComplianceRequirements()
   loadDocuments()
 })
-
-// Function to clear test data (for development/testing only)
-const clearTestData = async () => {
-  try {
-    // Clear any existing compliance documents for this business
-    const { error } = await supabase
-      .from('compliance_documents')
-      .delete()
-      .eq('business_id', props.businessId)
-      .eq('business_type', props.businessType)
-    
-    if (error) {
-      console.log('No existing documents to clear or error:', error)
-    } else {
-      console.log('Cleared existing test documents')
-    }
-    
-    // Reset local state
-    existingDocuments.value = []
-  } catch (error) {
-    console.log('Error clearing test data:', error)
-  }
-}
 </script>
 
 <style scoped>

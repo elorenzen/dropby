@@ -23,11 +23,7 @@ const user = useSupabaseUser()
 // Other data (merchants, vendors, events, etc.) is loaded lazily by pages that need it
 const userStore = useUserStore()
 if (user.value) {
-  const { data: userData } = await supabase
-    .from('users')
-    .select()
-    .eq('id', user.value.id)
-  await userStore.setUser(userData?.[0] || null)
+  await userStore.loadUser(user.value.id)
 } else {
   await userStore.setUser(null)
 }
@@ -51,8 +47,7 @@ const subscribeToEvents = async () => {
       async (payload: any) => {
         // Only refresh if events were already loaded
         if (eventStore.allEvents.length > 0) {
-          const { data: eventData } = await supabase.from('events').select()
-          await eventStore.setAllEvents(eventData || [])
+          await eventStore.loadEvents()
         }
       })
     .subscribe()
@@ -67,8 +62,7 @@ const subscribeToMerchants = async () => {
       async (payload: any) => {
         // Only refresh if merchants were already loaded
         if (merchantStore.allMerchants.length > 0) {
-          const { data: merchantData } = await supabase.from('merchants').select()
-          await merchantStore.setAllMerchants(merchantData || [])
+          await merchantStore.loadMerchants()
         }
       })
     .subscribe()
@@ -83,8 +77,7 @@ const subscribeToVendors = async () => {
       async (payload: any) => {
         // Only refresh if vendors were already loaded
         if (vendorStore.allVendors.length > 0) {
-          const { data: vendorData } = await supabase.from('vendors').select()
-          await vendorStore.setAllVendors(vendorData || [])
+          await vendorStore.loadVendors()
         }
       })
     .subscribe()
@@ -98,11 +91,7 @@ const subscribeToUsers = async () => {
       { event: '*', schema: 'public', table: 'users' },
       async (payload: any) => {
         if (user.value) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select()
-            .eq('id', user.value.id)
-          await userStore.setUser(userData?.[0] || null)
+          await userStore.loadUser(user.value.id)
         }
       })
     .subscribe()
@@ -117,8 +106,18 @@ const subscribeToMenuItems = async () => {
       async (payload: any) => {
         // Only refresh if menu items were already loaded
         if (menuStore.menuItems.length > 0) {
-          const { data: menuData } = await supabase.from('menu_items').select()
-          await menuStore.setAllMenuItems(menuData || [])
+          // Reload menu items for the vendor that changed (from payload)
+          const vendorId = payload.new?.vendor_id || payload.old?.vendor_id
+          if (vendorId) {
+            await menuStore.loadMenuItems(vendorId)
+          } else {
+            // If no vendor_id in payload, reload all menu items for all vendors
+            // Get unique vendor IDs from current menu items
+            const vendorIds = [...new Set(menuStore.menuItems.map(item => item.vendor_id).filter(Boolean))]
+            for (const vid of vendorIds) {
+              await menuStore.loadMenuItems(vid)
+            }
+          }
         }
       })
     .subscribe()
@@ -153,16 +152,8 @@ const checkUnpaidSubscription = async () => {
   if (!businessId) return
   
   try {
-    // Check for unpaid/incomplete subscriptions
-    const { data: subscription } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('business_id', businessId)
-      .eq('business_type', businessType)
-      .in('status', ['unpaid', 'incomplete'])
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+    const subscriptionStore = useSubscriptionStore()
+    const subscription = await subscriptionStore.checkUnpaidSubscription(businessId, businessType)
     
     if (subscription) {
       // Redirect to settings page with subscription tab to complete payment

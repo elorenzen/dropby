@@ -34,6 +34,49 @@ export const useEventStore = defineStore('event', {
           (Date.now() < new Date(e.start).getTime())
         )
         .sort((a,b) => Date.parse(a.start) - Date.parse(b.start))
+    },
+
+    getEventProp: (state) => (eventId: string, prop: string): string => {
+      if (!eventId) return ''
+      const event = state.allEvents.find((e: Event) => e.id === eventId)
+      return (event?.[prop as keyof typeof event] as string) || ''
+    },
+
+    getEventsForAnalytics: (state) => (businessId: string, businessType: 'merchant' | 'vendor', filters?: { status?: string[], dateRange?: { start: string, end: string } }) => {
+      let filtered = state.allEvents.filter((e: Event) => {
+        if (businessType === 'merchant') {
+          return e.merchant === businessId
+        } else {
+          return e.vendor === businessId || (e.pending_requests && e.pending_requests.includes(businessId))
+        }
+      })
+
+      if (filters?.status && filters.status.length > 0) {
+        filtered = filtered.filter((e: Event) => filters.status!.includes(e.status))
+      }
+
+      if (filters?.dateRange) {
+        filtered = filtered.filter((e: Event) => {
+          const eventDate = new Date(e.start)
+          const startDate = new Date(filters.dateRange!.start)
+          const endDate = new Date(filters.dateRange!.end)
+          return eventDate >= startDate && eventDate <= endDate
+        })
+      }
+
+      return filtered.sort((a, b) => Date.parse(a.start) - Date.parse(b.start))
+    },
+
+    getEventsForProfile: (state) => (businessId: string, businessType: 'merchant' | 'vendor') => {
+      return state.allEvents
+        .filter((e: Event) => {
+          if (businessType === 'merchant') {
+            return e.merchant === businessId
+          } else {
+            return e.vendor === businessId
+          }
+        })
+        .sort((a, b) => Date.parse(b.start) - Date.parse(a.start))
     }
   },
   
@@ -247,6 +290,149 @@ export const useEventStore = defineStore('event', {
         throw error
       } finally {
         this.loading = false
+      }
+    },
+
+    async requestEvent(eventId: string, vendorId: string, options?: { sendEmail?: boolean }) {
+      try {
+        // Check usage limit before allowing request
+        const usageCheck = await $fetch('/api/usage/check', {
+          method: 'POST',
+          body: {
+            businessId: vendorId,
+            businessType: 'vendor',
+            usageType: 'requests',
+            requiredAmount: 1
+          }
+        }) as any
+
+        if (!usageCheck.allowed) {
+          return {
+            success: false,
+            error: 'usage_limit',
+            usageLimit: usageCheck.usageLimit
+          }
+        }
+
+        // Get the event
+        const event = this.allEvents.find(e => e.id === eventId)
+        if (!event) {
+          throw new Error('Event not found')
+        }
+
+        // Add vendor to pending_requests
+        const currentRequests = event.pending_requests || []
+        if (currentRequests.includes(vendorId)) {
+          return {
+            success: false,
+            error: 'already_requested'
+          }
+        }
+
+        const updatedRequests = [...currentRequests, vendorId]
+        
+        // Update event
+        await this.updateEvent(eventId, {
+          updated_at: new Date().toISOString(),
+          pending_requests: updatedRequests
+        })
+
+        // Increment usage after successful request
+        await $fetch('/api/usage/increment', {
+          method: 'POST',
+          body: {
+            businessId: vendorId,
+            businessType: 'vendor',
+            usageType: 'requests',
+            incrementAmount: 1
+          }
+        })
+
+        // Create notification for merchant
+        const userStore = useUserStore()
+        const vendorStore = useVendorStore()
+        const notificationStore = useNotificationStore()
+        const currentUser = useSupabaseUser()
+        
+        const merchantUserIds = await userStore.getUserIdsFromBusiness(event.merchant || '', 'merchant')
+        const vendorData = await vendorStore.getVendorById(vendorId)
+        
+        for (const merchantUserId of merchantUserIds) {
+          try {
+            await notificationStore.createNotification({
+              recipient_id: merchantUserId,
+              sender_id: currentUser.value?.id || null,
+              sender_business_id: vendorId,
+              sender_business_type: 'vendor',
+              action_type: 'event_request_sent',
+              entity_type: 'event',
+              entity_id: eventId,
+              title: 'New Event Request',
+              message: `${vendorData?.vendor_name || 'A vendor'} requested to work your event on ${new Date(event.start).toLocaleDateString()}`,
+              metadata: {
+                event_id: eventId,
+                vendor_id: vendorId,
+                vendor_name: vendorData?.vendor_name,
+                event_date: event.start
+              }
+            })
+          } catch (notifError) {
+            console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
+          }
+        }
+
+        // Send email notification if requested
+        if (options?.sendEmail && event.merchant) {
+          try {
+            await $fetch(`/api/sendEventRequestNotification?eventId=${eventId}&vendorId=${vendorId}&merchantId=${event.merchant}`)
+          } catch (emailErr) {
+            console.error('Email notification failed:', emailErr)
+          }
+        }
+
+        return {
+          success: true,
+          event: this.allEvents.find(e => e.id === eventId)
+        }
+      } catch (error: any) {
+        console.error('Error requesting event:', error)
+        return {
+          success: false,
+          error: 'unknown',
+          message: error.message || 'Failed to request event'
+        }
+      }
+    },
+
+    async withdrawRequest(eventId: string, vendorId: string) {
+      try {
+        // Get the event
+        const event = this.allEvents.find(e => e.id === eventId)
+        if (!event) {
+          throw new Error('Event not found')
+        }
+
+        // Remove vendor from pending_requests
+        const currentRequests = event.pending_requests || []
+        const updatedRequests = currentRequests.filter((id: string) => id !== vendorId)
+        
+        // Update event
+        await this.updateEvent(eventId, {
+          updated_at: new Date().toISOString(),
+          pending_requests: updatedRequests
+        })
+
+        return {
+          success: true,
+          event: this.allEvents.find(e => e.id === eventId)
+        }
+      } catch (error: any) {
+        console.error('Error withdrawing request:', error)
+        return {
+          success: false,
+          error: 'unknown',
+          message: error.message || 'Failed to withdraw request'
+        }
       }
     }
   }

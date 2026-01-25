@@ -367,16 +367,22 @@ const vendor = ref<any>(await vendorStore.getVendorById(route.params.id))
 const loadingRequest = ref<string | null>(null)
 const loadingWithdrawal = ref<string | null>(null)
 
+// Load events and merchants on mount if stores are empty
+onMounted(async () => {
+  if (eventStore.allEvents.length === 0) {
+    await eventStore.loadEvents()
+  }
+  
+  if (merchantStore.allMerchants.length === 0) {
+    await merchantStore.loadMerchants()
+  }
+})
+
 // Menu refs for dropdown actions
 const pastEventsMenu = ref()
 
 // Fetch review data for this vendor
-const { data: sentReviews, error: sentReviewsError } = await supabase
-  .from('reviews')
-  .select('*')
-  .eq('sender_id', route.params.id)
-  .order('created_at', { ascending: false })
-await reviewStore.setSentReviews(sentReviews || [])
+await reviewStore.loadReviewsForBusiness(route.params.id as string, 'vendor')
 
 // Event details dialog state
 const showEventDetailsDialog = ref(false)
@@ -393,7 +399,7 @@ const selectedEventForReview = ref<Event | null>(null)
 // Menu state
 const selectedEventForPastEventsMenu = ref<Event | null>(null)
 
-import type { Event, Merchant } from '~/types'
+import type { Event, Merchant, Vendor } from '~/types'
 
 // Filter state for open events
 const openEventsFilters = ref({
@@ -566,37 +572,31 @@ const filteredPastEvents = computed(() => {
 // Helper functions
 const getMerchantProp = (merchantId: string | null, prop: string): string => {
   if (!merchantId) return ''
-  const allMerchants = merchantStore.getAllMerchants as Merchant[]
-  const merchant = allMerchants.find((m: Merchant) => m.id === merchantId)
-  return merchant?.[prop as keyof Merchant] as string || ''
-}
-
-const getMerchantCuisines = (merchantId: string | null): string[] => {
-  if (!merchantId) return []
-  const allMerchants = merchantStore.getAllMerchants as Merchant[]
-  const merchant = allMerchants.find((m: Merchant) => m.id === merchantId)
-  return merchant?.cuisine || []
-}
-
-const getMerchantById = (merchantId: string | null): Merchant | null => {
-  if (!merchantId) return null
-  const allMerchants = merchantStore.getAllMerchants as Merchant[]
-  return allMerchants.find((m: Merchant) => m.id === merchantId) || null
+  return merchantStore.getMerchantProp(merchantId, prop)
 }
 
 const getVendorProp = (vendorId: string | null, prop: string): string => {
   if (!vendorId) return ''
-  const allVendors = vendorStore.getAllVendors as any[]
-  const vendor = allVendors.find((v: any) => v.id === vendorId)
-  return vendor?.[prop] || ''
+  return vendorStore.getVendorProp(vendorId, prop)
+}
+
+const getMerchantCuisines = (merchantId: string | null): string[] => {
+  if (!merchantId) return []
+  const merchant = merchantStore.allMerchants.find((m: Merchant) => m.id === merchantId)
+  return (merchant?.cuisine as string[]) || []
+}
+
+const getMerchantById = (merchantId: string | null): Merchant | null => {
+  if (!merchantId) return null
+  return merchantStore.allMerchants.find((m: Merchant) => m.id === merchantId) || null
 }
 
 const getVendorCuisines = (vendorId: string | null): string[] => {
   if (!vendorId) return []
-  const allVendors = vendorStore.getAllVendors as any[]
-  const vendor = allVendors.find((v: any) => v.id === vendorId)
-  return vendor?.cuisine || []
+  const vendor = vendorStore.allVendors.find((v: Vendor) => v.id === vendorId)
+  return (vendor?.cuisine as string[]) || []
 }
+
 
 const hasReview = (event: Event): boolean => {
   const sentReviews = reviewStore.getSentReviews
@@ -627,77 +627,35 @@ const requestEventFromDialog = async () => {
 const requestEvent = async (event: Event) => {
   loadingRequest.value = event.id
   try {
-    // Check usage limit before allowing request
-    const usageCheck = await $fetch('/api/usage/check', {
-      method: 'POST',
-      body: {
-        businessId: route.params.id as string,
-        businessType: 'vendor',
-        usageType: 'requests',
-        requiredAmount: 1
-      }
-    }) as any
-    console.log('Usage check:', usageCheck)
-
-    if (!usageCheck.allowed) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Usage Limit Reached',
-        detail: `You've reached your monthly limit of ${usageCheck.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
-        group: 'main',
-        life: 5000
-      })
-      return
-    }
-
-    const currentRequests = event.pending_requests || []
-    const updatedRequests = [...currentRequests, route.params.id as string]
+    const result = await eventStore.requestEvent(event.id, route.params.id as string)
     
-    const eventStore = useEventStore()
-    await eventStore.updateEvent(event.id, {
-      pending_requests: updatedRequests
-    })
-
-    // Increment usage after successful request
-    await $fetch('/api/usage/increment', {
-      method: 'POST',
-      body: {
-        businessId: route.params.id as string,
-        businessType: 'vendor',
-        usageType: 'requests',
-        incrementAmount: 1
-      }
-    })
-    
-    // Create notification for merchant
-    const merchantUserIds = await userStore.getUserIdsFromBusiness(event.merchant, 'merchant')
-    const vendorStore = useVendorStore()
-    const vendor = await vendorStore.getVendorById(route.params.id as string)
-    const currentUser = useSupabaseUser()
-    const notificationStore = useNotificationStore()
-    
-    for (const merchantUserId of merchantUserIds) {
-      try {
-        await notificationStore.createNotification({
-          recipient_id: merchantUserId,
-          sender_id: currentUser.value?.id || null,
-          sender_business_id: route.params.id as string,
-          sender_business_type: 'vendor',
-          action_type: 'event_request_sent',
-          entity_type: 'event',
-          entity_id: event.id,
-          title: 'New Event Request',
-          message: `${vendor?.vendor_name || 'A vendor'} requested to work your event on ${new Date(event.start).toLocaleDateString()}`,
-          metadata: {
-            event_id: event.id,
-            vendor_id: route.params.id as string,
-            vendor_name: vendor?.vendor_name,
-            event_date: event.start
-          }
+    if (!result.success) {
+      if (result.error === 'usage_limit') {
+        toast.add({
+          severity: 'warn',
+          summary: 'Usage Limit Reached',
+          detail: `You've reached your monthly limit of ${result.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
+          group: 'main',
+          life: 5000
         })
-      } catch (notifError) {
-        console.error('Failed to create notification for merchant user:', merchantUserId, notifError)
+      } else if (result.error === 'already_requested') {
+        toast.add({
+          severity: 'warn',
+          summary: 'Already Requested',
+          detail: 'You have already requested this event.',
+          group: 'main',
+          life: 3000
+        })
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: result.message || 'Failed to send request. Please try again.',
+          group: 'main',
+          life: 3000
+        })
       }
+      return
     }
     
     toast.add({
@@ -707,7 +665,7 @@ const requestEvent = async (event: Event) => {
       group: 'main',
       life: 3000
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error requesting event:', error)
     toast.add({
       severity: 'error',
@@ -724,19 +682,18 @@ const requestEvent = async (event: Event) => {
 const withdrawRequest = async (event: Event) => {
   loadingWithdrawal.value = event.id
   try {
-    // Remove this vendor from the pending_requests array
-    const currentRequests = event.pending_requests || []
-    const updatedRequests = currentRequests.filter((id: string) => id !== route.params.id)
+    const result = await eventStore.withdrawRequest(event.id, route.params.id as string)
     
-    const { error } = await supabase
-      .from('events')
-      .update({
-        pending_requests: updatedRequests.length > 0 ? updatedRequests as string[] : null,
-        updated_at: new Date().toISOString()
+    if (!result.success) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: result.message || 'Failed to withdraw request. Please try again.',
+        group: 'main',
+        life: 3000
       })
-      .eq('id', event.id)
-    
-    if (error) throw error
+      return
+    }
     
     toast.add({
       severity: 'info',
@@ -745,7 +702,7 @@ const withdrawRequest = async (event: Event) => {
       group: 'main',
       life: 3000
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error withdrawing request:', error)
     toast.add({
       severity: 'error',

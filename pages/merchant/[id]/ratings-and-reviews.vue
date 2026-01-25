@@ -348,17 +348,11 @@ const canSubmit = computed(() => {
 })
 
 const getVendorProp = (vendorId: string, prop: string): string => {
-  if (!vendorId) return ''
-  const allVendors = vendorStore.getAllVendors
-  const vendor = allVendors.find((v: any) => v.id === vendorId)
-  return (vendor?.[prop as keyof typeof vendor] as string) || ''
+  return vendorStore.getVendorProp(vendorId, prop)
 }
 
 const getEventProp = (eventId: string, prop: string): string => {
-  if (!eventId) return ''
-  const allEvents = eventStore.getAllEvents
-  const event = allEvents.find((e: Event) => e.id === eventId)
-  return (event?.[prop as keyof typeof event] as string) || ''
+  return eventStore.getEventProp(eventId, prop)
 }
 
 const getEventTime = (eventId: string): string => {

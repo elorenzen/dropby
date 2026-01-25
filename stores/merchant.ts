@@ -29,6 +29,12 @@ export const useMerchantStore = defineStore('merchant', {
         )
         return distance <= radiusKm
       })
+    },
+
+    getMerchantProp: (state) => (merchantId: string, prop: string): string => {
+      if (!merchantId) return ''
+      const merchant = state.allMerchants.find((m: Merchant) => m.id === merchantId)
+      return (merchant?.[prop as keyof typeof merchant] as string) || ''
     }
   },
   

@@ -372,15 +372,10 @@ const onClose = () => {
 onMounted(async () => {
     if (store.menuItems.length === 0) {
         try {
-            const supabase = useSupabaseClient()
-            const { data, error } = await supabase
-                .from('menu_items')
-                .select('*')
-            
-            if (error) {
-                console.error('Error loading menu items:', error)
-            } else if (data) {
-                await store.setAllMenuItems(data)
+            // Get vendor ID from user's associated vendor
+            const vendorId = user.value?.associated_vendor_id
+            if (vendorId) {
+                await store.loadMenuItems(vendorId)
             }
         } catch (error) {
             console.error('Error loading menu items:', error)

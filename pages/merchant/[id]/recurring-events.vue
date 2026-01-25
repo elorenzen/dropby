@@ -15,7 +15,6 @@
           <Button 
             @click="showCreateRecurringEventDialog = true"
             label="Create Recurring Event"
-            severity="success"
             size="small"
           />
         </div>

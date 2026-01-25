@@ -167,8 +167,8 @@
             >
               <div class="flex justify-between items-start mb-3">
                 <div>
-                  <h4 class="font-semibold text-text-main">{{ getMerchantName(selectedMapEvent.merchant) }}</h4>
-                  <p class="text-sm text-text-muted">{{ getVendorName(selectedMapEvent.vendor) }}</p>
+                  <h4 class="font-semibold text-text-main">{{ getMerchantProp(selectedMapEvent.merchant, 'merchant_name') || 'Unknown Establishment' }}</h4>
+                  <p class="text-sm text-text-muted">{{ getVendorProp(selectedMapEvent.vendor, 'vendor_name') || 'Unknown Food Truck' }}</p>
                 </div>
                 <Button 
                   icon="pi pi-times"
@@ -247,8 +247,8 @@
                 <div class="space-y-2">
                   <div class="flex items-start justify-between">
                     <div>
-                      <h4 class="font-medium text-text-main text-sm">{{ getMerchantName(event.merchant) }}</h4>
-                      <p class="text-xs text-text-muted">{{ getVendorName(event.vendor) }}</p>
+                      <h4 class="font-medium text-text-main text-sm">{{ getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Establishment' }}</h4>
+                      <p class="text-xs text-text-muted">{{ getVendorProp(event.vendor, 'vendor_name') || 'Unknown Food Truck' }}</p>
                     </div>
                     <div class="flex flex-col items-end gap-1">
                       <Badge :value="getEventStatus(event)" :severity="getEventStatusSeverity(event)" size="small" />
@@ -347,9 +347,6 @@ interface UserLocation {
   lng: number
 }
 
-const supabase = useSupabaseClient()
-const { isAuthenticated, userType } = useAuth()
-
 const events = ref<Event[]>([])
 const merchants = ref<Merchant[]>([])
 const vendors = ref<Vendor[]>([])
@@ -420,9 +417,9 @@ const filteredEvents = computed(() => {
       // Filter by keyword search
       if (filters.value.keyword) {
         const keyword = filters.value.keyword.toLowerCase()
-        const eventName = getMerchantName(event.merchant).toLowerCase()
+        const eventName = (getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Establishment').toLowerCase()
         const eventLocation = event.location_address?.toLowerCase() || ''
-        const eventVendor = getVendorName(event.vendor).toLowerCase()
+        const eventVendor = (getVendorProp(event.vendor, 'vendor_name') || 'Unknown Food Truck').toLowerCase()
 
         if (!eventName.includes(keyword) && !eventLocation.includes(keyword) && !eventVendor.includes(keyword)) {
           return false
@@ -453,9 +450,9 @@ const filteredEvents = computed(() => {
       case 'date-desc':
         return new Date(b.start).getTime() - new Date(a.start).getTime()
       case 'merchant':
-        return getMerchantName(a.merchant).localeCompare(getMerchantName(b.merchant))
+        return (getMerchantProp(a.merchant, 'merchant_name') || '').localeCompare(getMerchantProp(b.merchant, 'merchant_name') || '')
       case 'vendor':
-        return getVendorName(a.vendor).localeCompare(getVendorName(b.vendor))
+        return (getVendorProp(a.vendor, 'vendor_name') || '').localeCompare(getVendorProp(b.vendor, 'vendor_name') || '')
       case 'distance':
         if (userLocation.value) {
           const distA = getDistanceFromUser(a.location_coordinates)
@@ -472,37 +469,50 @@ const filteredEvents = computed(() => {
 })
 
 // Methods
+const eventStore = useEventStore()
+const merchantStore = useMerchantStore()
+const vendorStore = useVendorStore()
+
+// Helper functions
+const getMerchantProp = (merchantId: string | null, prop: string): string => {
+  if (!merchantId) return ''
+  return merchantStore.getMerchantProp(merchantId, prop)
+}
+
+const getVendorProp = (vendorId: string | null, prop: string): string => {
+  if (!vendorId) return ''
+  return vendorStore.getVendorProp(vendorId, prop)
+}
+
+const getVendorCuisines = (vendorId: string | null): string[] => {
+  if (!vendorId) return []
+  const vendor = vendorStore.allVendors.find((v: Vendor) => v.id === vendorId)
+  return (vendor?.cuisine as string[]) || []
+}
+
 const loadEvents = async () => {
   loading.value = true
   try {
-    // Load events - get all booked events and let frontend filtering handle the time logic
-    const { data: eventData } = await supabase
-      .from('events')
-      .select('*')
-      .eq('status', 'booked')
-      .order('start', { ascending: true })
-    
-    if (eventData) {
-      events.value = eventData
+    // Load events from store
+    if (eventStore.allEvents.length === 0) {
+      await eventStore.loadEvents()
     }
     
-    // Load merchants
-    const { data: merchantData } = await supabase
-      .from('merchants')
-      .select('*')
+    // Filter to only booked events for viewer page
+    const allEvents = eventStore.getAllEvents as Event[]
+    events.value = allEvents.filter((e: Event) => e.status === 'booked')
     
-    if (merchantData) {
-      merchants.value = merchantData
+    // Load merchants from store
+    if (merchantStore.allMerchants.length === 0) {
+      await merchantStore.loadMerchants()
     }
+    merchants.value = merchantStore.getAllMerchants as Merchant[]
     
-    // Load vendors
-    const { data: vendorData } = await supabase
-      .from('vendors')
-      .select('*')
-    
-    if (vendorData) {
-      vendors.value = vendorData
+    // Load vendors from store
+    if (vendorStore.allVendors.length === 0) {
+      await vendorStore.loadVendors()
     }
+    vendors.value = vendorStore.getAllVendors as Vendor[]
   } catch (error) {
     console.error('Error loading events:', error)
   } finally {
@@ -510,39 +520,6 @@ const loadEvents = async () => {
   }
 }
 
-const getMerchantName = (merchantId: string) => {
-  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
-  return merchant ? merchant.merchant_name : 'Unknown Establishment'
-}
-
-const getMerchantImage = (merchantId: string) => {
-  const merchant = merchants.value.find((m: Merchant) => m.id === merchantId)
-  return merchant?.avatar_url || 'https://placehold.co/400x300?text=Establishment'
-}
-
-
-
-const getVendorName = (vendorId: string) => {
-  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
-  return vendor ? vendor.vendor_name : 'Unknown Food Truck'
-}
-
-const getVendorImage = (vendorId: string) => {
-  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
-  return vendor?.avatar_url || 'https://placehold.co/400x300?text=Food+Truck'
-}
-
-const getVendorCuisine = (vendorId: string) => {
-  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
-  if (!vendor?.cuisine || vendor.cuisine.length === 0) return null
-  // Return the first cuisine type for display purposes
-  return vendor.cuisine[0]
-}
-
-const getVendorCuisines = (vendorId: string) => {
-  const vendor = vendors.value.find((v: Vendor) => v.id === vendorId)
-  return vendor?.cuisine || []
-}
 
 const getEventStatus = (event: any) => {
   const now = new Date()
@@ -771,7 +748,7 @@ const addEventMarkers = () => {
     const marker = new google.maps.Marker({
       position: { lat: coordinates.lat, lng: coordinates.lng },
       map: map.value,
-      title: getMerchantName(event.merchant),
+      title: getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Establishment',
       icon: getMarkerIcon(event.status),
       animation: google.maps.Animation.DROP
     })

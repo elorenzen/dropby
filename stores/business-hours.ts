@@ -69,6 +69,97 @@ export const useBusinessHoursStore = defineStore('businessHours', {
      */
     setBusinessHours(data: BusinessHour[] | null) {
       this.allBusinessHours = data || []
+    },
+
+    /**
+     * Load business hours from database
+     */
+    async loadBusinessHours(businessId: string, businessType: 'merchant' | 'vendor') {
+      this.loading = true
+      try {
+        const supabase = useSupabaseClient()
+        
+        const { data, error } = await supabase
+          .from('business_hours')
+          .select('*')
+          .eq('business_id', businessId)
+          .eq('business_type', businessType)
+          .order('day_of_week', { ascending: true })
+
+        if (error) throw error
+        
+        // Update state - merge with existing to avoid duplicates
+        const existing = this.allBusinessHours.filter(
+          bh => !(bh.business_id === businessId && bh.business_type === businessType)
+        )
+        this.allBusinessHours = [...existing, ...(data || [])]
+        
+        return data || []
+      } catch (error) {
+        console.error('Error loading business hours:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
+     * Update business hours (upsert operation)
+     */
+    async updateBusinessHours(businessId: string, businessType: 'merchant' | 'vendor', hours: Array<{
+      dayOfWeek: number
+      open: string | null
+      close: string | null
+      isClosed: boolean
+    }>) {
+      this.loading = true
+      try {
+        const supabase = useSupabaseClient()
+        
+        // Format time for database (HH:MM:SS)
+        const formatTimeForDatabase = (time: string | null): string | null => {
+          if (!time) return null
+          if (typeof time === 'string' && time.includes(':')) {
+            // If already in HH:MM format, add seconds
+            if (time.split(':').length === 2) {
+              return `${time}:00`
+            }
+            return time
+          }
+          return null
+        }
+        
+        // Upsert each day's hours
+        for (const day of hours) {
+          const isClosed = day.isClosed || (!day.open && !day.close)
+          
+          const { error } = await supabase
+            .from('business_hours')
+            .upsert({
+              business_id: businessId,
+              business_type: businessType,
+              day_of_week: day.dayOfWeek,
+              open_time: formatTimeForDatabase(day.open),
+              close_time: formatTimeForDatabase(day.close),
+              is_closed: isClosed,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'business_id,business_type,day_of_week'
+            })
+          
+          if (error) throw error
+        }
+        
+        // Reload to update local state
+        await this.loadBusinessHours(businessId, businessType)
+        
+        return true
+      } catch (error) {
+        console.error('Error updating business hours:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

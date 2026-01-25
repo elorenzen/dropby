@@ -117,25 +117,30 @@ const loading = ref(false)
 const stripeAccountId = ref('')
 const stripeAccountStatus = ref<'complete' | 'pending' | null>(null)
 
+const vendorStore = useVendorStore()
+
 // Load current Stripe Connect status
 const loadStripeStatus = async () => {
   try {
-    const { data: vendorData, error } = await supabase
-      .from('vendors')
-      .select('stripe_connect_account_id')
-      .eq('id', props.vendorId)
-      .single()
-
-    if (!error && vendorData?.stripe_connect_account_id) {
-      stripeAccountId.value = vendorData.stripe_connect_account_id
+    // Ensure vendors are loaded
+    if (vendorStore.allVendors.length === 0) {
+      await vendorStore.loadVendors()
+    }
+    
+    const stripeAccountIdFromStore = vendorStore.getVendorProp(props.vendorId, 'stripe_connect_account_id')
+    
+    if (stripeAccountIdFromStore) {
+      stripeAccountId.value = stripeAccountIdFromStore
       
-      // Check account status with Stripe
-      const response = await $fetch('/api/vendors/check-stripe-status', {
-        method: 'POST',
-        body: { accountId: vendorData.stripe_connect_account_id }
-      }) as any
+      // Check account status with Stripe (only if we have an account ID)
+      if (stripeAccountId.value) {
+        const response = await $fetch('/api/vendors/check-stripe-status', {
+          method: 'POST',
+          body: { accountId: stripeAccountId.value }
+        }) as any
 
-      stripeAccountStatus.value = response.accountStatus
+        stripeAccountStatus.value = response.accountStatus
+      }
     }
   } catch (error) {
     console.error('Error loading Stripe status:', error)

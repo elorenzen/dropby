@@ -262,6 +262,42 @@ export const useReviewStore = defineStore('review', {
       }
     },
 
+    async loadReviewsForBusiness(businessId: string, businessType: 'merchant' | 'vendor') {
+      this.loading = true
+      try {
+        const supabase = useSupabaseClient()
+        
+        // Load received reviews (where business is the recipient)
+        const { data: received, error: receivedError } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('recipient_id', businessId)
+          .order('created_at', { ascending: false })
+
+        if (receivedError) throw receivedError
+
+        // Load sent reviews (where business is the sender)
+        const { data: sent, error: sentError } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('sender_id', businessId)
+          .order('created_at', { ascending: false })
+
+        if (sentError) throw sentError
+        
+        this.receivedReviews = received || []
+        this.sentReviews = sent || []
+        this.currentUserId = businessId
+        
+        return { received: this.receivedReviews, sent: this.sentReviews }
+      } catch (error) {
+        console.error('Error loading reviews for business:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     async loadReviewsForEvent(eventId: string) {
       try {
         const supabase = useSupabaseClient()

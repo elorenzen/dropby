@@ -377,6 +377,7 @@ const supabase = useSupabaseClient()
 const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
 const userStore = useUserStore()
+const businessHoursStore = useBusinessHoursStore()
 const { currentUser } = useAuth()
 
 // Store data
@@ -559,30 +560,16 @@ const saveEdits = async () => {
     preferred_vendors: merchant.value.preferred_vendors,
   }
 
-  const { error } = await supabase
-    .from('merchants')
-    .update(updates)
-    .eq('id', merchant.value.id)
-    
-  if (!error) {
+  try {
+    await merchantStore.updateMerchant(merchant.value.id, updates)
     showToast('Information Updated!', 'success')
-  } else {
+  } catch (error: any) {
     errType.value = 'Settings Update'
-    errMsg.value = error.message
+    errMsg.value = error.message || 'Failed to update merchant information'
     errDialog.value = true
+  } finally {
+    loading.value = false
   }
-  
-  loading.value = false
-}
-
-// Helper function to format Date object to TIME string (HH:MM:SS)
-const formatTimeForDatabase = (date: Date | null | string): string | null => {
-  if (!date) return null
-  if (typeof date === 'string') return date // Already a string
-  const hours = date.getHours().toString().padStart(2, '0')
-  const minutes = date.getMinutes().toString().padStart(2, '0')
-  const seconds = date.getSeconds().toString().padStart(2, '0')
-  return `${hours}:${minutes}:${seconds}`
 }
 
 const saveBusinessHours = async () => {
@@ -591,37 +578,15 @@ const saveBusinessHours = async () => {
   loading.value = true
   
   try {
-    // Save each day's business hours to the business_hours table
-    for (const day of businessHours.value) {
-      const isClosed = day.isClosed || (!day.open && !day.close)
-      
-      const { error } = await supabase
-        .from('business_hours')
-        .upsert({
-          business_id: merchant.value.id,
-          business_type: 'merchant',
-          day_of_week: day.dayOfWeek,
-          open_time: formatTimeForDatabase(day.open),
-          close_time: formatTimeForDatabase(day.close),
-          is_closed: isClosed,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'business_id,business_type,day_of_week'
-        })
-      
-      if (error) {
-        throw error
-      }
-    }
-    
+    await businessHoursStore.updateBusinessHours(merchant.value.id, 'merchant', businessHours.value)
     showToast('Business Hours Updated!', 'success')
   } catch (error: any) {
     errType.value = 'Business Hours Update'
     errMsg.value = error.message || 'Failed to update business hours'
     errDialog.value = true
+  } finally {
+    loading.value = false
   }
-  
-  loading.value = false
 }
 
 const updateImage = async (e: any) => {

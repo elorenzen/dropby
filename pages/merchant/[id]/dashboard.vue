@@ -197,27 +197,10 @@
   const showCreateDialog = ref(false)
 
   const timelineStore = useTimelineStore()
-  const { data: timelineData, error: timelineError } = await supabase
-    .from('timeline_items')
-    .select('*')
-    .eq('owner_id', route.params.id)
-    .order('created_at', { ascending: false })
-  await timelineStore.setTimeline(timelineData || [])
+  await timelineStore.loadTimeline(route.params.id as string)
 
   const reviewStore = useReviewStore()
-  const { data: receivedReviews, error: receivedReviewsError } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('recipient_id', route.params.id)
-    .order('created_at', { ascending: false })
-  await reviewStore.setReceivedReviews(receivedReviews || [])
-
-  const { data: sentReviews, error: sentReviewsError } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('sender_id', route.params.id)
-    .order('created_at', { ascending: false })
-  await reviewStore.setSentReviews(sentReviews || [])
+  await reviewStore.loadReviewsForBusiness(route.params.id as string, 'merchant')
 
   await subcriptionStore.setActiveSubscription(route.params.id as string, 'merchant')
   const activeSubscription = subcriptionStore.getActiveSubscription
@@ -423,18 +406,7 @@
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'reviews' }, 
         async (payload: any) => {
-          const { data: receivedReviews } = await supabase
-            .from('reviews')
-            .select('*')
-            .eq('recipient_id', route.params.id)
-            .order('created_at', { ascending: false })
-          await reviewStore.setReceivedReviews(receivedReviews || [])
-          const { data: sentReviews } = await supabase
-            .from('reviews')
-            .select('*')
-            .eq('sender_id', route.params.id)
-            .order('created_at', { ascending: false })
-          await reviewStore.setSentReviews(sentReviews || [])
+          await reviewStore.loadReviewsForBusiness(route.params.id as string, 'merchant')
         })
       .subscribe()
 
@@ -445,12 +417,7 @@
         { event: '*', schema: 'public', table: 'timeline_items' }, 
         async (payload: any) => {
           // Reload timeline data when there are changes
-          const { data: newTimelineData } = await supabase
-            .from('timeline_items')
-            .select('*')
-            .eq('owner_id', route.params.id)
-            .order('created_at', { ascending: false })
-          await timelineStore.setTimeline(newTimelineData || [])
+          await timelineStore.loadTimeline(route.params.id as string)
         })
       .subscribe()
   })

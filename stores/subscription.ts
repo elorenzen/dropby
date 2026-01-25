@@ -288,5 +288,51 @@ export const useSubscriptionStore = defineStore('subscription', {
     clearActiveSubscription() {
       this.activeSubscription = null
     },
+
+    /**
+     * Check for unpaid/incomplete subscriptions and return the subscription if found
+     */
+    async checkUnpaidSubscription(businessId: string, businessType: 'merchant' | 'vendor') {
+      try {
+        const supabase = useSupabaseClient()
+        
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('business_id', businessId)
+          .eq('business_type', businessType)
+          .in('status', ['unpaid', 'incomplete'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        
+        return subscription
+      } catch (error) {
+        console.error('Error checking unpaid subscription:', error)
+        return null
+      }
+    },
+
+    /**
+     * Load all subscriptions for a business (for payment history)
+     */
+    async loadSubscriptionsForBusiness(businessId: string, businessType: 'merchant' | 'vendor') {
+      try {
+        const supabase = useSupabaseClient()
+        
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('business_id', businessId)
+          .eq('business_type', businessType)
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        return data || []
+      } catch (error) {
+        console.error('Error loading subscriptions:', error)
+        throw error
+      }
+    }
   },
 })

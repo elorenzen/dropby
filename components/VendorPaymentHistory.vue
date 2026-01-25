@@ -294,48 +294,13 @@ const totalSubscriptionFees = computed(() => {
     .reduce((sum: number, payment: Payment) => sum + payment.amount, 0)
 })
 
+const paymentStore = usePaymentStore()
+
 // Methods
 const loadPayments = async () => {
   loading.value = true
   try {
-    const supabase = useSupabaseClient()
-    
-    // Load payments where this vendor is the recipient
-    let { data: paymentsData, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('vendor_id', props.vendorId)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error loading payments:', error)
-      throw error
-    }
-
-    // Load related event data (no merchant data for vendor payment history)
-    if (paymentsData && paymentsData.length > 0) {
-      const eventIds = paymentsData.filter((p: any) => p.event_id).map((p: any) => p.event_id)
-      
-      let eventsData: any = {}
-      
-      if (eventIds.length > 0) {
-        // Load events (without merchant information)
-        const { data: events } = await supabase
-          .from('events')
-          .select('id, event_name, start, end, location_address')
-          .in('id', eventIds)
-        eventsData = events?.reduce((acc: any, event: any) => {
-          acc[event.id] = event
-          return acc
-        }, {}) || {}
-      }
-      
-      // Attach event data to payments (no merchant data)
-      paymentsData = paymentsData.map((payment: any) => ({
-        ...payment,
-        events: eventsData[payment.event_id]
-      }))
-    }
+    const paymentsData = await paymentStore.loadPaymentsForVendor(props.vendorId)
 
     console.log('Vendor payments data loaded:', paymentsData)
 
@@ -367,17 +332,12 @@ const getSubscriptionPrice = (planType: string): number => {
   return plan?.price || 0
 }
 
+const subscriptionStore = useSubscriptionStore()
+
 const loadSubscriptionFees = async () => {
   try {
-    const supabase = useSupabaseClient()
-    
     // Load subscription data to calculate fees for vendors
-    const { data: subscriptions } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('business_id', props.vendorId)
-      .eq('business_type', 'vendor')
-      .order('created_at', { ascending: false })
+    const subscriptions = await subscriptionStore.loadSubscriptionsForBusiness(props.vendorId, 'vendor')
 
     if (subscriptions && subscriptions.length > 0) {
       // Add subscription fees to payments (as negative amounts since vendor pays these)
