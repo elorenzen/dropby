@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Event, TimelineItem } from '~/types'
+import { usageService } from '~/services/api/usageService'
 
 export const useEventStore = defineStore('event', {
   state: () => ({
@@ -296,15 +297,12 @@ export const useEventStore = defineStore('event', {
     async requestEvent(eventId: string, vendorId: string, options?: { sendEmail?: boolean }) {
       try {
         // Check usage limit before allowing request
-        const usageCheck = await $fetch('/api/usage/check', {
-          method: 'POST',
-          body: {
-            businessId: vendorId,
-            businessType: 'vendor',
-            usageType: 'requests',
-            requiredAmount: 1
-          }
-        }) as any
+        const usageCheck = await usageService.check({
+          businessId: vendorId,
+          businessType: 'vendor',
+          usageType: 'requests',
+          requiredAmount: 1
+        })
 
         if (!usageCheck.allowed) {
           return {
@@ -338,14 +336,11 @@ export const useEventStore = defineStore('event', {
         })
 
         // Increment usage after successful request
-        await $fetch('/api/usage/increment', {
-          method: 'POST',
-          body: {
-            businessId: vendorId,
-            businessType: 'vendor',
-            usageType: 'requests',
-            incrementAmount: 1
-          }
+        await usageService.increment({
+          businessId: vendorId,
+          businessType: 'vendor',
+          usageType: 'requests',
+          incrementAmount: 1
         })
 
         // Create notification for merchant

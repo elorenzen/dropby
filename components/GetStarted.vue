@@ -302,6 +302,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import { merchantPlans, vendorPlans, type Plan } from '~/constants/subscriptionPlans'
+import { subscriptionService } from '~/services/api/subscriptionService'
 
 const supabase = useSupabaseClient()
 const authUser = useSupabaseUser()
@@ -695,14 +696,11 @@ const submit = async () => {
             // Create paid subscription with allow_incomplete (no payment method yet)
             // This creates a subscription with status 'incomplete'/'unpaid' in Stripe
             try {
-                const response = await $fetch('/api/subscriptions/create', {
-                    method: 'POST',
-                    body: {
-                        planType: selectedPlan.value.id,
-                        stripePriceId: selectedPlan.value.stripePriceId
-                        // No paymentMethodId - this creates an incomplete/unpaid subscription
-                    }
-                }) as any
+                const response = await subscriptionService.create({
+                    planType: selectedPlan.value.id,
+                    stripePriceId: selectedPlan.value.stripePriceId
+                    // No paymentMethodId - this creates an incomplete/unpaid subscription
+                })
                 
                 if (response.success) {
                     subscriptionData = response.subscription

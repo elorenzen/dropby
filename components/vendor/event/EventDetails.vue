@@ -14,7 +14,7 @@
                         <div class="space-y-2">
                             <div>
                                 <span class="font-medium">Date:</span>
-                                <span class="ml-2">{{ formatDate(event.start) }}</span>
+                                <span class="ml-2">{{ formatDate(event.start, { format: 'long' }) }}</span>
                             </div>
                             <div>
                                 <span class="font-medium">Time:</span>
@@ -95,6 +95,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate, formatTime } from '~/utils/dates'
 import type { Event, Merchant } from '~/types'
 
 const props = defineProps<{
@@ -112,22 +113,6 @@ const isPendingRequest = computed(() => {
     return props.event.pending_requests?.includes(props.vendorId || '') || false
 })
 
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    })
-}
-
-const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    })
-}
 
 const getStatusDisplay = (status: string) => {
     switch (status) {

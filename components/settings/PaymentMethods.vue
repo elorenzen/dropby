@@ -60,6 +60,7 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue'
+import { paymentService } from '~/services/api/paymentService'
 
 const props = defineProps<{
     stripeCustomerId: string | null,
@@ -74,11 +75,8 @@ const paymentMethodToDelete = ref<string | null>(null)
 onMounted(async () => {
     if (!props.stripeCustomerId) return
     
-    const response = await $fetch('/api/payments/list-payment-methods', {
-        method: 'POST',
-        body: {
-            customerId: props.stripeCustomerId
-        }
+    const response = await paymentService.listPaymentMethods({
+        customerId: props.stripeCustomerId
     })
     paymentMethods.value = response
     console.log('paymentMethods', paymentMethods.value)
@@ -89,11 +87,8 @@ const handlePaymentMethodAdded = async () => {
     
     // Refresh payment methods list
     if (props.stripeCustomerId) {
-        const response = await $fetch('/api/payments/list-payment-methods', {
-            method: 'POST',
-            body: {
-                customerId: props.stripeCustomerId
-            }
+        const response = await paymentService.listPaymentMethods({
+            customerId: props.stripeCustomerId
         })
         paymentMethods.value = response
     }
@@ -117,9 +112,8 @@ const handleDeleteConfirm = async () => {
     if (!paymentMethodToDelete.value) return
     
     try {
-        const response = await $fetch('/api/payments/detach-payment-method', {
-            method: 'POST',
-            body: { paymentMethodId: paymentMethodToDelete.value }
+        const response = await paymentService.detachPaymentMethod({
+            paymentMethodId: paymentMethodToDelete.value
         })
         
         if (response as any) {

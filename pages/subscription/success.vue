@@ -31,7 +31,7 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-text-muted">Next billing:</span>
-                  <span class="text-text-main">{{ formatDate(subscriptionDetails.nextBilling) }}</span>
+                  <span class="text-text-main">{{ formatDate(subscriptionDetails.nextBilling, { format: 'long' }) }}</span>
                 </div>
               </div>
             </div>
@@ -60,6 +60,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate } from '~/utils/dates'
+
 definePageMeta({
   middleware: ['auth']
 })
@@ -75,15 +77,6 @@ const subscriptionDetails = ref({
   planName: 'Pro Plan',
   nextBilling: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
 })
-
-// Format date helper
-const formatDate = (date: Date) => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
 
 // Navigation methods
 const navigateToDashboard = () => {

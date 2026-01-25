@@ -37,7 +37,7 @@
                         size="small"
                       />
                       <span v-if="getDocumentExpiry(category.id)" class="text-xs text-md-gray">
-                        Expires: {{ formatDate(getDocumentExpiry(category.id)) }}
+                        Expires: {{ getDocumentExpiry(category.id) ? formatDate(getDocumentExpiry(category.id)!, { format: 'simple' }) : 'N/A' }}
                       </span>
                     </div>
                   </div>
@@ -259,7 +259,7 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
-
+import { formatDate } from '~/utils/dates'
 import type { ComplianceRequirement } from '~/types'
 
 interface DocumentInfo {
@@ -355,10 +355,6 @@ const getDocumentStatusSeverity = (categoryId: string): string => {
 const getDocumentExpiry = (categoryId: string): string | null => {
   const doc = existingDocuments.value.find(d => d.category === categoryId)
   return doc?.expiry_date || null
-}
-
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString()
 }
 
 // Computed properties for summary

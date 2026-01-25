@@ -173,7 +173,7 @@
                           <div class="flex items-center gap-3 mb-2">
                             <i class="pi pi-calendar text-primary"></i>
                             <span class="font-semibold text-text-main">
-                              {{ formatDate(event.start) }}
+                              {{ formatDate(event.start, { format: 'long' }) }}
                             </span>
                           </div>
                           <div class="flex items-center gap-3 mb-2">
@@ -233,6 +233,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate, formatTime } from '~/utils/dates'
+import { getEventStatusSeverity } from '~/utils/events'
 import type { Vendor, Event, Merchant } from '~/types'
 import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 
@@ -397,40 +399,6 @@ const getVendorReviewCount = (vendorId: string): number => {
   return reviewStore.getReviewsForBusiness(vendorId).length
 }
 
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  })
-}
-
-const formatTime = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  })
-}
-
-const getEventStatusSeverity = (status: string): string => {
-  switch (status.toLowerCase()) {
-    case 'booked':
-      return 'success'
-    case 'open':
-      return 'info'
-    case 'completed':
-      return 'secondary'
-    case 'cancelled':
-      return 'danger'
-    default:
-      return 'secondary'
-  }
-}
 
 // Search functions
 const onSearchInput = () => {

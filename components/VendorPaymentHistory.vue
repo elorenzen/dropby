@@ -127,7 +127,7 @@
       >
         <Column field="date" header="Date" sortable>
           <template #body="{ data }">
-            <span class="font-medium">{{ formatDate(data.date) }}</span>
+            <span class="font-medium">{{ formatDate(data.date, { format: 'short' }) }}</span>
           </template>
         </Column>
 
@@ -180,6 +180,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate } from '~/utils/dates'
 import { vendorPlans } from '~/constants/subscriptionPlans'
 
 interface Props {
@@ -417,13 +418,7 @@ const formatCurrency = (amount: number): string => {
   return amount.toFixed(2)
 }
 
-const formatDate = (date: string): string => {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
+import { formatDate } from '~/utils/dates'
 
 const exportPayments = async () => {
   exporting.value = true
@@ -440,7 +435,7 @@ const exportPayments = async () => {
 const exportAsText = () => {
   try {
     const data = filteredPayments.value.map((payment: Payment) => ({
-      Date: formatDate(payment.date),
+      Date: formatDate(payment.date, { format: 'short' }),
       Type: getPaymentTypeLabel(payment.type),
       Description: payment.description,
       Amount: payment.type === 'subscription' 

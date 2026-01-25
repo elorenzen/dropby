@@ -262,7 +262,7 @@
                   <div class="space-y-1 text-xs text-text-muted">
                     <div class="flex items-center gap-1">
                       <i class="pi pi-calendar"></i>
-                      <span>{{ formatDate(event.start) }}</span>
+                      <span>{{ formatDate(event.start, { format: 'medium' }) }}</span>
                     </div>
                     <div class="flex items-center gap-1">
                       <i class="pi pi-clock"></i>
@@ -334,6 +334,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate, formatTime } from '~/utils/dates'
 import BaseIcon from '~/components/BaseIcon.vue'
 import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 import type { Event, Merchant, Vendor } from '~/types'
@@ -549,22 +550,6 @@ const getEventStatusSeverity = (event: any) => {
   else {
     return 'success' // Green for upcoming events
   }
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-const formatTime = (dateString: string) => {
-  return new Date(dateString).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  })
 }
 
 const getDistanceFromUser = (coordinates: string | undefined) => {

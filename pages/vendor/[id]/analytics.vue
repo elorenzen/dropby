@@ -176,6 +176,8 @@ import {
   Legend,
   Filler
 } from 'chart.js'
+import { generateTimeSeries } from '~/utils/timeSeries'
+import { countEventsByDayOfWeek, countEventsByHour } from '~/utils/analytics'
 
 // Register Chart.js components
 ChartJS.register(
@@ -310,77 +312,21 @@ const loadAnalyticsData = async () => {
     if (!vendor.value?.id) return
 
     const vendorId = vendor.value.id
-    const periodStart = getPeriodStart(selectedPeriod.value)
+    const analyticsResult = await vendorStore.getAnalyticsMetrics(vendorId, selectedPeriod.value)
 
-    // Ensure events are loaded
-    if (eventStore.allEvents.length === 0) {
-      await eventStore.loadEvents()
-    }
+    // Update metrics
+    metrics.value.totalBookings = analyticsResult.metrics.totalBookings
+    metrics.value.pendingRequests = analyticsResult.metrics.pendingRequests
+    metrics.value.acceptanceRate = analyticsResult.metrics.acceptanceRate
+    metrics.value.uniqueMerchants = analyticsResult.metrics.uniqueMerchants
+    metrics.value.repeatMerchants = analyticsResult.metrics.repeatMerchants
+    metrics.value.avgBookingsPerMerchant = analyticsResult.metrics.avgBookingsPerMerchant
 
-    // Get all events where this vendor has pending requests OR is booked
-    const allEvents = eventStore.getEventsForAnalytics(vendorId, 'vendor')
-
-    if (!allEvents || allEvents.length === 0) return
-
-    // Filter events by period - use event start date (when event happened) for filtering
-    const periodEvents = selectedPeriod.value === 'all' 
-      ? allEvents 
-      : allEvents.filter((event: any) => 
-          new Date(event.start) >= periodStart
-        )
-
-    // Get all events for this vendor (matches past events page logic - all events where vendor is assigned)
-    const acceptedEvents = periodEvents.filter((event: any) => 
-      event.vendor === vendorId
-    )
-
-    // Get requests that vendor made (vendor_id in pending_requests array)
-    const pendingRequests = periodEvents.filter((event: any) => 
-      event.pending_requests && 
-      Array.isArray(event.pending_requests) && 
-      event.pending_requests.includes(vendorId)
-    )
-
-    await processAnalyticsData(acceptedEvents, pendingRequests, periodEvents, vendorId)
+    // Generate chart data
+    await generateChartData(analyticsResult.acceptedEvents, analyticsResult.merchantCounts, analyticsResult.periodEvents, vendorId)
   } catch (error) {
     console.error('Error loading analytics:', error)
   }
-}
-
-// Process analytics data
-const processAnalyticsData = async (
-  acceptedEvents: any[], 
-  pendingRequests: any[],
-  allPeriodEvents: any[],
-  vendorId: string
-) => {
-  // Acceptance Rate: (Accepted + Completed events) / (Pending requests vendor made)
-  metrics.value.totalBookings = acceptedEvents.length
-  metrics.value.pendingRequests = pendingRequests.length
-  metrics.value.acceptanceRate = pendingRequests.length > 0
-    ? Math.round((acceptedEvents.length / pendingRequests.length) * 100)
-    : 0
-
-  // Calculate merchant relationship metrics
-  const merchantIds = acceptedEvents
-    .map(event => event.merchant)
-    .filter((id): id is string => id !== null && id !== undefined)
-  
-  const uniqueMerchantSet = new Set(merchantIds)
-  metrics.value.uniqueMerchants = uniqueMerchantSet.size
-
-  // Count repeat merchants (merchants with >1 booking)
-  const merchantCounts: { [key: string]: number } = {}
-  merchantIds.forEach(id => {
-    merchantCounts[id] = (merchantCounts[id] || 0) + 1
-  })
-  metrics.value.repeatMerchants = Object.values(merchantCounts).filter(count => count > 1).length
-  metrics.value.avgBookingsPerMerchant = uniqueMerchantSet.size > 0
-    ? Math.round((acceptedEvents.length / uniqueMerchantSet.size) * 10) / 10
-    : 0
-
-  // Generate chart data
-  await generateChartData(acceptedEvents, merchantCounts, allPeriodEvents, vendorId)
 }
 
 // Generate chart data
@@ -391,7 +337,7 @@ const generateChartData = async (
   vendorId: string
 ) => {
   // Bookings over time - generate continuous time series
-  const bookingsTimeSeries = generateBookingsTimeSeries(acceptedEvents, selectedPeriod.value)
+  const bookingsTimeSeries = generateTimeSeries(acceptedEvents, selectedPeriod.value, 'start')
   bookingsChartData.value = {
     labels: bookingsTimeSeries.labels,
     datasets: [{
@@ -409,7 +355,7 @@ const generateChartData = async (
   }
 
   // Peak booking days
-  const dayCounts = countBookingDays(acceptedEvents)
+  const dayCounts = countEventsByDayOfWeek(acceptedEvents, 'start')
   const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const dayColors = [
     'rgba(239, 68, 68, 0.8)',   // Red for Sunday
@@ -432,7 +378,7 @@ const generateChartData = async (
   }
 
   // Peak booking hours
-  const hourCounts = countBookingHours(acceptedEvents)
+  const hourCounts = countEventsByHour(acceptedEvents, 'start')
   peakHoursChartData.value = {
     labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
     datasets: [{
@@ -478,194 +424,6 @@ const generateChartData = async (
       borderWidth: 2
     }]
   }
-}
-
-// Helper functions
-const getPeriodStart = (period: string) => {
-  if (period === 'all') return new Date(0) // Beginning of time
-  const now = new Date()
-  switch (period) {
-    case '7d': return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-    case '30d': return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-    case '90d': return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-    case '6m': return new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)
-    case '1y': return new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
-    default: return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-  }
-}
-
-const getPeriodDuration = (period: string) => {
-  if (period === 'all') return 0
-  switch (period) {
-    case '7d': return 7 * 24 * 60 * 60 * 1000
-    case '30d': return 30 * 24 * 60 * 60 * 1000
-    case '90d': return 90 * 24 * 60 * 60 * 1000
-    case '6m': return 180 * 24 * 60 * 60 * 1000
-    case '1y': return 365 * 24 * 60 * 60 * 1000
-    default: return 30 * 24 * 60 * 60 * 1000
-  }
-}
-
-// Generate continuous time series for bookings chart
-const generateBookingsTimeSeries = (events: any[], period: string) => {
-  const now = new Date()
-  const periodStart = getPeriodStart(period)
-  const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()) // Today at midnight
-  
-  // Determine interval based on period
-  let interval: 'daily' | '3day' | 'weekly' | 'biweekly' | 'monthly' | 'yearly'
-  let dateFormat: (date: Date) => string
-  
-  if (period === '7d') {
-    interval = 'daily'
-    dateFormat = (date: Date) => date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
-  } else if (period === '30d') {
-    interval = '3day'
-    dateFormat = (date: Date) => date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
-  } else if (period === '90d') {
-    interval = 'weekly'
-    dateFormat = (date: Date) => {
-      // Get start of week (Sunday)
-      const weekStart = new Date(date)
-      weekStart.setDate(date.getDate() - date.getDay())
-      return weekStart.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
-    }
-  } else if (period === '6m') {
-    interval = 'biweekly'
-    dateFormat = (date: Date) => date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
-  } else if (period === '1y') {
-    interval = 'monthly'
-    dateFormat = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-  } else {
-    // All time - monthly or yearly depending on range
-    const daysDiff = Math.ceil((endDate.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24))
-    if (daysDiff > 730) { // More than 2 years
-      interval = 'yearly'
-      dateFormat = (date: Date) => date.getFullYear().toString()
-    } else {
-      interval = 'monthly'
-      dateFormat = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    }
-  }
-  
-  // Generate date labels and buckets
-  const labels: string[] = []
-  const data: number[] = []
-  const buckets: { [key: string]: number } = {}
-  
-  // Initialize buckets with zeros
-  let currentDate = new Date(periodStart)
-  while (currentDate <= endDate) {
-    let bucketKey: string
-    let nextDate: Date
-    
-    if (interval === 'daily') {
-      bucketKey = dateFormat(currentDate)
-      nextDate = new Date(currentDate)
-      nextDate.setDate(nextDate.getDate() + 1)
-    } else if (interval === '3day') {
-      // Use current date as bucket key (will be rounded to 3-day intervals)
-      bucketKey = dateFormat(currentDate)
-      nextDate = new Date(currentDate)
-      nextDate.setDate(nextDate.getDate() + 3)
-    } else if (interval === 'weekly') {
-      // Get start of week (Sunday)
-      const weekStart = new Date(currentDate)
-      weekStart.setDate(currentDate.getDate() - currentDate.getDay())
-      bucketKey = dateFormat(weekStart)
-      nextDate = new Date(weekStart)
-      nextDate.setDate(nextDate.getDate() + 7)
-    } else if (interval === 'biweekly') {
-      // Round to nearest 2-week interval (every other Sunday)
-      const weekStart = new Date(currentDate)
-      weekStart.setDate(currentDate.getDate() - currentDate.getDay())
-      const weeksSinceEpoch = Math.floor(weekStart.getTime() / (1000 * 60 * 60 * 24 * 7))
-      const biweekStart = new Date(weekStart)
-      biweekStart.setDate(weekStart.getDate() - (weeksSinceEpoch % 2) * 7)
-      bucketKey = dateFormat(biweekStart)
-      nextDate = new Date(biweekStart)
-      nextDate.setDate(nextDate.getDate() + 14)
-    } else if (interval === 'monthly') {
-      const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-      bucketKey = dateFormat(monthStart)
-      nextDate = new Date(monthStart)
-      nextDate.setMonth(nextDate.getMonth() + 1)
-    } else { // yearly
-      const yearStart = new Date(currentDate.getFullYear(), 0, 1)
-      bucketKey = dateFormat(yearStart)
-      nextDate = new Date(yearStart)
-      nextDate.setFullYear(nextDate.getFullYear() + 1)
-    }
-    
-    if (!buckets[bucketKey]) {
-      buckets[bucketKey] = 0
-      labels.push(bucketKey)
-    }
-    
-    currentDate = nextDate
-  }
-  
-  // Map events to buckets
-  events.forEach(event => {
-    const eventDate = new Date(event.start)
-    let bucketKey: string
-    
-    if (interval === 'daily') {
-      bucketKey = dateFormat(eventDate)
-    } else if (interval === '3day') {
-      // Round to nearest 3-day interval (every 3 days starting from period start)
-      const daysSinceStart = Math.floor((eventDate.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24))
-      const intervalIndex = Math.floor(daysSinceStart / 3)
-      const intervalStart = new Date(periodStart)
-      intervalStart.setDate(periodStart.getDate() + (intervalIndex * 3))
-      bucketKey = dateFormat(intervalStart)
-    } else if (interval === 'weekly') {
-      const weekStart = new Date(eventDate)
-      weekStart.setDate(eventDate.getDate() - eventDate.getDay())
-      bucketKey = dateFormat(weekStart)
-    } else if (interval === 'biweekly') {
-      const weekStart = new Date(eventDate)
-      weekStart.setDate(eventDate.getDate() - eventDate.getDay())
-      const weeksSinceEpoch = Math.floor(weekStart.getTime() / (1000 * 60 * 60 * 24 * 7))
-      const biweekStart = new Date(weekStart)
-      biweekStart.setDate(weekStart.getDate() - (weeksSinceEpoch % 2) * 7)
-      bucketKey = dateFormat(biweekStart)
-    } else if (interval === 'monthly') {
-      const monthStart = new Date(eventDate.getFullYear(), eventDate.getMonth(), 1)
-      bucketKey = dateFormat(monthStart)
-    } else { // yearly
-      const yearStart = new Date(eventDate.getFullYear(), 0, 1)
-      bucketKey = dateFormat(yearStart)
-    }
-    
-    if (buckets[bucketKey] !== undefined) {
-      buckets[bucketKey]++
-    }
-  })
-  
-  // Convert to data array in label order
-  data.push(...labels.map(label => buckets[label] || 0))
-  
-  return { labels, data }
-}
-
-
-const countBookingDays = (events: any[]) => {
-  const counts: { [key: number]: number } = {}
-  events.forEach(event => {
-    const dayOfWeek = new Date(event.start).getDay()
-    counts[dayOfWeek] = (counts[dayOfWeek] || 0) + 1
-  })
-  return counts
-}
-
-const countBookingHours = (events: any[]) => {
-  const counts: { [key: number]: number } = {}
-  events.forEach(event => {
-    const hour = new Date(event.start).getHours()
-    counts[hour] = (counts[hour] || 0) + 1
-  })
-  return counts
 }
 
 // Watch for period changes

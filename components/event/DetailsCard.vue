@@ -229,6 +229,7 @@
 </template>
 
 <script setup lang="ts">
+import { getEventStatus, getEventStatusSeverity } from '~/utils/events'
 import type { Event, Merchant } from '~/types'
 
 interface Props {
@@ -248,17 +249,6 @@ const emit = defineEmits<{
   'request-event': [event: Event]
 }>()
 
-const getEventStatus = (event: Event): string => {
-  return event.status.toUpperCase()
-}
-
-const getEventStatusSeverity = (event: Event): string => {
-  if (event.status === 'open') return 'danger'
-  if (event.status === 'pending') return 'warning'
-  if (event.status === 'booked' || event.status === 'in-progress') return 'success'
-  if (event.status === 'completed') return 'info'
-  return 'secondary'
-}
 
 const getEventDuration = (event: Event): string => {
   const start = new Date(event.start)

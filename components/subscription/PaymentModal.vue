@@ -103,6 +103,7 @@
 
 <script setup lang="ts">
 import { loadStripe } from '@stripe/stripe-js'
+import { subscriptionService } from '~/services/api/subscriptionService'
 
 // Props
 const props = defineProps<{
@@ -177,14 +178,11 @@ const createSubscription = async (paymentMethodId: string) => {
     console.log('Stripe Price ID:', props.planData.stripePriceId)
     console.log('Payment method ID:', paymentMethodId)
     
-    const response = await $fetch('/api/subscriptions/create', {
-      method: 'POST',
-      body: {
-        planType: props.planData.id,
-        stripePriceId: props.planData.stripePriceId,
-        paymentMethodId: paymentMethodId
-      }
-    }) as any
+    const response = await subscriptionService.create({
+      planType: props.planData.id,
+      stripePriceId: props.planData.stripePriceId,
+      paymentMethodId: paymentMethodId
+    })
     
     console.log('Subscription creation response:', response)
     

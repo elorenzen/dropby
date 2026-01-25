@@ -288,7 +288,7 @@
                       Active
                     </span>
                     <span v-if="currentSubscription?.next_billing_date" class="text-xs text-text-muted">
-                      Next billing: {{ formatDate(currentSubscription.next_billing_date) }}
+                      Next billing: {{ formatDate(currentSubscription.next_billing_date, { format: 'short' }) }}
                     </span>
                   </div>
                 </div>
@@ -367,7 +367,8 @@
 </template>
 
 <script setup lang="ts">
-import { v4 } from 'uuid';
+import { v4 } from 'uuid'
+import { formatDate } from '~/utils/dates'
 const route = useRoute()
 const { currentUser } = useAuth()
 const toast = useToast()
@@ -675,16 +676,7 @@ const getCurrentPlanPrice = () => {
   }
 }
 
-const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-  
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
+import { formatDate } from '~/utils/dates'
 
 const openSubscriptionModal = () => {
   showSubscriptionPlans.value = true

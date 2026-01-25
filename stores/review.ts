@@ -289,6 +289,17 @@ export const useReviewStore = defineStore('review', {
         this.sentReviews = sent || []
         this.currentUserId = businessId
         
+        // Also update allReviews for getReviewsForBusiness to work
+        const allReviewsData = [...(received || []), ...(sent || [])]
+        allReviewsData.forEach(review => {
+          const existingIndex = this.allReviews.findIndex(r => r.id === review.id)
+          if (existingIndex === -1) {
+            this.allReviews.push(review)
+          } else {
+            this.allReviews[existingIndex] = review
+          }
+        })
+        
         return { received: this.receivedReviews, sent: this.sentReviews }
       } catch (error) {
         console.error('Error loading reviews for business:', error)
@@ -341,6 +352,11 @@ export const useReviewStore = defineStore('review', {
     },
 
     getReviewsForBusiness(businessId: string): Review[] {
+      // Use receivedReviews if currentUserId matches, otherwise check allReviews
+      if (this.currentUserId === businessId && this.receivedReviews.length > 0) {
+        return this.receivedReviews
+      }
+      // Fallback to allReviews if available
       return this.allReviews.filter((review: Review) => review.recipient_id === businessId)
     },
 

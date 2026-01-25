@@ -113,6 +113,7 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
+import { usageService } from '~/services/api/usageService'
 
 import type { Merchant } from '~/types'
 
@@ -211,15 +212,12 @@ const createEvent = async () => {
     loading.value = true
     
     // Check usage limits before creating event
-    const usageCheck = await $fetch('/api/usage/check', {
-      method: 'POST',
-      body: {
-        businessId: props.merchant.id,
-        businessType: 'merchant',
-        usageType: 'events',
-        requiredAmount: 1
-      }
-    }) as any
+    const usageCheck = await usageService.check({
+      businessId: props.merchant.id,
+      businessType: 'merchant',
+      usageType: 'events',
+      requiredAmount: 1
+    })
 
     if (!usageCheck?.allowed) {
       toast.add({
@@ -284,14 +282,11 @@ const createEvent = async () => {
     
     // Increment usage after successful event creation
     try {
-      await $fetch('/api/usage/increment', {
-        method: 'POST',
-        body: {
-          businessId: props.merchant.id,
-          businessType: 'merchant',
-          usageType: 'events',
-          incrementAmount: 1
-        }
+      await usageService.increment({
+        businessId: props.merchant.id,
+        businessType: 'merchant',
+        usageType: 'events',
+        incrementAmount: 1
       })
     } catch (usageError) {
       // Don't fail the event creation if usage tracking fails

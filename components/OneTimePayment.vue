@@ -113,6 +113,7 @@
 
 <script setup lang="ts">
 import { loadStripe } from '@stripe/stripe-js'
+import { paymentService } from '~/services/api/paymentService'
 
 interface Props {
   businessId: string
@@ -257,15 +258,12 @@ const processPayment = async () => {
     }
 
     // Create payment intent
-    const response = await $fetch('/api/payments/create-one-time-payment', {
-      method: 'POST',
-      body: {
-        businessId: props.businessId,
-        businessType: props.businessType,
-        actionType: props.actionType,
-        amount: props.oneTimeFee,
-        paymentMethodId: paymentMethod.id
-      }
+    const response = await paymentService.createOneTimePayment({
+      businessId: props.businessId,
+      businessType: props.businessType,
+      actionType: props.actionType,
+      amount: props.oneTimeFee,
+      paymentMethodId: paymentMethod.id
     })
 
     if (response.success) {

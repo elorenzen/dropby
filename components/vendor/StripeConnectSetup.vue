@@ -101,6 +101,8 @@
 </template>
 
 <script setup lang="ts">
+import { vendorService } from '~/services/api/vendorService'
+
 interface Props {
   vendorId: string
   vendorEmail: string
@@ -134,10 +136,9 @@ const loadStripeStatus = async () => {
       
       // Check account status with Stripe (only if we have an account ID)
       if (stripeAccountId.value) {
-        const response = await $fetch('/api/vendors/check-stripe-status', {
-          method: 'POST',
-          body: { accountId: stripeAccountId.value }
-        }) as any
+        const response = await vendorService.checkStripeStatus({
+          accountId: stripeAccountId.value
+        })
 
         stripeAccountStatus.value = response.accountStatus
       }
@@ -152,15 +153,11 @@ const setupStripeConnect = async () => {
   loading.value = true
 
   try {
-    const response = await $fetch('/api/vendors/create-stripe-connect', {
-      method: 'POST',
-      body: {
-        vendorId: props.vendorId,
-        email: props.vendorEmail,
-        businessName: props.vendorName,
-        businessType: 'individual' // or 'company' based on vendor type
-      }
-    }) as any
+    const response = await vendorService.createStripeConnect({
+      vendorId: props.vendorId,
+      email: props.vendorEmail,
+      businessName: props.vendorName
+    })
 
     if (response.success) {
       // Redirect to Stripe onboarding

@@ -15,7 +15,7 @@
           <div class="flex items-center gap-6 text-base">
             <div class="flex items-center gap-2">
               <i class="pi pi-calendar text-md-gray"></i>
-              <span class="text-md-gray">{{ formatFullDate(event.start) }}</span>
+              <span class="text-md-gray">{{ formatDate(event.start, { format: 'long' }) }}</span>
             </div>
             <div class="flex items-center gap-2">
               <i class="pi pi-clock text-md-gray"></i>
@@ -64,7 +64,7 @@
                   <span class="text-md-gray font-medium">Date:</span>
                 </div>
                 <div class="flex-1">
-                  <span class="text-color">{{ formatFullDate(event.start) }}</span>
+                  <span class="text-color">{{ formatDate(event.start, { format: 'long' }) }}</span>
                 </div>
               </div>
               <div class="flex items-start gap-4">
@@ -151,6 +151,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate, formatTime } from '~/utils/dates'
 import type { Event, Merchant, Vendor } from '~/types'
 
 // Props
@@ -207,22 +208,6 @@ const getEventStatusSeverity = (event: Event) => {
   }
 }
 
-const formatFullDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
-
-const formatTime = (dateString: string) => {
-  return new Date(dateString).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  })
-}
 
 // Action functions
 const getDirections = (event: Event) => {
@@ -238,7 +223,7 @@ const getDirections = (event: Event) => {
 
 const shareEvent = (event: Event) => {
   const eventUrl = `${window.location.origin}/events`
-  const eventText = `Check out this food truck event: ${getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Merchant'} | ${getVendorProp(event.vendor, 'vendor_name') || 'Unknown Vendor'} on ${formatFullDate(event.start)}`
+  const eventText = `Check out this food truck event: ${getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Merchant'} | ${getVendorProp(event.vendor, 'vendor_name') || 'Unknown Vendor'} on ${formatDate(event.start, { format: 'long' })}`
   
   if (navigator.share) {
     navigator.share({

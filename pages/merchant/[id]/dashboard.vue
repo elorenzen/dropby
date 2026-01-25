@@ -325,72 +325,17 @@
   
   const loadAnalytics = async () => {
     try {
-      // Get events for this merchant
-      const { data: events } = await useSupabaseClient()
-        .from('events')
-        .select('*')
-        .eq('merchant', route.params.id)
+      const merchantId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+      const analyticsData = await merchantStore.getDashboardMetrics(merchantId)
       
-      if (events) {
-        const now = new Date()
-        const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-        
-        // Count completed events for the "Completed Events" card
-        const completedEvents = events.filter((e: any) => e.status === 'completed')
-        analytics.value.totalEvents = completedEvents.length
-        
-        // Count booked events (those with a vendor) for the "Booked Events" card
-        const bookedEvents = events.filter((e: any) => e.vendor && e.status === 'booked')
-        analytics.value.bookedEvents = bookedEvents.length
-        
-        // Count future events with open status
-        const futureOpenEvents = events.filter((e: any) => e.status === 'open' && new Date(e.start) > now)
-        analytics.value.openEvents = futureOpenEvents.length
-        
-        // Calculate pending requests for future events with open status that have pending requests
-        const futureOpenEventsWithRequests = events.filter((e: any) => 
-          e.status === 'open' && 
-          new Date(e.start) > now && 
-          e.pending_requests && 
-          e.pending_requests.length > 0
-        )
-        const totalPendingRequests = futureOpenEventsWithRequests.reduce((total: number, e: any) => {
-          return total + e.pending_requests.length
-        }, 0)
-        analytics.value.pendingRequests = totalPendingRequests
-      
-        // Calculate upcoming events in next 7 days
-        const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-        analytics.value.upcomingWeek = bookedEvents.filter((e: any) => {
-          const startDate = new Date(e.start)
-          return startDate >= now && startDate <= nextWeek
-        }).length
-        
-        // Calculate events growth (this month vs last month) for completed events
-        const thisMonthEvents = completedEvents.filter((e: any) => new Date(e.created_at) >= thisMonth).length
-        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        const lastMonthEvents = completedEvents.filter((e: any) => {
-          const created = new Date(e.created_at)
-          return created >= lastMonth && created < thisMonth
-        }).length
-        // Calculate growth percentage - handle zero cases
-        if (lastMonthEvents === 0) {
-          analytics.value.eventsGrowth = thisMonthEvents > 0 ? 100 : 0
-        } else {
-          analytics.value.eventsGrowth = Math.round(((thisMonthEvents - lastMonthEvents) / lastMonthEvents) * 100)
-        }
-      }
-      
-      // Calculate average rating from received reviews
-      const receivedReviewsData = reviewStore.getReceivedReviews
-      if (receivedReviewsData.length > 0) {
-        const totalRating = receivedReviewsData.reduce((sum: number, review: any) => sum + review.rating, 0)
-        analytics.value.averageRating = Math.round((totalRating / receivedReviewsData.length) * 10) / 10
-        analytics.value.totalRatings = receivedReviewsData.length
-      } else {
-        analytics.value.averageRating = 0
-        analytics.value.totalRatings = 0
-      }
+      analytics.value.totalEvents = analyticsData.totalEvents
+      analytics.value.eventsGrowth = analyticsData.eventsGrowth
+      analytics.value.openEvents = analyticsData.openEvents
+      analytics.value.bookedEvents = analyticsData.bookedEvents
+      analytics.value.upcomingWeek = analyticsData.upcomingWeek
+      analytics.value.pendingRequests = analyticsData.pendingRequests
+      analytics.value.averageRating = analyticsData.averageRating
+      analytics.value.totalRatings = analyticsData.totalRatings
     } catch (error) {
       console.error('Error loading analytics:', error)
     }
@@ -400,13 +345,15 @@
     await loadAnalytics()
     loading.value = false
 
+    const merchantId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+
     // Subscribe to real-time updates for reviews
     supabase
       .channel('reviews')
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'reviews' }, 
         async (payload: any) => {
-          await reviewStore.loadReviewsForBusiness(route.params.id as string, 'merchant')
+          await reviewStore.loadReviewsForBusiness(merchantId, 'merchant')
         })
       .subscribe()
 
@@ -417,7 +364,7 @@
         { event: '*', schema: 'public', table: 'timeline_items' }, 
         async (payload: any) => {
           // Reload timeline data when there are changes
-          await timelineStore.loadTimeline(route.params.id as string)
+          await timelineStore.loadTimeline(merchantId)
         })
       .subscribe()
   })

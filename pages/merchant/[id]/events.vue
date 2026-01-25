@@ -365,6 +365,7 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
+import { getEventStatus, getEventStatusSeverity } from '~/utils/events'
 
 const toast = useToast()
 
@@ -576,49 +577,6 @@ const getVendorCuisines = (vendorId: string | null): string[] => {
 }
 
 
-const getEventStatus = (event: Event): string => {
-  const now = new Date()
-  const eventStart = new Date(event.start)
-  const eventEnd = new Date(event.end)
-  
-  if (event.status === 'open') {
-    return 'OPEN'
-  } else if (event.status === 'pending') {
-    return 'PENDING'
-  } else if (event.status === 'booked') {
-    return 'BOOKED'
-  } else if (event.status === 'in-progress') {
-    return 'IN-PROGRESS'
-  } else if (event.status === 'completed') {
-    return 'COMPLETED'
-  } else if (event.status === 'closed') {
-    return 'CLOSED'
-  } else {
-    return event.status.toUpperCase()
-  }
-}
-
-const getEventStatusSeverity = (event: Event): string => {
-  const now = new Date()
-  const eventStart = new Date(event.start)
-  const eventEnd = new Date(event.end)
-  
-  if (event.status === 'open') {
-    return 'danger' // Open events - red
-  } else if (event.status === 'pending') {
-    return 'warning' // Pending events - orange
-  } else if (event.status === 'booked') {
-    return 'success' // Booked events - green
-  } else if (event.status === 'in-progress') {
-    return 'success' // In-progress events - green
-  } else if (event.status === 'completed') {
-    return 'info' // Completed events - blue
-  } else if (event.status === 'closed') {
-    return 'secondary' // Closed events - gray
-  } else {
-    return 'secondary' // Other statuses - gray
-  }
-}
 
 const hasReview = (event: Event): boolean => {
   const sentReviews = reviewStore.getSentReviews

@@ -288,7 +288,7 @@
                       Active
                     </span>
                     <span v-if="currentSubscription?.next_billing_date" class="text-xs text-text-muted">
-                      Next billing: {{ formatDate(currentSubscription.next_billing_date) }}
+                      Next billing: {{ formatDate(currentSubscription.next_billing_date, { format: 'short' }) }}
                     </span>
                   </div>
                 </div>
@@ -370,6 +370,7 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
+import { formatDate } from '~/utils/dates'
 
 const route = useRoute()
 const toast = useToast()

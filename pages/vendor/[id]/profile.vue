@@ -297,7 +297,7 @@
                   <h3 class="text-xl font-semibold text-text-main mb-2">Event</h3>
                   <p class="text-text-muted mb-1">
                     <i class="pi pi-calendar mr-2"></i>
-                    {{ formatDate(event.start) }}
+                    {{ formatDate(event.start, { format: 'long' }) }}
                   </p>
                   <p class="text-text-muted mb-1">
                     <i class="pi pi-clock mr-2"></i>
@@ -434,21 +434,6 @@ const loadVendorData = async () => {
 const totalEvents = computed(() => bookedEvents.value.length)
 
 // Helper functions
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
-
-const formatTime = (dateString: string) => {
-  return new Date(dateString).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit'
-  })
-}
 
 const getStatusSeverity = (status: string): 'success' | 'info' | 'warning' | 'danger' => {
   switch (status) {

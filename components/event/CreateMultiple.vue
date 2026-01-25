@@ -96,7 +96,7 @@
               <AccordionHeader>
                 <div class="flex items-center gap-2">
                   <i class="pi pi-calendar text-primary"></i>
-                  <span class="font-semibold">{{ formatDate(date) }}</span>
+                  <span class="font-semibold">{{ formatDate(date, { format: 'long' }) }}</span>
                 </div>
               </AccordionHeader>
               <AccordionContent>
@@ -171,7 +171,7 @@
                 <!-- Date Display -->
                 <div class="flex items-center gap-2">
                   <i class="pi pi-calendar text-primary"></i>
-                  <span class="font-semibold text-color">{{ formatDate(event.date) }}</span>
+                  <span class="font-semibold text-color">{{ formatDate(event.date, { format: 'long' }) }}</span>
                 </div>
 
                 <!-- Time Range -->
@@ -278,7 +278,8 @@
   
   <script setup lang="ts">
   import { v4 as uuidv4 } from 'uuid'
-  
+  import { usageService } from '~/services/api/usageService'
+  import { formatDate } from '~/utils/dates'
   import type { Merchant } from '~/types'
   
   interface Props {
@@ -372,15 +373,6 @@
   }
   
   // Methods
-  const formatDate = (date: Date): string => {
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   const closeDialog = () => {
     dateRange.value = null
     applyToAll.value = true
@@ -538,15 +530,12 @@
       loading.value = true
       
       // Check usage limits before creating events
-      const usageCheck = await $fetch('/api/usage/check', {
-        method: 'POST',
-        body: {
-          businessId: props.merchant.id,
-          businessType: 'merchant',
-          usageType: 'events',
-          requiredAmount: eventList.value.length
-        }
-      }) as any
+      const usageCheck = await usageService.check({
+        businessId: props.merchant.id,
+        businessType: 'merchant',
+        usageType: 'events',
+        requiredAmount: eventList.value.length
+      })
 
       if (!usageCheck?.allowed) {
         toast.add({
@@ -609,14 +598,11 @@
       // Increment usage after successful event creation
       if (successCount > 0) {
         try {
-          await $fetch('/api/usage/increment', {
-            method: 'POST',
-            body: {
-              businessId: props.merchant.id,
-              businessType: 'merchant',
-              usageType: 'events',
-              incrementAmount: successCount
-            }
+          await usageService.increment({
+            businessId: props.merchant.id,
+            businessType: 'merchant',
+            usageType: 'events',
+            incrementAmount: successCount
           })
         } catch (usageError) {
           // Don't fail the event creation if usage tracking fails

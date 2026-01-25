@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { loadStripe } from '@stripe/stripe-js'
+import { paymentService } from '~/services/api/paymentService'
 
 interface Props {
   stripeCustomerId: string | null
@@ -195,14 +196,11 @@ const handleSubmit = async () => {
     console.log('Payment method created:', paymentMethod.id)
     
     // Attach payment method to customer
-    const response = await $fetch('/api/payments/attach-payment-method', {
-      method: 'POST',
-      body: {
-        customerId: props.stripeCustomerId,
-        paymentMethodId: paymentMethod.id,
-        title: formData.value.title,
-        defaultPaymentMethod: formData.value.default
-      }
+    const response = await paymentService.attachPaymentMethod({
+      customerId: props.stripeCustomerId,
+      paymentMethodId: paymentMethod.id,
+      title: formData.value.title,
+      defaultPaymentMethod: formData.value.default
     })
     
     if (response as any) {

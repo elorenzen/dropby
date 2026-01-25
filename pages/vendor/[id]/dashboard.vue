@@ -452,96 +452,20 @@ const goToToday = () => {
 
 const loadAnalytics = async () => {
   try {
-    // Get events for this vendor
     if (!vendor.value?.id) return
     
-    // Ensure events are loaded
-    if (eventStore.allEvents.length === 0) {
-      await eventStore.loadEvents()
-    }
+    const analyticsData = await vendorStore.getDashboardMetrics(vendor.value.id)
     
-    const events = eventStore.allEvents.filter((e: Event) => e.vendor === vendor.value.id)
+    analytics.value.totalEvents = analyticsData.totalEvents
+    analytics.value.eventsGrowth = analyticsData.eventsGrowth
+    analytics.value.upcomingEvents = analyticsData.upcomingEvents
+    analytics.value.upcomingWeek = analyticsData.upcomingWeek
+    analytics.value.pendingRequests = analyticsData.pendingRequests
+    analytics.value.averageRating = analyticsData.averageRating
+    analytics.value.totalRatings = analyticsData.totalRatings
     
-    if (events) {
-      const now = new Date()
-      const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      
-      // Only count booked events (those with a merchant)
-      const bookedEvents = events.filter((e: any) => e.merchant && e.status === 'booked')
-      analytics.value.totalEvents = bookedEvents.length
-      analytics.value.upcomingEvents = bookedEvents.filter((e: any) => new Date(e.start) > now).length
-      
-      // Get all events where this vendor has pending requests
-      const allEvents = eventStore.allEvents
-      
-      // Calculate pending requests for future events with open status that have pending requests
-      const futureOpenEventsWithRequests = allEvents?.filter((e: any) => 
-        e.status === 'open' && 
-        new Date(e.start) > now && 
-        e.pending_requests && 
-        e.pending_requests.includes(vendor.value?.id)
-      ) || []
-      analytics.value.pendingRequests = futureOpenEventsWithRequests.length
-      
-      // Calculate upcoming events in next 7 days
-      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-      analytics.value.upcomingWeek = bookedEvents.filter((e: any) => {
-        const startDate = new Date(e.start)
-        return startDate >= now && startDate <= nextWeek
-      }).length
-      
-      // Calculate events growth (this month vs last month) for booked events only
-      const thisMonthEvents = bookedEvents.filter((e: any) => new Date(e.created_at) >= thisMonth).length
-      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      const lastMonthEvents = bookedEvents.filter((e: any) => {
-        const created = new Date(e.created_at)
-        return created >= lastMonth && created < thisMonth
-      }).length
-      
-      // Calculate growth percentage - handle zero cases
-      if (lastMonthEvents === 0) {
-        analytics.value.eventsGrowth = thisMonthEvents > 0 ? 100 : 0
-      } else {
-        analytics.value.eventsGrowth = Math.round(((thisMonthEvents - lastMonthEvents) / lastMonthEvents) * 100)
-      }
-      
-      // Calculate average rating from received reviews
-      const receivedReviewsData = reviewStore.getReceivedReviews
-      if (receivedReviewsData.length > 0) {
-        const totalRating = receivedReviewsData.reduce((sum: number, review: any) => sum + review.rating, 0)
-        analytics.value.averageRating = Math.round((totalRating / receivedReviewsData.length) * 10) / 10
-        analytics.value.totalRatings = receivedReviewsData.length
-      } else {
-        analytics.value.averageRating = 0
-        analytics.value.totalRatings = 0
-      }
-    }
-
-    // Load usage data and subscription info
-    try {
-      const usageCheck = await $fetch('/api/usage/check', {
-        method: 'POST',
-        body: {
-          businessId: route.params.id as string,
-          businessType: 'vendor',
-          usageType: 'requests',
-          requiredAmount: 0
-        }
-      }) as any
-
-      usage.value.currentRequests = usageCheck.currentUsage || 0
-      usage.value.maxRequests = usageCheck.usageLimit || 5
-      usage.value.remainingRequests = Math.max(0, usage.value.maxRequests - usage.value.currentRequests)
-
-      subscription.value = usageCheck.subscription || null
-    } catch (usageError) {
-      console.error('Error loading usage data:', usageError)
-      // Set default values if usage check fails
-      usage.value.currentRequests = 0
-      usage.value.maxRequests = 5
-      usage.value.remainingRequests = 5
-      subscription.value = null
-    }
+    usage.value = analyticsData.usage
+    subscription.value = analyticsData.subscription
   } catch (error) {
     console.error('Error loading analytics:', error)
   }
