@@ -114,6 +114,7 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { usageService } from '~/services/api/usageService'
+import { useToast } from '~/composables/useToast'
 
 import type { Merchant } from '~/types'
 
@@ -131,7 +132,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const toast = useToast()
+const { showToast } = useToast()
 const eventStore = useEventStore()
 const businessHoursStore = useBusinessHoursStore()
 
@@ -198,13 +199,7 @@ const createEvent = async () => {
   // }
   
   if (Object.keys(errors.value).length > 0) {
-    toast.add({
-      severity: 'error',
-      summary: 'Validation Error',
-      detail: 'Please fix the errors above',
-      group: 'main',
-      life: 3000
-    })
+    showToast('error', 'Validation Error', 'Please fix the errors above')
     return
   }
 
@@ -220,13 +215,7 @@ const createEvent = async () => {
     })
 
     if (!usageCheck?.allowed) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Usage Limit Reached',
-        detail: usageCheck?.message || 'You have reached your event limit for this month. Please upgrade your plan to continue.',
-        group: 'main',
-        life: 5000
-      })
+      showToast('warn', 'Usage Limit Reached', usageCheck?.message || 'You have reached your event limit for this month. Please upgrade your plan to continue.', 5000)
       return
     }
     
@@ -295,22 +284,10 @@ const createEvent = async () => {
     closeDialog()
     emit('event-created')
 
-    toast.add({
-      severity: 'success',
-      summary: 'Event Created',
-      detail: 'Your event has been created successfully',
-      group: 'main',
-      life: 3000
-    })
+    showToast('success', 'Event Created', 'Your event has been created successfully')
   } catch (error) {
     console.error('Error creating event:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to create event. Please try again.',
-      group: 'main',
-      life: 3000
-    })
+    showToast('error', 'Error', 'Failed to create event. Please try again.')
   } finally {
     loading.value = false
   }

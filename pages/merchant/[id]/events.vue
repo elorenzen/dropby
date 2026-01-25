@@ -366,18 +366,9 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { getEventStatus, getEventStatusSeverity } from '~/utils/events'
+import { useToast } from '~/composables/useToast'
 
-const toast = useToast()
-
-// Reusable toast method
-const showToast = (severity: 'success' | 'error' | 'info' | 'warn', summary: string, detail: string, life: number = 3000) => {
-  toast.add({
-    severity,
-    summary,
-    detail,
-    life
-  })
-}
+const { showToast } = useToast()
 
 definePageMeta({
   middleware: ['auth']

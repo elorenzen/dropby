@@ -104,6 +104,7 @@
 <script setup lang="ts">
 import { loadStripe } from '@stripe/stripe-js'
 import { subscriptionService } from '~/services/api/subscriptionService'
+import { useToast } from '~/composables/useToast'
 
 // Props
 const props = defineProps<{
@@ -128,7 +129,7 @@ const stripe = ref<any>(null)
 const elements = ref<any>(null)
 const cardElement = ref<any>(null)
 const currentSubscriptionData = ref<any>(null)
-const toast = useToast()
+const { showToast } = useToast()
 
 // Computed
 const visible = computed({
@@ -303,12 +304,7 @@ const handlePayment = async () => {
       emit('payment-complete', { paymentMethodId: paymentMethod.id })
       
       // Show success toast
-      toast.add({
-        severity: 'success',
-        summary: 'Subscription Created',
-        detail: `Your ${props.planName} subscription has been successfully activated!`,
-        life: 5000
-      })
+      showToast('success', 'Subscription Created', `Your ${props.planName} subscription has been successfully activated!`, 5000)
     }
   } catch (err) {
     console.error('Payment error:', err)

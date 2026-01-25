@@ -370,9 +370,11 @@
 import { v4 } from 'uuid'
 import { formatDate } from '~/utils/dates'
 import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
+import { useToast } from '~/composables/useToast'
+
 const route = useRoute()
 const { currentUser } = useAuth()
-const toast = useToast()
+const { showToast } = useToast()
 const supabase = useSupabaseClient()
 const vendorStore = useVendorStore()
 const userStore = useUserStore()
@@ -572,7 +574,7 @@ const saveEdits = async () => {
     await vendorStore.updateVendor(vendor.value.id, updates)
     
     editDialog.value = false
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Information Updated!', group: 'main', life: 6000 })
+    showToast('success', 'Success', 'Information Updated!', 6000)
   } catch (error: any) {
     errType.value = "Settings Update(s)"
     errMsg.value = error.message || 'Failed to update vendor information'
@@ -590,7 +592,7 @@ const saveBusinessHours = async () => {
   try {
     await businessHoursStore.updateBusinessHours(vendor.value.id, 'vendor', businessHours.value)
     
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Business Hours Updated!', group: 'main', life: 6000 })
+    showToast('success', 'Success', 'Business Hours Updated!', 6000)
   } catch (error: any) {
     errType.value = 'Business Hours Update'
     errMsg.value = error.message || 'Failed to update business hours'

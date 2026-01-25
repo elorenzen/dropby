@@ -444,7 +444,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import OneTimePayment from '~/components/OneTimePayment.vue'
 import { v4 } from 'uuid'
-import { useToast } from 'primevue/usetoast'
+import { useToast } from '~/composables/useToast'
 
 export default {
   components: {
@@ -463,7 +463,7 @@ export default {
     }
   },
   async setup(props: any) {
-    const toast = useToast()
+    const { showToast } = useToast()
     const supabase      = useSupabaseClient()
     const userStore     = useUserStore()
     const eventStore    = useEventStore()
@@ -827,7 +827,7 @@ export default {
     const resetFields = async (action: any) => {
         dayViewDialog.value = false
         multipleEventsDialog.value = false
-        toast.add({ severity: 'success', summary: 'Success', detail: `Event ${action}!`, group: 'main', life: 6000 })
+        showToast('success', 'Success', `Event ${action}!`, 6000)
         notes.value = ''
         refresh.value++
     }
@@ -1010,13 +1010,7 @@ export default {
           if (result.error === 'usage_limit') {
             showUsageLimitReached({ usageLimit: result.usageLimit })
           } else if (result.error === 'already_requested') {
-            toast.add({
-              severity: 'warn',
-              summary: 'Already Requested',
-              detail: 'You have already requested this event.',
-              group: 'main',
-              life: 3000
-            })
+            showToast('warn', 'Already Requested', 'You have already requested this event.')
           } else {
             errType.value = 'Event Request'
             errMsg.value = result.message || 'Failed to request event'
@@ -1071,13 +1065,7 @@ export default {
           if (result.error === 'usage_limit') {
             showUsageLimitReached({ usageLimit: result.usageLimit })
           } else if (result.error === 'already_requested') {
-            toast.add({
-              severity: 'warn',
-              summary: 'Already Requested',
-              detail: 'You have already requested this event.',
-              group: 'main',
-              life: 3000
-            })
+            showToast('warn', 'Already Requested', 'You have already requested this event.')
           } else {
             errType.value = 'Event Request'
             errMsg.value = result.message || 'Failed to request event'
@@ -1093,13 +1081,7 @@ export default {
           eventsOnDay.value[eventIndex] = result.event
         }
         
-        toast.add({
-          severity: 'success',
-          summary: 'Request Sent',
-          detail: `Request sent for event on ${new Date(event.start).toLocaleDateString()}`,
-          group: 'main',
-          life: 3000
-        })
+        showToast('success', 'Request Sent', `Request sent for event on ${new Date(event.start).toLocaleDateString()}`)
         
         refresh.value++
       } catch (error: any) {
@@ -1133,13 +1115,7 @@ export default {
           eventsOnDay.value[eventIndex] = result.event
         }
         
-        toast.add({
-          severity: 'info',
-          summary: 'Request Cancelled',
-          detail: `Request cancelled for event on ${new Date(event.start).toLocaleDateString()}`,
-          group: 'main',
-          life: 3000
-        })
+        showToast('info', 'Request Cancelled', `Request cancelled for event on ${new Date(event.start).toLocaleDateString()}`)
         
         refresh.value++
       } catch (error: any) {

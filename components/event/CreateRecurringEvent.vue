@@ -306,6 +306,7 @@
 
 <script setup lang="ts">
 import type { Merchant } from '~/types'
+import { useToast } from '~/composables/useToast'
 
 interface Props {
   visible: boolean
@@ -321,7 +322,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const toast = useToast()
+const { showToast } = useToast()
 const recurringEventStore = useRecurringEventStore()
 const businessHoursStore = useBusinessHoursStore()
 
@@ -490,13 +491,7 @@ const closeDialog = () => {
 const createRecurringEvent = async () => {
   // Validate form - if validation fails, errors will be set and function returns
   if (!validateForm()) {
-    toast.add({
-      severity: 'error',
-      summary: 'Validation Error',
-      detail: 'Please fix the errors above',
-      group: 'main',
-      life: 3000
-    })
+    showToast('error', 'Validation Error', 'Please fix the errors above')
     return
   }
 
@@ -565,22 +560,10 @@ const createRecurringEvent = async () => {
     closeDialog()
     emit('recurring-event-created')
 
-    toast.add({
-      severity: 'success',
-      summary: 'Recurring Event Created',
-      detail: 'Your recurring event schedule has been created successfully',
-      group: 'main',
-      life: 3000
-    })
+    showToast('success', 'Recurring Event Created', 'Your recurring event schedule has been created successfully')
   } catch (error) {
     console.error('Error creating recurring event:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: error instanceof Error ? error.message : 'Failed to create recurring event. Please try again.',
-      group: 'main',
-      life: 3000
-    })
+    showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to create recurring event. Please try again.')
   } finally {
     loading.value = false
   }

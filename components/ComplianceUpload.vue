@@ -260,6 +260,7 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { formatDate } from '~/utils/dates'
+import { useToast } from '~/composables/useToast'
 import type { ComplianceRequirement } from '~/types'
 
 interface DocumentInfo {
@@ -285,7 +286,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const supabase = useSupabaseClient()
-const toast = useToast()
+const { showToast } = useToast()
 
 // Use compliance store
 const complianceStore = useComplianceStore()
@@ -436,23 +437,13 @@ const uploadDocument = async () => {
       }
     )
 
-    toast.add({
-      severity: 'success',
-      summary: 'Document Uploaded',
-      detail: `${selectedCategory.value.title} has been uploaded successfully`,
-      life: 3000
-    })
+    showToast('success', 'Document Uploaded', `${selectedCategory.value.title} has been uploaded successfully`)
 
     closeUploadDialog()
 
   } catch (error) {
     console.error('Upload error:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Upload Failed',
-      detail: 'Failed to upload document. Please try again.',
-      life: 3000
-    })
+    showToast('error', 'Upload Failed', 'Failed to upload document. Please try again.')
   }
 }
 

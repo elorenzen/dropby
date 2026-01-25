@@ -348,8 +348,9 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
+import { useToast } from '~/composables/useToast'
 
-const toast = useToast()
+const { showToast } = useToast()
 
 definePageMeta({
   middleware: ['auth']
@@ -631,49 +632,19 @@ const requestEvent = async (event: Event) => {
     
     if (!result.success) {
       if (result.error === 'usage_limit') {
-        toast.add({
-          severity: 'warn',
-          summary: 'Usage Limit Reached',
-          detail: `You've reached your monthly limit of ${result.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
-          group: 'main',
-          life: 5000
-        })
+        showToast('warn', 'Usage Limit Reached', `You've reached your monthly limit of ${result.usageLimit} event requests. Upgrade your plan to request unlimited events.`, 5000)
       } else if (result.error === 'already_requested') {
-        toast.add({
-          severity: 'warn',
-          summary: 'Already Requested',
-          detail: 'You have already requested this event.',
-          group: 'main',
-          life: 3000
-        })
+        showToast('warn', 'Already Requested', 'You have already requested this event.')
       } else {
-        toast.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: result.message || 'Failed to send request. Please try again.',
-          group: 'main',
-          life: 3000
-        })
+        showToast('error', 'Error', result.message || 'Failed to send request. Please try again.')
       }
       return
     }
     
-    toast.add({
-      severity: 'success',
-      summary: 'Request Sent',
-      detail: `Request sent to ${getMerchantProp(event.merchant, 'merchant_name')}`,
-      group: 'main',
-      life: 3000
-    })
+    showToast('success', 'Request Sent', `Request sent to ${getMerchantProp(event.merchant, 'merchant_name')}`)
   } catch (error: any) {
     console.error('Error requesting event:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to send request. Please try again.',
-      group: 'main',
-      life: 3000
-    })
+    showToast('error', 'Error', 'Failed to send request. Please try again.')
   } finally {
     loadingRequest.value = null
   }
@@ -685,32 +656,14 @@ const withdrawRequest = async (event: Event) => {
     const result = await eventStore.withdrawRequest(event.id, route.params.id as string)
     
     if (!result.success) {
-      toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: result.message || 'Failed to withdraw request. Please try again.',
-        group: 'main',
-        life: 3000
-      })
+      showToast('error', 'Error', result.message || 'Failed to withdraw request. Please try again.')
       return
     }
     
-    toast.add({
-      severity: 'info',
-      summary: 'Request Withdrawn',
-      detail: `Request withdrawn from ${getMerchantProp(event.merchant, 'merchant_name')}`,
-      group: 'main',
-      life: 3000
-    })
+    showToast('info', 'Request Withdrawn', `Request withdrawn from ${getMerchantProp(event.merchant, 'merchant_name')}`)
   } catch (error: any) {
     console.error('Error withdrawing request:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to withdraw request. Please try again.',
-      group: 'main',
-      life: 3000
-    })
+    showToast('error', 'Error', 'Failed to withdraw request. Please try again.')
   } finally {
     loadingWithdrawal.value = null
   }

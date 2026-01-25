@@ -280,6 +280,7 @@
   import { v4 as uuidv4 } from 'uuid'
   import { usageService } from '~/services/api/usageService'
   import { formatDate } from '~/utils/dates'
+  import { useToast } from '~/composables/useToast'
   import type { Merchant } from '~/types'
   
   interface Props {
@@ -311,7 +312,7 @@
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
   
-  const toast = useToast()
+  const { showToast } = useToast()
   const eventStore = useEventStore()
   const businessHoursStore = useBusinessHoursStore()
   
@@ -516,13 +517,7 @@
 
   const createEvents = async () => {
     if (eventList.value.length === 0) {
-      toast.add({
-        severity: 'warn',
-        summary: 'No Events',
-        detail: 'Please add at least one event to create',
-        group: 'main',
-        life: 3000
-      })
+      showToast('warn', 'No Events', 'Please add at least one event to create')
       return
     }
 
@@ -538,13 +533,7 @@
       })
 
       if (!usageCheck?.allowed) {
-        toast.add({
-          severity: 'warn',
-          summary: 'Usage Limit Reached',
-          detail: usageCheck?.message || `You cannot create ${eventList.value.length} events. Please upgrade your plan to continue.`,
-          group: 'main',
-          life: 5000
-        })
+        showToast('warn', 'Usage Limit Reached', usageCheck?.message || `You cannot create ${eventList.value.length} events. Please upgrade your plan to continue.`, 5000)
         return
       }
 
@@ -613,31 +602,13 @@
       emit('event-created')
 
       if (failCount > 0) {
-        toast.add({
-          severity: 'warn',
-          summary: 'Partial Success',
-          detail: `Created ${successCount} event(s), but ${failCount} failed. Please check and try again.`,
-          group: 'main',
-          life: 5000
-        })
+        showToast('warn', 'Partial Success', `Created ${successCount} event(s), but ${failCount} failed. Please check and try again.`, 5000)
       } else {
-        toast.add({
-          severity: 'success',
-          summary: 'Events Created',
-          detail: `Successfully created ${successCount} event(s)`,
-          group: 'main',
-          life: 3000
-        })
+        showToast('success', 'Events Created', `Successfully created ${successCount} event(s)`)
       }
     } catch (error) {
       console.error('Error creating events:', error)
-      toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to create events. Please try again.',
-        group: 'main',
-        life: 3000
-      })
+      showToast('error', 'Error', 'Failed to create events. Please try again.')
     } finally {
       loading.value = false
     }

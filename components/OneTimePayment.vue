@@ -114,6 +114,9 @@
 <script setup lang="ts">
 import { loadStripe } from '@stripe/stripe-js'
 import { paymentService } from '~/services/api/paymentService'
+import { useToast } from '~/composables/useToast'
+
+const { showToast } = useToast()
 
 interface Props {
   businessId: string
@@ -271,13 +274,7 @@ const processPayment = async () => {
       emit('payment-success')
       
       // Show success message
-      const toast = useToast()
-      toast.add({
-        severity: 'success',
-        summary: 'Payment Successful',
-        detail: `You can now ${props.actionType === 'events' ? 'create' : 'request'} one more ${props.actionType.slice(0, -1)}`,
-        life: 5000
-      })
+      showToast('success', 'Payment Successful', `You can now ${props.actionType === 'events' ? 'create' : 'request'} one more ${props.actionType.slice(0, -1)}`, 5000)
     } else {
       throw new Error(response.message || 'Payment failed')
     }

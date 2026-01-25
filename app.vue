@@ -3,6 +3,8 @@
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+    <!-- Global Toast Component -->
+    <Toast group="main" position="bottom-center" />
   </div>
 </template>
 

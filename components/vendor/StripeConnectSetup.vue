@@ -102,6 +102,7 @@
 
 <script setup lang="ts">
 import { vendorService } from '~/services/api/vendorService'
+import { useToast } from '~/composables/useToast'
 
 interface Props {
   vendorId: string
@@ -112,7 +113,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const supabase = useSupabaseClient()
-const toast = useToast()
+const { showToast } = useToast()
 
 // State
 const loading = ref(false)
@@ -168,12 +169,7 @@ const setupStripeConnect = async () => {
 
   } catch (error: any) {
     console.error('Stripe Connect setup error:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Setup Failed',
-      detail: error.message || 'Failed to set up automatic payouts',
-      life: 5000
-    })
+    showToast('error', 'Setup Failed', error.message || 'Failed to set up automatic payouts', 5000)
   } finally {
     loading.value = false
   }

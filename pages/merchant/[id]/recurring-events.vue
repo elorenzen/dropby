@@ -174,6 +174,8 @@
 </template>
 
 <script setup lang="ts">
+import { useToast } from '~/composables/useToast'
+
 definePageMeta({
   middleware: ['auth']
 })
@@ -182,7 +184,7 @@ const route = useRoute()
 const merchantStore = useMerchantStore()
 const recurringEventStore = useRecurringEventStore()
 const businessHoursStore = useBusinessHoursStore()
-const toast = useToast()
+const { showToast } = useToast()
 
 const merchantId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 const merchant = ref<any>(await merchantStore.getMerchantById(merchantId))
@@ -356,13 +358,7 @@ const confirmDelete = async () => {
   try {
     await recurringEventStore.deleteRecurringEvent(recurringEventToDelete.value.id)
     
-    toast.add({
-      severity: 'success',
-      summary: 'Recurring Event Deleted',
-      detail: 'The recurring event has been deleted successfully',
-      group: 'main',
-      life: 3000
-    })
+    showToast('success', 'Recurring Event Deleted', 'The recurring event has been deleted successfully')
     
     // Refresh the list
     await recurringEventStore.loadRecurringEventsByMerchantId(merchantId)
@@ -371,13 +367,7 @@ const confirmDelete = async () => {
     recurringEventToDelete.value = null
   } catch (error: any) {
     console.error('Error deleting recurring event:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Delete Error',
-      detail: error.message || 'Failed to delete recurring event. Please try again.',
-      group: 'main',
-      life: 3000
-    })
+    showToast('error', 'Delete Error', error.message || 'Failed to delete recurring event. Please try again.')
     deleteDialog.value = false
     recurringEventToDelete.value = null
   }

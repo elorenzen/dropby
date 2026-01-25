@@ -67,13 +67,15 @@
 </template>
 
 <script setup lang="ts">
+    import { useToast } from '~/composables/useToast'
+    
     const props  = defineProps(['vendor'])
     const vendor = ref(props.vendor)
 
     const eventStore    = useEventStore()
     const merchantStore = useMerchantStore()
     const userStore     = useUserStore()
-    const toast         = useToast()
+    const { showToast } = useToast()
     const events        = eventStore.getAllOpenEvents
     const merchants     = merchantStore.getAllMerchants
     const user          = userStore.getUser
@@ -127,19 +129,9 @@
             
             if (!result.success) {
                 if (result.error === 'usage_limit') {
-                    toast.add({
-                        severity: 'warn',
-                        summary: 'Usage Limit Reached',
-                        detail: `You've reached your monthly limit of ${result.usageLimit} event requests. Upgrade your plan to request unlimited events.`,
-                        life: 5000
-                    })
+                    showToast('warn', 'Usage Limit Reached', `You've reached your monthly limit of ${result.usageLimit} event requests. Upgrade your plan to request unlimited events.`, 5000)
                 } else if (result.error === 'already_requested') {
-                    toast.add({
-                        severity: 'warn',
-                        summary: 'Already Requested',
-                        detail: 'You have already requested this event.',
-                        life: 3000
-                    })
+                    showToast('warn', 'Already Requested', 'You have already requested this event.')
                 } else {
                     errDialog.value = true
                     errMsg.value = result.message || 'Failed to request event'

@@ -95,6 +95,7 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
+import { useToast } from '~/composables/useToast'
 
 import type { Event } from '~/types'
 
@@ -118,7 +119,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const user = useSupabaseUser()
-const toast = useToast()
+const { showToast } = useToast()
 const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
 const reviewStore = useReviewStore()
@@ -171,12 +172,7 @@ const submitReview = async () => {
   showValidation.value = true
   
   if (!canSubmit.value) {
-    toast.add({
-      severity: 'error',
-      summary: 'Validation Error',
-      detail: 'Please provide both a rating and review text',
-      life: 3000
-    })
+    showToast('error', 'Validation Error', 'Please provide both a rating and review text')
     return
   }
 
@@ -196,20 +192,10 @@ const submitReview = async () => {
     closeDialog()
     emit('review-submitted')
     
-    toast.add({
-      severity: 'success',
-      summary: 'Review Submitted',
-      detail: 'Your review has been submitted successfully',
-      life: 3000
-    })
+    showToast('success', 'Review Submitted', 'Your review has been submitted successfully')
   } catch (error) {
     console.error('Error submitting review:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to submit review. Please try again.',
-      life: 3000
-    })
+    showToast('error', 'Error', 'Failed to submit review. Please try again.')
   } finally {
     loading.value = false
   }

@@ -198,8 +198,8 @@
 </template>
 
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast'
-const toast = useToast()
+import { useToast } from '~/composables/useToast'
+const { showToast } = useToast()
 const storageStore = useStorageStore()
 const userStore    = useUserStore()
 const store        = useMenuStore()
@@ -334,7 +334,7 @@ const formatCurrency = (value:any) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 const resetFields = async (action:any) => {
-    toast.add({ severity: 'success', summary: 'Success', detail: `Menu Item ${action}!`, group: 'main', life: 6000 })
+    showToast('success', 'Success', `Menu Item ${action}!`, 6000)
     addDialog.value    = false
     editDialog.value   = false
     deleteDialog.value = false

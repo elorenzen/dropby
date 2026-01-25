@@ -61,12 +61,13 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 import { paymentService } from '~/services/api/paymentService'
+import { useToast } from '~/composables/useToast'
 
 const props = defineProps<{
     stripeCustomerId: string | null,
 }>()
 
-const toast = useToast()
+const { showToast } = useToast()
 const paymentMethods = ref<any[]>([])
 const showAddDialog = ref(false)
 const showDeleteDialog = ref(false)
@@ -118,28 +119,13 @@ const handleDeleteConfirm = async () => {
         
         if (response as any) {
             paymentMethods.value = paymentMethods.value.filter((paymentMethod: any) => paymentMethod.id !== paymentMethodToDelete.value)
-            toast.add({
-                severity: 'success',
-                summary: 'Payment Method Deleted',
-                detail: 'Your payment method has been deleted successfully',
-                life: 3000
-            })
+            showToast('success', 'Payment Method Deleted', 'Your payment method has been deleted successfully')
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to delete payment method. Please try again.',
-                life: 3000
-            })
+            showToast('error', 'Error', 'Failed to delete payment method. Please try again.')
         }
     } catch (error) {
         console.error('Error deleting payment method:', error)
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to delete payment method. Please try again.',
-            life: 3000
-        })
+        showToast('error', 'Error', 'Failed to delete payment method. Please try again.')
     } finally {
         showDeleteDialog.value = false
         paymentMethodToDelete.value = null

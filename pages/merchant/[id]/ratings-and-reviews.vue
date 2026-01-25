@@ -241,10 +241,10 @@
 </template>
 
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast'
+import { useToast } from '~/composables/useToast'
 import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 import ReviewCard from '~/components/ReviewCard.vue'
-const toast = useToast()
+const { showToast } = useToast()
 definePageMeta({
   middleware: ['auth']
 })
@@ -394,21 +394,11 @@ const confirmDeleteReview = async () => {
         await reviewStore.deleteReview(selectedReviewForDelete.value.id)
         
         closeDeleteDialog()
-        toast.add({
-            severity: 'success',
-            summary: 'Review Deleted',
-            detail: 'Your review has been deleted successfully',
-            life: 3000
-        })
+        showToast('success', 'Review Deleted', 'Your review has been deleted successfully')
         
     } catch (error: any) {
         console.error('Error deleting review:', error)
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to delete review. Please try again.',
-            life: 3000
-        })
+        showToast('error', 'Error', 'Failed to delete review. Please try again.')
     } finally {
         loading.value = false
     }
@@ -418,12 +408,7 @@ const submitReview = async () => {
     showValidation.value = true
     
     if (!canSubmit.value) {
-        toast.add({
-            severity: 'error',
-            summary: 'Validation Error',
-            detail: 'Please provide both a rating and review text',
-            life: 3000
-        })
+        showToast('error', 'Validation Error', 'Please provide both a rating and review text')
         return
     }
 
@@ -448,20 +433,10 @@ const submitReview = async () => {
         })
         
         closeReviewDialog()
-        toast.add({
-            severity: 'success',
-            summary: 'Review Submitted',
-            detail: 'Your review has been submitted successfully',
-            life: 3000
-        })
+        showToast('success', 'Review Submitted', 'Your review has been submitted successfully')
     } catch (error) {
         console.error('Error submitting review:', error)
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to submit review. Please try again.',
-            life: 3000
-        })
+        showToast('error', 'Error', 'Failed to submit review. Please try again.')
     } finally {
         loading.value = false
     }
