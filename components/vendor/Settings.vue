@@ -369,6 +369,7 @@
 <script setup lang="ts">
 import { v4 } from 'uuid'
 import { formatDate } from '~/utils/dates'
+import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
 const route = useRoute()
 const { currentUser } = useAuth()
 const toast = useToast()
@@ -399,6 +400,20 @@ const baseLat = ref()
 const baseLng = ref()
 const formattedAddr = ref()
 const showSubscriptionPlans = ref(false)
+
+// Initialize Google Places Autocomplete
+const { initialize: initializeAutocomplete } = useGooglePlacesAutocomplete(
+  streetRef,
+  {
+    onPlaceSelected: (place) => {
+      if (place.coordinates) {
+        baseLat.value = place.coordinates.lat
+        baseLng.value = place.coordinates.lng
+      }
+      formattedAddr.value = place.formattedAddress || ''
+    }
+  }
+)
 const subscriptionLoading = ref(false)
 
 // Business hours - Initialize with default structure
@@ -494,47 +509,7 @@ const loadBusinessHours = async () => {
 }
 
 const sdkInit = async () => {
-  //initialize google sdk
-  const config = useRuntimeConfig()
-  
-  try {
-    // Dynamic import to avoid SSR issues
-    const { Loader } = await import('@googlemaps/js-api-loader')
-    
-    const loader = new Loader({
-      apiKey: config.public.gMapKey,
-      version: 'beta',
-      libraries: ['places'],
-    })
-    
-    loader.load().then((google: any) => {
-      const options = {
-        componentRestrictions: { country: 'us' },
-        fields: ['geometry/location', 'name', 'formatted_address', 'types'],
-        strictBounds: false,
-      }
-      
-      if (streetRef.value) {
-        const autocomplete = new google.maps.places.Autocomplete(
-          streetRef.value,
-          options
-        )
-        autocomplete.addListener('place_changed', () => {
-          const placeResponse = autocomplete.getPlace()
-          if (placeResponse.geometry?.location) {
-            baseLat.value = placeResponse.geometry.location.lat()
-            baseLng.value = placeResponse.geometry.location.lng()
-          }
-
-          formattedAddr.value = placeResponse
-            ? placeResponse.formatted_address
-            : ''
-        })
-      }
-    })
-  } catch (error) {
-    console.warn('Google Maps API not available:', error)
-  }
+  await initializeAutocomplete()
 }
 
 // Check subscription status
@@ -675,8 +650,6 @@ const getCurrentPlanPrice = () => {
       return 0
   }
 }
-
-import { formatDate } from '~/utils/dates'
 
 const openSubscriptionModal = () => {
   showSubscriptionPlans.value = true

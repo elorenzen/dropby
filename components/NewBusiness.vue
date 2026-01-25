@@ -98,8 +98,8 @@
 </template>
 
 <script setup lang="ts">
-import { Loader } from '@googlemaps/js-api-loader'
 import { v4 } from 'uuid'
+import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
 const supabase          = useSupabaseClient()
 
 const props             = defineProps(['bizType'])
@@ -162,45 +162,22 @@ watch(businessObj, (newVal:any) => {
     emit('objUpdated', businessObj)
 })
 
-onMounted(async () => {
-    await sdkInit()
-})
-
-const sdkInit = async () => {
-  //initialize google sdk
-  const config = useRuntimeConfig()
-  const loader = new Loader({
-    apiKey: config.public.gMapKey,
-    version: 'beta',
-    libraries: ['places'],
-  })
-  loader.load().then((google:any) => {
-    const options = {
-      componentRestrictions: { country: 'us' },
-      fields: ['geometry/location', 'name', 'formatted_address', 'types'],
-      strictBounds: false,
+// Initialize Google Places Autocomplete
+const { initialize: initializeAutocomplete } = useGooglePlacesAutocomplete(
+  streetRef,
+  {
+    onPlaceSelected: (place) => {
+      businessObj.addressComponents = (place.addressComponents as any[]) || []
+      businessObj.coordinates = place.coordinates || {}
+      businessObj.formattedAddress = place.formattedAddress || ''
+      businessObj.addressUrl = place.addressUrl || ''
     }
-    // attaches it to the input field with this ref
-    const autocomplete = new google.maps.places.Autocomplete(
-      streetRef.value,
-      options
-    )
-    autocomplete.addListener('place_changed', () => {
-      const placeResponse = autocomplete.getPlace()
-      const lat = placeResponse.geometry.location.lat()
-      const lng = placeResponse.geometry.location.lng()
+  }
+)
 
-      businessObj.addressComponents = placeResponse
-        ? placeResponse.address_components
-        : ''
-      businessObj.coordinates = placeResponse ? { lat: lat, lng: lng } : ''
-      businessObj.formattedAddress = placeResponse
-        ? placeResponse.formatted_address
-        : ''
-      businessObj.addressUrl = placeResponse ? placeResponse.url : ''
-    })
-  })
-}
+onMounted(async () => {
+    await initializeAutocomplete()
+})
 const addImage = async (e: any) => {
         uploading.value = true
         const file = e.files[0]

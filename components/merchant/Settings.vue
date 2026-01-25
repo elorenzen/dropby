@@ -371,6 +371,7 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { formatDate } from '~/utils/dates'
+import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
 
 const route = useRoute()
 const toast = useToast()
@@ -402,6 +403,19 @@ const addressComponents = ref()
 const coordinates = ref()
 const formattedAddress = ref()
 const addressUrl = ref()
+
+// Initialize Google Places Autocomplete
+const { initialize: initializeAutocomplete } = useGooglePlacesAutocomplete(
+  streetRef,
+  {
+    onPlaceSelected: (place) => {
+      addressComponents.value = place.addressComponents || ''
+      coordinates.value = place.coordinates || null
+      formattedAddress.value = place.formattedAddress || ''
+      addressUrl.value = place.addressUrl || ''
+    }
+  }
+)
 
 // Business hours - Initialize with default structure
 const businessHours = ref([
@@ -494,42 +508,7 @@ const loadBusinessHours = async () => {
 }
 
 const sdkInit = async () => {
-  const config = useRuntimeConfig()
-  
-  try {
-    // Dynamic import to avoid SSR issues
-    const { Loader } = await import('@googlemaps/js-api-loader')
-    
-    const loader = new Loader({
-      apiKey: config.public.gMapKey,
-      version: 'beta',
-      libraries: ['places'],
-    })
-    
-    loader.load().then((google: any) => {
-      const options = {
-        componentRestrictions: { country: 'us' },
-        fields: ['geometry/location', 'name', 'formatted_address', 'types'],
-        strictBounds: false,
-      }
-      
-      if (streetRef.value) {
-        const autocomplete = new google.maps.places.Autocomplete(streetRef.value, options)
-        autocomplete.addListener('place_changed', () => {
-          const placeResponse = autocomplete.getPlace()
-          const lat = placeResponse.geometry.location.lat()
-          const lng = placeResponse.geometry.location.lng()
-
-          addressComponents.value = placeResponse?.address_components || ''
-          coordinates.value = placeResponse ? { lat, lng } : ''
-          formattedAddress.value = placeResponse?.formatted_address || ''
-          addressUrl.value = placeResponse?.url || ''
-        })
-      }
-    })
-  } catch (error) {
-    console.warn('Google Maps API not available:', error)
-  }
+  await initializeAutocomplete()
 }
 
 // Event handlers
