@@ -16,8 +16,7 @@
                             mode="basic"
                             accept="image/*"
                             :maxFileSize="1000000"
-                            @upload="addImage($event)"
-                            :auto="true"
+                            @select="addImage"
                             chooseLabel="Upload Image"
                             class="w-full"
                         />
@@ -31,7 +30,7 @@
                             @click="generateImage"
                             :loading="loadingImg"
                         />
-                        <div v-if="uploading" class="flex justify-center mt-2">
+                        <div v-if="storageStore.uploading" class="flex justify-center mt-2">
                             <ProgressSpinner />
                         </div>
                     </div>
@@ -115,6 +114,7 @@
     const props       = defineProps(['id', 'vendor'])
     const emit        = defineEmits(['created', 'errored'])
     const menuStore   = useMenuStore()
+    const storageStore = useStorageStore()
     const name        = ref()
     const description = ref()
     const type        = ref()
@@ -122,7 +122,6 @@
     const imageName   = ref()
     const price       = ref(0)
     const special     = ref(false)
-    const uploading   = ref(false)
     const loading     = ref(false)
     const errType     = ref()
     const errMsg      = ref()
@@ -182,23 +181,19 @@
         loading.value = false
     }
     const addImage = async (e: any) => {
-        uploading.value = true
-        const file = e.files[0]
-
+        const file = e?.files?.[0]
+        
         if (file) {
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${v4()}.${fileExt}`
-            imageName.value = fileName
-            const filePath = `${fileName}`
-
-            const { error: uploadError } = await supabase.storage.from('menu_images').upload(filePath, file)
-
-            if (!uploadError) {
-                const { data } = supabase.storage.from('menu_images').getPublicUrl(filePath)
-                if (data) imageUrl.value = data.publicUrl
-            } else throwErr('Menu Item Image Upload', uploadError.message)
+            await storageStore.addImage('menu_images', file, {
+                onSuccess: (publicUrl, fileName) => {
+                    imageUrl.value = publicUrl
+                    imageName.value = fileName
+                },
+                onError: (error) => {
+                    throwErr('Menu Item Image Upload', error.message)
+                }
+            })
         }
-        uploading.value = false
     }
     const throwErr = (title: any, msg: any) => {
         errType.value = title

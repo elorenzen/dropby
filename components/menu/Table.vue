@@ -200,7 +200,7 @@
 <script setup lang="ts">
 import { useToast } from 'primevue/usetoast'
 const toast = useToast()
-const supabase     = useSupabaseClient()
+const storageStore = useStorageStore()
 const userStore    = useUserStore()
 const store        = useMenuStore()
 
@@ -305,14 +305,7 @@ const confirmDelete = async () => {
         
         // Delete image from storage
         if (itemToDelete.value.image_name) {
-            const { error: imgErr } = await supabase
-                .storage
-                .from('menu_images')
-                .remove([itemToDelete.value.image_name])
-            
-            if (imgErr) {
-                console.warn('Image deletion failed:', imgErr.message)
-            }
+            await storageStore.deleteImage('menu_images', itemToDelete.value.image_name)
         }
         
         await resetFields('Deleted')

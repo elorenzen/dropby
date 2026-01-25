@@ -18,8 +18,7 @@
                             mode="basic"
                             accept="image/*"
                             :maxFileSize="1000000"
-                            @upload="updateImage($event, item.image_name)"
-                            :auto="true"
+                            @select="(e) => updateImage(e, item.image_name)"
                             chooseLabel="Upload Image"
                             class="w-full"
                         />
@@ -33,7 +32,7 @@
                             @click="generateImage"
                             :loading="loadingImg"
                         />
-                        <div v-if="uploading" class="flex justify-center mt-2">
+                        <div v-if="storageStore.uploading" class="flex justify-center mt-2">
                             <ProgressSpinner />
                         </div>
                     </div>
@@ -107,16 +106,15 @@
 </template>
 
 <script setup lang="ts">
-    import { v4 } from 'uuid'
     const props       = defineProps(['item', 'vendor'])
     const emit        = defineEmits(['edited', 'errored'])
     const menuStore   = useMenuStore()
+    const storageStore = useStorageStore()
     const item         = ref(props.item)
     const errDialog    = ref(false)
     const errType      = ref()
     const errMsg       = ref()
     const loading      = ref(false)
-    const uploading    = ref(false)
     const loadingImg   = ref(false)
     const filteredCategories = ref<string[]>([])
 
@@ -172,45 +170,27 @@
     }
 
     const updateImage = async (e: any, prevFile: any) => {
-        uploading.value = true
-        const file = e.files[0]
+        const file = e?.files?.[0]
         const oldFileName = prevFile
 
         if (file) {
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${v4()}.${fileExt}`
-            const filePath = `${fileName}`
-
-            const { error: uploadError } = await supabase.storage.from('menu_images').upload(filePath, file)
-
-            if (!uploadError) {
-                // 1. Upload new file to storage
-                const { data } = supabase.storage.from('menu_images').getPublicUrl(filePath)
-                if (data) item.value.image_url = data.publicUrl
-
-                // 2. Replace fields on menu document in Db
-                const menuStore = useMenuStore()
-                await menuStore.updateMenuItem(item.value.id, { 
-                  image_url: data.publicUrl, 
-                  image_name: filePath 
-                })
-                
-                // 3. Finally, delete old file from storage
-                try {
-                    const { error: storageDeleteErr } = await supabase
-                        .storage
-                        .from('menu_images')
-                        .remove([oldFileName])
+            await storageStore.editImage('menu_images', file, oldFileName, {
+                onSuccess: async (publicUrl, fileName) => {
+                    // Update local item state
+                    item.value.image_url = publicUrl
+                    item.value.image_name = fileName
                     
-                    if (storageDeleteErr) throwErr('Menu Item Image Upload', storageDeleteErr.message)
-                } catch (storageError: any) {
-                    console.error('Error deleting old file:', storageError)
+                    // Update menu item in database
+                    await menuStore.updateMenuItem(item.value.id, { 
+                        image_url: publicUrl, 
+                        image_name: fileName 
+                    })
+                },
+                onError: (error) => {
+                    throwErr('Menu Item Image Upload', error.message)
                 }
-            } else {
-                throwErr('Menu Item Image Upload', uploadError.message)
-            }
+            })
         }
-        uploading.value = false
     }
     const throwErr = (title: any, msg: any) => {
         errType.value = title

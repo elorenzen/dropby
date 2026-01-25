@@ -11,13 +11,12 @@
                             mode="basic"
                             accept="image/*"
                             :maxFileSize="1000000"
-                            @upload="addImage($event)"
-                            :auto="true"
+                            @select="addImage"
                             chooseLabel="Upload Image"
-                            :loading="uploading"
+                            :loading="storageStore.uploading"
                         />
                     </div>
-                    <div v-if="uploading" class="card flex justify-center mt-4">
+                    <div v-if="storageStore.uploading" class="card flex justify-center mt-4">
                         <ProgressSpinner class="p-progress-spinner-circle" />
                     </div>
                 </div>
@@ -98,15 +97,13 @@
 </template>
 
 <script setup lang="ts">
-import { v4 } from 'uuid'
 import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
-const supabase          = useSupabaseClient()
 
 const props             = defineProps(['bizType'])
 const bizType:string    = props.bizType
 const emit              = defineEmits(['objUpdated'])
 const streetRef         = ref()
-const uploading         = ref(false)
+const storageStore      = useStorageStore()
 const errDialog         = ref(false)
 const errMsg            = ref('')
 
@@ -179,25 +176,19 @@ onMounted(async () => {
     await initializeAutocomplete()
 })
 const addImage = async (e: any) => {
-        uploading.value = true
-        const file = e.files[0]
-
+        const file = e?.files?.[0]
+        
         if (file) {
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${v4()}.${fileExt}`
-            const filePath = `${fileName}`
-
-            const { error } = await supabase.storage.from('business_images').upload(filePath, file)
-
-            if (!error) {
-                const { data } = supabase.storage.from('business_images').getPublicUrl(filePath)
-                if (data) businessObj.imageUrl = data.publicUrl
-            } else {
-                errDialog.value = true
-                errMsg.value = error.message
-            }
+            await storageStore.addImage('business_images', file, {
+                onSuccess: (publicUrl) => {
+                    businessObj.imageUrl = publicUrl
+                },
+                onError: (error) => {
+                    errDialog.value = true
+                    errMsg.value = error.message
+                }
+            })
         }
-        uploading.value = false
     }
 </script>
 

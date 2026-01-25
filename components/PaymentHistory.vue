@@ -447,21 +447,28 @@ const formatCurrency = (amount: number): string => {
   return amount.toFixed(2)
 }
 
-import { formatDate } from '~/utils/dates'
-
 const getMerchantInfo = async (merchantId: string) => {
   try {
-    const supabase = useSupabaseClient()
+    const merchantStore = useMerchantStore()
     
-    // Try to get merchant info from merchants table
-    const { data: merchantData } = await supabase
-      .from('merchants')
-      .select('merchant_name, formatted_address, phone, email, avatar_url')
-      .eq('id', merchantId)
-      .single()
+    // Try to get merchant from store first
+    let merchantData = await merchantStore.getMerchantById(merchantId)
     
+    // If not in store, load merchants
+    if (!merchantData) {
+      await merchantStore.loadMerchants()
+      merchantData = await merchantStore.getMerchantById(merchantId)
+    }
+    
+    // If found in store, extract needed fields
     if (merchantData) {
-      return merchantData
+      return {
+        merchant_name: merchantData.merchant_name,
+        formatted_address: merchantData.formatted_address,
+        phone: merchantData.phone,
+        email: merchantData.email,
+        avatar_url: merchantData.avatar_url
+      }
     }
     
     // Fallback: try to get from payments data

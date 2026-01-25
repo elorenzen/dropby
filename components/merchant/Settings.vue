@@ -56,7 +56,7 @@
                 chooseLabel="Upload New Image"
                 class="hidden"
               />
-              <div v-if="uploading" class="flex justify-center mt-4">
+              <div v-if="storageStore.uploading" class="flex justify-center mt-4">
                 <ProgressSpinner />
               </div>
             </div>
@@ -369,13 +369,13 @@
 </template>
 
 <script setup lang="ts">
-import { v4 as uuidv4 } from 'uuid'
 import { formatDate } from '~/utils/dates'
 import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
+import { useToast } from '~/composables/useToast'
 
 const route = useRoute()
-const toast = useToast()
-const supabase = useSupabaseClient()
+const { showToast } = useToast()
+const storageStore = useStorageStore()
 const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
 const userStore = useUserStore()
@@ -390,7 +390,6 @@ const assocId = user?.[`associated_${user?.type}_id`]
 // Reactive data
 const merchant = ref(await merchantStore.getMerchantById(assocId || ''))
 const activeTab = ref(route.query.activeTab ? parseInt(route.query.activeTab as string) : 0)
-const uploading = ref(false)
 const loading = ref(false)
 const errDialog = ref(false)
 const errMsg = ref('')
@@ -439,19 +438,9 @@ const tabs = [
 // Subscription status
 const hasActiveSubscription = ref(false)
 const currentSubscription = ref<any>(null)
-
-// Payment settings state
-const paymentSettings = ref({
-  seatingCapacity: merchant.value?.seating_capacity || 100,
-  // defaultEventValue: merchant.value?.default_event_value || 350, // COMMENTED OUT - Feature under consideration
-  customPricing: merchant.value?.custom_event_pricing || false,
-  // minimumEventValue: merchant.value?.minimum_event_value || null, // COMMENTED OUT - Feature under consideration
-  // maximumEventValue: merchant.value?.maximum_event_value || null // COMMENTED OUT - Feature under consideration
-})
+const subscriptionStore = useSubscriptionStore()
 
 // UI state
-const saving = ref(false)
-const errors = ref<Record<string, string>>({})
 const showSubscriptionPlans = ref(false)
 const subscriptionLoading = ref(false)
 
@@ -526,7 +515,7 @@ const saveEdits = async () => {
   loading.value = true
   
   const updates = {
-    updated_at: new Date(),
+    updated_at: new Date().toISOString(),
     merchant_name: merchant.value.merchant_name,
     merchant_description: merchant.value.merchant_description,
     address_components: addressComponents.value || merchant.value.address_components,
@@ -570,95 +559,37 @@ const saveBusinessHours = async () => {
 }
 
 const updateImage = async (e: any) => {
-  uploading.value = true
   const file = e.files[0]
 
   if (file) {
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${uuidv4()}.${fileExt}`
-    const filePath = fileName
-
-    const { error: uploadError } = await supabase.storage
-      .from('merchant_avatars')
-      .upload(filePath, file)
-
-    if (uploadError) {
-      errType.value = 'Image Upload'
-      errMsg.value = uploadError.message
-      errDialog.value = true
-    } else {
-      const { data } = supabase.storage
-        .from('merchant_avatars')
-        .getPublicUrl(filePath)
-        
-      if (data) {
-        imageUrl.value = data.publicUrl
+    await storageStore.editImage('merchant_avatars', file, null, {
+      onSuccess: async (publicUrl) => {
+        imageUrl.value = publicUrl
 
         const updates = {
-          updated_at: new Date(),
-          avatar_url: imageUrl.value,
+          updated_at: new Date().toISOString(),
+          avatar_url: publicUrl,
         }
 
-        const { error } = await supabase
-          .from('merchants')
-          .update(updates)
-          .eq('id', merchant.value?.id)
-        
-        if (!error) {
+        try {
+          await merchantStore.updateMerchant(merchant.value!.id, updates)
+          // Update local merchant data
+          if (merchant.value) {
+            merchant.value.avatar_url = publicUrl
+          }
           showToast('Merchant Avatar Updated!', 'success')
-        } else {
+        } catch (error: any) {
           errType.value = 'Image Upload'
-          errMsg.value = error.message
+          errMsg.value = error.message || 'Failed to update avatar'
           errDialog.value = true
         }
+      },
+      onError: (error) => {
+        errType.value = 'Image Upload'
+        errMsg.value = error.message
+        errDialog.value = true
       }
-    }
-  }
-  uploading.value = false
-}
-
-const savePaymentSettings = async () => {
-  if (!validateForm()) return
-  
-  saving.value = true
-  
-  try {
-    const updates = {
-      seating_capacity: paymentSettings.value.seatingCapacity,
-      // default_event_value: paymentSettings.value.defaultEventValue, // COMMENTED OUT - Feature under consideration
-      custom_event_pricing: paymentSettings.value.customPricing,
-      // minimum_event_value: paymentSettings.value.minimumEventValue, // COMMENTED OUT - Feature under consideration
-      // maximum_event_value: paymentSettings.value.maximumEventValue, // COMMENTED OUT - Feature under consideration
-      updated_at: new Date().toISOString()
-    }
-    
-    const { error } = await supabase
-      .from('merchants')
-      .update(updates as any)
-      .eq('id', merchant.value?.id as string)
-    
-    if (error) {
-      throw error
-    }
-    
-    // Update local merchant data
-    Object.assign(merchant.value, updates)
-    
-    toast.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Payment settings updated successfully!',
-      group: 'main',
-      life: 3000
     })
-    
-  } catch (error: any) {
-    console.error('Error saving payment settings:', error)
-    errType.value = 'Payment Settings Update'
-    errMsg.value = error.message || 'Failed to save payment settings'
-    errDialog.value = true
-  } finally {
-    saving.value = false
   }
 }
 
@@ -668,67 +599,20 @@ const openSubscriptionModal = () => {
 
 // Check subscription status
 const checkSubscriptionStatus = async () => {
-  if (!currentUser.value) return
+  if (!currentUser.value || !merchant.value?.id) return
 
   try {
-    const merchantId = merchant.value?.id as string
+    const merchantId = merchant.value.id as string
     
-    // Check for business subscription (not user subscription)
-    const { data: subscriptionData } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('business_id', merchantId)
-      .eq('business_type', 'merchant')
-      .eq('status', 'active')
-      .single()
-
-    currentSubscription.value = subscriptionData
-    hasActiveSubscription.value = !!subscriptionData
+    // Use subscription store to get active subscription
+    await subscriptionStore.setActiveSubscription(merchantId, 'merchant')
+    
+    currentSubscription.value = subscriptionStore.getActiveSubscription
+    hasActiveSubscription.value = !!subscriptionStore.getActiveSubscription
   } catch (error) {
     console.error('Error checking subscription status:', error)
     hasActiveSubscription.value = false
   }
-}
-
-// Calculate default event value based on seating capacity
-const calculateDefaultEventValue = (capacity: number): number => {
-  if (!capacity || capacity <= 0) return 100
-  if (capacity <= 25) return 100
-  if (capacity <= 50) return 150
-  if (capacity <= 100) return 300
-  if (capacity <= 300) return 600
-  if (capacity <= 500) return 1200
-  return 2000
-}
-
-// Watch for seating capacity changes and update default event value
-// watch(() => paymentSettings.value.seatingCapacity, (newCapacity: number) => {
-//   if (!paymentSettings.value.customPricing) {
-//     paymentSettings.value.defaultEventValue = calculateDefaultEventValue(newCapacity)
-//   }
-// }) // COMMENTED OUT - Feature under consideration
-
-// Validate form
-const validateForm = (): boolean => {
-  errors.value = {}
-  
-  if (!paymentSettings.value.seatingCapacity || paymentSettings.value.seatingCapacity < 1) {
-    errors.value.seatingCapacity = 'Seating capacity must be at least 1'
-  }
-  
-  // if (paymentSettings.value.customPricing) {
-  //   if (!paymentSettings.value.defaultEventValue || paymentSettings.value.defaultEventValue < 0) {
-  //     errors.value.defaultEventValue = 'Default event value must be a positive number'
-  //   }
-  // } // COMMENTED OUT - Feature under consideration
-  
-  // if (paymentSettings.value.minimumEventValue && paymentSettings.value.maximumEventValue) {
-  //   if (paymentSettings.value.minimumEventValue > paymentSettings.value.maximumEventValue) {
-  //     errors.value.minimumEventValue = 'Minimum value cannot be greater than maximum value'
-  //   }
-  // } // COMMENTED OUT - Feature under consideration
-  
-  return Object.keys(errors.value).length === 0
 }
 
 // Handle plan selection
@@ -745,15 +629,6 @@ const handlePlanSelection = async (plan: { id: string; name: string; price: numb
     // For free plans, just close the modal
     showSubscriptionPlans.value = false
   }
-}
-
-const showToast = (message: string, severity: string = 'info') => {
-  toast.add({
-    severity: severity,
-    summary: severity === 'success' ? 'Success' : severity === 'error' ? 'Error' : 'Info',
-    detail: message,
-    life: 3000
-  })
 }
 
 const onClose = () => {
@@ -789,16 +664,6 @@ const getCurrentPlanPrice = () => {
   }
 }
 
-const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-  
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
 </script>
 
 <style scoped>
