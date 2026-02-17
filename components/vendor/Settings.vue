@@ -353,10 +353,10 @@
           />
         </Dialog>
 
-        <!-- USER MANAGEMENT TAB -->
-        <div v-if="activeTab === 5" class="space-y-6">
+        <!-- USER MANAGEMENT TAB (admin only) -->
+        <div v-if="isAdmin && activeTab === 5" class="space-y-6">
           <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">User Management</h2>
-          <AssociatedUsers />
+          <AssociatedUsers :businessName="vendor.vendor_name" />
         </div>
       </div>
     </div>
@@ -452,15 +452,22 @@ const cuisines = ref([
   'Vegan'
 ])
 
-// Tab configuration
-const tabs = [
-  { label: 'General Information', icon: 'pi pi-info-circle' },
-  { label: 'Business Hours', icon: 'pi pi-clock' },
-  { label: 'Menu', icon: 'pi pi-list' },
-  { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
-  { label: 'Financials & Payment Settings', icon: 'pi pi-credit-card' },
-  { label: 'User Management', icon: 'pi pi-users' }
-]
+// Tab configuration - User Management only visible to admins
+const isAdmin = computed(() => user?.is_admin === true)
+
+const tabs = computed(() => {
+  const baseTabs = [
+    { label: 'General Information', icon: 'pi pi-info-circle' },
+    { label: 'Business Hours', icon: 'pi pi-clock' },
+    { label: 'Menu', icon: 'pi pi-list' },
+    { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
+    { label: 'Financials & Payment Settings', icon: 'pi pi-credit-card' },
+  ]
+  if (isAdmin.value) {
+    baseTabs.push({ label: 'User Management', icon: 'pi pi-users' })
+  }
+  return baseTabs
+})
 
 onMounted(async () => {
   await sdkInit()

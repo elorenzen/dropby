@@ -129,6 +129,12 @@ const userStore = useUserStore()
 const confirmed = async (userId: string) => {
   try {
     await userStore.loadUser(userId)
+
+    // Mark user as registered on first sign-in
+    const loadedUser = userStore.getUser
+    if (loadedUser && !loadedUser.registered) {
+      await userStore.updateUser(userId, { registered: true })
+    }
     
     // Redirect to user dashboard
     await redirectToUserDashboard()
