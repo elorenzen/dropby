@@ -25,11 +25,15 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create auth user via Supabase admin API with invite
+    const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://dropby.dev'
+    const redirectTo = `${siteUrl}/reset-password`
+
     const { data: authData, error: authError } = await client.auth.admin.inviteUserByEmail(email, {
       data: {
         first_name: firstName,
         last_name: lastName
-      }
+      },
+      redirectTo
     })
 
     if (authError) {

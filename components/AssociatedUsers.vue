@@ -102,9 +102,9 @@ const props = defineProps<{ businessName?: string }>()
 const store           = useUserStore()
 const user: any       = store.getUser
 const assocId         = user[`associated_${user.type}_id`]
-const allUsers        = store.getAllUsers
-
-const associatedUsers = ref<any[]>([])
+const associatedUsers = computed(() =>
+    store.getAllUsers.filter((u: any) => u[`associated_${user.type}_id`] === assocId)
+)
 const openDialog      = ref(false)
 const headerTitle     = ref('')
 const loading         = ref(false)
@@ -125,14 +125,11 @@ const errDialog       = ref(false)
 const errMsg          = ref()
 const errType         = ref()
 
-onMounted(() => {
-    getAssociatedUsers()
+onMounted(async () => {
+    await store.loadUsers()
 })
 
-const getAssociatedUsers = () => {
-    associatedUsers.value = allUsers
-        .filter((u: any) => u[`associated_${user.type}_id`] === assocId)
-}
+const refreshUsers = () => store.loadUsers()
 
 const inviteUser = async () => {
     if (!email.value) {
@@ -161,7 +158,7 @@ const inviteUser = async () => {
         snacktext.value = 'Invite sent!'
 
         resetFields()
-        getAssociatedUsers()
+        refreshUsers()
         openDialog.value = false
     } catch (error: any) {
         errType.value = 'User Invite'
@@ -205,7 +202,7 @@ const submitEdits = async () => {
         snacktext.value = 'User updated!'
 
         resetFields()
-        getAssociatedUsers()
+        refreshUsers()
         openDialog.value = false
     } catch (error: any) {
         errType.value = 'User Update(s)'
@@ -232,7 +229,7 @@ const confirmDelete = async () => {
         snackbar.value = true
         snacktext.value = 'User deleted.'
 
-        getAssociatedUsers()
+        refreshUsers()
         deleteDialog.value = false
         userToDelete.value = null
     } catch (error: any) {
