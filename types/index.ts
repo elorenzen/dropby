@@ -186,6 +186,7 @@ export interface User {
   updated_at: string | null
   stripe_customer_id: string | null
   current_plan: 'free' | 'pro' | 'premium'
+  registered: boolean
 }
 
 // ============================================================================

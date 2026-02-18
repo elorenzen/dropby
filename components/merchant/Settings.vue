@@ -355,10 +355,10 @@
             />
         </div>
 
-        <!-- USER MANAGEMENT TAB -->
-        <div v-if="activeTab === 4" class="space-y-6">
+        <!-- USER MANAGEMENT TAB (admin only) -->
+        <div v-if="isAdmin && activeTab === 4" class="space-y-6">
           <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">User Management</h2>
-          <AssociatedUsers />
+          <AssociatedUsers :businessName="merchant.merchant_name" />
         </div>
       </div>
       
@@ -427,14 +427,21 @@ const businessHours = ref([
   { name: 'Sunday', dayOfWeek: 0, open: null, close: null, isClosed: false }
 ])
 
-// Tab configuration
-const tabs = [
-  { label: 'General Information', icon: 'pi pi-info-circle' },
-  { label: 'Business Hours', icon: 'pi pi-clock' },
-  { label: 'Payments & Financial', icon: 'pi pi-credit-card' },
-  { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
-  { label: 'User Management', icon: 'pi pi-users' }
-]
+// Tab configuration - User Management only visible to admins
+const isAdmin = computed(() => user?.is_admin === true)
+
+const tabs = computed(() => {
+  const baseTabs = [
+    { label: 'General Information', icon: 'pi pi-info-circle' },
+    { label: 'Business Hours', icon: 'pi pi-clock' },
+    { label: 'Payments & Financial', icon: 'pi pi-credit-card' },
+    { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
+  ]
+  if (isAdmin.value) {
+    baseTabs.push({ label: 'User Management', icon: 'pi pi-users' })
+  }
+  return baseTabs
+})
 // Subscription status
 const hasActiveSubscription = ref(false)
 const currentSubscription = ref<any>(null)

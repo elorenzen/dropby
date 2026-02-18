@@ -86,6 +86,38 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async inviteUser(inviteData: {
+      email: string
+      firstName?: string
+      lastName?: string
+      phone?: string
+      isAdmin?: boolean
+      availableToContact?: boolean
+      type: string
+      associatedMerchantId?: string | null
+      associatedVendorId?: string | null
+      businessName?: string
+    }) {
+      this.loading = true
+      try {
+        const data = await $fetch('/api/invite-user', {
+          method: 'POST',
+          body: inviteData
+        })
+
+        if (data.user) {
+          this.users.push(data.user)
+        }
+
+        return data
+      } catch (error) {
+        console.error('Error inviting user:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     async updateUser(userId: string, updates: Partial<User>) {
       this.updating = true
       try {

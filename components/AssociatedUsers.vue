@@ -3,12 +3,13 @@
         <DataTable :value="associatedUsers">
             <template #header>
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-xl font-bold">Menu Items</span>
+                    <span class="text-xl font-bold">Users</span>
                     <Button
                         outlined
                         severity="secondary"
                         icon="pi pi-plus-circle"
-                        @click="addDialog = true"
+                        label="Invite User"
+                        @click="openAddDialog"
                     />
                 </div>
             </template>
@@ -32,6 +33,12 @@
                     {{ slotProps.data.phone }}
                 </template>
             </Column>
+            <Column field="registered" header="Status">
+                <template #body="slotProps">
+                    <Tag v-if="slotProps.data.registered" severity="success" value="Active" />
+                    <Tag v-else severity="warn" value="Invited" />
+                </template>
+            </Column>
             <Column field="actions">
                 <template #body="{ data }">
                     <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="openEditDialog(data)" />
@@ -40,7 +47,7 @@
             </Column>
         </DataTable>
 
-        <!-- ADD USER -->
+        <!-- ADD/EDIT USER DIALOG -->
         <Dialog v-model:visible="openDialog" modal :header="`${headerTitle} User`" :style="{ width: '35rem' }">
             <div class="flex flex-wrap gap-4 m-2">
                 <div class="w-full md:w-1/2 p-2">
@@ -57,7 +64,7 @@
                 </div>
                 <div class="w-full md:w-1/2 p-2">
                     <FloatLabel variant="on">
-                        <InputText id="email" v-model="email" />
+                        <InputText id="email" v-model="email" :disabled="headerTitle === 'Edit'" />
                         <label for="email">Email</label>
                     </FloatLabel>
                 </div>
@@ -77,7 +84,7 @@
                 </div>
             </div>
             <div class="flex gap-2 p-2">
-                <Button v-if="headerTitle == 'Add'" @click="addUser" block :loading="loading">Add User</Button>
+                <Button v-if="headerTitle == 'Add'" @click="inviteUser" block :loading="loading">Send Invite</Button>
                 <Button v-if="headerTitle == 'Edit'" @click="submitEdits" block :loading="loading">Submit Edits</Button>
             </div>
         </Dialog>
@@ -90,23 +97,23 @@
 </template>
 
 <script setup lang="ts">
-import { v4 } from 'uuid';
-const store           = useUserStore()
-const user:any        = store.getUser
-const assocId         = user[`associated_${user.type}_id`]
-const allUsers        = store.getAllUsers
+const props = defineProps<{ businessName?: string }>()
 
-const associatedUsers = ref()
+const store           = useUserStore()
+const user: any       = store.getUser
+const assocId         = user[`associated_${user.type}_id`]
+const associatedUsers = computed(() =>
+    store.getAllUsers.filter((u: any) => u[`associated_${user.type}_id`] === assocId)
+)
 const openDialog      = ref(false)
 const headerTitle     = ref('')
 const loading         = ref(false)
 const snackbar        = ref(false)
 const snacktext       = ref('')
-const userToDelete    = ref(null)
+const userToDelete    = ref<any>(null)
 const deleteDialog    = ref(false)
 const editId          = ref('')
 
-// USER DATA 
 const first           = ref('')
 const last            = ref('')
 const isAdmin         = ref(false)
@@ -118,56 +125,62 @@ const errDialog       = ref(false)
 const errMsg          = ref()
 const errType         = ref()
 
-onMounted(() => {
-    getAssociatedUsers()
+onMounted(async () => {
+    await store.loadUsers()
 })
 
-const getAssociatedUsers = () => {
-    associatedUsers.value = allUsers
-        .filter((user:any) => user[`associated_${user.type}_id`] === assocId)
-}
+const refreshUsers = () => store.loadUsers()
 
-const addUser = async () => {
-    const userObj = {
-        created_at: new Date(),
-        is_admin: isAdmin.value,
-        first_name: first.value,
-        last_name: last.value,
-        phone: phone.value,
-        email: email.value,
-        type: user.type,
-        id: v4(),
-        available_to_contact: available.value,
-        associated_merchant_id: user.type == 'merchant' ? user[`associated_${user.type}_id`] : null,
-        associated_vendor_id: user.type == 'vendor' ? user[`associated_${user.type}_id`] : null,
+const inviteUser = async () => {
+    if (!email.value) {
+        errType.value = 'Validation'
+        errMsg.value = 'Email is required to send an invite'
+        errDialog.value = true
+        return
     }
+
+    loading.value = true
     try {
-        await store.createUser(userObj)
+        await store.inviteUser({
+            email: email.value,
+            firstName: first.value || undefined,
+            lastName: last.value || undefined,
+            phone: phone.value || undefined,
+            isAdmin: isAdmin.value,
+            availableToContact: available.value,
+            type: user.type,
+            associatedMerchantId: user.type === 'merchant' ? assocId : null,
+            associatedVendorId: user.type === 'vendor' ? assocId : null,
+            businessName: props.businessName
+        })
+
         snackbar.value = true
-        snacktext.value = 'New user added!'
+        snacktext.value = 'Invite sent!'
 
         resetFields()
-
-        getAssociatedUsers()
+        refreshUsers()
         openDialog.value = false
     } catch (error: any) {
-        errType.value = 'User Creation'
-        errMsg.value = error.message || 'Failed to create user'
+        errType.value = 'User Invite'
+        errMsg.value = error.data?.statusMessage || error.message || 'Failed to invite user'
         errDialog.value = true
+    } finally {
+        loading.value = false
     }
 }
+
 const openAddDialog = () => {
     headerTitle.value = 'Add'
     openDialog.value = true
 }
-const openEditDialog = (user: any) => {
-    editId.value = user.id
-    first.value = user.first_name
-    last.value = user.last_name
-    isAdmin.value = user.is_admin
-    available.value = user.available_to_contact
-    email.value = user.email
-    phone.value = user.phone
+const openEditDialog = (userData: any) => {
+    editId.value = userData.id
+    first.value = userData.first_name
+    last.value = userData.last_name
+    isAdmin.value = userData.is_admin
+    available.value = userData.available_to_contact
+    email.value = userData.email
+    phone.value = userData.phone
 
     headerTitle.value = 'Edit'
     openDialog.value = true
@@ -189,7 +202,7 @@ const submitEdits = async () => {
         snacktext.value = 'User updated!'
 
         resetFields()
-        getAssociatedUsers()
+        refreshUsers()
         openDialog.value = false
     } catch (error: any) {
         errType.value = 'User Update(s)'
@@ -216,7 +229,7 @@ const confirmDelete = async () => {
         snackbar.value = true
         snacktext.value = 'User deleted.'
 
-        getAssociatedUsers()
+        refreshUsers()
         deleteDialog.value = false
         userToDelete.value = null
     } catch (error: any) {
@@ -226,7 +239,6 @@ const confirmDelete = async () => {
     }
 }
 const cancelDelete = () => {
-    console.log('delete canceled!')
     deleteDialog.value = false
     userToDelete.value = null
 }

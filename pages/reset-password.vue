@@ -256,12 +256,21 @@ const resetPassword = async () => {
       throw updateError
     }
 
+    // Mark user as registered after password setup (handles invite flow)
+    const userStore = useUserStore()
+    if (user.value?.id) {
+      try {
+        await userStore.updateUser(user.value.id, { registered: true })
+      } catch (regErr) {
+        console.error('Failed to mark user as registered:', regErr)
+      }
+    }
+
     // Success - sign out the user (they were auto-logged in during password reset)
     // This ensures they need to log in with their new password
     await supabase.auth.signOut()
     
     // Clear any user store data
-    const userStore = useUserStore()
     userStore.clearUser()
 
     // Redirect to login with success message
