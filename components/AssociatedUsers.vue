@@ -89,7 +89,7 @@
             </div>
         </Dialog>
 
-        <DeleteDialog v-if="deleteDialog" :itemType="'user'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+        <DeleteDialog :visible="deleteDialog" :itemType="'user'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
 
         <Toast ref="toast" />
