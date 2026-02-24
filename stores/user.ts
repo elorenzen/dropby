@@ -162,14 +162,10 @@ export const useUserStore = defineStore('user', {
 
     async deleteUser(userId: string) {
       try {
-        const supabase = useSupabaseClient()
-        
-        const { error } = await supabase
-          .from('users')
-          .delete()
-          .eq('id', userId)
-
-        if (error) throw error
+        await $fetch('/api/delete-user', {
+          method: 'POST',
+          body: { userId }
+        })
 
         // Remove from local state
         this.users = this.users.filter(user => user.id !== userId)

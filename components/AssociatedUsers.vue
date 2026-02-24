@@ -42,7 +42,15 @@
             <Column field="actions">
                 <template #body="{ data }">
                     <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="openEditDialog(data)" />
-                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="promptDeletion(data)" />
+                    <Button
+                        icon="pi pi-trash"
+                        outlined
+                        rounded
+                        severity="danger"
+                        :disabled="!canDeleteUser(data)"
+                        :title="deleteDisabledReason(data)"
+                        @click="promptDeletion(data)"
+                    />
                 </template>
             </Column>
         </DataTable>
@@ -89,7 +97,7 @@
             </div>
         </Dialog>
 
-        <DeleteDialog v-if="deleteDialog" :itemType="'user'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+        <DeleteDialog :visible="deleteDialog" :itemType="'user'" :loading="deleteLoading" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
 
         <Toast ref="toast" />
@@ -97,14 +105,33 @@
 </template>
 
 <script setup lang="ts">
+import { useToast } from '~/composables/useToast'
+
 const props = defineProps<{ businessName?: string }>()
 
 const store           = useUserStore()
+const { showToast }   = useToast()
 const user: any       = store.getUser
 const assocId         = user[`associated_${user.type}_id`]
 const associatedUsers = computed(() =>
     store.getAllUsers.filter((u: any) => u[`associated_${user.type}_id`] === assocId)
 )
+const adminCount = computed(() => associatedUsers.value.filter((u: any) => u.is_admin).length)
+
+/** Disable delete for: own account, or last admin in the business */
+const canDeleteUser = (row: any) => {
+    if (!row || !user) return false
+    if (row.id === user.id) return false
+    if (row.is_admin && adminCount.value <= 1) return false
+    return true
+}
+const deleteDisabledReason = (row: any) => {
+    if (!row || !user) return ''
+    if (row.id === user.id) return "You cannot delete your own account"
+    if (row.is_admin && adminCount.value <= 1) return "Cannot remove the only admin user"
+    return ''
+}
+
 const openDialog      = ref(false)
 const headerTitle     = ref('')
 const loading         = ref(false)
@@ -112,6 +139,7 @@ const snackbar        = ref(false)
 const snacktext       = ref('')
 const userToDelete    = ref<any>(null)
 const deleteDialog    = ref(false)
+const deleteLoading   = ref(false)
 const editId          = ref('')
 
 const first           = ref('')
@@ -220,15 +248,20 @@ const resetFields = () => {
     phone.value = ''
 }
 const promptDeletion = (item: any) => {
+    if (!canDeleteUser(item)) return
     userToDelete.value = item
     deleteDialog.value = true
 }
 const confirmDelete = async () => {
+    if (!userToDelete.value || !canDeleteUser(userToDelete.value)) {
+        deleteDialog.value = false
+        userToDelete.value = null
+        return
+    }
+    deleteLoading.value = true
     try {
         await store.deleteUser(userToDelete.value.id)
-        snackbar.value = true
-        snacktext.value = 'User deleted.'
-
+        showToast('success', 'User Deleted', 'The user has been removed successfully.', 5000)
         refreshUsers()
         deleteDialog.value = false
         userToDelete.value = null
@@ -236,6 +269,8 @@ const confirmDelete = async () => {
         errType.value = 'User Deletion'
         errMsg.value = error.message || 'Failed to delete user'
         errDialog.value = true
+    } finally {
+        deleteLoading.value = false
     }
 }
 const cancelDelete = () => {
