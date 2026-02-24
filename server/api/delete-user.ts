@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Delete user from the users database table first
+    // 1. Delete from public.users if row exists (RLS-safe; service role sees all)
     const { error: dbError } = await client
       .from('users')
       .delete()
@@ -27,11 +27,16 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Delete user from Supabase Authentication
+    // 2. Delete from Supabase Auth if the auth user exists (e.g. invited but not yet signed in)
     const { error: authError } = await client.auth.admin.deleteUser(userId)
 
     if (authError) {
-      console.error('Failed to delete auth user (DB record already removed):', authError)
+      const isNotFound = /user not found|not found/i.test(authError.message || '')
+      if (isNotFound) {
+        // Auth user already gone or never existed (e.g. invited user) – not a failure
+        return { success: true }
+      }
+      console.error('Failed to delete auth user:', authError)
       throw createError({
         statusCode: 500,
         statusMessage: authError.message || 'Failed to delete user from authentication'
@@ -40,6 +45,7 @@ export default defineEventHandler(async (event) => {
 
     return { success: true }
   } catch (error: any) {
+    if (error.statusCode && error.statusCode !== 500) throw error
     console.error('Delete user error:', error)
     throw createError({
       statusCode: error.statusCode || 500,

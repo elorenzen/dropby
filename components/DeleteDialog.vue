@@ -26,6 +26,7 @@
                 label="Cancel" 
                 severity="secondary" 
                 outlined
+                :disabled="loading"
                 @click="deleteCancel"
                 class="min-w-[80px]"
             />
@@ -33,6 +34,8 @@
                 type="button" 
                 label="Delete" 
                 severity="danger" 
+                :loading="loading"
+                :disabled="loading"
                 @click="deleteConfirm"
                 class="min-w-[80px]"
             />
@@ -44,9 +47,10 @@
 interface Props {
     visible: boolean
     itemType: string
+    loading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { loading: false })
 const emit = defineEmits(['deleteCancel', 'deleteConfirm'])
 
 const deleteCancel = () => emit('deleteCancel')
