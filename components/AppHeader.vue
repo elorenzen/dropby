@@ -322,6 +322,11 @@ const profileMenuItems = computed(() => {
       command: () => navigateToSettings()
     },
     {
+      label: 'Feedback',
+      icon: 'pi pi-comment',
+      command: () => router.push('/feedback')
+    },
+    {
       label: `${isDark.value ? 'Light Mode' : 'Dark Mode'}`,
       icon: `${isDark.value ? 'pi pi-sun' : 'pi pi-moon'}`,
       command: () => {
