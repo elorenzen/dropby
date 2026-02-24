@@ -1,11 +1,31 @@
 import { serverSupabaseClient, serverSupabaseServiceRole } from '#supabase/server'
+import { requireSuperadmin } from '~/server/utils/requireSuperadmin'
 
 export default defineEventHandler(async (event) => {
-  try {
-    const client = await serverSupabaseClient(event)
-    const serviceClient = await serverSupabaseServiceRole(event)
-    const body = await readBody(event)
+  const method = getMethod(event)
+  const client = await serverSupabaseClient(event)
+  const serviceClient = await serverSupabaseServiceRole(event)
 
+  if (method === 'GET') {
+    await requireSuperadmin(event)
+
+    const { data, error } = await serviceClient
+      .from('user_feedback')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: error.message || 'Failed to fetch feedback'
+      })
+    }
+
+    return { success: true, feedback: data || [] }
+  }
+
+  if (method === 'POST') {
+    const body = await readBody(event)
     const { type, title, description, email } = body
 
     if (!type || !['bug', 'feature_request', 'other'].includes(type)) {
@@ -29,7 +49,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Get the authenticated user (optional — allows anonymous with email)
     const { data: { user } } = await client.auth.getUser()
 
     if (!user && !email) {
@@ -39,7 +58,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Resolve email: prefer session email, allow override from body
     let resolvedEmail = email || null
     if (user) {
       resolvedEmail = resolvedEmail || user.email || null
@@ -66,12 +84,7 @@ export default defineEventHandler(async (event) => {
     }
 
     return { success: true, feedback: data }
-  } catch (error: any) {
-    if (error.statusCode && error.statusCode !== 500) throw error
-    console.error('Create feedback error:', error)
-    throw createError({
-      statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || error.message || 'Failed to submit feedback'
-    })
   }
+
+  throw createError({ statusCode: 405, statusMessage: 'Method not allowed' })
 })
