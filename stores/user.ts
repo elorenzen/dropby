@@ -23,6 +23,8 @@ export const useUserStore = defineStore('user', {
       return state.users.filter(user => user.type === userType)
     },
     
+    isSuperadmin: (state): boolean => state.user?.is_superadmin === true,
+
     getAdminUsers: (state) => {
       return state.users.filter(user => user.is_admin)
     },

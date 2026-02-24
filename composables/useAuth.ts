@@ -21,6 +21,11 @@ export const useAuth = () => {
     return userStore.userType
   })
 
+  // Check if user is superadmin
+  const isSuperadmin = computed(() => {
+    return userStore.isSuperadmin
+  })
+
   // Sign out user
   const signOut = async () => {
     try {
@@ -104,6 +109,7 @@ export const useAuth = () => {
     isAuthenticated,
     currentUser,
     userType,
+    isSuperadmin,
     signOut,
     canAccess,
     redirectToUserDashboard
