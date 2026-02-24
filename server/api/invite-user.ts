@@ -82,7 +82,7 @@ export default defineEventHandler(async (event) => {
     // Send invite email via Resend
     try {
       await resend.emails.send({
-        from: 'DropBy Support <noreply@dropby.com>',
+        from: 'DropBy Support <support@dropby.dev>',
         to: [email],
         subject: `You've been invited to join ${businessName || 'a business'} on DropBy`,
         html: `

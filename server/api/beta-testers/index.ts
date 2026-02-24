@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
 
     try {
       await resend.emails.send({
-        from: 'DropBy Support <noreply@dropby.com>',
+        from: 'DropBy Support <support@dropby.dev>',
         to: [normalizedEmail],
         subject: "You're invited to beta test DropBy",
         html: `

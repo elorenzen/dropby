@@ -1,7 +1,7 @@
 import { serverSupabaseClient } from '#supabase/server'
-import { Resend } from 'resend';
+import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export default defineEventHandler(async (event) => {
     try {
@@ -126,7 +126,7 @@ export default defineEventHandler(async (event) => {
         }
 
         const emailData = await resend.emails.send({
-            from: 'DropBy Support <noreply@dropby.com>',
+            from: 'DropBy Support <support@dropby.dev>',
             to: recipients,
             subject: `New Event Request: ${vendorData.vendor_name} for ${date}`,
             html: content,
