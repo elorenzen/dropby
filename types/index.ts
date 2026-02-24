@@ -292,6 +292,27 @@ export interface UsageTracking {
 }
 
 // ============================================================================
+// USER FEEDBACK TYPES
+// ============================================================================
+
+export type FeedbackType = 'bug' | 'feature_request' | 'other'
+export type FeedbackStatus = 'new' | 'viewed' | 'approved' | 'working_on_it' | 'done'
+
+export interface UserFeedback {
+  id: string
+  created_at: string
+  updated_at: string | null
+  user_id: string | null
+  email: string | null
+  type: FeedbackType
+  title: string
+  description: string
+  status: FeedbackStatus
+  reviewed_by: string | null
+  reviewed_at: string | null
+}
+
+// ============================================================================
 // COMMON TYPES
 // ============================================================================
 
