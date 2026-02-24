@@ -76,6 +76,7 @@
 
 <script setup lang="ts">
 import type { FeedbackType } from '~/types'
+import { useToast } from '~/composables/useToast'
 
 definePageMeta({
   middleware: ['auth']
