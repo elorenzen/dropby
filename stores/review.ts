@@ -133,6 +133,13 @@ export const useReviewStore = defineStore('review', {
           }
         }
         
+        // Send email notification to contactable users of the recipient business
+        try {
+          await $fetch(`/api/sendReviewNotification?recipientId=${data.recipient_id}&senderId=${data.sender_id}&rating=${data.rating}&content=${encodeURIComponent(data.content || '')}`)
+        } catch (emailErr) {
+          console.error('Review email notification failed:', emailErr)
+        }
+        
         return data
       } catch (error) {
         console.error('Error creating review:', error)
