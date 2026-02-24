@@ -7,6 +7,7 @@
             <Tab value="2">Establishments</Tab>
             <Tab value="3">Food Trucks</Tab>
             <Tab value="4">Support Tickets</Tab>
+            <Tab value="5">Beta Testers</Tab>
         </TabList>
         <TabPanels>
             <TabPanel value="0">Charts and shit here</TabPanel>
@@ -28,6 +29,9 @@
                 <VendorList />
             </TabPanel>
             <TabPanel value="4">Table of user-submitted support tickets</TabPanel>
+            <TabPanel value="5">
+                <AdminBetaTesters />
+            </TabPanel>
         </TabPanels>
     </Tabs>
   </div>

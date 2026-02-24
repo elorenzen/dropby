@@ -77,13 +77,20 @@ export const useAuth = () => {
     const userAssociatedId = currentUserData[associatedIdKey]
     
     if (userAssociatedId) {
-      // Try to load subscription, but don't fail if none exists (user might be on free tier)
-      try {
-        await subscriptionStore.setActiveSubscription(userAssociatedId as string, currentUserData.type as 'merchant' | 'vendor')
-      } catch (error) {
-        // Subscription loading failed - that's OK, user might not have one
-        console.log('No active subscription found, user is on free tier')
-      }
+      // Load subscription and beta check in parallel
+      const subscriptionPromise = subscriptionStore
+        .setActiveSubscription(userAssociatedId as string, currentUserData.type as 'merchant' | 'vendor')
+        .catch(() => {
+          console.log('No active subscription found, user is on free tier')
+        })
+
+      const betaPromise = $fetch<{ isBeta: boolean }>('/api/beta/check')
+        .then(res => subscriptionStore.setIsBetaTester(res.isBeta))
+        .catch(() => {
+          subscriptionStore.setIsBetaTester(false)
+        })
+
+      await Promise.all([subscriptionPromise, betaPromise])
       
       // Load recurring events if user is a merchant
       if (currentUserData.type === 'merchant') {
