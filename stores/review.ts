@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Review } from '~/types'
+import { notificationService } from '~/services/api/notificationService'
 
 export const useReviewStore = defineStore('review', {
   state: () => ({
@@ -131,6 +132,17 @@ export const useReviewStore = defineStore('review', {
           } catch (notifError) {
             console.error('Failed to create notification for recipient user:', recipientUserId, notifError)
           }
+        }
+        
+        try {
+          await notificationService.sendReviewNotification({
+            recipientId: data.recipient_id,
+            senderId: data.sender_id,
+            rating: data.rating,
+            content: data.content || ''
+          })
+        } catch (emailErr) {
+          console.error('Review email notification failed:', emailErr)
         }
         
         return data
