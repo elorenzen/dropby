@@ -252,7 +252,7 @@ const handleSubmit = async () => {
     submitted.value = true
     showToast('Feedback submitted successfully!', 'success')
   } catch (error: any) {
-    showToast(error.statusMessage || 'Failed to submit feedback', 'error')
+    showToast(error.statusMessage || error.message || 'Failed to submit feedback', 'error')
   }
 }
 
@@ -260,7 +260,7 @@ const handleVote = async (feedbackId: string) => {
   try {
     await toggleVote(feedbackId)
   } catch (error: any) {
-    showToast(error.statusMessage || 'Failed to vote', 'error')
+    showToast(error.statusMessage || error.message || 'Failed to vote', 'error')
   }
 }
 

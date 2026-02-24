@@ -45,8 +45,21 @@ export const useFeedbackStore = defineStore('feedback', {
 
     async loadUserVotes() {
       try {
-        const response = await $fetch<{ success: boolean; votedIds: string[] }>('/api/feedback/votes')
-        this.userVotedIds = new Set(response.votedIds || [])
+        const supabase = useSupabaseClient()
+        const user = useSupabaseUser()
+
+        if (!user.value) return
+
+        const { data, error } = await supabase
+          .from('feedback_votes')
+          .select('feedback_id')
+          .eq('user_id', user.value.id)
+
+        if (error) throw error
+
+        this.userVotedIds = new Set(
+          (data || []).map((v: any) => v.feedback_id)
+        )
       } catch (error) {
         console.error('Error loading votes:', error)
       }
@@ -54,26 +67,57 @@ export const useFeedbackStore = defineStore('feedback', {
 
     async toggleVote(feedbackId: string) {
       try {
-        const response = await $fetch<{ success: boolean; voted: boolean; vote_count: number }>(
-          `/api/feedback/${feedbackId}/vote`,
-          { method: 'POST' }
-        )
+        const supabase = useSupabaseClient()
+        const user = useSupabaseUser()
 
-        if (response.voted) {
-          this.userVotedIds.add(feedbackId)
-        } else {
-          this.userVotedIds.delete(feedbackId)
-        }
+        if (!user.value) throw new Error('Authentication required')
+
+        const { data: existing } = await supabase
+          .from('feedback_votes')
+          .select('id')
+          .eq('feedback_id', feedbackId)
+          .eq('user_id', user.value.id)
+          .maybeSingle()
 
         const index = this.feedbackList.findIndex(f => f.id === feedbackId)
+
+        if (existing) {
+          const { error } = await supabase
+            .from('feedback_votes')
+            .delete()
+            .eq('id', existing.id)
+
+          if (error) throw error
+
+          this.userVotedIds.delete(feedbackId)
+
+          if (index !== -1) {
+            const currentCount = this.feedbackList[index].vote_count || 0
+            this.feedbackList[index] = {
+              ...this.feedbackList[index],
+              vote_count: Math.max(currentCount - 1, 0)
+            }
+          }
+
+          return { voted: false, vote_count: index !== -1 ? this.feedbackList[index].vote_count : 0 }
+        }
+
+        const { error } = await supabase
+          .from('feedback_votes')
+          .insert({ feedback_id: feedbackId, user_id: user.value.id })
+
+        if (error) throw error
+
+        this.userVotedIds.add(feedbackId)
+
         if (index !== -1) {
           this.feedbackList[index] = {
             ...this.feedbackList[index],
-            vote_count: response.vote_count
+            vote_count: (this.feedbackList[index].vote_count || 0) + 1
           }
         }
 
-        return response
+        return { voted: true, vote_count: index !== -1 ? this.feedbackList[index].vote_count : 0 }
       } catch (error) {
         console.error('Error toggling vote:', error)
         throw error
@@ -88,14 +132,29 @@ export const useFeedbackStore = defineStore('feedback', {
     }) {
       this.submitting = true
       try {
-        const response = await $fetch<{ success: boolean; feedback: UserFeedback }>('/api/feedback', {
-          method: 'POST',
-          body: payload
-        })
-        if (response.feedback) {
-          this.feedbackList.unshift(response.feedback)
+        const supabase = useSupabaseClient()
+        const user = useSupabaseUser()
+
+        const { data, error } = await supabase
+          .from('user_feedback')
+          .insert({
+            user_id: user.value?.id || null,
+            email: payload.email || user.value?.email || null,
+            type: payload.type,
+            title: payload.title.trim(),
+            description: payload.description.trim(),
+            status: 'new' as FeedbackStatus,
+            vote_count: 0
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+
+        if (data) {
+          this.feedbackList.unshift(data as UserFeedback)
         }
-        return response.feedback
+        return data as UserFeedback
       } catch (error) {
         console.error('Error submitting feedback:', error)
         throw error
