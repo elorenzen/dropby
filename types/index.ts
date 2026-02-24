@@ -293,6 +293,22 @@ export interface UsageTracking {
 }
 
 // ============================================================================
+// BETA TESTER TYPES
+// ============================================================================
+
+export interface BetaTester {
+  id: string
+  email: string
+  notes: string | null
+  added_by: string | null
+  created_at: string
+  updated_at: string
+  first_signed_in_at: string | null
+  last_signed_in_at: string | null
+  registered_at: string | null
+}
+
+// ============================================================================
 // COMMON TYPES
 // ============================================================================
 

@@ -5,19 +5,28 @@ import { hasFeatureAccess, merchantFeatures, vendorFeatures, type MerchantFeatur
 export const useSubscriptionStore = defineStore('subscription', {
   state: () => ({
     activeSubscription: null as Subscription | null,
+    isBetaTester: false,
     loading: false,
     error: null as string | null
   }),
   getters: {
     getActiveSubscription: (state) => state.activeSubscription,
     
-    // Check if subscription is active
+    // Effective plan type: premium when beta, otherwise from subscription
+    effectivePlanType: (state): 'free' | 'pro' | 'premium' => {
+      if (state.isBetaTester) return 'premium'
+      return state.activeSubscription?.plan_type || 'free'
+    },
+    
+    // Check if subscription is active (beta counts as active)
     isActive: (state) => {
+      if (state.isBetaTester) return true
       return state.activeSubscription?.status === 'active'
     },
     
     // Get current plan type (defaults to 'free' if no subscription)
     currentPlanType: (state): 'free' | 'pro' | 'premium' => {
+      if (state.isBetaTester) return 'premium'
       return state.activeSubscription?.plan_type || 'free'
     },
     
@@ -29,42 +38,32 @@ export const useSubscriptionStore = defineStore('subscription', {
     // Generic feature checker
     hasFeature: (state) => {
       return (feature: MerchantFeature | VendorFeature): boolean => {
+        const bType = state.activeSubscription?.business_type as 'merchant' | 'vendor' || 'merchant'
+
+        if (state.isBetaTester) {
+          return hasFeatureAccess('premium', feature, bType)
+        }
+
         if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
-          // Default to free tier features when no active subscription
-          const businessType = state.activeSubscription?.business_type as 'merchant' | 'vendor' || 'merchant'
-          return hasFeatureAccess('free', feature, businessType)
+          return hasFeatureAccess('free', feature, bType)
         }
         
-        const planType = state.activeSubscription.plan_type
-        const businessType = state.activeSubscription.business_type as 'merchant' | 'vendor'
-        
-        return hasFeatureAccess(planType, feature, businessType)
+        return hasFeatureAccess(state.activeSubscription.plan_type, feature, bType)
       }
     },
     
     // Get all allowed features for the current subscription
     allowedFeatures: (state): (MerchantFeature | VendorFeature)[] => {
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
-        // Return free tier features
-        const businessType = state.activeSubscription?.business_type as 'merchant' | 'vendor' || 'merchant'
-        const features = businessType === 'merchant' 
-          ? (Object.keys(merchantFeatures) as MerchantFeature[])
-          : (Object.keys(vendorFeatures) as VendorFeature[])
-        
-        return features.filter(feature => 
-          hasFeatureAccess('free', feature, businessType)
-        )
-      }
-      
-      const planType = state.activeSubscription.plan_type
-      const businessType = state.activeSubscription.business_type as 'merchant' | 'vendor'
-      const features = businessType === 'merchant' 
+      const bType = state.activeSubscription?.business_type as 'merchant' | 'vendor' || 'merchant'
+      const planForCheck: 'free' | 'pro' | 'premium' = state.isBetaTester
+        ? 'premium'
+        : (state.activeSubscription?.status === 'active' ? state.activeSubscription.plan_type : 'free')
+
+      const features = bType === 'merchant'
         ? (Object.keys(merchantFeatures) as MerchantFeature[])
         : (Object.keys(vendorFeatures) as VendorFeature[])
       
-      return features.filter(feature => 
-        hasFeatureAccess(planType, feature, businessType)
-      )
+      return features.filter(feature => hasFeatureAccess(planForCheck, feature, bType))
     },
     
     // ============================================================================
@@ -72,6 +71,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     // ============================================================================
     
     canCreateEvents: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return true // Free tier can create events (with limits)
       }
@@ -79,6 +79,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canCreateUnlimitedEvents: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -90,6 +91,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canCreateRecurringEvents: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -101,6 +103,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canSetPreferredVendors: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -112,6 +115,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canSetUnlimitedPreferredVendors: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -123,6 +127,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canSetEventValuePricing: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -134,6 +139,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canSetEventValuePromo: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -145,6 +151,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canCreateDateRangeEvents: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -160,6 +167,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     // ============================================================================
     
     canRequestEvents: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return true // Free tier can request events (with limits)
       }
@@ -167,6 +175,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canRequestUnlimitedEvents: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -178,6 +187,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canManageMenu: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -189,6 +199,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canHavePreferredVendorStatus: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -200,6 +211,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canUseAvailabilityCalendar: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -211,6 +223,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     canUseAutoBooking: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -226,6 +239,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     // ============================================================================
     
     hasPrioritySupport: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -238,6 +252,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     },
     
     hasDedicatedSupport: (state): boolean => {
+      if (state.isBetaTester) return true
       if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
         return false
       }
@@ -284,9 +299,13 @@ export const useSubscriptionStore = defineStore('subscription', {
         }
     },
     
-    // Clear active subscription (useful when logging out or switching businesses)
+    setIsBetaTester(value: boolean) {
+      this.isBetaTester = value
+    },
+
     clearActiveSubscription() {
       this.activeSubscription = null
+      this.isBetaTester = false
     },
 
     /**
