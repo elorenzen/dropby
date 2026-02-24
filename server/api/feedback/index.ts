@@ -1,4 +1,4 @@
-import { serverSupabaseClient, serverSupabaseServiceRole } from '#supabase/server'
+import { serverSupabaseClient, serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import { requireSuperadmin } from '~/server/utils/requireSuperadmin'
 
 export default defineEventHandler(async (event) => {
@@ -7,11 +7,24 @@ export default defineEventHandler(async (event) => {
   const serviceClient = await serverSupabaseServiceRole(event)
 
   if (method === 'GET') {
-    await requireSuperadmin(event)
+    const authUser = await serverSupabaseUser(event)
+
+    if (!authUser) {
+      throw createError({ statusCode: 401, statusMessage: 'Authentication required' })
+    }
+
+    let isAdmin = false
+    try {
+      await requireSuperadmin(event)
+      isAdmin = true
+    } catch {
+      // Not a superadmin — allowed to view feedback without admin fields
+    }
 
     const { data, error } = await serviceClient
       .from('user_feedback')
       .select('*')
+      .order('vote_count', { ascending: false })
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -21,7 +34,14 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return { success: true, feedback: data || [] }
+    const feedback = data || []
+
+    if (!isAdmin) {
+      const sanitized = feedback.map(({ email, reviewed_by, reviewed_at, ...rest }) => rest)
+      return { success: true, feedback: sanitized }
+    }
+
+    return { success: true, feedback }
   }
 
   if (method === 'POST') {
@@ -71,7 +91,8 @@ export default defineEventHandler(async (event) => {
         type,
         title: title.trim(),
         description: description.trim(),
-        status: 'new'
+        status: 'new',
+        vote_count: 0
       })
       .select()
       .single()

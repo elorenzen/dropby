@@ -42,31 +42,60 @@
                         />
                     </div>
 
-                    <DataTable
-                        :value="allFeedback"
-                        :loading="loading"
-                        stripedRows
-                        paginator
-                        :rows="15"
-                        :rowsPerPageOptions="[10, 15, 25, 50]"
-                        sortField="created_at"
-                        :sortOrder="-1"
-                        tableStyle="min-width: 50rem"
-                    >
-                        <Column field="type" header="Type" sortable style="width: 10%">
-                            <template #body="{ data }">
+                    <div class="feedback-filters">
+                        <Select
+                            v-model="filterType"
+                            :options="typeFilterOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="All Types"
+                            size="small"
+                            class="filter-select"
+                        />
+                        <Select
+                            v-model="filterStatus"
+                            :options="statusFilterOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="All Statuses"
+                            size="small"
+                            class="filter-select"
+                        />
+                    </div>
+
+                    <div v-if="loading" class="loading-state">
+                        <i class="pi pi-spinner pi-spin" style="font-size: 2rem; color: var(--p-text-muted-color);" />
+                        <p>Loading feedback...</p>
+                    </div>
+
+                    <div v-else-if="filteredFeedback.length === 0" class="empty-feedback">
+                        <i class="pi pi-inbox" style="font-size: 2rem; color: var(--p-text-muted-color);" />
+                        <p>No feedback submissions yet</p>
+                    </div>
+
+                    <div v-else class="feedback-list">
+                        <EventBaseListCard
+                            v-for="data in filteredFeedback"
+                            :key="data.id"
+                            :show-status-badge="true"
+                        >
+                            <template #vendor-avatar>
+                                <div class="type-icon" :class="`type-icon--${data.type}`">
+                                    <i :class="typeIcon(data.type)" />
+                                </div>
+                            </template>
+                            <template #event-content>
+                                <p class="font-semibold truncate">{{ data.title }}</p>
+                                <p class="text-sm text-md-gray line-clamp-2">{{ data.description }}</p>
+                                <p class="text-xs text-md-gray">
+                                    {{ data.email }} · {{ formatDate(data.created_at) }}
+                                    <span v-if="data.vote_count" class="vote-badge">
+                                        <i class="pi pi-thumbs-up" /> {{ data.vote_count }}
+                                    </span>
+                                </p>
+                            </template>
+                            <template #status-badge>
                                 <Tag :value="formatType(data.type)" :severity="typeSeverity(data.type)" />
-                            </template>
-                        </Column>
-                        <Column field="title" header="Title" sortable style="width: 20%" />
-                        <Column field="description" header="Description" style="width: 30%">
-                            <template #body="{ data }">
-                                <span class="description-cell">{{ data.description }}</span>
-                            </template>
-                        </Column>
-                        <Column field="email" header="Email" sortable style="width: 15%" />
-                        <Column field="status" header="Status" sortable style="width: 12%">
-                            <template #body="{ data }">
                                 <Select
                                     :modelValue="data.status"
                                     @update:modelValue="(val: string) => handleStatusChange(data.id, val)"
@@ -78,19 +107,8 @@
                                     class="status-select"
                                 />
                             </template>
-                        </Column>
-                        <Column field="created_at" header="Created" sortable style="width: 13%">
-                            <template #body="{ data }">
-                                {{ formatDate(data.created_at) }}
-                            </template>
-                        </Column>
-                        <template #empty>
-                            <div class="empty-feedback">
-                                <i class="pi pi-inbox" style="font-size: 2rem; color: var(--p-text-muted-color);" />
-                                <p>No feedback submissions yet</p>
-                            </div>
-                        </template>
-                    </DataTable>
+                        </EventBaseListCard>
+                    </div>
                 </div>
             </TabPanel>
             <TabPanel value="5">
@@ -102,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FeedbackStatus } from '~/types'
+import type { FeedbackStatus, FeedbackType } from '~/types'
 import { useToast } from '~/composables/useToast'
 
 definePageMeta({
@@ -115,6 +133,33 @@ const value = ref('0');
 const { allFeedback, loading, updating, loadAllFeedback, updateFeedbackStatus } = useFeedback()
 const { showToast } = useToast()
 
+const filterType = ref<FeedbackType | ''>('')
+const filterStatus = ref<FeedbackStatus | ''>('')
+
+const typeFilterOptions = [
+    { label: 'All Types', value: '' },
+    { label: 'Bug', value: 'bug' },
+    { label: 'Feature Request', value: 'feature_request' },
+    { label: 'Other', value: 'other' }
+]
+
+const statusFilterOptions = [
+    { label: 'All Statuses', value: '' },
+    { label: 'New', value: 'new' },
+    { label: 'Viewed', value: 'viewed' },
+    { label: 'Approved', value: 'approved' },
+    { label: 'Working On It', value: 'working_on_it' },
+    { label: 'Done', value: 'done' }
+]
+
+const filteredFeedback = computed(() => {
+    return allFeedback.value.filter(f => {
+        if (filterType.value && f.type !== filterType.value) return false
+        if (filterStatus.value && f.status !== filterStatus.value) return false
+        return true
+    })
+})
+
 const statusOptions = [
     { label: 'New', value: 'new' },
     { label: 'Viewed', value: 'viewed' },
@@ -122,6 +167,15 @@ const statusOptions = [
     { label: 'Working On It', value: 'working_on_it' },
     { label: 'Done', value: 'done' }
 ]
+
+const typeIcon = (type: string) => {
+    const map: Record<string, string> = {
+        bug: 'pi pi-exclamation-triangle',
+        feature_request: 'pi pi-lightbulb',
+        other: 'pi pi-comment'
+    }
+    return map[type] || 'pi pi-comment'
+}
 
 const formatType = (type: string) => {
     const map: Record<string, string> = {
@@ -167,7 +221,6 @@ const loadFeedback = async () => {
     }
 }
 
-// Load feedback when Feedback tab is selected
 watch(value, async (newVal) => {
     if (newVal === '4') {
         await loadFeedback()
@@ -191,19 +244,83 @@ watch(value, async (newVal) => {
     margin: 0;
 }
 
-.description-cell {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-size: 0.875rem;
+.feedback-filters {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.filter-select {
+    min-width: 160px;
+}
+
+.feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.type-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.type-icon--bug {
+    background-color: var(--p-red-50);
+    color: var(--p-red-500);
+}
+
+.type-icon--feature_request {
+    background-color: var(--p-blue-50);
+    color: var(--p-blue-500);
+}
+
+.type-icon--other {
+    background-color: var(--p-surface-100);
+    color: var(--p-text-muted-color);
+}
+
+.p-dark .type-icon--bug {
+    background-color: var(--p-red-900);
+}
+
+.p-dark .type-icon--feature_request {
+    background-color: var(--p-blue-900);
+}
+
+.p-dark .type-icon--other {
+    background-color: var(--p-surface-700);
 }
 
 .status-select {
     width: 100%;
+    min-width: 140px;
+    margin-top: 0.25rem;
 }
 
-.empty-feedback {
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.vote-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+    color: var(--p-primary-color);
+    font-weight: 600;
+}
+
+.empty-feedback,
+.loading-state {
     text-align: center;
     padding: 3rem 1rem;
     display: flex;
@@ -212,8 +329,19 @@ watch(value, async (newVal) => {
     gap: 0.75rem;
 }
 
-.empty-feedback p {
+.empty-feedback p,
+.loading-state p {
     color: var(--p-text-muted-color);
     margin: 0;
+}
+
+@media (max-width: 600px) {
+    .feedback-filters {
+        flex-direction: column;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
 }
 </style>

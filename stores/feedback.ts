@@ -4,6 +4,7 @@ import type { UserFeedback, FeedbackType, FeedbackStatus } from '~/types'
 export const useFeedbackStore = defineStore('feedback', {
   state: () => ({
     feedbackList: [] as UserFeedback[],
+    userVotedIds: new Set<string>(),
     loading: false,
     submitting: false,
     updating: false
@@ -18,6 +19,10 @@ export const useFeedbackStore = defineStore('feedback', {
 
     getFeedbackByType: (state) => (type: FeedbackType) => {
       return state.feedbackList.filter(f => f.type === type)
+    },
+
+    hasVoted: (state) => (feedbackId: string) => {
+      return state.userVotedIds.has(feedbackId)
     }
   },
 
@@ -38,6 +43,36 @@ export const useFeedbackStore = defineStore('feedback', {
       }
     },
 
+    loadUserVotes() {
+      // Vote state is client-only (no feedback_votes table); no-op for compatibility
+      this.userVotedIds = new Set<string>()
+    },
+
+    async toggleVote(feedbackId: string) {
+      const addingVote = !this.userVotedIds.has(feedbackId)
+      try {
+        const response = await $fetch<{ success: boolean; voted: boolean; vote_count: number }>(
+          `/api/feedback/${feedbackId}/vote`,
+          { method: 'POST', body: { voted: addingVote } }
+        )
+
+        if (response.voted) {
+          this.userVotedIds = new Set([...this.userVotedIds, feedbackId])
+        } else {
+          this.userVotedIds = new Set([...this.userVotedIds].filter(id => id !== feedbackId))
+        }
+
+        this.feedbackList = this.feedbackList.map(f =>
+          f.id === feedbackId ? { ...f, vote_count: response.vote_count } : f
+        )
+
+        return { voted: true, vote_count: index !== -1 ? this.feedbackList[index].vote_count : 0 }
+      } catch (error) {
+        console.error('Error toggling vote:', error)
+        throw error
+      }
+    },
+
     async submitFeedback(payload: {
       type: FeedbackType
       title: string
@@ -46,11 +81,29 @@ export const useFeedbackStore = defineStore('feedback', {
     }) {
       this.submitting = true
       try {
-        const response = await $fetch<{ success: boolean; feedback: UserFeedback }>('/api/feedback', {
-          method: 'POST',
-          body: payload
-        })
-        return response.feedback
+        const supabase = useSupabaseClient()
+        const user = useSupabaseUser()
+
+        const { data, error } = await supabase
+          .from('user_feedback')
+          .insert({
+            user_id: user.value?.id || null,
+            email: payload.email || user.value?.email || null,
+            type: payload.type,
+            title: payload.title.trim(),
+            description: payload.description.trim(),
+            status: 'new' as FeedbackStatus,
+            vote_count: 0
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+
+        if (data) {
+          this.feedbackList.unshift(data as UserFeedback)
+        }
+        return data as UserFeedback
       } catch (error) {
         console.error('Error submitting feedback:', error)
         throw error
