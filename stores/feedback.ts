@@ -66,7 +66,7 @@ export const useFeedbackStore = defineStore('feedback', {
           f.id === feedbackId ? { ...f, vote_count: response.vote_count } : f
         )
 
-        return response
+        return { voted: true, vote_count: index !== -1 ? this.feedbackList[index].vote_count : 0 }
       } catch (error) {
         console.error('Error toggling vote:', error)
         throw error
@@ -81,14 +81,29 @@ export const useFeedbackStore = defineStore('feedback', {
     }) {
       this.submitting = true
       try {
-        const response = await $fetch<{ success: boolean; feedback: UserFeedback }>('/api/feedback', {
-          method: 'POST',
-          body: payload
-        })
-        if (response.feedback) {
-          this.feedbackList.unshift(response.feedback)
+        const supabase = useSupabaseClient()
+        const user = useSupabaseUser()
+
+        const { data, error } = await supabase
+          .from('user_feedback')
+          .insert({
+            user_id: user.value?.id || null,
+            email: payload.email || user.value?.email || null,
+            type: payload.type,
+            title: payload.title.trim(),
+            description: payload.description.trim(),
+            status: 'new' as FeedbackStatus,
+            vote_count: 0
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+
+        if (data) {
+          this.feedbackList.unshift(data as UserFeedback)
         }
-        return response.feedback
+        return data as UserFeedback
       } catch (error) {
         console.error('Error submitting feedback:', error)
         throw error
