@@ -6,7 +6,8 @@
             <Tab value="1">Users</Tab>
             <Tab value="2">Establishments</Tab>
             <Tab value="3">Food Trucks</Tab>
-            <Tab value="4">Feedback</Tab>
+            <Tab value="4">Support Tickets</Tab>
+            <Tab value="5">Beta Testers</Tab>
         </TabList>
         <TabPanels>
             <TabPanel value="0">Charts and shit here</TabPanel>
@@ -27,70 +28,9 @@
                 <p>table actions: 'ban'/hide merchants/vendors, activate 'promoted' status</p>
                 <VendorList />
             </TabPanel>
-            <TabPanel value="4">
-                <div class="feedback-admin">
-                    <div class="feedback-header">
-                        <h3>User Feedback</h3>
-                        <Button
-                            icon="pi pi-refresh"
-                            label="Refresh"
-                            outlined
-                            size="small"
-                            @click="loadFeedback"
-                            :loading="loading"
-                        />
-                    </div>
-
-                    <DataTable
-                        :value="allFeedback"
-                        :loading="loading"
-                        stripedRows
-                        paginator
-                        :rows="15"
-                        :rowsPerPageOptions="[10, 15, 25, 50]"
-                        sortField="created_at"
-                        :sortOrder="-1"
-                        tableStyle="min-width: 50rem"
-                    >
-                        <Column field="type" header="Type" sortable style="width: 10%">
-                            <template #body="{ data }">
-                                <Tag :value="formatType(data.type)" :severity="typeSeverity(data.type)" />
-                            </template>
-                        </Column>
-                        <Column field="title" header="Title" sortable style="width: 20%" />
-                        <Column field="description" header="Description" style="width: 30%">
-                            <template #body="{ data }">
-                                <span class="description-cell">{{ data.description }}</span>
-                            </template>
-                        </Column>
-                        <Column field="email" header="Email" sortable style="width: 15%" />
-                        <Column field="status" header="Status" sortable style="width: 12%">
-                            <template #body="{ data }">
-                                <Select
-                                    :modelValue="data.status"
-                                    @update:modelValue="(val: string) => handleStatusChange(data.id, val)"
-                                    :options="statusOptions"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    :loading="updating"
-                                    size="small"
-                                    class="status-select"
-                                />
-                            </template>
-                        </Column>
-                        <Column field="created_at" header="Created" sortable style="width: 13%">
-                            <template #body="{ data }">
-                                {{ formatDate(data.created_at) }}
-                            </template>
-                        </Column>
-                        <template #empty>
-                            <div class="empty-feedback">
-                                <i class="pi pi-inbox" style="font-size: 2rem; color: var(--p-text-muted-color);" />
-                                <p>No feedback submissions yet</p>
-                            </div>
-                        </template>
-                    </DataTable>
-                </div>
+            <TabPanel value="4">Table of user-submitted support tickets</TabPanel>
+            <TabPanel value="5">
+                <AdminBetaTesters />
             </TabPanel>
         </TabPanels>
     </Tabs>
@@ -101,7 +41,7 @@
 import type { FeedbackStatus } from '~/types'
 
 definePageMeta({
-    middleware: ['auth']
+    middleware: ['auth', 'superadmin']
 })
 
 useSeoMeta({ title: 'Admin' })

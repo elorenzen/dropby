@@ -1,4 +1,5 @@
 import { serverSupabaseClient } from '#supabase/server'
+import { isBetaTester } from '~/server/utils/isBetaTester'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -45,6 +46,9 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Beta testers bypass usage limits entirely
+    const beta = await isBetaTester(event)
+
     // Check if business has active subscription
     const { data: subscriptionData, error: subscriptionError } = await client
       .from('subscriptions')
@@ -54,9 +58,11 @@ export default defineEventHandler(async (event) => {
       .eq('status', 'active')
       .single()
 
-    // If no subscription found, assume free plan (allow usage)
+    // If beta tester, treat as premium; otherwise fall back to subscription or free
     let planType = 'free'
-    if (subscriptionData) {
+    if (beta) {
+      planType = 'premium'
+    } else if (subscriptionData) {
       planType = (subscriptionData as any).plan_type
     }
 

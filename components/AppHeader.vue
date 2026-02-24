@@ -4,7 +4,7 @@
     <Menubar v-if="isAuthenticated" :model="authenticatedMenuItems" class="app-header-authenticated">
       <template #start>
         <NuxtLink
-          :to="`/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/dashboard`"
+          :to="isSuperadmin ? '/admin' : `/${currentUser?.type}/${currentUser?.type === 'vendor' ? currentUser?.associated_vendor_id : currentUser?.associated_merchant_id}/dashboard`"
           class="m-2 text-xl font-bold text-primary"
         >
         <Logo class="w-10 h-10 font-bold" :fontControlled="false" style="color: var(--primary-color);" />
@@ -144,7 +144,7 @@ defineEmits(['create-event'])
 
 const router = useRouter()
 const route = useRoute()
-const { isAuthenticated, currentUser, signOut } = useAuth()
+const { isAuthenticated, currentUser, isSuperadmin, signOut } = useAuth()
 const { isDark, toggleTheme } = useTheme()
 const renderKey = ref(0)
 
@@ -245,9 +245,33 @@ const userAssociatedId = computed(() => {
   return currentUser.value[associatedIdKey.value] as string | null
 })
 
-// Profile menu items - different for merchants and vendors
+// Profile menu items - different for merchants, vendors, and superadmin
 const profileMenuItems = computed(() => {
+  // Superadmin (no type/associated id): only theme toggle and sign out
   if (!businessType.value || !userAssociatedId.value) {
+    if (isSuperadmin.value) {
+      return [
+        {
+          label: 'Admin',
+          icon: 'pi pi-shield',
+          command: () => router.push('/admin')
+        },
+        { separator: true },
+        {
+          label: `${isDark.value ? 'Light Mode' : 'Dark Mode'}`,
+          icon: `${isDark.value ? 'pi pi-sun' : 'pi pi-moon'}`,
+          command: () => {
+            toggleTheme()
+            renderKey.value++
+          }
+        },
+        {
+          label: 'Sign out',
+          icon: 'pi pi-sign-out',
+          command: async () => await handleSignOut()
+        }
+      ]
+    }
     return []
   }
 

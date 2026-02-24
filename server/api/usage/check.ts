@@ -1,4 +1,5 @@
 import { serverSupabaseClient } from '#supabase/server'
+import { isBetaTester } from '~/server/utils/isBetaTester'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -43,6 +44,22 @@ export default defineEventHandler(async (event) => {
         statusCode: 404,
         statusMessage: 'Business not found'
       })
+    }
+
+    // Beta testers get unlimited (premium) access
+    const beta = await isBetaTester(event)
+    if (beta) {
+      return {
+        success: true,
+        allowed: true,
+        currentUsage: 0,
+        usageLimit: 999999,
+        remainingUsage: 999999,
+        usageType,
+        businessId,
+        businessType,
+        subscription: { planType: 'premium', status: 'active' }
+      }
     }
 
     // Check if business has active subscription

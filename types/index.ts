@@ -174,6 +174,7 @@ export interface User {
   id: string
   created_at: string
   is_admin: boolean
+  is_superadmin?: boolean
   first_name: string | null
   last_name: string | null
   phone: string | null
@@ -292,24 +293,19 @@ export interface UsageTracking {
 }
 
 // ============================================================================
-// USER FEEDBACK TYPES
+// BETA TESTER TYPES
 // ============================================================================
 
-export type FeedbackType = 'bug' | 'feature_request' | 'other'
-export type FeedbackStatus = 'new' | 'viewed' | 'approved' | 'working_on_it' | 'done'
-
-export interface UserFeedback {
+export interface BetaTester {
   id: string
+  email: string
+  notes: string | null
+  added_by: string | null
   created_at: string
-  updated_at: string | null
-  user_id: string | null
-  email: string | null
-  type: FeedbackType
-  title: string
-  description: string
-  status: FeedbackStatus
-  reviewed_by: string | null
-  reviewed_at: string | null
+  updated_at: string
+  first_signed_in_at: string | null
+  last_signed_in_at: string | null
+  registered_at: string | null
 }
 
 // ============================================================================
