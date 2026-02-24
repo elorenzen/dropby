@@ -4,6 +4,7 @@ import type { UserFeedback, FeedbackType, FeedbackStatus } from '~/types'
 export const useFeedbackStore = defineStore('feedback', {
   state: () => ({
     feedbackList: [] as UserFeedback[],
+    userVotedIds: new Set<string>(),
     loading: false,
     submitting: false,
     updating: false
@@ -18,6 +19,10 @@ export const useFeedbackStore = defineStore('feedback', {
 
     getFeedbackByType: (state) => (type: FeedbackType) => {
       return state.feedbackList.filter(f => f.type === type)
+    },
+
+    hasVoted: (state) => (feedbackId: string) => {
+      return state.userVotedIds.has(feedbackId)
     }
   },
 
@@ -38,6 +43,43 @@ export const useFeedbackStore = defineStore('feedback', {
       }
     },
 
+    async loadUserVotes() {
+      try {
+        const response = await $fetch<{ success: boolean; votedIds: string[] }>('/api/feedback/votes')
+        this.userVotedIds = new Set(response.votedIds || [])
+      } catch (error) {
+        console.error('Error loading votes:', error)
+      }
+    },
+
+    async toggleVote(feedbackId: string) {
+      try {
+        const response = await $fetch<{ success: boolean; voted: boolean; vote_count: number }>(
+          `/api/feedback/${feedbackId}/vote`,
+          { method: 'POST' }
+        )
+
+        if (response.voted) {
+          this.userVotedIds.add(feedbackId)
+        } else {
+          this.userVotedIds.delete(feedbackId)
+        }
+
+        const index = this.feedbackList.findIndex(f => f.id === feedbackId)
+        if (index !== -1) {
+          this.feedbackList[index] = {
+            ...this.feedbackList[index],
+            vote_count: response.vote_count
+          }
+        }
+
+        return response
+      } catch (error) {
+        console.error('Error toggling vote:', error)
+        throw error
+      }
+    },
+
     async submitFeedback(payload: {
       type: FeedbackType
       title: string
@@ -50,6 +92,9 @@ export const useFeedbackStore = defineStore('feedback', {
           method: 'POST',
           body: payload
         })
+        if (response.feedback) {
+          this.feedbackList.unshift(response.feedback)
+        }
         return response.feedback
       } catch (error) {
         console.error('Error submitting feedback:', error)

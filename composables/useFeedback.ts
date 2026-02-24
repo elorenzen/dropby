@@ -16,7 +16,13 @@ export const useFeedback = () => {
     return computed(() => feedbackStore.getFeedbackByType(type))
   }
 
+  const hasVoted = (feedbackId: string) => {
+    return computed(() => feedbackStore.hasVoted(feedbackId))
+  }
+
   const loadAllFeedback = () => feedbackStore.loadAllFeedback()
+  const loadUserVotes = () => feedbackStore.loadUserVotes()
+  const toggleVote = (feedbackId: string) => feedbackStore.toggleVote(feedbackId)
 
   const submitFeedback = (payload: {
     type: FeedbackType
@@ -35,7 +41,10 @@ export const useFeedback = () => {
     updating,
     feedbackByStatus,
     feedbackByType,
+    hasVoted,
     loadAllFeedback,
+    loadUserVotes,
+    toggleVote,
     submitFeedback,
     updateFeedbackStatus
   }

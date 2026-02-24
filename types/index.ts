@@ -309,6 +309,28 @@ export interface BetaTester {
 }
 
 // ============================================================================
+// FEEDBACK TYPES
+// ============================================================================
+
+export type FeedbackType = 'bug' | 'feature_request' | 'other'
+export type FeedbackStatus = 'new' | 'viewed' | 'approved' | 'working_on_it' | 'done'
+
+export interface UserFeedback {
+  id: string
+  user_id: string | null
+  email: string | null
+  type: FeedbackType
+  title: string
+  description: string
+  status: FeedbackStatus
+  reviewed_by: string | null
+  reviewed_at: string | null
+  vote_count: number
+  created_at: string
+  updated_at: string | null
+}
+
+// ============================================================================
 // COMMON TYPES
 // ============================================================================
 
