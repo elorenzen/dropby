@@ -21,6 +21,11 @@ export const useAuth = () => {
     return userStore.userType
   })
 
+  // Check if user is superadmin
+  const isSuperadmin = computed(() => {
+    return userStore.isSuperadmin
+  })
+
   // Sign out user
   const signOut = async () => {
     try {
@@ -69,6 +74,10 @@ export const useAuth = () => {
 
     const currentUserData = currentUser.value
     if (!currentUserData?.type) {
+      if (userStore.isSuperadmin) {
+        await router.push('/admin')
+        return
+      }
       await router.push('/get-started')
       return
     }
@@ -104,6 +113,7 @@ export const useAuth = () => {
     isAuthenticated,
     currentUser,
     userType,
+    isSuperadmin,
     signOut,
     canAccess,
     redirectToUserDashboard

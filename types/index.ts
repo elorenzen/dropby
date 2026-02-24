@@ -174,6 +174,7 @@ export interface User {
   id: string
   created_at: string
   is_admin: boolean
+  is_superadmin?: boolean
   first_name: string | null
   last_name: string | null
   phone: string | null

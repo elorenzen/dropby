@@ -33,6 +33,7 @@ export default defineNuxtConfig({
     "@nuxt/image"
   ],
   runtimeConfig: {
+    superadminEmail: process.env.SUPERADMIN_EMAIL || '',
     public: {
       autocomplete: process.env.GEO_KEY,
       gMapKey: process.env.GMAPS_API_KEY,
