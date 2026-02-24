@@ -49,8 +49,11 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         }
     }
 
-    // If user exists but has no type, redirect to onboarding
+    // If user exists but has no type, redirect to onboarding (except when going to /admin — superadmin may have type null)
     if (user.value && storeUser && !storeUser.type) {
+        if (to.path === '/admin') {
+            return // Let superadmin middleware handle access
+        }
         return navigateTo('/get-started')
     }
 

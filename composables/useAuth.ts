@@ -74,6 +74,10 @@ export const useAuth = () => {
 
     const currentUserData = currentUser.value
     if (!currentUserData?.type) {
+      if (userStore.isSuperadmin) {
+        await router.push('/admin')
+        return
+      }
       await router.push('/get-started')
       return
     }
