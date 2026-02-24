@@ -21,7 +21,7 @@ export const useFeedback = () => {
   }
 
   const loadAllFeedback = () => feedbackStore.loadAllFeedback()
-  const loadUserVotes = () => feedbackStore.loadUserVotes()
+  const loadUserVotes = () => feedbackStore.loadUserVotes() // no-op; vote state is client-only
   const toggleVote = (feedbackId: string) => feedbackStore.toggleVote(feedbackId)
 
   const submitFeedback = (payload: {
@@ -43,7 +43,7 @@ export const useFeedback = () => {
     feedbackByType,
     hasVoted,
     loadAllFeedback,
-    loadUserVotes,
+    loadUserVotes, // kept for API compatibility; no longer fetches from server
     toggleVote,
     submitFeedback,
     updateFeedbackStatus

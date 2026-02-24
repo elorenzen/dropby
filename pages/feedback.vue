@@ -160,7 +160,6 @@ const {
   loading,
   submitting,
   loadAllFeedback,
-  loadUserVotes,
   toggleVote,
   submitFeedback
 } = useFeedback()
@@ -266,7 +265,7 @@ const handleVote = async (feedbackId: string) => {
 
 const refreshFeedback = async () => {
   try {
-    await Promise.all([loadAllFeedback(), loadUserVotes()])
+    await loadAllFeedback()
   } catch (error: any) {
     showToast(error.statusMessage || 'Failed to load feedback', 'error')
   }

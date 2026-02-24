@@ -43,35 +43,28 @@ export const useFeedbackStore = defineStore('feedback', {
       }
     },
 
-    async loadUserVotes() {
-      try {
-        const response = await $fetch<{ success: boolean; votedIds: string[] }>('/api/feedback/votes')
-        this.userVotedIds = new Set(response.votedIds || [])
-      } catch (error) {
-        console.error('Error loading votes:', error)
-      }
+    loadUserVotes() {
+      // Vote state is client-only (no feedback_votes table); no-op for compatibility
+      this.userVotedIds = new Set<string>()
     },
 
     async toggleVote(feedbackId: string) {
+      const addingVote = !this.userVotedIds.has(feedbackId)
       try {
         const response = await $fetch<{ success: boolean; voted: boolean; vote_count: number }>(
           `/api/feedback/${feedbackId}/vote`,
-          { method: 'POST' }
+          { method: 'POST', body: { voted: addingVote } }
         )
 
         if (response.voted) {
-          this.userVotedIds.add(feedbackId)
+          this.userVotedIds = new Set([...this.userVotedIds, feedbackId])
         } else {
-          this.userVotedIds.delete(feedbackId)
+          this.userVotedIds = new Set([...this.userVotedIds].filter(id => id !== feedbackId))
         }
 
-        const index = this.feedbackList.findIndex(f => f.id === feedbackId)
-        if (index !== -1) {
-          this.feedbackList[index] = {
-            ...this.feedbackList[index],
-            vote_count: response.vote_count
-          }
-        }
+        this.feedbackList = this.feedbackList.map(f =>
+          f.id === feedbackId ? { ...f, vote_count: response.vote_count } : f
+        )
 
         return response
       } catch (error) {
