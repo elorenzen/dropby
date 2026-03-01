@@ -169,18 +169,6 @@ export const useMenuStore = defineStore('menu', {
       }
     },
 
-    async generateDescription(itemName: string): Promise<string | null> {
-      try {
-        const response = await $fetch<string>('/api/generateMenuItemDescription', {
-          params: { string: itemName }
-        })
-        return response || null
-      } catch (error) {
-        console.error('Error generating description:', error)
-        throw error
-      }
-    },
-
     async toggleMenuItemSpecial(itemId: string) {
       try {
         const item = this.menuItems.find(item => item.id === itemId)

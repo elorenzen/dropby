@@ -1,5 +1,6 @@
 export const useMenu = () => {
   const menuStore = useMenuStore()
+  const api = useApi()
   const generatingDescription = ref(false)
 
   const menuItems = computed(() => menuStore.menuItems)
@@ -11,7 +12,13 @@ export const useMenu = () => {
   const generateDescription = async (itemName: string): Promise<string | null> => {
     generatingDescription.value = true
     try {
-      return await menuStore.generateDescription(itemName)
+      const response = await api.get<string>('/api/generateMenuItemDescription', {
+        params: { string: itemName }
+      })
+      return response || null
+    } catch (error) {
+      console.error('Error generating description:', error)
+      throw error
     } finally {
       generatingDescription.value = false
     }
