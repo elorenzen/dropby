@@ -20,16 +20,6 @@
                             chooseLabel="Upload Image"
                             class="w-full"
                         />
-                        <Button
-                            label="Generate Image"
-                            icon="pi pi-microchip-ai"
-                            iconPos="left"
-                            outlined
-                            size="small"
-                            class="w-full"
-                            @click="generateImage"
-                            :loading="loadingImg"
-                        />
                         <div v-if="storageStore.uploading" class="flex justify-center mt-2">
                             <ProgressSpinner />
                         </div>
@@ -59,23 +49,26 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-main mb-2">Description</label>
-                            <div class="space-y-2">
+                            <div class="space-y-3">
                                 <Textarea 
                                     id="desc" 
                                     v-model="description" 
                                     rows="4" 
                                     class="w-full resize-none"
-                                    placeholder="Describe your menu item..."
+                                    placeholder="Add a description and click 'Generate' to enhance it with AI, or write your own..."
                                 />
                                 <Button
-                                    label="Generate Description"
+                                    label="Generate with AI"
                                     icon="pi pi-microchip-ai"
                                     iconPos="left"
-                                    outlined
-                                    size="small"
-                                    @click="generateDescription"
-                                    :loading="loadingDesc"
+                                    class="w-full"
+                                    @click="handleGenerateDescription"
+                                    :loading="generatingDescription"
+                                    :disabled="!name"
                                 />
+                                <small v-if="!name" class="text-text-muted">
+                                    Enter an item name to enable AI description generation
+                                </small>
                             </div>
                         </div>
                         <div>
@@ -115,6 +108,7 @@
     const emit        = defineEmits(['created', 'errored'])
     const menuStore   = useMenuStore()
     const storageStore = useStorageStore()
+    const { generateDescription, generatingDescription } = useMenu()
     const name        = ref()
     const description = ref()
     const type        = ref()
@@ -126,20 +120,16 @@
     const errType     = ref()
     const errMsg      = ref()
     const errDialog   = ref(false)
-    const loadingDesc = ref(false)
-    const loadingImg  = ref(false)
     const filteredCategories = ref<string[]>([])
 
     // Get categories from menu store
     const allCategories = computed(() => {
         const storeTypes = menuStore.getTypes
-        // Fallback to default categories if store is empty
         return storeTypes && storeTypes.length > 0 
             ? storeTypes 
             : ['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']
     })
 
-    // Filter categories based on search query
     const searchCategories = (event: any) => {
         const query = event.query.toLowerCase()
         if (!query) {
@@ -152,7 +142,6 @@
     }
 
     onMounted(() => {
-        // Initialize with all categories
         filteredCategories.value = allCategories.value
     })
 
@@ -164,13 +153,13 @@
             creator_id: props.id,
             name: name.value,
             description: description.value,
-            type: type.value, // 'appetizer', 'entree', etc.,
+            type: type.value,
             image_url: imageUrl.value,
             image_name: imageName.value,
             created_at: new Date(),
             updated_at: new Date(),
             price: price.value,
-            special: special.value // default: FALSE, set to TRUE if item is seasonal/limited edition
+            special: special.value
         }
         try {
             await menuStore.createMenuItem(itemObj)
@@ -200,17 +189,13 @@
         errMsg.value = msg
         errDialog.value = true
     }
-    const generateDescription = async () => {
-        loadingDesc.value = true
-        const response = await useFetch(`/api/generateMenuItemDescription?string=${name.value}`)
-        if (response.data.value) description.value = response.data.value
-        loadingDesc.value = false
-    }
-    const generateImage = async () => {
-        loadingImg.value = true
-        const response = await useFetch(`/api/generateImage?string=${name.value}`)
-        if (response.data.value) imageUrl.value = response.data.value
-        loadingImg.value = false
+    const handleGenerateDescription = async () => {
+        try {
+            const result = await generateDescription(name.value)
+            if (result) description.value = result
+        } catch (error: any) {
+            throwErr('Description Generation', error.message || 'Failed to generate description')
+        }
     }
 </script>
 
