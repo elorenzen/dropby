@@ -47,14 +47,12 @@
                 />
               </div>
               <FileUpload
-                ref="fileUpload"
                 mode="basic"
                 accept="image/*"
                 :maxFileSize="1000000"
-                @upload="updateImage($event)"
-                :auto="true"
+                @select="updateImage"
                 chooseLabel="Upload New Image"
-                class="hidden"
+                class="w-full"
               />
               <div v-if="storageStore.uploading" class="flex justify-center mt-4">
                 <ProgressSpinner />
