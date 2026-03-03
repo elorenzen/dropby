@@ -4,6 +4,32 @@
       <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
 
       <div v-else>
+      <!-- Trial Expired Alert -->
+      <div v-if="trialExpired && !trialAlertDismissed" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-red-50, #fef2f2); border: 1px solid var(--p-red-200, #fecaca);">
+        <i class="pi pi-exclamation-triangle text-xl mt-0.5" style="color: var(--p-red-500, #ef4444);"></i>
+        <div class="flex-1">
+          <h4 class="font-semibold mb-1" style="color: var(--p-red-700, #b91c1c);">Your free trial has ended</h4>
+          <p class="text-sm mb-3" style="color: var(--p-red-600, #dc2626);">
+            Add a payment method in Settings to continue your paid plan, or your account will be downgraded to the free plan.
+          </p>
+          <div class="flex gap-2">
+            <Button label="Go to Payment Settings" icon="pi pi-credit-card" size="small" severity="danger" @click="navigateTo(`/settings/${route.params.id}/?activeTab=2`)" />
+            <Button label="Dismiss" size="small" text @click="trialAlertDismissed = true" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Trial Active Banner -->
+      <div v-if="isTrialing" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-blue-50, #eff6ff); border: 1px solid var(--p-blue-200, #bfdbfe);">
+        <i class="pi pi-clock text-xl mt-0.5" style="color: var(--p-blue-500, #3b82f6);"></i>
+        <div class="flex-1">
+          <p class="text-sm font-medium" style="color: var(--p-blue-700, #1d4ed8);">
+            Free trial active — {{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} remaining.
+            <NuxtLink :to="`/settings/${route.params.id}/?activeTab=2`" class="underline">Add a payment method</NuxtLink> to continue after your trial.
+          </p>
+        </div>
+      </div>
+
       <!-- Header Section -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
@@ -195,6 +221,19 @@
   
   // Create event dialog state
   const showCreateDialog = ref(false)
+
+  // Trial state
+  const trialAlertDismissed = ref(false)
+  const isTrialing = computed(() => subcriptionStore.isTrialing)
+  const trialExpired = computed(() => subcriptionStore.trialExpired)
+  const trialDaysRemaining = computed(() => {
+    const trialEnd = subcriptionStore.trialEndDate
+    if (!trialEnd) return null
+    const now = new Date()
+    const end = new Date(trialEnd)
+    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    return Math.max(0, diff)
+  })
 
   const timelineStore = useTimelineStore()
   await timelineStore.loadTimeline(route.params.id as string)

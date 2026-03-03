@@ -252,6 +252,35 @@
         <div v-if="activeTab === 4" class="space-y-6">
           <h2 class="text-2xl font-bold text-text-main mb-6">Payments & Financial</h2>
 
+          <!-- Trial Expired Alert -->
+          <div v-if="trialExpired && !trialAlertDismissed" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-red-50, #fef2f2); border: 1px solid var(--p-red-200, #fecaca);">
+            <i class="pi pi-exclamation-triangle text-xl mt-0.5" style="color: var(--p-red-500, #ef4444);"></i>
+            <div class="flex-1">
+              <h4 class="font-semibold mb-1" style="color: var(--p-red-700, #b91c1c);">Your free trial has ended</h4>
+              <p class="text-sm mb-3" style="color: var(--p-red-600, #dc2626);">
+                Your 7-day trial for the {{ getCurrentPlanName() }} plan has expired. Add a payment method below to continue your subscription, or your account will be downgraded to the free plan.
+              </p>
+              <div class="flex gap-2">
+                <Button label="Add Payment Method" icon="pi pi-credit-card" size="small" severity="danger" />
+                <Button label="Downgrade to Free" icon="pi pi-arrow-down" size="small" severity="secondary" outlined @click="handleDowngradeToFree" :loading="downgradingToFree" />
+                <Button label="Dismiss" size="small" text @click="trialAlertDismissed = true" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Trial Active Info -->
+          <div v-if="isTrialing" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-blue-50, #eff6ff); border: 1px solid var(--p-blue-200, #bfdbfe);">
+            <i class="pi pi-clock text-xl mt-0.5" style="color: var(--p-blue-500, #3b82f6);"></i>
+            <div class="flex-1">
+              <h4 class="font-semibold mb-1" style="color: var(--p-blue-700, #1d4ed8);">Free Trial Active</h4>
+              <p class="text-sm" style="color: var(--p-blue-600, #2563eb);">
+                You're on the {{ getCurrentPlanName() }} plan trial. 
+                <span v-if="trialDaysRemaining !== null">{{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} remaining.</span>
+                Add a payment method below to continue after your trial ends.
+              </p>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <SettingsPaymentMethods :stripeCustomerId="vendor.stripe_customer_id" />
           </div>
@@ -281,7 +310,11 @@
                     ${{ getCurrentPlanPrice() }}/month
                   </p>
                   <div class="flex items-center space-x-2 mt-1">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success-dark">
+                    <span v-if="isTrialing" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style="background: var(--p-blue-100, #dbeafe); color: var(--p-blue-700, #1d4ed8);">
+                      <i class="pi pi-clock mr-1"></i>
+                      Trial — {{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} left
+                    </span>
+                    <span v-else class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success-dark">
                       <i class="pi pi-check-circle mr-1"></i>
                       Active
                     </span>
@@ -398,6 +431,22 @@ const baseLat = ref()
 const baseLng = ref()
 const formattedAddr = ref()
 const showSubscriptionPlans = ref(false)
+
+// Trial state
+const trialAlertDismissed = ref(false)
+const downgradingToFree = ref(false)
+const subscriptionStore = useSubscriptionStore()
+
+const isTrialing = computed(() => subscriptionStore.isTrialing)
+const trialExpired = computed(() => subscriptionStore.trialExpired)
+const trialDaysRemaining = computed(() => {
+  const trialEnd = subscriptionStore.trialEndDate
+  if (!trialEnd) return null
+  const now = new Date()
+  const end = new Date(trialEnd)
+  const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.max(0, diff)
+})
 
 // Initialize Google Places Autocomplete
 const { initialize: initializeAutocomplete } = useGooglePlacesAutocomplete(
@@ -522,18 +571,31 @@ const checkSubscriptionStatus = async () => {
   if (!currentUser.value) return
 
   try {
-    // Get the vendor ID from the route
     const vendorId = route.params.id as string
     
-    // Check for business subscription (not user subscription)
-    const subscriptionStore = useSubscriptionStore()
     await subscriptionStore.setActiveSubscription(vendorId, 'vendor')
     
     currentSubscription.value = subscriptionStore.getActiveSubscription
-    hasActiveSubscription.value = !!subscriptionStore.getActiveSubscription
+    hasActiveSubscription.value = subscriptionStore.isActive
   } catch (error) {
     console.error('Error checking subscription status:', error)
     hasActiveSubscription.value = false
+  }
+}
+
+// Handle downgrade to free plan after trial expiry
+const handleDowngradeToFree = async () => {
+  const vendorId = route.params.id as string
+  if (!vendorId) return
+  downgradingToFree.value = true
+  try {
+    await subscriptionStore.downgradeToFree(vendorId, 'vendor')
+    trialAlertDismissed.value = true
+    await checkSubscriptionStatus()
+  } catch (error) {
+    console.error('Error downgrading to free:', error)
+  } finally {
+    downgradingToFree.value = false
   }
 }
 

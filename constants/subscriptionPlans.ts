@@ -31,13 +31,14 @@ export const merchantPlans: Plan[] = [
     price: 19,
     description: 'For growing businesses',
     features: [
+      '7-day free trial',
       '10 events per month',
       '3 preferred vendors',
       'Event value pricing',
       'Date range creation',
       'Priority support'
     ],
-    buttonText: 'Start Pro',
+    buttonText: 'Start Free Trial',
     featured: true,
     stripePriceId: 'price_1RpHqpE5B6laqC9SWeiNDf2U'
   },
@@ -47,6 +48,7 @@ export const merchantPlans: Plan[] = [
     price: 49,
     description: 'For premium merchants',
     features: [
+      '7-day free trial',
       'Unlimited events',
       'Recurring events',
       'Unlimited preferred vendors',
@@ -54,7 +56,7 @@ export const merchantPlans: Plan[] = [
       'Date range creation',
       'Dedicated support'
     ],
-    buttonText: 'Start Premium',
+    buttonText: 'Start Free Trial',
     featured: false,
     stripePriceId: 'price_1RpHrHE5B6laqC9SCChY5dJB'
   }
@@ -81,12 +83,13 @@ export const vendorPlans: Plan[] = [
     price: 29,
     description: 'For active food trucks',
     features: [
+      '7-day free trial',
       '15 event requests per month',
       'Menu management',
       'Preferred vendor status',
       'Priority support'
     ],
-    buttonText: 'Start Pro',
+    buttonText: 'Start Free Trial',
     featured: true,
     stripePriceId: 'price_1RpHsOE5B6laqC9S2hYZtXdt'
   },
@@ -96,6 +99,7 @@ export const vendorPlans: Plan[] = [
     price: 79,
     description: 'For premium vendors',
     features: [
+      '7-day free trial',
       'Unlimited event requests',
       'Menu management',
       'Preferred vendor status',
@@ -103,7 +107,7 @@ export const vendorPlans: Plan[] = [
       'Auto-booking',
       'Dedicated support'
     ],
-    buttonText: 'Start Premium',
+    buttonText: 'Start Free Trial',
     featured: false,
     stripePriceId: 'price_1RpHsnE5B6laqC9S9FvB3k3E'
   }

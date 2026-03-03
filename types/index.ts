@@ -264,12 +264,13 @@ export interface Subscription {
   id: string
   user_id: string | null
   plan_type: 'free' | 'pro' | 'premium'
-  status: 'active' | 'past_due' | 'canceled' | 'unpaid'
+  status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid'
   stripe_subscription_id: string | null
   stripe_customer_id: string | null
   current_period_start: string | null
   current_period_end: string | null
   cancel_at_period_end: boolean | null
+  trial_end: string | null
   created_at: string
   updated_at: string
   business_id: string | null
@@ -338,7 +339,7 @@ export type BusinessType = 'vendor' | 'merchant'
 export type EventStatus = 'open' | 'booked' | 'completed' | 'cancelled'
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export type ComplianceStatus = 'pending' | 'verified' | 'rejected' | 'expired'
-export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'unpaid'
+export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid'
 export type PlanType = 'free' | 'pro' | 'premium'
 
 // ============================================================================

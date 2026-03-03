@@ -197,16 +197,16 @@ const faqs = [
     answer: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.'
   },
   {
-    question: 'Is there a setup fee?',
-    answer: 'No setup fees. You only pay for the plan you choose, and you can start with our free tier.'
+    question: 'Is there a free trial?',
+    answer: 'Yes! All paid plans include a 7-day free trial. No payment is required upfront — you can add a payment method anytime during your trial from Settings.'
   },
   {
     question: 'What payment methods do you accept?',
     answer: 'We accept all major credit cards, debit cards, and bank transfers for annual plans.'
   },
   {
-    question: 'Do you offer refunds?',
-    answer: 'We offer a 30-day money-back guarantee for all paid plans. Contact support for assistance.'
+    question: 'What happens after the trial ends?',
+    answer: 'After your 7-day trial, you\'ll need to add a payment method to continue your paid plan. Otherwise, your account will be downgraded to the free plan.'
   }
 ]
 
