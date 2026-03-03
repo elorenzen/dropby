@@ -47,16 +47,14 @@
                 />
               </div>
               <FileUpload
-                ref="fileUpload"
                 mode="basic"
                 accept="image/*"
                 :maxFileSize="1000000"
-                @upload="updateImage($event)"
-                :auto="true"
+                @select="updateImage"
                 chooseLabel="Upload New Image"
-                class="hidden"
+                class="w-full"
               />
-              <div v-if="uploading" class="flex justify-center mt-4">
+              <div v-if="storageStore.uploading" class="flex justify-center mt-4">
                 <ProgressSpinner />
               </div>
             </div>
@@ -367,7 +365,6 @@
 </template>
 
 <script setup lang="ts">
-import { v4 } from 'uuid'
 import { formatDate } from '~/utils/dates'
 import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
 import { useToast } from '~/composables/useToast'
@@ -375,7 +372,7 @@ import { useToast } from '~/composables/useToast'
 const route = useRoute()
 const { currentUser } = useAuth()
 const { showToast } = useToast()
-const supabase = useSupabaseClient()
+const storageStore = useStorageStore()
 const vendorStore = useVendorStore()
 const userStore = useUserStore()
 const businessHoursStore = useBusinessHoursStore()
@@ -384,7 +381,6 @@ const assocId = user[`associated_${user.type}_id`]
 const vendor: any = ref(await vendorStore.getVendorById(assocId))
 
 const editDialog = ref(false)
-const uploading = ref(false)
 const loading = ref(false)
 const activeTab = ref(route.query.activeTab ? parseInt(route.query.activeTab as string) : 0)
 
@@ -617,13 +613,37 @@ const setFormattedClose = (e: any, i: any) => {
 }
 
 const updateImage = async (e: any) => {
-  uploading.value = true
-  const file = e.files[0]
+  const file = e?.files?.[0]
 
   if (file) {
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${v4()}.${fileExt}`
-    const filePath = `${fileName}`
+    const oldAvatar = vendor.value?.avatar_url || imageUrl.value || null
+    await storageStore.editImage('vendor_avatars', file, oldAvatar || undefined, {
+      onSuccess: async (publicUrl) => {
+        imageUrl.value = publicUrl
+
+        const updates = {
+          updated_at: new Date().toISOString(),
+          avatar_url: publicUrl,
+        }
+
+        try {
+          await vendorStore.updateVendor(vendor.value.id, updates)
+          if (vendor.value) {
+            vendor.value.avatar_url = publicUrl
+          }
+          showToast('success', 'Success', 'Vendor Avatar Updated!', 6000)
+        } catch (error: any) {
+          errType.value = 'Image Upload'
+          errMsg.value = error.message || 'Failed to update avatar'
+          errDialog.value = true
+        }
+      },
+      onError: (error) => {
+        errType.value = 'Image Upload'
+        errMsg.value = error.message
+        errDialog.value = true
+      }
+    })
   }
 }
 
@@ -718,18 +738,4 @@ const openSubscriptionModal = () => {
   color: var(--text-md-gray) !important;
 }
 
-:deep(.p-fileupload) {
-  background: var(--p-surface-card) !important;
-  border-color: var(--p-surface-border) !important;
-}
-
-:deep(.p-fileupload-choose) {
-  background: var(--p-surface-overlay) !important;
-  border-color: var(--p-surface-border) !important;
-  color: var(--p-text-color) !important;
-}
-
-:deep(.p-fileupload-choose:hover) {
-  background: var(--p-surface-section) !important;
-}
 </style>

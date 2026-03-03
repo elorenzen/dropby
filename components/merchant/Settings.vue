@@ -47,14 +47,12 @@
                 />
               </div>
               <FileUpload
-                ref="fileUpload"
                 mode="basic"
                 accept="image/*"
                 :maxFileSize="1000000"
-                @upload="updateImage($event)"
-                :auto="true"
+                @select="updateImage"
                 chooseLabel="Upload New Image"
-                class="hidden"
+                class="w-full"
               />
               <div v-if="storageStore.uploading" class="flex justify-center mt-4">
                 <ProgressSpinner />
@@ -569,7 +567,8 @@ const updateImage = async (e: any) => {
   const file = e.files[0]
 
   if (file) {
-    await storageStore.editImage('merchant_avatars', file, null, {
+    const oldAvatar = merchant.value?.avatar_url || imageUrl.value || null
+    await storageStore.editImage('merchant_avatars', file, oldAvatar || undefined, {
       onSuccess: async (publicUrl) => {
         imageUrl.value = publicUrl
 
