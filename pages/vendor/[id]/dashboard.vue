@@ -5,11 +5,11 @@
 
     <div v-else>
     <!-- Trial Expired Alert -->
-    <div v-if="trialExpired && !trialAlertDismissed" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-red-50, #fef2f2); border: 1px solid var(--p-red-200, #fecaca);">
-      <i class="pi pi-exclamation-triangle text-xl mt-0.5" style="color: var(--p-red-500, #ef4444);"></i>
+    <div v-if="trialExpired && !trialAlertDismissed" class="bg-danger-light border border-danger-light rounded-lg p-4 mb-6 flex items-start gap-3">
+      <i class="pi pi-exclamation-triangle text-xl mt-0.5 icon-danger"></i>
       <div class="flex-1">
-        <h4 class="font-semibold mb-1" style="color: var(--p-red-700, #b91c1c);">Your free trial has ended</h4>
-        <p class="text-sm mb-3" style="color: var(--p-red-600, #dc2626);">
+        <h4 class="font-semibold mb-1 text-danger-dark">Your free trial has ended</h4>
+        <p class="text-sm mb-3 text-danger">
           Add a payment method in Settings to continue your paid plan, or your account will be downgraded to the free plan.
         </p>
         <div class="flex gap-2">
@@ -20,10 +20,10 @@
     </div>
 
     <!-- Trial Active Banner -->
-    <div v-if="isTrialing" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-blue-50, #eff6ff); border: 1px solid var(--p-blue-200, #bfdbfe);">
-      <i class="pi pi-clock text-xl mt-0.5" style="color: var(--p-blue-500, #3b82f6);"></i>
+    <div v-if="isTrialing" class="bg-info-light border border-info-light rounded-lg p-4 mb-6 flex items-start gap-3">
+      <i class="pi pi-clock text-xl mt-0.5 icon-info"></i>
       <div class="flex-1">
-        <p class="text-sm font-medium" style="color: var(--p-blue-700, #1d4ed8);">
+        <p class="text-sm font-medium text-info-dark">
           Free trial active — {{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} remaining.
           <NuxtLink :to="`/settings/${route.params.id}/?activeTab=4`" class="underline">Add a payment method</NuxtLink> to continue after your trial.
         </p>

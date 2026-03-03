@@ -176,7 +176,7 @@
                                     <span class="price">${{ plan.price }}</span>
                                     <span class="period">per month</span>
                                 </div>
-                                <p v-if="plan.price > 0" class="text-xs mt-1" style="color: var(--p-primary-color);">
+                                <p v-if="plan.price > 0" class="text-xs mt-1 text-primary">
                                     Starts with 7-day free trial
                                 </p>
                                 
@@ -247,12 +247,12 @@
                         <p class="m-2" v-if="selectedPlan.price === 0">
                             <span class="font-bold">Status: </span>Free plan selected
                         </p>
-                        <div v-else class="mt-3 p-4 rounded-lg" style="background: var(--p-primary-50, rgba(var(--p-primary-500-rgb, 59, 130, 246), 0.1)); border: 1px solid var(--p-primary-200, rgba(var(--p-primary-500-rgb, 59, 130, 246), 0.3));">
+                        <div v-else class="mt-3 p-4 rounded-lg bg-primary-light border border-primary-light">
                             <div class="flex items-center gap-2 mb-2">
-                                <i class="pi pi-clock" style="color: var(--p-primary-color);"></i>
-                                <span class="font-bold" style="color: var(--p-primary-color);">7-Day Free Trial</span>
+                                <i class="pi pi-clock text-primary"></i>
+                                <span class="font-bold text-primary">7-Day Free Trial</span>
                             </div>
-                            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">
+                            <p class="text-sm text-text-muted">
                                 Your trial starts immediately with full access to all {{ selectedPlan.name }} features. 
                                 No payment required now — you can add a payment method anytime during your trial from Settings.
                             </p>

@@ -253,11 +253,11 @@
           <h2 class="text-2xl font-bold text-text-main mb-6">Payments & Financial</h2>
 
           <!-- Trial Expired Alert -->
-          <div v-if="trialExpired && !trialAlertDismissed" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-red-50, #fef2f2); border: 1px solid var(--p-red-200, #fecaca);">
-            <i class="pi pi-exclamation-triangle text-xl mt-0.5" style="color: var(--p-red-500, #ef4444);"></i>
+          <div v-if="trialExpired && !trialAlertDismissed" class="bg-danger-light border border-danger-light rounded-lg p-4 mb-6 flex items-start gap-3">
+            <i class="pi pi-exclamation-triangle text-xl mt-0.5 icon-danger"></i>
             <div class="flex-1">
-              <h4 class="font-semibold mb-1" style="color: var(--p-red-700, #b91c1c);">Your free trial has ended</h4>
-              <p class="text-sm mb-3" style="color: var(--p-red-600, #dc2626);">
+              <h4 class="font-semibold mb-1 text-danger-dark">Your free trial has ended</h4>
+              <p class="text-sm mb-3 text-danger">
                 Your 7-day trial for the {{ getCurrentPlanName() }} plan has expired. Add a payment method below to continue your subscription, or your account will be downgraded to the free plan.
               </p>
               <div class="flex gap-2">
@@ -269,11 +269,11 @@
           </div>
 
           <!-- Trial Active Info -->
-          <div v-if="isTrialing" class="rounded-lg p-4 mb-6 flex items-start gap-3" style="background: var(--p-blue-50, #eff6ff); border: 1px solid var(--p-blue-200, #bfdbfe);">
-            <i class="pi pi-clock text-xl mt-0.5" style="color: var(--p-blue-500, #3b82f6);"></i>
+          <div v-if="isTrialing" class="bg-info-light border border-info-light rounded-lg p-4 mb-6 flex items-start gap-3">
+            <i class="pi pi-clock text-xl mt-0.5 icon-info"></i>
             <div class="flex-1">
-              <h4 class="font-semibold mb-1" style="color: var(--p-blue-700, #1d4ed8);">Free Trial Active</h4>
-              <p class="text-sm" style="color: var(--p-blue-600, #2563eb);">
+              <h4 class="font-semibold mb-1 text-info-dark">Free Trial Active</h4>
+              <p class="text-sm text-info">
                 You're on the {{ getCurrentPlanName() }} plan trial. 
                 <span v-if="trialDaysRemaining !== null">{{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} remaining.</span>
                 Add a payment method below to continue after your trial ends.
@@ -310,7 +310,7 @@
                     ${{ getCurrentPlanPrice() }}/month
                   </p>
                   <div class="flex items-center space-x-2 mt-1">
-                    <span v-if="isTrialing" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style="background: var(--p-blue-100, #dbeafe); color: var(--p-blue-700, #1d4ed8);">
+                    <span v-if="isTrialing" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-info-medium text-info-dark">
                       <i class="pi pi-clock mr-1"></i>
                       Trial — {{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} left
                     </span>
