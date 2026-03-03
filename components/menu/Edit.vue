@@ -22,16 +22,6 @@
                             chooseLabel="Upload Image"
                             class="w-full"
                         />
-                        <Button
-                            label="Generate Image"
-                            icon="pi pi-microchip-ai"
-                            iconPos="left"
-                            outlined
-                            size="small"
-                            class="w-full"
-                            @click="generateImage"
-                            :loading="loadingImg"
-                        />
                         <div v-if="storageStore.uploading" class="flex justify-center mt-2">
                             <ProgressSpinner />
                         </div>
@@ -60,13 +50,27 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-text-main mb-2">Description</label>
-                        <Textarea 
-                            id="desc" 
-                            v-model="item.description" 
-                            rows="4" 
-                            class="w-full resize-none"
-                            placeholder="Describe your menu item..."
-                        />
+                        <div class="space-y-3">
+                            <Textarea 
+                                id="desc" 
+                                v-model="item.description" 
+                                rows="4" 
+                                class="w-full resize-none"
+                                placeholder="Add a description and click 'Generate' to enhance it with AI, or write your own..."
+                            />
+                            <Button
+                                label="Generate with AI"
+                                icon="pi pi-microchip-ai"
+                                iconPos="left"
+                                class="w-full"
+                                @click="handleGenerateDescription"
+                                :loading="generatingDescription"
+                                :disabled="!item.name"
+                            />
+                            <small v-if="!item.name" class="text-text-muted">
+                                Enter an item name to enable AI description generation
+                            </small>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-text-main mb-2">Price *</label>
@@ -110,24 +114,21 @@
     const emit        = defineEmits(['edited', 'errored'])
     const menuStore   = useMenuStore()
     const storageStore = useStorageStore()
+    const { generateDescription, generatingDescription } = useMenu()
     const item         = ref(props.item)
     const errDialog    = ref(false)
     const errType      = ref()
     const errMsg       = ref()
     const loading      = ref(false)
-    const loadingImg   = ref(false)
     const filteredCategories = ref<string[]>([])
 
-    // Get categories from menu store
     const allCategories = computed(() => {
         const storeTypes = menuStore.getTypes
-        // Fallback to default categories if store is empty
         return storeTypes && storeTypes.length > 0 
             ? storeTypes 
             : ['Appetizer', 'Entree', 'Dessert', 'Side', 'Beverage']
     })
 
-    // Filter categories based on search query
     const searchCategories = (event: any) => {
         const query = event.query.toLowerCase()
         if (!query) {
@@ -140,7 +141,6 @@
     }
 
     onMounted(() => {
-        // Initialize with all categories
         filteredCategories.value = allCategories.value
     })
 
@@ -176,11 +176,9 @@
         if (file) {
             await storageStore.editImage('menu_images', file, oldFileName, {
                 onSuccess: async (publicUrl, fileName) => {
-                    // Update local item state
                     item.value.image_url = publicUrl
                     item.value.image_name = fileName
                     
-                    // Update menu item in database
                     await menuStore.updateMenuItem(item.value.id, { 
                         image_url: publicUrl, 
                         image_name: fileName 
@@ -197,12 +195,14 @@
         errMsg.value = msg
         errDialog.value = true
     }
-    const generateImage = async () => {
-        loadingImg.value = true
-        const response = await useFetch(`/api/generateImage?string=${item.value.name}`)
-        if (response.data.value) item.value.image_url = response.data.value
-        loadingImg.value = false
-    }   
+    const handleGenerateDescription = async () => {
+        try {
+            const result = await generateDescription(item.value.name)
+            if (result) item.value.description = result
+        } catch (error: any) {
+            throwErr('Description Generation', error.message || 'Failed to generate description')
+        }
+    }
 </script>
 
 <style scoped>
