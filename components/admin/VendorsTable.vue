@@ -48,7 +48,7 @@
     </Column>
     <Column field="average_merchant_rating" header="Rating" sortable>
       <template #body="{ data }">
-        <span v-if="data.average_merchant_rating">{{ data.average_merchant_rating.toFixed(1) }}</span>
+        <span v-if="data.average_merchant_rating">{{ data.average_merchant_rating.toFixed(1) }} / 5</span>
         <span v-else style="color: var(--p-text-muted-color);">-</span>
       </template>
     </Column>
