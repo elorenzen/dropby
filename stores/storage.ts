@@ -15,6 +15,18 @@ export interface DeleteImageOptions {
   onError?: (error: Error) => void
 }
 
+/**
+ * Extract storage object path from a Supabase public URL or return as-is if already a path.
+ * URL format: .../storage/v1/object/public/<bucket>/<path>
+ */
+function pathFromUrlOrPath(bucket: string, urlOrPath: string): string {
+  if (!urlOrPath) return ''
+  const prefix = `/${bucket}/`
+  const idx = urlOrPath.indexOf(prefix)
+  if (idx !== -1) return urlOrPath.slice(idx + prefix.length)
+  return urlOrPath
+}
+
 export const useStorageStore = defineStore('storage', {
   state: () => ({
     uploading: false,
@@ -163,18 +175,21 @@ export const useStorageStore = defineStore('storage', {
         // Delete old file if provided and deleteOldFile is not explicitly false
         const shouldDeleteOld = oldFileName && (options?.deleteOldFile !== false)
         if (shouldDeleteOld) {
-          try {
-            const { error: deleteError } = await supabase.storage
-              .from(bucket)
-              .remove([oldFileName])
+          const oldPath = pathFromUrlOrPath(bucket, oldFileName)
+          if (oldPath) {
+            try {
+              const { error: deleteError } = await supabase.storage
+                .from(bucket)
+                .remove([oldPath])
 
-            if (deleteError) {
-              console.warn('Error deleting old file:', deleteError.message)
+              if (deleteError) {
+                console.warn('Error deleting old file:', deleteError.message)
+                // Don't throw - old file deletion failure shouldn't break the edit
+              }
+            } catch (deleteErr: any) {
+              console.error('Error deleting old file:', deleteErr)
               // Don't throw - old file deletion failure shouldn't break the edit
             }
-          } catch (deleteErr: any) {
-            console.error('Error deleting old file:', deleteErr)
-            // Don't throw - old file deletion failure shouldn't break the edit
           }
         }
 
