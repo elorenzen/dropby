@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
       await handlePaymentFailed(client, stripeEvent.data.object as Stripe.PaymentIntent)
       break
     case 'invoice.payment_succeeded':
+    case 'invoice.paid':
       await handleSubscriptionPaymentSucceeded(client, stripeEvent.data.object as Stripe.Invoice)
       break
     case 'invoice.payment_failed':

@@ -25,3 +25,4 @@ logs
 .vercel
 MVP_ROADMAP.md
 SETUP_SMTP.md
+.env*.production

@@ -3,11 +3,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
     "dev": "nuxt dev",
+    "dev:local": "nuxt dev",
+    "dev:prod": "dotenv -e .env.production -- nuxt dev",
+    "build": "nuxt build",
+    "build:staging": "NUXT_PUBLIC_APP_ENV=staging nuxt build",
+    "build:prod": "NUXT_PUBLIC_APP_ENV=production nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "supabase:create-buckets": "node scripts/supabase/create-storage-buckets.mjs",
+    "supabase:create-buckets:prod": "dotenv -e .env.production -- node scripts/supabase/create-storage-buckets.mjs"
   },
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",
@@ -54,6 +60,7 @@
   },
   "devDependencies": {
     "@samk-dev/nuxt-vcalendar": "^1.0.4",
+    "dotenv-cli": "^7.4.2",
     "nuxt-scheduler": "^0.1.9",
     "postcss-import": "^16.1.0",
     "sass": "^1.85.1"

@@ -1,8 +1,11 @@
 import DropByTheme from './assets/themes/dropby-theme'
 
+const appEnv = process.env.NUXT_PUBLIC_APP_ENV || process.env.NODE_ENV || 'development'
+const isDev = appEnv === 'development'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
-  devtools: { enabled: true },
+  devtools: { enabled: isDev },
   // routeRules: {
   //   '/': { prerender: true }
   // },
@@ -35,6 +38,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     superadminEmail: process.env.SUPERADMIN_EMAIL || '',
     public: {
+      appEnv,
       autocomplete: process.env.GEO_KEY,
       gMapKey: process.env.GMAPS_API_KEY,
       GQL_HOST: 'https://spacex-api-2gl6xp7kua-ue.a.run.app/query',
