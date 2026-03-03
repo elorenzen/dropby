@@ -21,6 +21,19 @@ export const useStorageStore = defineStore('storage', {
     deleting: false
   }),
   
+  getters: {
+    getFileNameFromUrl: () => (url: string | null | undefined): string | null => {
+      if (!url) return null
+      try {
+        const pathname = new URL(url).pathname
+        const segments = pathname.split('/')
+        return segments[segments.length - 1] || null
+      } catch {
+        return null
+      }
+    }
+  },
+
   actions: {
     /**
      * Upload a new image to Supabase storage

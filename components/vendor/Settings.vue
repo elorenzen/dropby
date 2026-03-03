@@ -616,7 +616,8 @@ const updateImage = async (e: any) => {
   const file = e?.files?.[0]
 
   if (file) {
-    await storageStore.editImage('vendor_avatars', file, null, {
+    const oldFileName = storageStore.getFileNameFromUrl(vendor.value?.avatar_url)
+    await storageStore.editImage('vendor_avatars', file, oldFileName, {
       onSuccess: async (publicUrl) => {
         imageUrl.value = publicUrl
 
