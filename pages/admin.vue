@@ -12,21 +12,13 @@
         <TabPanels>
             <TabPanel value="0">Charts and shit here</TabPanel>
             <TabPanel value="1">
-                <h4>Table of associated admin users</h4>
-                <p><strong>to-do</strong></p>
-                <p>add 'switch' fields to set platform feature access based on new user roles(dev/customer support/etc.)</p>
+                <AdminUsersTable :users="allUsers" :loading="usersLoading" />
             </TabPanel>
             <TabPanel value="2">
-                <p><strong>to-do</strong></p>
-                <p>table column additions: billing info, activity, usage metrics</p>
-                <p>table actions: 'ban'/hide merchants/vendors, activate 'promoted' status</p>
-                <MerchantList />
+                <AdminMerchantsTable :merchants="allMerchants" :loading="merchantsLoading" />
             </TabPanel>
             <TabPanel value="3">
-                <p><strong>to-do</strong></p>
-                <p>table column additions: billing info, activity, usage metrics</p>
-                <p>table actions: 'ban'/hide merchants/vendors, activate 'promoted' status</p>
-                <VendorList />
+                <AdminVendorsTable :vendors="allVendors" :loading="vendorsLoading" />
             </TabPanel>
             <TabPanel value="4">
                 <div class="feedback-admin">
@@ -132,6 +124,11 @@ useSeoMeta({ title: 'Admin' })
 const value = ref('0');
 const { allFeedback, loading, updating, loadAllFeedback, updateFeedbackStatus } = useFeedback()
 const { showToast } = useToast()
+const {
+    allMerchants, merchantsLoading, loadMerchants,
+    allVendors, vendorsLoading, loadVendors,
+    allUsers, usersLoading, loadUsers
+} = useAdmin()
 
 const filterType = ref<FeedbackType | ''>('')
 const filterStatus = ref<FeedbackStatus | ''>('')
@@ -221,9 +218,17 @@ const loadFeedback = async () => {
     }
 }
 
+const tabLoaders: Record<string, () => Promise<void>> = {
+    '1': loadUsers,
+    '2': loadMerchants,
+    '3': loadVendors,
+    '4': loadFeedback
+}
+
 watch(value, async (newVal) => {
-    if (newVal === '4') {
-        await loadFeedback()
+    const loader = tabLoaders[newVal]
+    if (loader) {
+        await loader()
     }
 })
 </script>
