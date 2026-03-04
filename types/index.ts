@@ -331,6 +331,20 @@ export interface UserFeedback {
 }
 
 // ============================================================================
+// EVENT REMINDER TYPES
+// ============================================================================
+
+export type ReminderType = '7d' | '1d' | 'day_of'
+
+export interface EventReminder {
+  id: string
+  event_id: string
+  reminder_type: ReminderType
+  sent_at: string
+  created_at: string
+}
+
+// ============================================================================
 // COMMON TYPES
 // ============================================================================
 
