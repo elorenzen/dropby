@@ -176,6 +176,9 @@
                                     <span class="price">${{ plan.price }}</span>
                                     <span class="period">per month</span>
                                 </div>
+                                <p v-if="plan.price > 0" class="text-xs mt-1 text-primary">
+                                    Starts with 7-day free trial
+                                </p>
                                 
                                 <div class="plan-divider" />
                                 
@@ -244,9 +247,16 @@
                         <p class="m-2" v-if="selectedPlan.price === 0">
                             <span class="font-bold">Status: </span>Free plan selected
                         </p>
-                        <p class="m-2" v-else>
-                            <span class="font-bold">Status: </span>Payment will be collected after account creation
-                        </p>
+                        <div v-else class="mt-3 p-4 rounded-lg bg-primary-light border border-primary-light">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="pi pi-clock text-primary"></i>
+                                <span class="font-bold text-primary">7-Day Free Trial</span>
+                            </div>
+                            <p class="text-sm text-text-muted">
+                                Your trial starts immediately with full access to all {{ selectedPlan.name }} features. 
+                                No payment required now — you can add a payment method anytime during your trial from Settings.
+                            </p>
+                        </div>
                     </div>
 
                     <div class="border-t pt-6 mt-6">

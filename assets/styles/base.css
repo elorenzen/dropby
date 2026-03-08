@@ -284,11 +284,34 @@ h1, h2, h3, h4, h5, h6 {
 .bg-error-dark { background-color: var(--p-danger-700) !important; }
 .border-error-light { border-color: var(--p-danger-200) !important; }
 
+/* Danger Color Utilities */
+.text-danger { color: var(--p-danger-color) !important; }
+.bg-danger { background-color: var(--p-danger-color) !important; }
+.border-danger { border-color: var(--p-danger-color) !important; }
+
+.text-danger-dark { color: var(--p-danger-700) !important; }
+.bg-danger-light { background-color: var(--p-danger-50) !important; }
+.bg-danger-dark { background-color: var(--p-danger-700) !important; }
+.border-danger-light { border-color: var(--p-danger-200) !important; }
+
+/* Info Color Utilities */
+.text-info { color: var(--p-info-color) !important; }
+.bg-info { background-color: var(--p-info-color) !important; }
+.border-info { border-color: var(--p-info-color) !important; }
+
+.text-info-dark { color: var(--p-info-700) !important; }
+.bg-info-light { background-color: var(--p-info-50) !important; }
+.bg-info-medium { background-color: var(--p-info-100) !important; }
+.bg-info-dark { background-color: var(--p-info-700) !important; }
+.border-info-light { border-color: var(--p-info-200) !important; }
+
 /* Icon Color Utilities */
 .icon-primary { color: var(--p-primary-color) !important; }
 .icon-success { color: var(--p-success-color) !important; }
 .icon-accent { color: var(--p-warn-color) !important; }
 .icon-error { color: var(--p-danger-color) !important; }
+.icon-danger { color: var(--p-danger-color) !important; }
+.icon-info { color: var(--p-info-color) !important; }
 
 /* Gradient Utilities */
 .gradient-primary { 

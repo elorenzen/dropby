@@ -4,6 +4,32 @@
     <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
 
     <div v-else>
+    <!-- Trial Expired Alert -->
+    <div v-if="trialExpired && !trialAlertDismissed" class="bg-danger-light border border-danger-light rounded-lg p-4 mb-6 flex items-start gap-3">
+      <i class="pi pi-exclamation-triangle text-xl mt-0.5 icon-danger"></i>
+      <div class="flex-1">
+        <h4 class="font-semibold mb-1 text-danger-dark">Your free trial has ended</h4>
+        <p class="text-sm mb-3 text-danger">
+          Add a payment method in Settings to continue your paid plan, or your account will be downgraded to the free plan.
+        </p>
+        <div class="flex gap-2">
+          <Button label="Go to Payment Settings" icon="pi pi-credit-card" size="small" severity="danger" @click="navigateToFinancials" />
+          <Button label="Dismiss" size="small" text @click="trialAlertDismissed = true" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Trial Active Banner -->
+    <div v-if="isTrialing" class="bg-info-light border border-info-light rounded-lg p-4 mb-6 flex items-start gap-3">
+      <i class="pi pi-clock text-xl mt-0.5 icon-info"></i>
+      <div class="flex-1">
+        <p class="text-sm font-medium text-info-dark">
+          Free trial active — {{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} remaining.
+          <NuxtLink :to="`/settings/${route.params.id}/?activeTab=4`" class="underline">Add a payment method</NuxtLink> to continue after your trial.
+        </p>
+      </div>
+    </div>
+
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
@@ -241,7 +267,19 @@ await reviewStore.loadReviewsForBusiness(route.params.id as string, 'vendor')
 
 await subscriptionStore.setActiveSubscription(route.params.id as string, 'vendor')
 const activeSubscription = subscriptionStore.getActiveSubscription
-console.log('Active subscription:', activeSubscription)
+
+// Trial state
+const trialAlertDismissed = ref(false)
+const isTrialing = computed(() => subscriptionStore.isTrialing)
+const trialExpired = computed(() => subscriptionStore.trialExpired)
+const trialDaysRemaining = computed(() => {
+  const trialEnd = subscriptionStore.trialEndDate
+  if (!trialEnd) return null
+  const now = new Date()
+  const end = new Date(trialEnd)
+  const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.max(0, diff)
+})
 
 useSeoMeta({ title: () => `Dashboard | ${vendor.value?.vendor_name || 'Vendor'}` })
 

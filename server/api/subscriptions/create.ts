@@ -228,7 +228,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create Stripe subscription with proper structure according to Stripe API docs
-    // Use 'default_incomplete' to allow subscriptions without payment methods (payment collected later)
+    // Use trial_period_days to give new users a 7-day free trial before charging
     const subscriptionParams: Stripe.SubscriptionCreateParams = {
       customer: stripeCustomerId,
       items: [
@@ -236,6 +236,7 @@ export default defineEventHandler(async (event) => {
           price: stripePriceId,
         },
       ],
+      trial_period_days: 7,
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
       metadata: {
@@ -311,10 +312,9 @@ export default defineEventHandler(async (event) => {
 
     // Map Stripe subscription status to our database status
     // Stripe uses 'incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid'
-    // Only mark as unpaid if payment actually failed or is incomplete
     let subscriptionStatus = stripeSubscription.status
     
-    // Check if payment was successful
+    // Check if payment was successful (only relevant for non-trial subscriptions)
     const stripeSub = stripeSubscription as any
     const invoice = stripeSub.latest_invoice
     let paymentSucceeded = false
@@ -329,39 +329,52 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // Only mark as unpaid if:
-    // 1. Status is incomplete/unpaid AND payment didn't succeed
-    // 2. Status is past_due (payment failed)
-    if ((stripeSubscription.status === 'incomplete' || stripeSubscription.status === 'incomplete_expired' || stripeSubscription.status === 'unpaid') && !paymentSucceeded) {
+    if (stripeSubscription.status === 'trialing') {
+      subscriptionStatus = 'trialing'
+    } else if ((stripeSubscription.status === 'incomplete' || stripeSubscription.status === 'incomplete_expired' || stripeSubscription.status === 'unpaid') && !paymentSucceeded) {
       subscriptionStatus = 'unpaid'
     } else if (stripeSubscription.status === 'past_due') {
       subscriptionStatus = 'unpaid'
-    } else if (stripeSubscription.status === 'active' || stripeSubscription.status === 'trialing') {
-      // Active or trialing subscriptions are active
+    } else if (stripeSubscription.status === 'active') {
       subscriptionStatus = 'active'
     } else if (stripeSubscription.status === 'canceled') {
       subscriptionStatus = 'canceled'
     } else {
-      // Default to active if payment succeeded, otherwise unpaid
       subscriptionStatus = paymentSucceeded ? 'active' : 'unpaid'
     }
 
+    // Get trial end date if subscription is trialing
+    const getTrialEnd = () => {
+      const sub = stripeSubscription as any
+      if (sub.trial_end) {
+        return new Date(sub.trial_end * 1000).toISOString()
+      }
+      return null
+    }
+
     // Create Supabase subscription record with both customer and subscription IDs
+    const insertData: Record<string, any> = {
+      business_id: businessId,
+      business_type: businessType,
+      user_id: user.id,
+      plan_type: actualPlanType,
+      status: subscriptionStatus,
+      stripe_customer_id: stripeCustomerId,
+      stripe_subscription_id: stripeSubscription.id,
+      current_period_start: getCurrentPeriodStart(),
+      current_period_end: getCurrentPeriodEnd(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    const trialEnd = getTrialEnd()
+    if (trialEnd) {
+      insertData.trial_end = trialEnd
+    }
+
     const { data: newSubscription, error: subscriptionError } = await client
       .from('subscriptions')
-      .insert({
-        business_id: businessId,
-        business_type: businessType,
-        user_id: user.id,
-        plan_type: actualPlanType,
-        status: subscriptionStatus, // Use Stripe's status (mapped to 'unpaid' if incomplete/unpaid)
-        stripe_customer_id: stripeCustomerId,
-        stripe_subscription_id: stripeSubscription.id,
-        current_period_start: getCurrentPeriodStart(),
-        current_period_end: getCurrentPeriodEnd(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } as any)
+      .insert(insertData as any)
       .select()
       .single()
 
@@ -391,10 +404,15 @@ export default defineEventHandler(async (event) => {
         stripeCustomerId: stripeCustomerId,
         planType: actualPlanType,
         status: subscriptionStatus,
+        trialEnd: trialEnd,
         paymentIntentId: paymentIntent?.id,
         clientSecret: paymentIntent?.client_secret
       },
-      message: paymentMethodAttached ? 'Subscription created successfully' : 'Subscription created, payment required'
+      message: subscriptionStatus === 'trialing'
+        ? 'Subscription created with 7-day free trial'
+        : paymentMethodAttached
+          ? 'Subscription created successfully'
+          : 'Subscription created, payment required'
     }
 
   } catch (error: any) {

@@ -18,10 +18,31 @@ export const useSubscriptionStore = defineStore('subscription', {
       return state.activeSubscription?.plan_type || 'free'
     },
     
-    // Check if subscription is active (beta counts as active)
+    // Check if subscription is active (beta, active, or trialing all count)
     isActive: (state) => {
       if (state.isBetaTester) return true
-      return state.activeSubscription?.status === 'active'
+      return state.activeSubscription?.status === 'active' || state.activeSubscription?.status === 'trialing'
+    },
+    
+    // Check if subscription is in trial period
+    isTrialing: (state): boolean => {
+      return state.activeSubscription?.status === 'trialing'
+    },
+    
+    // Get the trial end date (if trialing)
+    trialEndDate: (state): string | null => {
+      if (state.activeSubscription?.status === 'trialing' && state.activeSubscription?.trial_end) {
+        return state.activeSubscription.trial_end
+      }
+      return null
+    },
+    
+    // Check if trial has expired (subscription is unpaid/past_due after trialing)
+    trialExpired: (state): boolean => {
+      if (!state.activeSubscription) return false
+      const hasTrialEnd = !!state.activeSubscription.trial_end
+      const isUnpaid = state.activeSubscription.status === 'unpaid' || state.activeSubscription.status === 'past_due'
+      return hasTrialEnd && isUnpaid
     },
     
     // Get current plan type (defaults to 'free' if no subscription)
@@ -44,7 +65,8 @@ export const useSubscriptionStore = defineStore('subscription', {
           return hasFeatureAccess('premium', feature, bType)
         }
 
-        if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+        const isSubscriptionActive = state.activeSubscription?.status === 'active' || state.activeSubscription?.status === 'trialing'
+        if (!state.activeSubscription || !isSubscriptionActive) {
           return hasFeatureAccess('free', feature, bType)
         }
         
@@ -55,9 +77,10 @@ export const useSubscriptionStore = defineStore('subscription', {
     // Get all allowed features for the current subscription
     allowedFeatures: (state): (MerchantFeature | VendorFeature)[] => {
       const bType = state.activeSubscription?.business_type as 'merchant' | 'vendor' || 'merchant'
+      const isSubscriptionActive = state.activeSubscription?.status === 'active' || state.activeSubscription?.status === 'trialing'
       const planForCheck: 'free' | 'pro' | 'premium' = state.isBetaTester
         ? 'premium'
-        : (state.activeSubscription?.status === 'active' ? state.activeSubscription.plan_type : 'free')
+        : (isSubscriptionActive ? state.activeSubscription!.plan_type : 'free')
 
       const features = bType === 'merchant'
         ? (Object.keys(merchantFeatures) as MerchantFeature[])
@@ -72,7 +95,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canCreateEvents: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return true // Free tier can create events (with limits)
       }
       return state.activeSubscription.business_type === 'merchant'
@@ -80,7 +103,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canCreateUnlimitedEvents: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -92,7 +115,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canCreateRecurringEvents: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -104,7 +127,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canSetPreferredVendors: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -116,7 +139,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canSetUnlimitedPreferredVendors: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -128,7 +151,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canSetEventValuePricing: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -140,7 +163,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canSetEventValuePromo: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -152,7 +175,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canCreateDateRangeEvents: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -168,7 +191,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canRequestEvents: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return true // Free tier can request events (with limits)
       }
       return state.activeSubscription.business_type === 'vendor'
@@ -176,7 +199,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canRequestUnlimitedEvents: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -188,7 +211,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canManageMenu: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -200,7 +223,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canHavePreferredVendorStatus: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -212,7 +235,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canUseAvailabilityCalendar: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -224,7 +247,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     canUseAutoBooking: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       return hasFeatureAccess(
@@ -240,7 +263,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     hasPrioritySupport: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       const businessType = state.activeSubscription.business_type as 'merchant' | 'vendor'
@@ -253,7 +276,7 @@ export const useSubscriptionStore = defineStore('subscription', {
     
     hasDedicatedSupport: (state): boolean => {
       if (state.isBetaTester) return true
-      if (!state.activeSubscription || state.activeSubscription.status !== 'active') {
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       const businessType = state.activeSubscription.business_type as 'merchant' | 'vendor'
@@ -270,16 +293,18 @@ export const useSubscriptionStore = defineStore('subscription', {
         this.loading = true
         this.error = null
         try {
+            // Query for active or trialing subscriptions
             const { data, error } = await supabase
                 .from('subscriptions')
                 .select('*')
                 .eq('business_id', businessId)
                 .eq('business_type', businessType)
-                .eq('status', 'active')
+                .in('status', ['active', 'trialing'])
+                .order('created_at', { ascending: false })
+                .limit(1)
                 .maybeSingle()
 
             if (error && error.code !== 'PGRST116') {
-                // PGRST116 is "no rows returned" which is fine - just means no active subscription
                 console.error('Error fetching subscription:', error)
                 this.error = error.message
             }
@@ -287,13 +312,28 @@ export const useSubscriptionStore = defineStore('subscription', {
             if (data) {
                 this.activeSubscription = data as Subscription
             } else {
-                // No active subscription found - this is OK, user is on free tier
-                this.activeSubscription = null
+                // Check for expired trial (unpaid/past_due with trial_end set)
+                const { data: expiredTrial } = await supabase
+                    .from('subscriptions')
+                    .select('*')
+                    .eq('business_id', businessId)
+                    .eq('business_type', businessType)
+                    .in('status', ['unpaid', 'past_due'])
+                    .not('trial_end', 'is', null)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle()
+
+                if (expiredTrial) {
+                    this.activeSubscription = expiredTrial as Subscription
+                } else {
+                    this.activeSubscription = null
+                }
             }
         } catch (error: any) {
             console.error('Error setting active subscription:', error)
             this.error = error.message || 'Failed to load subscription'
-            this.activeSubscription = null // Set to null instead of crashing
+            this.activeSubscription = null
         } finally {
             this.loading = false
         }
@@ -329,6 +369,27 @@ export const useSubscriptionStore = defineStore('subscription', {
       } catch (error) {
         console.error('Error checking unpaid subscription:', error)
         return null
+      }
+    },
+
+    /**
+     * Downgrade an expired-trial subscription to a free plan
+     */
+    async downgradeToFree(businessId: string, businessType: 'merchant' | 'vendor') {
+      try {
+        const response = await $fetch('/api/subscriptions/create', {
+          method: 'POST',
+          body: {
+            planType: `${businessType}-free`,
+            stripePriceId: ''
+          }
+        })
+        // Reload subscription state
+        await this.setActiveSubscription(businessId, businessType)
+        return response
+      } catch (error) {
+        console.error('Error downgrading to free plan:', error)
+        throw error
       }
     },
 

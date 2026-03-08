@@ -252,6 +252,35 @@
         <div v-if="activeTab === 2" class="space-y-6">
           <h2 class="text-2xl font-bold text-text-main mb-6">Payments & Financial</h2>
           
+          <!-- Trial Expired Alert -->
+          <div v-if="trialExpired && !trialAlertDismissed" class="bg-danger-light border border-danger-light rounded-lg p-4 mb-6 flex items-start gap-3">
+            <i class="pi pi-exclamation-triangle text-xl mt-0.5 icon-danger"></i>
+            <div class="flex-1">
+              <h4 class="font-semibold mb-1 text-danger-dark">Your free trial has ended</h4>
+              <p class="text-sm mb-3 text-danger">
+                Your 7-day trial for the {{ getCurrentPlanName() }} plan has expired. Add a payment method below to continue your subscription, or your account will be downgraded to the free plan.
+              </p>
+              <div class="flex gap-2">
+                <Button label="Add Payment Method" icon="pi pi-credit-card" size="small" severity="danger" />
+                <Button label="Downgrade to Free" icon="pi pi-arrow-down" size="small" severity="secondary" outlined @click="handleDowngradeToFree" :loading="downgradingToFree" />
+                <Button label="Dismiss" size="small" text @click="trialAlertDismissed = true" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Trial Active Info -->
+          <div v-if="isTrialing" class="bg-info-light border border-info-light rounded-lg p-4 mb-6 flex items-start gap-3">
+            <i class="pi pi-clock text-xl mt-0.5 icon-info"></i>
+            <div class="flex-1">
+              <h4 class="font-semibold mb-1 text-info-dark">Free Trial Active</h4>
+              <p class="text-sm text-info">
+                You're on the {{ getCurrentPlanName() }} plan trial. 
+                <span v-if="trialDaysRemaining !== null">{{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} remaining.</span>
+                Add a payment method below to continue after your trial ends.
+              </p>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <SettingsPaymentMethods :stripeCustomerId="merchant.stripe_customer_id" />
           </div>
@@ -281,7 +310,11 @@
                     ${{ getCurrentPlanPrice() }}/month
                   </p>
                   <div class="flex items-center space-x-2 mt-1">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success-dark">
+                    <span v-if="isTrialing" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-info-medium text-info-dark">
+                      <i class="pi pi-clock mr-1"></i>
+                      Trial — {{ trialDaysRemaining }} day{{ trialDaysRemaining !== 1 ? 's' : '' }} left
+                    </span>
+                    <span v-else class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success-dark">
                       <i class="pi pi-check-circle mr-1"></i>
                       Active
                     </span>
@@ -444,6 +477,21 @@ const tabs = computed(() => {
 const hasActiveSubscription = ref(false)
 const currentSubscription = ref<any>(null)
 const subscriptionStore = useSubscriptionStore()
+
+// Trial state
+const trialAlertDismissed = ref(false)
+const downgradingToFree = ref(false)
+
+const isTrialing = computed(() => subscriptionStore.isTrialing)
+const trialExpired = computed(() => subscriptionStore.trialExpired)
+const trialDaysRemaining = computed(() => {
+  const trialEnd = subscriptionStore.trialEndDate
+  if (!trialEnd) return null
+  const now = new Date()
+  const end = new Date(trialEnd)
+  const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.max(0, diff)
+})
 
 // UI state
 const showSubscriptionPlans = ref(false)
@@ -610,14 +658,29 @@ const checkSubscriptionStatus = async () => {
   try {
     const merchantId = merchant.value.id as string
     
-    // Use subscription store to get active subscription
+    // Use subscription store to get active subscription (includes trialing)
     await subscriptionStore.setActiveSubscription(merchantId, 'merchant')
     
     currentSubscription.value = subscriptionStore.getActiveSubscription
-    hasActiveSubscription.value = !!subscriptionStore.getActiveSubscription
+    hasActiveSubscription.value = subscriptionStore.isActive
   } catch (error) {
     console.error('Error checking subscription status:', error)
     hasActiveSubscription.value = false
+  }
+}
+
+// Handle downgrade to free plan after trial expiry
+const handleDowngradeToFree = async () => {
+  if (!merchant.value?.id) return
+  downgradingToFree.value = true
+  try {
+    await subscriptionStore.downgradeToFree(merchant.value.id, 'merchant')
+    trialAlertDismissed.value = true
+    await checkSubscriptionStatus()
+  } catch (error) {
+    console.error('Error downgrading to free:', error)
+  } finally {
+    downgradingToFree.value = false
   }
 }
 
