@@ -20,6 +20,11 @@ export const NOTIFICATION_ACTION_TYPES = {
   COMPLIANCE_EXPIRING: 'compliance_expiring',
   COMPLIANCE_EXPIRED: 'compliance_expired',
   
+  // Event invite-related
+  EVENT_INVITE_SENT: 'event_invite_sent',
+  EVENT_INVITE_ACCEPTED: 'event_invite_accepted',
+  EVENT_INVITE_DECLINED: 'event_invite_declined',
+  
   // Partnership-related
   PARTNERSHIP_REQUEST: 'partnership_request',
   PARTNERSHIP_REMOVED: 'partnership_removed',
@@ -47,6 +52,9 @@ export const NOTIFICATION_ICONS: Record<string, string> = {
   [NOTIFICATION_ACTION_TYPES.COMPLIANCE_REJECTED]: 'pi pi-file-excel',
   [NOTIFICATION_ACTION_TYPES.COMPLIANCE_EXPIRING]: 'pi pi-exclamation-triangle',
   [NOTIFICATION_ACTION_TYPES.COMPLIANCE_EXPIRED]: 'pi pi-exclamation-circle',
+  [NOTIFICATION_ACTION_TYPES.EVENT_INVITE_SENT]: 'pi pi-envelope',
+  [NOTIFICATION_ACTION_TYPES.EVENT_INVITE_ACCEPTED]: 'pi pi-check-circle',
+  [NOTIFICATION_ACTION_TYPES.EVENT_INVITE_DECLINED]: 'pi pi-times-circle',
   [NOTIFICATION_ACTION_TYPES.PARTNERSHIP_REQUEST]: 'pi pi-handshake',
   [NOTIFICATION_ACTION_TYPES.PARTNERSHIP_REMOVED]: 'pi pi-user-minus',
   [NOTIFICATION_ACTION_TYPES.SUBSCRIPTION_UPGRADED]: 'pi pi-arrow-up',
