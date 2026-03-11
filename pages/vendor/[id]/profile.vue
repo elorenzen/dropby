@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-background p-6">
+  <div class="min-h-screen bg-background p-4 md:p-6">
     <!-- Loading State -->
     <PageSkeleton v-if="loading" :show-stats="false" :show-list="false" />
 
@@ -39,7 +39,7 @@
             <div class="flex-1">
               <div class="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
                 <div>
-                  <h1 class="text-4xl font-bold text-text-main mb-2">
+                  <h1 class="text-2xl md:text-4xl font-bold text-text-main mb-2">
                     {{ vendor.vendor_name }}
                   </h1>
                   <div class="flex items-center gap-4 mb-3">
@@ -122,7 +122,7 @@
       </Card>
 
       <!-- Business Details Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card class="info-card">
           <template #content>
             <div class="text-center">
@@ -327,7 +327,7 @@
       <Dialog 
         v-model="menuItemDialogVisible" 
         :header="selectedMenuItem?.name || 'Menu Item Details'"
-        :style="{ width: '50vw' }"
+        :style="{ width: '90vw', maxWidth: '600px' }"
         :modal="true"
         :closable="true"
       >
@@ -529,5 +529,20 @@ onMounted(() => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .info-card:hover {
+    transform: none;
+  }
+
+  .info-card :deep(.p-card-content) {
+    padding: 0.75rem !important;
+  }
+
+  .w-48 {
+    width: 8rem;
+    height: 8rem;
+  }
 }
 </style>

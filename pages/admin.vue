@@ -348,5 +348,23 @@ watch(value, async (newVal) => {
     .filter-select {
         width: 100%;
     }
+
+    :deep(.p-tablist) {
+        overflow-x: auto;
+    }
+
+    :deep(.p-tablist-content) {
+        overflow-x: auto;
+    }
+
+    :deep(.p-tab) {
+        white-space: nowrap;
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .status-select {
+        min-width: 120px;
+    }
 }
 </style>

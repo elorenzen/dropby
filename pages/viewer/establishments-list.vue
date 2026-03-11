@@ -152,11 +152,19 @@
                     severity="info"
                   />
                   <Button 
+                    icon="pi pi-external-link"
+                    outlined
+                    size="small"
+                    @click.stop="navigateTo(`/merchant/${merchant.id}/profile`)"
+                    class="md:hidden"
+                  />
+                  <Button 
                     label="View Profile" 
                     icon="pi pi-external-link"
                     outlined
                     size="small"
                     @click.stop="navigateTo(`/merchant/${merchant.id}/profile`)"
+                    class="hidden md:inline-flex"
                   />
                 </div>
               </div>
@@ -645,5 +653,19 @@ const openMapUrl = (url: string | null) => {
 
 :deep(.p-rating) {
   font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  :deep(.p-accordion .p-accordion-header) {
+    padding: 0.75rem 1rem !important;
+  }
+
+  :deep(.p-accordion .p-accordion-content) {
+    padding: 1rem !important;
+  }
+
+  .event-card:hover {
+    transform: none;
+  }
 }
 </style>
