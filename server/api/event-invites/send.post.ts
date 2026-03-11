@@ -64,10 +64,10 @@ export default defineEventHandler(async (event) => {
 
           if (!vendorData?.email) continue
 
-          // Check if vendor users are available_to_contact
+          // Check if vendor users are available_to_contact and have email invites enabled
           const { data: vendorUsers } = await client
             .from('users')
-            .select('email, available_to_contact')
+            .select('email, available_to_contact, notification_preferences')
             .eq('associated_vendor_id', vendorId)
             .eq('available_to_contact', true)
             .not('email', 'is', null)
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
             continue
           }
 
-          const recipientEmails = vendorUsers.map((u: any) => u.email).filter(Boolean)
+          const recipientEmails = filterByNotificationPreference(vendorUsers, 'email_event_invites')
 
           try {
             await resend.emails.send({

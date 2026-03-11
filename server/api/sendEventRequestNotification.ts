@@ -92,11 +92,10 @@ export default defineEventHandler(async (event) => {
             </div>
         `
 
-        // Get all merchant user emails
-        // Users must have available_to_contact = true and email IS NOT NULL
+        // Get all merchant user emails (with notification preferences)
         const { data: merchantUsers, error: merchantUsersError } = await client
             .from('users')
-            .select('email')
+            .select('email, notification_preferences')
             .eq('associated_merchant_id', query.merchantId)
             .eq('available_to_contact', true)
             .not('email', 'is', null)
@@ -108,14 +107,10 @@ export default defineEventHandler(async (event) => {
             })
         }
         
-        const recipients: string[] = []
-        if (merchantUsers && merchantUsers.length > 0) {
-            merchantUsers.forEach((user: any) => {
-                if (user.email && !recipients.includes(user.email)) {
-                    recipients.push(user.email)
-                }
-            })
-        }
+        const recipients = filterByNotificationPreference(
+            merchantUsers || [],
+            'email_event_requests'
+        )
         
         // Only send if we have at least one recipient
         if (recipients.length === 0) {

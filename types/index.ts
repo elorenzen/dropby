@@ -170,6 +170,32 @@ export interface Review {
 // USER TYPES
 // ============================================================================
 
+export interface NotificationPreferences {
+  email_event_requests: boolean
+  email_booking_confirmations: boolean
+  email_event_reminders: boolean
+  email_reviews: boolean
+  email_event_invites: boolean
+  sms_event_requests: boolean
+  sms_booking_confirmations: boolean
+  sms_event_reminders: boolean
+  sms_reviews: boolean
+  sms_event_invites: boolean
+}
+
+export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  email_event_requests: true,
+  email_booking_confirmations: true,
+  email_event_reminders: true,
+  email_reviews: true,
+  email_event_invites: true,
+  sms_event_requests: true,
+  sms_booking_confirmations: true,
+  sms_event_reminders: true,
+  sms_reviews: true,
+  sms_event_invites: true,
+}
+
 export interface User {
   id: string
   created_at: string
@@ -188,6 +214,7 @@ export interface User {
   stripe_customer_id: string | null
   current_plan: 'free' | 'pro' | 'premium'
   registered: boolean
+  notification_preferences?: NotificationPreferences | null
 }
 
 // ============================================================================

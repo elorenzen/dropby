@@ -386,8 +386,15 @@
             />
         </div>
 
+        <!-- NOTIFICATIONS TAB -->
+        <div v-if="activeTab === 4" class="space-y-6">
+          <SettingsNotificationSettings
+            @error="(type, msg) => { errType = type; errMsg = msg; errDialog = true }"
+          />
+        </div>
+
         <!-- USER MANAGEMENT TAB (admin only) -->
-        <div v-if="isAdmin && activeTab === 4" class="space-y-6">
+        <div v-if="isAdmin && activeTab === 5" class="space-y-6">
           <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">User Management</h2>
           <AssociatedUsers :businessName="merchant.merchant_name" />
         </div>
@@ -467,6 +474,7 @@ const tabs = computed(() => {
     { label: 'Business Hours', icon: 'pi pi-clock' },
     { label: 'Payments & Financial', icon: 'pi pi-credit-card' },
     { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
+    { label: 'Notifications', icon: 'pi pi-bell' },
   ]
   if (isAdmin.value) {
     baseTabs.push({ label: 'User Management', icon: 'pi pi-users' })

@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
 
         const { data: recipientUsers, error: usersError } = await client
             .from('users')
-            .select('email')
+            .select('email, notification_preferences')
             .eq(recipientBusinessKey, recipientId)
             .eq('available_to_contact', true)
             .not('email', 'is', null)
@@ -76,14 +76,10 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const recipients: string[] = []
-        if (recipientUsers && recipientUsers.length > 0) {
-            recipientUsers.forEach((user: any) => {
-                if (user.email && !recipients.includes(user.email)) {
-                    recipients.push(user.email)
-                }
-            })
-        }
+        const recipients = filterByNotificationPreference(
+            recipientUsers || [],
+            'email_reviews'
+        )
 
         if (recipients.length === 0) {
             return { success: true, skipped: true, message: 'No contactable users found for recipient business' }

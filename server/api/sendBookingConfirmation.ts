@@ -83,40 +83,37 @@ export default defineEventHandler(async (event) => {
             </div>
         `
 
-        // Get all user emails from both merchant and vendor businesses
-        // Users must have available_to_contact = true and email IS NOT NULL
+        // Get all user emails from both merchant and vendor businesses (with notification preferences)
         const recipients: string[] = []
         
         // Get merchant user emails
         const { data: merchantUsers, error: merchantUsersError } = await client
             .from('users')
-            .select('email')
+            .select('email, notification_preferences')
             .eq('associated_merchant_id', query.merchantId)
             .eq('available_to_contact', true)
             .not('email', 'is', null)
         
         if (!merchantUsersError && merchantUsers) {
-            merchantUsers.forEach((user: any) => {
-                if (user.email && !recipients.includes(user.email)) {
-                    recipients.push(user.email)
-                }
-            })
+            filterByNotificationPreference(merchantUsers, 'email_booking_confirmations')
+                .forEach((email) => {
+                    if (!recipients.includes(email)) recipients.push(email)
+                })
         }
         
         // Get vendor user emails
         const { data: vendorUsers, error: vendorUsersError } = await client
             .from('users')
-            .select('email')
+            .select('email, notification_preferences')
             .eq('associated_vendor_id', query.vendorId)
             .eq('available_to_contact', true)
             .not('email', 'is', null)
         
         if (!vendorUsersError && vendorUsers) {
-            vendorUsers.forEach((user: any) => {
-                if (user.email && !recipients.includes(user.email)) {
-                    recipients.push(user.email)
-                }
-            })
+            filterByNotificationPreference(vendorUsers, 'email_booking_confirmations')
+                .forEach((email) => {
+                    if (!recipients.includes(email)) recipients.push(email)
+                })
         }
         
         // Only send if we have at least one recipient
