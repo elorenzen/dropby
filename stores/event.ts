@@ -294,7 +294,7 @@ export const useEventStore = defineStore('event', {
       }
     },
 
-    async requestEvent(eventId: string, vendorId: string, options?: { sendEmail?: boolean }) {
+    async requestEvent(eventId: string, vendorId: string) {
       try {
         // Check usage limit before allowing request
         const usageCheck = await usageService.check({
@@ -376,8 +376,8 @@ export const useEventStore = defineStore('event', {
           }
         }
 
-        // Send email notification if requested
-        if (options?.sendEmail && event.merchant) {
+        // Send email notification to contactable merchant users
+        if (event.merchant) {
           try {
             await $fetch(`/api/sendEventRequestNotification?eventId=${eventId}&vendorId=${vendorId}&merchantId=${event.merchant}`)
           } catch (emailErr) {

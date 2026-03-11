@@ -1062,7 +1062,7 @@ export default {
           throw new Error('Vendor or event information is missing')
         }
         
-        const result = await eventStore.requestEvent(eventOnDay.value.id, vendor.value.id, { sendEmail: true })
+        const result = await eventStore.requestEvent(eventOnDay.value.id, vendor.value.id)
         
         if (!result.success) {
           if (result.error === 'usage_limit') {
@@ -1117,7 +1117,7 @@ export default {
       
       loadingRequest.value = event.id
       try {
-        const result = await eventStore.requestEvent(event.id, vendor.value.id, { sendEmail: true })
+        const result = await eventStore.requestEvent(event.id, vendor.value.id)
         
         if (!result.success) {
           if (result.error === 'usage_limit') {
