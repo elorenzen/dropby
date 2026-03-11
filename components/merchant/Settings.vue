@@ -389,6 +389,7 @@
         <!-- NOTIFICATIONS TAB -->
         <div v-if="activeTab === 4" class="space-y-6">
           <SettingsNotificationSettings
+            businessType="merchant"
             @error="(type, msg) => { errType = type; errMsg = msg; errDialog = true }"
           />
         </div>

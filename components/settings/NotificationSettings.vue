@@ -18,68 +18,19 @@
       </div>
 
       <div class="space-y-5">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Event Requests</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When a vendor requests to work at your event or your request is received</p>
+        <template v-for="(type, index) in notificationTypes" :key="type.key">
+          <Divider v-if="index > 0" />
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium" style="color: var(--p-text-color);">{{ type.label }}</p>
+              <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">{{ type.emailDescription }}</p>
+            </div>
+            <ToggleSwitch
+              :modelValue="preferences[`email_${type.key}` as keyof NotificationPreferences]"
+              @update:modelValue="handleToggle(`email_${type.key}` as keyof NotificationPreferences, $event)"
+            />
           </div>
-          <ToggleSwitch
-            :modelValue="preferences.email_event_requests"
-            @update:modelValue="handleToggle('email_event_requests', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Booking Confirmations</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When an event is confirmed and booked</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.email_booking_confirmations"
-            @update:modelValue="handleToggle('email_booking_confirmations', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Event Reminders</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">Reminder emails before upcoming events (7 days, 1 day, day of)</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.email_event_reminders"
-            @update:modelValue="handleToggle('email_event_reminders', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Reviews</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When you receive a new review or rating</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.email_reviews"
-            @update:modelValue="handleToggle('email_reviews', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Event Invitations</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When you're invited to participate in an event</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.email_event_invites"
-            @update:modelValue="handleToggle('email_event_invites', $event)"
-          />
-        </div>
+        </template>
       </div>
     </div>
 
@@ -94,68 +45,19 @@
       </div>
 
       <div class="space-y-5">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Event Requests</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When a vendor requests to work at your event or your request is received</p>
+        <template v-for="(type, index) in notificationTypes" :key="type.key">
+          <Divider v-if="index > 0" />
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium" style="color: var(--p-text-color);">{{ type.label }}</p>
+              <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">{{ type.smsDescription }}</p>
+            </div>
+            <ToggleSwitch
+              :modelValue="preferences[`sms_${type.key}` as keyof NotificationPreferences]"
+              @update:modelValue="handleToggle(`sms_${type.key}` as keyof NotificationPreferences, $event)"
+            />
           </div>
-          <ToggleSwitch
-            :modelValue="preferences.sms_event_requests"
-            @update:modelValue="handleToggle('sms_event_requests', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Booking Confirmations</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When an event is confirmed and booked</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.sms_booking_confirmations"
-            @update:modelValue="handleToggle('sms_booking_confirmations', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Event Reminders</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">Reminder texts before upcoming events</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.sms_event_reminders"
-            @update:modelValue="handleToggle('sms_event_reminders', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Reviews</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When you receive a new review or rating</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.sms_reviews"
-            @update:modelValue="handleToggle('sms_reviews', $event)"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium" style="color: var(--p-text-color);">Event Invitations</p>
-            <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">When you're invited to participate in an event</p>
-          </div>
-          <ToggleSwitch
-            :modelValue="preferences.sms_event_invites"
-            @update:modelValue="handleToggle('sms_event_invites', $event)"
-          />
-        </div>
+        </template>
       </div>
     </div>
 
@@ -173,7 +75,11 @@
 <script setup lang="ts">
 import type { NotificationPreferences } from '~/types'
 
-const { preferences, updatePreference } = useNotificationPreferences()
+const props = defineProps<{
+  businessType: 'merchant' | 'vendor'
+}>()
+
+const { notificationTypes, preferences, updatePreference } = useNotificationPreferences(props.businessType)
 
 const emit = defineEmits<{
   error: [type: string, message: string]
