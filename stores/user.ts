@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import type { User } from '~/types'
+import type { User, NotificationPreferences } from '~/types'
+import { DEFAULT_NOTIFICATION_PREFERENCES } from '~/types'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -298,6 +299,39 @@ export const useUserStore = defineStore('user', {
         throw error
       } finally {
         this.loading = false
+      }
+    },
+
+    getNotificationPreferences(): NotificationPreferences {
+      return {
+        ...DEFAULT_NOTIFICATION_PREFERENCES,
+        ...(this.user?.notification_preferences || {})
+      }
+    },
+
+    async updateNotificationPreferences(updates: Partial<NotificationPreferences>) {
+      if (!this.user) throw new Error('No user logged in')
+
+      this.updating = true
+      try {
+        const result = await $fetch(`/api/notification-preferences/${this.user.id}`, {
+          method: 'PATCH',
+          body: updates
+        })
+
+        if (this.user) {
+          this.user = {
+            ...this.user,
+            notification_preferences: (result as any).notification_preferences
+          }
+        }
+
+        return (result as any).notification_preferences
+      } catch (error) {
+        console.error('Error updating notification preferences:', error)
+        throw error
+      } finally {
+        this.updating = false
       }
     }
   }

@@ -170,6 +170,104 @@ export interface Review {
 // USER TYPES
 // ============================================================================
 
+export interface NotificationPreferences {
+  email_event_requests: boolean
+  email_booking_confirmations: boolean
+  email_event_reminders: boolean
+  email_reviews: boolean
+  email_event_invites: boolean
+  sms_event_requests: boolean
+  sms_booking_confirmations: boolean
+  sms_event_reminders: boolean
+  sms_reviews: boolean
+  sms_event_invites: boolean
+}
+
+export interface NotificationType {
+  key: string
+  label: string
+  emailDescription: string
+  smsDescription: string
+  businessTypes: ('merchant' | 'vendor')[]
+}
+
+export const NOTIFICATION_TYPES: NotificationType[] = [
+  {
+    key: 'event_requests',
+    label: 'Event Requests',
+    emailDescription: 'When a vendor requests to work at your event or your request is received',
+    smsDescription: 'When a vendor requests to work at your event or your request is received',
+    businessTypes: ['merchant', 'vendor'],
+  },
+  {
+    key: 'booking_confirmations',
+    label: 'Booking Confirmations',
+    emailDescription: 'When an event is confirmed and booked',
+    smsDescription: 'When an event is confirmed and booked',
+    businessTypes: ['merchant', 'vendor'],
+  },
+  {
+    key: 'event_reminders',
+    label: 'Event Reminders',
+    emailDescription: 'Reminder emails before upcoming events (7 days, 1 day, day of)',
+    smsDescription: 'Reminder texts before upcoming events',
+    businessTypes: ['merchant', 'vendor'],
+  },
+  {
+    key: 'reviews',
+    label: 'Reviews',
+    emailDescription: 'When you receive a new review or rating',
+    smsDescription: 'When you receive a new review or rating',
+    businessTypes: ['merchant', 'vendor'],
+  },
+  {
+    key: 'event_invites',
+    label: 'Event Invitations',
+    emailDescription: "When you're invited to participate in an event",
+    smsDescription: "When you're invited to participate in an event",
+    businessTypes: ['vendor'],
+  },
+]
+
+export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  email_event_requests: true,
+  email_booking_confirmations: true,
+  email_event_reminders: true,
+  email_reviews: true,
+  email_event_invites: true,
+  sms_event_requests: false,
+  sms_booking_confirmations: false,
+  sms_event_reminders: false,
+  sms_reviews: false,
+  sms_event_invites: false,
+}
+
+export const MERCHANT_DEFAULT_PREFERENCES: NotificationPreferences = {
+  email_event_requests: true,
+  email_booking_confirmations: true,
+  email_event_reminders: true,
+  email_reviews: true,
+  email_event_invites: false,
+  sms_event_requests: false,
+  sms_booking_confirmations: false,
+  sms_event_reminders: false,
+  sms_reviews: false,
+  sms_event_invites: false,
+}
+
+export const VENDOR_DEFAULT_PREFERENCES: NotificationPreferences = {
+  email_event_requests: true,
+  email_booking_confirmations: true,
+  email_event_reminders: true,
+  email_reviews: true,
+  email_event_invites: true,
+  sms_event_requests: false,
+  sms_booking_confirmations: false,
+  sms_event_reminders: false,
+  sms_reviews: false,
+  sms_event_invites: true,
+}
+
 export interface User {
   id: string
   created_at: string
@@ -188,6 +286,7 @@ export interface User {
   stripe_customer_id: string | null
   current_plan: 'free' | 'pro' | 'premium'
   registered: boolean
+  notification_preferences?: NotificationPreferences | null
 }
 
 // ============================================================================
