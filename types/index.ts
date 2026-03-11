@@ -346,6 +346,27 @@ export interface EventReminder {
 }
 
 // ============================================================================
+// EVENT INVITE TYPES
+// ============================================================================
+
+export type EventInviteStatus = 'pending' | 'accepted' | 'declined'
+
+export interface EventInvite {
+  id: string
+  event_id: string
+  merchant_id: string
+  vendor_id: string | null
+  email: string
+  token: string
+  status: EventInviteStatus
+  external_vendor_name: string | null
+  external_vendor_phone: string | null
+  external_vendor_description: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ============================================================================
 // COMMON TYPES
 // ============================================================================
 
