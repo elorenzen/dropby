@@ -1,11 +1,11 @@
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export default defineEventHandler(async (event) => {
     try {
-        const client = await serverSupabaseClient(event)
+        const client = serverSupabaseServiceRole(event)
         const query = getQuery(event)
 
         // Validate required parameters
@@ -134,7 +134,7 @@ export default defineEventHandler(async (event) => {
 
         return { success: true, data: emailData }
         
-    } catch (error) {
+    } catch (error: any) {
         console.error('Event request notification error:', error)
         return { error: error.message || 'Failed to send event request notification' }
     }
