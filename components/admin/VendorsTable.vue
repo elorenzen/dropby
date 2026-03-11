@@ -8,6 +8,7 @@
     sortField="created_at"
     :sortOrder="-1"
     stripedRows
+    scrollable
     responsiveLayout="scroll"
     dataKey="id"
   >
@@ -106,3 +107,15 @@ const formatDate = (dateStr: string) => {
   })
 }
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
+</style>

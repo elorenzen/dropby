@@ -1,6 +1,6 @@
 <template>
   <div class="bg-surface-card rounded-lg p-4 border border-surface-border">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div class="flex items-center gap-4 min-w-0 flex-1">
         <!-- Vendor Avatar Slot -->
         <slot name="vendor-avatar">

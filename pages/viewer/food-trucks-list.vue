@@ -91,17 +91,17 @@
           <AccordionTab v-for="vendor in filteredVendors" :key="vendor.id">
             <template #header>
               <div class="flex items-center justify-between w-full pr-4">
-                <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                   <NuxtImg
                     :src="vendor.avatar_url || ''"
                     width="60"
                     height="60"
                     loading="lazy"
                     fit="inside"
-                    class="rounded-lg object-cover flex-shrink-0"
+                    class="rounded-lg object-cover flex-shrink-0 w-10 h-10 sm:w-[60px] sm:h-[60px]"
                   />
                   <div class="min-w-0 flex-1">
-                    <h3 class="font-semibold text-lg text-text-main truncate">{{ vendor.vendor_name }}</h3>
+                    <h3 class="font-semibold text-base sm:text-lg text-text-main truncate">{{ vendor.vendor_name }}</h3>
                     <div v-if="isAuthenticated" class="flex items-center gap-2 mt-1">
                       <div class="flex items-center gap-0.5">
                         <i 
@@ -134,7 +134,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
+                <div class="hidden sm:flex items-center gap-2 flex-shrink-0">
                   <Badge 
                     v-if="vendorEventsMap[vendor.id]?.length > 0"
                     :value="`${vendorEventsMap[vendor.id]?.length} event${vendorEventsMap[vendor.id]?.length !== 1 ? 's' : ''}`"

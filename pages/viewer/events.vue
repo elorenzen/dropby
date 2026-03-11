@@ -126,7 +126,7 @@
 
     <div v-if="filteredEvents.length > 0" class="space-y-6">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-semibold text-text-main">Events Near You</h2>
+        <h2 class="text-xl sm:text-2xl font-semibold text-text-main">Events Near You</h2>
       </div>
 
       <!-- Map and Events Layout -->
@@ -236,7 +236,7 @@
               <p class="text-sm text-text-muted">{{ filteredEvents.length }} events found</p>
             </div>
             
-            <div class="h-[600px] overflow-y-auto">
+            <div class="h-[400px] lg:h-[600px] overflow-y-auto">
               <div 
                 v-for="event in filteredEvents" 
                 :key="event.id" 

@@ -1,14 +1,33 @@
 <template>
   <div class="min-h-screen" style="background: var(--p-surface-ground); color: var(--p-text-color);">
     <!-- Header -->
-    <div class="border-b px-8 py-6" style="border-color: var(--p-surface-border);">
-      <h1 class="text-3xl font-bold mb-1" style="color: var(--p-text-color);">Vendor Settings</h1>
+    <div class="border-b px-4 sm:px-8 py-4 sm:py-6" style="border-color: var(--p-surface-border);">
+      <h1 class="text-2xl sm:text-3xl font-bold mb-1" style="color: var(--p-text-color);">Vendor Settings</h1>
       <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">Manage your business profile, hours, menu, and associated users</p>
     </div>
 
+    <!-- Mobile Tab Navigation -->
+    <div class="md:hidden overflow-x-auto border-b" style="border-color: var(--p-surface-border);">
+      <div class="flex min-w-max">
+        <button
+          v-for="(tab, index) in tabs"
+          :key="index"
+          @click="activeTab = index"
+          class="flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+          :class="activeTab === index ? 'border-primary' : 'border-transparent'"
+          :style="activeTab === index 
+            ? 'color: var(--primary-color); border-color: var(--primary-color);' 
+            : 'color: var(--text-md-gray);'"
+        >
+          <i :class="tab.icon"></i>
+          <span>{{ tab.label }}</span>
+        </button>
+      </div>
+    </div>
+
     <div class="flex">
-      <!-- Sidebar Navigation -->
-      <div class="w-64 border-r min-h-screen" style="border-color: var(--p-surface-border);">
+      <!-- Sidebar Navigation (desktop only) -->
+      <div class="hidden md:block w-64 border-r min-h-screen" style="border-color: var(--p-surface-border);">
         <nav class="p-6">
           <ul class="space-y-2">
             <li v-for="(tab, index) in tabs" :key="index">
@@ -31,14 +50,14 @@
       </div>
 
       <!-- Main Content -->
-      <div class="flex-1 p-8">
+      <div class="flex-1 p-4 sm:p-8">
         <!-- GENERAL INFORMATION TAB -->
         <div v-if="activeTab === 0" class="space-y-6">
           <h2 class="text-2xl font-bold text-text-main mb-6">General Information</h2>
           
-          <div class="flex gap-8">
+          <div class="flex flex-col md:flex-row gap-6 md:gap-8">
             <!-- Image Upload Section -->
-            <div class="w-1/3">
+            <div class="w-full md:w-1/3">
               <div class="bg-surface-card rounded-lg p-4 mb-4">
                 <NuxtImg 
                   :src="imageUrl || '/placeholder-vendor.jpg'" 
@@ -60,8 +79,8 @@
             </div>
 
             <!-- Form Fields -->
-            <div class="w-2/3 space-y-6">
-              <div class="grid grid-cols-2 gap-6">
+            <div class="w-full md:w-2/3 space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <!-- Name -->
                 <div>
                   <label class="block text-sm font-medium text-text-muted mb-2">Name</label>
@@ -200,7 +219,7 @@
           
           <div class="space-y-4">
             <div v-for="(day, index) in businessHours" :key="index" class="border-b border-surface-light pb-4 last:border-b-0">
-              <div class="grid grid-cols-4 gap-6 items-center">
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6 items-center">
                 <div class="text-lg font-semibold text-text-main">{{ day.name }}</div>
                 <div>
                   <label class="block text-sm font-medium text-text-muted mb-2">{{ day.name }} Open</label>

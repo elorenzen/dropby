@@ -1,6 +1,6 @@
 <template>
   <div :class="['rounded-lg border', paddingClass, borderClass]">
-    <div class="flex items-start gap-4">
+    <div class="flex flex-col sm:flex-row items-start gap-4">
       <!-- Left: Reviewer/Recipient Data -->
       <div class="flex items-center gap-3 min-w-0 flex-shrink-0">
         <NuxtImg 
@@ -16,19 +16,19 @@
       </div>
       
       <!-- Middle: Review Content or Empty -->
-      <div v-if="comment || $slots.middle" class="flex-1 min-w-0 border-l border-r border-surface-border px-4">
+      <div v-if="comment || $slots.middle" class="flex-1 min-w-0 border-t sm:border-t-0 sm:border-l sm:border-r border-surface-border pt-3 sm:pt-0 sm:px-4">
         <slot name="middle">
           <p v-if="comment" class="text-sm leading-relaxed italic">"{{ comment }}"</p>
         </slot>
       </div>
       
       <!-- Right: Review Metadata or Actions -->
-      <div class="flex flex-col items-end gap-2 min-w-0 flex-shrink-0">
+      <div class="flex flex-col items-start sm:items-end gap-2 min-w-0 flex-shrink-0 w-full sm:w-auto">
         <div class="flex items-center gap-2">
           <Rating v-if="rating !== undefined && rating > 0" :model-value="rating" readonly :cancel="false" />
           <slot name="actions" />
         </div>
-        <p v-if="createdAt" class="text-xs text-text-muted text-right">Reviewed on {{ new Date(createdAt).toLocaleDateString() }}</p>
+        <p v-if="createdAt" class="text-xs text-text-muted sm:text-right">Reviewed on {{ new Date(createdAt).toLocaleDateString() }}</p>
       </div>
     </div>
   </div>

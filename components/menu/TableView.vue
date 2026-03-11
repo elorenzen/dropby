@@ -6,7 +6,7 @@
                 <p class="m-0">{{ vendor.vendor_description }}</p>
             </template>
         </Card>
-        <DataTable :value="menuItems" class="m-4" size="small">
+        <DataTable :value="menuItems" class="m-4" size="small" scrollable>
             <Column field="name" header="Menu Item" sortable></Column>
             <Column header="Image">
                 <template #body="{ data }">
@@ -71,5 +71,13 @@ const formatCurrency = (value:any) => {
 </script>
 
 <style scoped>
-
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
 </style>

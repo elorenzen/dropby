@@ -5,7 +5,7 @@
     :closable="true"
     :dismissable-mask="true"
     @update:visible="$emit('update:visible', $event)"
-    class="w-full max-w-4xl"
+    :style="{ width: '90vw', maxWidth: '56rem' }"
   >
     <template #header>
       <div class="flex items-center gap-3">

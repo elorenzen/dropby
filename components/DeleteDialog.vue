@@ -3,7 +3,7 @@
         :visible="visible" 
         modal 
         :header="`Delete ${itemType}`" 
-        :style="{ width: '28rem' }"
+        :style="{ width: '90vw', maxWidth: '28rem' }"
         class="delete-dialog"
         :closable="true"
         :closeOnEscape="true"

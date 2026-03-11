@@ -104,7 +104,7 @@
     </Dialog>
 
     <!-- Event Details Dialog - Only show if there's a single event -->
-    <Dialog v-if="eventOnDay && (!eventsOnDay || eventsOnDay.length < 3)" :visible="dayViewDialog && !multipleEventsDialog" @update:visible="(val) => { dayViewDialog = val; if (!val) multipleEventsDialog = false; }" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '42rem' }">
+    <Dialog v-if="eventOnDay && (!eventsOnDay || eventsOnDay.length < 3)" :visible="dayViewDialog && !multipleEventsDialog" @update:visible="(val) => { dayViewDialog = val; if (!val) multipleEventsDialog = false; }" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '90vw', maxWidth: '42rem' }">
       <!-- MERCHANT VIEW - BOOKED EVENT -->
       <div v-if="userType === 'merchant' && (eventOnDay.status === 'booked' || eventOnDay.status === 'completed' || eventOnDay.status === 'closed')" class="space-y-4">
         <!-- Event Time and Status -->
@@ -186,7 +186,7 @@
           <p class="text-sm font-medium text-primary-dark">
             {{ eventOnDay.pending_requests?.length || 0 }} vendor{{ (eventOnDay.pending_requests?.length || 0) !== 1 ? 's' : '' }} requesting this event:
           </p>
-          <div v-for="vendorId in eventOnDay.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-primary-light rounded-lg border border-primary-light">
+          <div v-for="vendorId in eventOnDay.pending_requests" :key="vendorId" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-primary-light rounded-lg border border-primary-light">
             <div class="flex items-center gap-3">
               <NuxtImg 
                 :src="getVendorProp(vendorId, 'avatar_url')" 
@@ -352,7 +352,7 @@
       </div>
     </Dialog>
 
-    <Dialog v-if="usageLimitReached" :visible="usageLimitReached" @update:visible="usageLimitReached = $event" modal :style="{ width: '32rem' }">
+    <Dialog v-if="usageLimitReached" :visible="usageLimitReached" @update:visible="usageLimitReached = $event" modal :style="{ width: '90vw', maxWidth: '32rem' }">
       <template #header>
         <div class="flex items-center gap-3">
           <span class="text-xl font-semibold">Monthly Limit Exceeded</span>

@@ -56,7 +56,7 @@
           <!-- Compliance Summary -->
           <div class="bg-surface-section rounded-lg p-4">
             <h4 class="font-medium text-color mb-3">Compliance Summary</h4>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div class="text-center">
                 <div class="text-2xl font-bold text-success">
                   {{ complianceStore.complianceScore }}%
@@ -169,7 +169,7 @@
             />
           </div>
           
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-color mb-2">Issue Date</label>
               <Calendar 

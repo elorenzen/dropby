@@ -9,7 +9,7 @@
                 <Step value="5" :disabled="!step1Valid || !step2Valid || !step3Valid || !step4Valid">Review</Step>
             </StepList>
             <StepPanels>
-                <StepPanel v-slot="{ activateCallback }" value="1" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="1" class="p-4 sm:p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">What type of business are you?</h2>
                         <p class="text-color-secondary">This helps us customize your experience</p>
@@ -67,14 +67,14 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="2" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="2" class="p-4 sm:p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Tell us about yourself</h2>
                         <p class="text-color-secondary">Primary contact information</p>
                     </div>
                     <div class="flex flex-col">
                         <Fluid>
-                            <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <FloatLabel variant="on">
                                         <InputText id="first_name" v-model="first" @blur="validateStep2" />
@@ -104,7 +104,7 @@
                                     <p v-if="step2Errors.phone" class="text-error text-xs mt-1">{{ step2Errors.phone }}</p>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                                 <div class="flex items-center gap-3">
                                     <label class="text-color">Is Admin</label>
                                     <InputSwitch v-model="isAdmin" :disabled="true" />
@@ -128,7 +128,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="3" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="3" class="p-4 sm:p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Business Information</h2>
                         <p class="text-color-secondary">Tell us about your {{ type }}</p>
@@ -147,7 +147,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="4" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="4" class="p-4 sm:p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div v-if="type" class="plan-selection-container">
                         <div class="text-center mb-6">
                             <h2 class="text-3xl font-bold text-color mb-2">Choose Your Plan</h2>
@@ -214,7 +214,7 @@
                         />
                     </div>
                 </StepPanel>
-                <StepPanel v-slot="{ activateCallback }" value="5" class="p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
+                <StepPanel v-slot="{ activateCallback }" value="5" class="p-4 sm:p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold mb-4">Review Your Information</h2>
                         <p class="text-color-secondary">Please review before submitting</p>
@@ -263,7 +263,7 @@
                         <h4 class="text-xl font-bold mb-4">Create Your Account</h4>
                         <p class="text-color-secondary mb-4">Set a password to complete your registration</p>
                         <Fluid>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <FloatLabel variant="on">
                                         <InputText id="signup_email" :model-value="signupEmail" type="email" disabled />

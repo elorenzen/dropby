@@ -20,14 +20,14 @@
     <template #content>
       <div class="space-y-6">
         <!-- Search Bar and Sort By Section -->
-        <div v-if="hasSearchBarSlot || hasSortBySlot" class="flex items-end gap-4">
+        <div v-if="hasSearchBarSlot || hasSortBySlot" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
           <!-- Search Bar Slot - takes remaining space -->
           <div v-if="hasSearchBarSlot" class="flex-1">
             <slot name="search-bar"></slot>
           </div>
           
-          <!-- Sort By Slot (optional) - fixed width -->
-          <div v-if="hasSortBySlot" class="w-48">
+          <!-- Sort By Slot (optional) - fixed width on desktop -->
+          <div v-if="hasSortBySlot" class="w-full sm:w-48">
             <slot name="sort-by"></slot>
           </div>
         </div>

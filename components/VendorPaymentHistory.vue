@@ -120,6 +120,7 @@
         class="w-full"
         stripedRows
         showGridlines
+        scrollable
         responsiveLayout="scroll"
         emptyMessage="No payments found. Payments will appear here once you complete events."
         sortField="date"
@@ -467,3 +468,15 @@ onMounted(() => {
   loadPayments()
 })
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
+</style>

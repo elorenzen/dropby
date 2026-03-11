@@ -2,6 +2,7 @@
   <DataTable
       :value="merchants"
       sortField="average_vendor_rating" :sort-order="-1"
+      scrollable
   >
       <Column field="merchant_name" header="Merchant" sortable>
           <template #body="slotProps">
@@ -108,5 +109,13 @@ const getDistance = (coordinates: any) => {
 </script>
 
 <style lang="scss" scoped>
-
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
 </style>

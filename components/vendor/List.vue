@@ -5,6 +5,7 @@
         :sort-order="-1"
         :expandedRows="expandedRows"
         dataKey="id"
+        scrollable
         @rowExpand="onRowExpand"
         @rowCollapse="onRowCollapse"
     >
@@ -20,17 +21,17 @@
                 <p class="m-0 font-semibold">{{ slotProps.data.vendor_name }}</p>
             </template>
         </Column>
-        <Column field="cuisine" header="Cuisine">
+        <Column field="cuisine" header="Cuisine" class="hidden sm:table-cell">
             <template #body="slotProps">
                 <Badge class="mx-1" v-for="(i, index) in slotProps.data.cuisine" :key="`${i}-${index}`">{{ i }}</Badge>
             </template>
         </Column>
-        <Column field="average_merchant_rating" header="Rating" :sortable="true">
+        <Column field="average_merchant_rating" header="Rating" :sortable="true" class="hidden md:table-cell">
             <template #body="slotProps">
                 <Rating v-model="slotProps.data.average_merchant_rating" />
             </template>
         </Column>
-        <Column field="socials" header="">
+        <Column field="socials" header="" class="hidden sm:table-cell">
             <template #body="slotProps">
                 <Button
                     as="a"
@@ -84,5 +85,13 @@ const collapseAll = () => {
 </script>
 
 <style lang="scss" scoped>
-
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
 </style>

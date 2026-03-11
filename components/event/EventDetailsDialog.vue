@@ -12,7 +12,7 @@
           <h2 class="text-3xl font-bold text-color mb-3 leading-tight">
             {{ getMerchantProp(event.merchant, 'merchant_name') || 'Unknown Merchant' }} | {{ getVendorProp(event.vendor, 'vendor_name') || 'Unknown Vendor' }}
           </h2>
-          <div class="flex items-center gap-6 text-base">
+          <div class="flex flex-wrap items-center gap-3 sm:gap-6 text-base">
             <div class="flex items-center gap-2">
               <i class="pi pi-calendar text-md-gray"></i>
               <span class="text-md-gray">{{ formatDate(event.start, { format: 'long' }) }}</span>
@@ -125,7 +125,7 @@
             </div>
             
             <!-- Secondary Actions -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button 
                 label="Share Event" 
                 icon="pi pi-share-alt" 

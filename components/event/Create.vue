@@ -35,7 +35,7 @@
       </div>
 
               <!-- Event Time Range -->
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-3">
             <label class="block text-sm font-medium text-text-main">Start Time *</label>
             <DatePicker 

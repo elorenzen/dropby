@@ -1,7 +1,7 @@
 <template>
-    <div class="card">
+    <div class="card p-2 sm:p-4">
     <Tabs v-model:value="value">
-        <TabList>
+        <TabList class="overflow-x-auto">
             <Tab value="0">Analytics</Tab>
             <Tab value="1">Users</Tab>
             <Tab value="2">Establishments</Tab>
@@ -240,8 +240,10 @@ watch(value, async (newVal) => {
 
 .feedback-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
     margin-bottom: 1rem;
 }
 

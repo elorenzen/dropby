@@ -4,7 +4,7 @@
             visible
             modal
             :header="`${errorType} Error`"
-            :style="{ width: '25rem' }"
+            :style="{ width: '90vw', maxWidth: '25rem' }"
         >
             <div class="flex items-center gap-4 mb-4">
                 <label>{{ errorMessage }}.</label>

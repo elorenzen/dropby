@@ -2,7 +2,7 @@
   <div class="one-time-payment-container">
     <!-- Payment Required Banner -->
     <div v-if="showPaymentRequired" class="payment-required-banner">
-      <div class="flex items-center gap-3 p-4 bg-accent-light border border-accent-light rounded-lg">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-accent-light border border-accent-light rounded-lg">
         <i class="pi pi-exclamation-triangle text-accent text-xl"></i>
         <div class="flex-1">
           <h3 class="font-semibold text-accent-dark">Free Plan Limit Reached</h3>
@@ -11,16 +11,18 @@
             {{ actionType === 'events' ? 'Create' : 'Request' }} one more for ${{ oneTimeFee }} or upgrade to a paid plan.
           </p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 w-full sm:w-auto">
           <Button
             :label="`Pay $${oneTimeFee}`"
             severity="warning"
             @click="showPaymentDialog = true"
+            class="flex-1 sm:flex-initial"
           />
           <Button
             label="Upgrade Plan"
             outlined
             @click="showUpgradeDialog = true"
+            class="flex-1 sm:flex-initial"
           />
         </div>
       </div>
@@ -32,7 +34,7 @@
       @update:visible="showPaymentDialog = $event"
       modal
       header="One-Time Payment"
-      :style="{ width: '30rem' }"
+      :style="{ width: '90vw', maxWidth: '30rem' }"
     >
       <div class="space-y-4">
         <div class="text-center">
@@ -100,7 +102,7 @@
       @update:visible="showUpgradeDialog = $event"
       modal
       header="Upgrade Your Plan"
-      :style="{ width: '40rem' }"
+      :style="{ width: '90vw', maxWidth: '40rem' }"
     >
       <SubscriptionPlans
         :business-type="businessType"

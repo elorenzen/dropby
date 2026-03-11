@@ -17,7 +17,7 @@
     <Message v-if="successMsg" severity="success" :closable="true" @close="successMsg = ''">{{ successMsg }}</Message>
 
     <!-- Table -->
-    <DataTable :value="betaTesters" :loading="loading" stripedRows responsiveLayout="scroll">
+    <DataTable :value="betaTesters" :loading="loading" stripedRows scrollable responsiveLayout="scroll">
       <Column field="email" header="Email" sortable>
         <template #body="{ data }">
           <template v-if="editingId === data.id">
@@ -157,3 +157,15 @@ async function deleteBetaTester(id: string) {
 
 onMounted(fetchBetaTesters)
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
+</style>
