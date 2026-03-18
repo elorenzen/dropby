@@ -387,6 +387,11 @@ const createEvent = async () => {
       // Don't fail the event creation if usage tracking fails
     }
 
+    // Capture any valid email left in the input field that wasn't explicitly added
+    if (inviteVendors.value && externalEmailInput.value.trim()) {
+      addExternalEmail()
+    }
+
     // Send vendor invites if enabled
     const hadInvites = inviteVendors.value
     const inviteCount = selectedVendors.value.length + externalEmails.value.length
