@@ -39,6 +39,7 @@ export default defineNuxtConfig({
     superadminEmail: process.env.SUPERADMIN_EMAIL || '',
     public: {
       appEnv,
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://dropby.dev',
       autocomplete: process.env.GEO_KEY,
       gMapKey: process.env.GMAPS_API_KEY,
       GQL_HOST: 'https://spacex-api-2gl6xp7kua-ue.a.run.app/query',

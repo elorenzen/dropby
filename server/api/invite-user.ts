@@ -6,6 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseServiceRole(event)
+    const config = useRuntimeConfig(event)
     const body = await readBody(event)
 
     const { email, firstName, lastName, phone, isAdmin, availableToContact, type, associatedMerchantId, associatedVendorId, businessName } = body
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create auth user via Supabase admin API with invite
-    const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://dropby.dev'
+    const siteUrl = (config.public.siteUrl || 'https://dropby.dev').replace(/\/+$/, '')
     const redirectTo = `${siteUrl}/reset-password`
 
     const { data: authData, error: authError } = await client.auth.admin.inviteUserByEmail(email, {

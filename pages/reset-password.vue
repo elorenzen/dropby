@@ -74,6 +74,9 @@ const supabase = useSupabaseClient()
 const router = useRouter()
 const route = useRoute()
 const user = useSupabaseUser()
+const config = useRuntimeConfig()
+const baseSiteUrl = (config.public.siteUrl as string || 'https://dropby.dev').replace(/\/+$/, '')
+const expectedResetUrl = `${baseSiteUrl}/reset-password`
 
 const loading = ref(false)
 const errDialog = ref(false)
@@ -92,7 +95,7 @@ const checkingAuth = ref(true)
 
 // Check authentication status and handle URL parameters
 onMounted(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     const hash = window.location.hash
     const query = route.query
     
@@ -198,7 +201,7 @@ onMounted(async () => {
       
       // No authentication found
       console.warn('❌ User is not authenticated')
-      errMsg.value = 'Unable to verify password reset link. Please ensure your Supabase redirect URL (http://localhost:3000/reset-password) is configured in Supabase Dashboard → Authentication → URL Configuration → Redirect URLs, then request a new password reset link.'
+      errMsg.value = `Unable to verify password reset link. Please ensure your Supabase redirect URL (${expectedResetUrl}) is configured in Supabase Dashboard -> Authentication -> URL Configuration -> Redirect URLs, then request a new password reset link.`
       errDialog.value = true
       checkingAuth.value = false
       setTimeout(() => {
