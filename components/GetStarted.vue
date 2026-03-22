@@ -309,13 +309,8 @@
 </template>
 
 <script setup lang="ts">
-import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import { merchantPlans, vendorPlans, type Plan } from '~/constants/subscriptionPlans'
-import { subscriptionService } from '~/services/api/subscriptionService'
-
-const supabase = useSupabaseClient()
-const authUser = useSupabaseUser()
 const route = useRoute()
 
 // Step 1: Business Type
@@ -598,156 +593,46 @@ const submit = async () => {
     }
 
     submitting.value = true
-    const typeId = uuidv4()
 
     try {
-        // Create account first to get user ID
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email.value, // Use email from Step 2
-            password: signupPassword.value
-        })
-        
-        if (authError) {
-            throwErr('Account Creation', authError.message)
-            submitting.value = false
-            return
-        }
-        
-        if (!authData.user?.id) {
-            throwErr('Account Creation', 'Failed to create account')
-            submitting.value = false
-            return
-        }
-        
-        const userId = authData.user.id
-        
-        // Sync email value
-        email.value = signupEmail.value
-        // Create user in database
-    const userObj = {
-        id: userId,
-            created_at: new Date().toISOString(),
-        first_name: first.value,
-        last_name: last.value,
-        email: email.value,
-        phone: phone.value,
-        is_admin: isAdmin.value,
-        type: type.value,
-        associated_merchant_id: type.value === 'merchant' ? typeId : null,
-        associated_vendor_id: type.value === 'vendor' ? typeId : null,
-        available_to_contact: available.value
-    }
-        const userStore = useUserStore()
-        const userData = await userStore.createUser(userObj)
-        
-        if (!userData) {
-            throwErr('User Creation', 'Failed to create user')
+        const selected = selectedPlan.value
+        if (!selected) {
+            throwErr('Plan Selection', 'Please select a subscription plan')
             return
         }
 
-        // Create business record
-        const businessObj = {
-            id: typeId,
-            created_at: new Date().toISOString(),
-            [`${type.value}_name`]: bizName.value,
-            [`${type.value}_description`]: bizDesc.value,
-            website: website.value,
-            instagram: ig.value,
-            phone: bizPhone.value,
-            email: bizEmail.value,
-            avatar_url: imageUrl.value
-        }
-
-        // Add type-specific fields
-        if (type.value === 'merchant') {
-            Object.assign(businessObj, {
-                address_components: addressComponents.value,
-                coordinates: coordinates.value,
-                formatted_address: formattedAddress.value,
-                address_url: addressUrl.value
-            })
-        } else if (type.value === 'vendor') {
-            Object.assign(businessObj, {
-                cuisine: cuisine.value
-            })
-        }
-
-        let businessData
-        if (type.value === 'merchant') {
-            const merchantStore = useMerchantStore()
-            businessData = await merchantStore.createMerchant(businessObj)
-        } else if (type.value === 'vendor') {
-            const vendorStore = useVendorStore()
-            businessData = await vendorStore.createVendor(businessObj)
-        }
-        
-        if (!businessData) {
-            throwErr('Business Creation', 'Failed to create business')
-            return
-        }
-
-        // Get the business's stripe_customer_id if it exists
-        // The business was just created, so get it from the returned data
-        let stripeCustomerId: string | null = null
-        try {
-            if (businessData) {
-                stripeCustomerId = (businessData as any).stripe_customer_id || null
-            }
-        } catch (error: any) {
-            console.error('Error getting business stripe_customer_id:', error)
-            // Continue without Stripe customer ID for free subscription
-        }
-
-        // Create subscription based on selected plan
-        let subscriptionData: any = null
-        let subscriptionErr: any = null
-
-        if (selectedPlan.value && selectedPlan.value.price > 0) {
-            // Create paid subscription with allow_incomplete (no payment method yet)
-            // This creates a subscription with status 'incomplete'/'unpaid' in Stripe
-            try {
-                const response = await subscriptionService.create({
-                    planType: selectedPlan.value.id,
-                    stripePriceId: selectedPlan.value.stripePriceId
-                    // No paymentMethodId - this creates an incomplete/unpaid subscription
-                })
-                
-                if (response.success) {
-                    subscriptionData = response.subscription
-                } else {
-                    subscriptionErr = new Error('Failed to create subscription')
+        await $fetch('/api/onboarding/create-account', {
+            method: 'POST',
+            body: {
+                type: type.value,
+                firstName: first.value,
+                lastName: last.value,
+                email: email.value,
+                phone: phone.value,
+                isAdmin: isAdmin.value,
+                availableToContact: available.value,
+                password: signupPassword.value,
+                business: {
+                    name: bizName.value,
+                    description: bizDesc.value,
+                    website: website.value,
+                    instagram: ig.value,
+                    phone: bizPhone.value,
+                    email: bizEmail.value,
+                    avatarUrl: imageUrl.value,
+                    addressComponents: addressComponents.value,
+                    coordinates: coordinates.value,
+                    formattedAddress: formattedAddress.value,
+                    addressUrl: addressUrl.value,
+                    cuisine: cuisine.value
+                },
+                plan: {
+                    id: selected.id,
+                    price: selected.price,
+                    stripePriceId: selected.stripePriceId
                 }
-            } catch (error: any) {
-                console.error('Error creating paid subscription:', error)
-                subscriptionErr = error
             }
-        } else {
-            // Create free subscription
-            const { createFreeSubscription } = useSubscription()
-            const { data, error } = await createFreeSubscription(
-                typeId, 
-                type.value, 
-                userId, 
-                stripeCustomerId || undefined
-            )
-            subscriptionData = data
-            subscriptionErr = error
-        }
-
-        if (subscriptionErr) {
-            console.error('Failed to create subscription:', subscriptionErr)
-            // Don't fail the whole operation if subscription creation fails
-            // The business was created successfully
-        } else if (subscriptionData?.id) {
-            // Update business with subscription ID using store action
-            if (type.value === 'merchant') {
-                const merchantStore = useMerchantStore()
-                await merchantStore.updateMerchant(typeId, { subscription_id: subscriptionData.id })
-            } else if (type.value === 'vendor') {
-                const vendorStore = useVendorStore()
-                await vendorStore.updateVendor(typeId, { subscription_id: subscriptionData.id })
-            }
-        }
+        })
 
         // Success
         snackbar.value = true
@@ -756,9 +641,9 @@ const submit = async () => {
         // Always redirect to homepage - payment will be collected after sign-in
         await navigateTo('/')
         
-    } catch (err) {
+    } catch (err: any) {
         console.error('Submission error:', err)
-        throwErr('Submission Error', 'An unexpected error occurred')
+        throwErr('Submission Error', err?.statusMessage || err?.message || 'An unexpected error occurred')
     } finally {
     submitting.value = false
 }

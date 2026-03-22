@@ -29,15 +29,18 @@ export const useTimelineStore = defineStore('timeline', {
           .select()
           .single()
 
-        if (error) throw error
+        if (error) {
+          console.warn('Timeline insert skipped:', error)
+          return null
+        }
 
         // Add to local state
         this.timeline.unshift(data)
         
         return data
       } catch (error) {
-        console.error('Error creating timeline item:', error)
-        throw error
+        console.warn('Timeline insert failed:', error)
+        return null
       } finally {
         this.creating = false
       }

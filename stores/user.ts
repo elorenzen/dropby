@@ -225,11 +225,11 @@ export const useUserStore = defineStore('user', {
           .from('users')
           .select('*')
           .eq('id', userId)
-          .single()
+          .maybeSingle()
 
         if (error) throw error
-        
-        return data
+
+        return data ?? null
       } catch (error) {
         console.error('Error loading user:', error)
         throw error
@@ -288,12 +288,12 @@ export const useUserStore = defineStore('user', {
           .from('users')
           .select('*')
           .eq('id', userId)
-          .single()
+          .maybeSingle()
 
         if (error) throw error
-        
-        this.user = data
-        return data
+
+        this.user = data ?? null
+        return data ?? null
       } catch (error) {
         console.error('Error loading user:', error)
         throw error
