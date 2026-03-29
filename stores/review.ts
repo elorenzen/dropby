@@ -57,6 +57,11 @@ export const useReviewStore = defineStore('review', {
 
     // New actions to replace direct Supabase calls
     async createReview(reviewData: Partial<Review>) {
+      const subscriptionStore = useSubscriptionStore()
+      if (!subscriptionStore.canCreatePostEventReviews) {
+        throw new Error('Post-event reviews are available on Pro and Premium plans.')
+      }
+
       this.creating = true
       try {
         const supabase = useSupabaseClient()

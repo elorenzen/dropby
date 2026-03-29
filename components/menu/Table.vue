@@ -1,5 +1,14 @@
 <template>
     <div class="space-y-6">
+        <Message
+            v-if="!canUseMenuRichContent"
+            severity="info"
+            :closable="false"
+            class="text-sm"
+        >
+            Free plan: add menu items with name, price, and category. Upgrade to Pro or Premium for photos,
+            descriptions, and seasonal items.
+        </Message>
         <!-- Header Section -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -81,13 +90,20 @@
                 @click="openEditDialog(item)"
             >
                 <template #header>
-                    <div class="relative">
+                    <div class="relative h-48 rounded-t-lg overflow-hidden bg-surface-ground">
                         <NuxtImg 
-                            :src="item.image_url || ''" 
-                            :alt="item.name || ''" 
-                            class="w-full h-48 object-cover rounded-t-lg"
+                            v-if="item.image_url"
+                            :src="item.image_url" 
+                            :alt="item.name || 'Menu item'" 
+                            class="w-full h-48 object-cover"
                             loading="lazy"
                         />
+                        <div
+                            v-else
+                            class="w-full h-48 flex items-center justify-center text-text-muted text-sm"
+                        >
+                            No photo
+                        </div>
                         <div class="absolute top-2 right-2">
                             <Tag 
                                 :value="item.type" 
@@ -136,9 +152,15 @@
                     <template #body="{ data }">
                         <div class="flex items-center gap-3">
                             <NuxtImg 
+                                v-if="data.image_url"
                                 :src="data.image_url" 
-                                :alt="data.name" 
+                                :alt="data.name || 'Menu item'" 
                                 class="w-12 h-12 rounded object-cover"
+                            />
+                            <div
+                                v-else
+                                class="w-12 h-12 rounded bg-surface-ground border border-surface-border shrink-0"
+                                aria-hidden="true"
                             />
                             <div>
                                 <div class="font-semibold">{{ data.name }}</div>
@@ -206,6 +228,8 @@ const store        = useMenuStore()
 
 const user:any     = ref(userStore.user)
 const vendorId     = user.value.associated_vendor_id
+const subscriptionStore = useSubscriptionStore()
+const canUseMenuRichContent = computed(() => subscriptionStore.canUseMenuRichContent)
 
 const menuItems    = computed(() => store.menuItems.filter((i:any) => i.vendor_id === vendorId))
 

@@ -26,3 +26,4 @@ logs
 MVP_ROADMAP.md
 SETUP_SMTP.md
 .env*.production
+docs/

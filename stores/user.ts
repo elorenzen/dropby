@@ -199,16 +199,77 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       try {
         const supabase = useSupabaseClient()
-        
+
         const { data, error } = await supabase
           .from('users')
           .select('*')
           .order('created_at', { ascending: false })
 
         if (error) throw error
-        
-        this.users = data || []
-        return data
+
+        const users = data || []
+
+        const businessIds = [
+          ...new Set(
+            users
+              .flatMap((u) => [u.associated_merchant_id, u.associated_vendor_id])
+              .filter((id): id is string => !!id)
+          )
+        ]
+
+        const planByBusinessId = new Map<string, 'free' | 'pro' | 'premium'>()
+
+        if (businessIds.length > 0) {
+          const { data: subs, error: subError } = await supabase
+            .from('subscriptions')
+            .select('business_id, plan_type, created_at')
+            .in('business_id', businessIds)
+            .order('created_at', { ascending: false })
+
+          if (subError) {
+            console.warn('Could not load subscriptions for admin plan column:', subError.message)
+          } else {
+            for (const row of subs || []) {
+              const bid = row.business_id as string
+              if (!bid || planByBusinessId.has(bid)) continue
+              const pt = row.plan_type as 'free' | 'pro' | 'premium'
+              if (pt === 'free' || pt === 'pro' || pt === 'premium') {
+                planByBusinessId.set(bid, pt)
+              }
+            }
+          }
+        }
+
+        let betaEmails = new Set<string>()
+        const { data: betaRows, error: betaError } = await supabase
+          .from('beta_testers')
+          .select('email')
+
+        if (betaError) {
+          console.warn('Could not load beta testers for admin list:', betaError.message)
+        } else {
+          betaEmails = new Set(
+            (betaRows || []).map((r: { email: string }) => (r.email || '').toLowerCase()).filter(Boolean)
+          )
+        }
+
+        this.users = users.map((u) => {
+          const bid =
+            u.type === 'merchant'
+              ? u.associated_merchant_id
+              : u.type === 'vendor'
+                ? u.associated_vendor_id
+                : null
+          const fromSub = bid ? planByBusinessId.get(bid) : undefined
+          const emailKey = (u.email || '').toLowerCase()
+          const isBeta = betaEmails.has(emailKey)
+          const current_plan = isBeta
+            ? 'premium'
+            : (fromSub ?? u.current_plan ?? 'free')
+          return { ...u, current_plan, is_beta_tester: isBeta }
+        })
+
+        return this.users
       } catch (error) {
         console.error('Error loading users:', error)
         throw error

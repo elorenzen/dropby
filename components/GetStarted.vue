@@ -601,42 +601,48 @@ const submit = async () => {
             return
         }
 
-        await $fetch('/api/onboarding/create-account', {
-            method: 'POST',
-            body: {
-                type: type.value,
-                firstName: first.value,
-                lastName: last.value,
-                email: email.value,
-                phone: phone.value,
-                isAdmin: isAdmin.value,
-                availableToContact: available.value,
-                password: signupPassword.value,
-                business: {
-                    name: bizName.value,
-                    description: bizDesc.value,
-                    website: website.value,
-                    instagram: ig.value,
-                    phone: bizPhone.value,
-                    email: bizEmail.value,
-                    avatarUrl: imageUrl.value,
-                    addressComponents: addressComponents.value,
-                    coordinates: coordinates.value,
-                    formattedAddress: formattedAddress.value,
-                    addressUrl: addressUrl.value,
-                    cuisine: cuisine.value
-                },
-                plan: {
-                    id: selected.id,
-                    price: selected.price,
-                    stripePriceId: selected.stripePriceId
-                }
+        const onboardingBody = {
+            type: type.value,
+            firstName: first.value,
+            lastName: last.value,
+            email: email.value,
+            phone: phone.value,
+            isAdmin: isAdmin.value,
+            availableToContact: available.value,
+            password: signupPassword.value,
+            business: {
+                name: bizName.value,
+                description: bizDesc.value,
+                website: website.value,
+                instagram: ig.value,
+                phone: bizPhone.value,
+                email: bizEmail.value,
+                avatarUrl: imageUrl.value,
+                addressComponents: addressComponents.value,
+                coordinates: coordinates.value,
+                formattedAddress: formattedAddress.value,
+                addressUrl: addressUrl.value,
+                cuisine: cuisine.value
+            },
+            plan: {
+                id: selected.id,
+                price: selected.price,
+                stripePriceId: selected.stripePriceId
             }
-        })
+        }
+
+        const created = (await $fetch('/api/onboarding/create-account', {
+            method: 'POST',
+            body: onboardingBody
+        })) as { success?: boolean; usedFallbackPlan?: boolean }
 
         // Success
         snackbar.value = true
-        snacktext.value = `${type.value} Created! An email confirmation has been sent.`
+        const fallbackNote =
+            created?.usedFallbackPlan
+                ? ' Billing could not be started — you are on the Free plan; upgrade anytime in Settings.'
+                : ''
+        snacktext.value = `${type.value} Created! An email confirmation has been sent.${fallbackNote}`
         
         // Always redirect to homepage - payment will be collected after sign-in
         await navigateTo('/')

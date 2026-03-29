@@ -286,7 +286,7 @@
           </div>
 
           <!-- Current Subscription Plan Section -->
-          <div v-if="hasActiveSubscription" class="space-y-6">
+          <div v-if="hasSubscriptionRecord" class="space-y-6">
             <div class="bg-surface-card rounded-lg border border-surface-border p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-semibold text-text-main">Current Subscription Plan</h3>
@@ -303,8 +303,14 @@
                   <i class="pi pi-star text-primary text-xl"></i>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-text-main capitalize">
+                  <h4 class="text-lg font-semibold text-text-main capitalize flex flex-wrap items-center gap-2">
                     {{ getCurrentPlanName() }}
+                    <span
+                      v-if="subscriptionStore.isBetaTester"
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-info-medium text-info-dark"
+                    >
+                      Beta — Premium access
+                    </span>
                   </h4>
                   <p class="text-text-muted">
                     ${{ getCurrentPlanPrice() }}/month
@@ -328,13 +334,13 @@
           </div>
 
           <!-- Middle Row: Event Pricing Configuration and Pricing Guide -->
-          <div v-if="hasActiveSubscription" class="space-y-8">
+          <div v-if="subscriptionStore.getActiveSubscription" class="space-y-8">
               <!-- Payment History Section -->
               <PaymentHistory :merchantId="merchant.id" />
           </div>
 
           <!-- Bottom Row: Subscription Status -->
-          <div v-if="!hasActiveSubscription" class="mb-8">
+          <div v-if="showUpgradeBanner" class="mb-8">
             <div class="bg-accent rounded-lg p-6" style="color: var(--p-primary-color-text);">
               <div class="flex items-center gap-4 mb-4">
                 <div class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-light opacity-30">
@@ -346,7 +352,7 @@
                 </div>
               </div>
               <p class="mb-4" style="color: var(--p-primary-color-text); opacity: 0.9;">
-                You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and priority support.
+                You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and post-event reviews.
               </p>
               <Button
                 label="View Plans"
@@ -372,7 +378,7 @@
         >
           <SubscriptionPlans 
             :userTypeProp="'merchant'"
-            :currentPlanId="currentSubscription?.plan_type || 'free'"
+            :currentPlanId="subscriptionStore.currentPlanType"
             :loading="subscriptionLoading"
             @plan-selected="handlePlanSelection" 
           />
@@ -483,9 +489,15 @@ const tabs = computed(() => {
   return baseTabs
 })
 // Subscription status
-const hasActiveSubscription = ref(false)
 const currentSubscription = ref<any>(null)
 const subscriptionStore = useSubscriptionStore()
+
+const hasSubscriptionRecord = computed(
+  () => !!subscriptionStore.getActiveSubscription || subscriptionStore.isBetaTester
+)
+const showUpgradeBanner = computed(
+  () => subscriptionStore.currentPlanType === 'free' && !subscriptionStore.isBetaTester
+)
 
 // Trial state
 const trialAlertDismissed = ref(false)
@@ -671,10 +683,8 @@ const checkSubscriptionStatus = async () => {
     await subscriptionStore.setActiveSubscription(merchantId, 'merchant')
     
     currentSubscription.value = subscriptionStore.getActiveSubscription
-    hasActiveSubscription.value = subscriptionStore.isActive
   } catch (error) {
     console.error('Error checking subscription status:', error)
-    hasActiveSubscription.value = false
   }
 }
 
@@ -715,9 +725,7 @@ const onClose = () => {
 
 // Helper functions for subscription plan display
 const getCurrentPlanName = () => {
-  if (!currentSubscription.value) return 'Free'
-  
-  const planType = currentSubscription.value.plan_type
+  const planType = subscriptionStore.currentPlanType
   switch (planType) {
     case 'pro':
       return 'Pro'
@@ -729,9 +737,7 @@ const getCurrentPlanName = () => {
 }
 
 const getCurrentPlanPrice = () => {
-  if (!currentSubscription.value) return 0
-  
-  const planType = currentSubscription.value.plan_type
+  const planType = subscriptionStore.currentPlanType
   switch (planType) {
     case 'pro':
       return 19

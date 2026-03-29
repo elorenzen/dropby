@@ -37,7 +37,12 @@
                 {{ pendingReviews.length }} Event{{ pendingReviews.length > 1 ? 's' : '' }} Need{{ pendingReviews.length > 1 ? '' : 's' }} Review
               </h4>
               <p class="text-sm text-accent-dark">
-                Write reviews for completed events to help other merchants
+                <template v-if="canCreatePostEventReviews">
+                  Write reviews for completed events to help other merchants
+                </template>
+                <template v-else>
+                  Post-event reviews are a Pro and Premium feature. You can still read reviews you receive.
+                </template>
               </p>
             </div>
           </div>
@@ -66,7 +71,8 @@
             </template>
             <template #actions>
               <Button 
-                @click="openWriteReviewDialog = true; selectedEvent = event"
+                :disabled="!canCreatePostEventReviews"
+                @click="openWriteReviewForEvent(event)"
                 label="Write Review"
                 severity="warning"
                 size="small"
@@ -157,6 +163,14 @@
         </template>
 
         <div class="space-y-6">
+            <Message
+              v-if="!canCreatePostEventReviews"
+              severity="warn"
+              :closable="false"
+              class="w-full"
+            >
+              Post-event reviews are available on Pro and Premium. Upgrade your plan to write reviews after completed events.
+            </Message>
             <!-- Event Information -->
             <div v-if="selectedEvent" class="bg-surface-section rounded-lg p-4 border border-surface-border">
                 <div class="flex items-center gap-3">
@@ -219,7 +233,7 @@
                 />
                 <Button 
                     label="Submit Review" 
-                    :loading="loading" 
+                    :loading="submittingReview" 
                     :disabled="!canSubmit"
                     @click="submitReview"
                     class="min-w-[120px]"
@@ -268,6 +282,9 @@ if (eventStore.allEvents.length === 0) {
 }
 
 const reviewStore = useReviewStore()
+const subscriptionStore = useSubscriptionStore()
+
+const canCreatePostEventReviews = computed(() => subscriptionStore.canCreatePostEventReviews)
 
 // Transform database reviews to display format
 const transformReviewForDisplay = (review: any, isReceived: boolean = true): DisplayReview => {
@@ -344,8 +361,27 @@ const selectedReviewForDelete = ref<DisplayReview | null>(null)
 
 // Computed properties
 const canSubmit = computed(() => {
-  return review.value.trim().length > 0 && rating.value > 0
+  return (
+    canCreatePostEventReviews.value &&
+    review.value.trim().length > 0 &&
+    rating.value > 0
+  )
 })
+
+const submittingReview = ref(false)
+
+const openWriteReviewForEvent = (event: Event) => {
+  if (!canCreatePostEventReviews.value) {
+    showToast(
+      'warn',
+      'Plan required',
+      'Post-event reviews are available on Pro and Premium.'
+    )
+    return
+  }
+  selectedEvent.value = event
+  openWriteReviewDialog.value = true
+}
 
 const getVendorProp = (vendorId: string, prop: string): string => {
   return vendorStore.getVendorProp(vendorId, prop)
@@ -406,21 +442,29 @@ const confirmDeleteReview = async () => {
 
 const submitReview = async () => {
     showValidation.value = true
-    
+
+    if (!canCreatePostEventReviews.value) {
+        showToast(
+            'warn',
+            'Plan required',
+            'Post-event reviews are available on Pro and Premium.'
+        )
+        return
+    }
+
     if (!canSubmit.value) {
         showToast('error', 'Validation Error', 'Please provide both a rating and review text')
         return
     }
 
     try {
-        loading.value = true
-        
+        submittingReview.value = true
+
         // Validate required data before creating review
         if (!user.value?.id || !selectedEvent.value?.vendor || !selectedEvent.value?.id) {
             throw new Error('Missing required data for review creation')
         }
 
-        const reviewStore = useReviewStore()
         await reviewStore.createReview({
             id: uuidv4(),
             created_at: new Date().toISOString(),
@@ -431,22 +475,31 @@ const submitReview = async () => {
             rating: rating.value,
             event_id: selectedEvent.value.id,
         })
-        
+
         closeReviewDialog()
         showToast('success', 'Review Submitted', 'Your review has been submitted successfully')
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Error submitting review:', error)
-        showToast('error', 'Error', 'Failed to submit review. Please try again.')
+        const message =
+            error instanceof Error ? error.message : 'Failed to submit review. Please try again.'
+        showToast('error', 'Error', message)
     } finally {
-        loading.value = false
+        submittingReview.value = false
     }
 }
 
 onMounted(async () => {
-  // Load reviews for this user
+  if (!subscriptionStore.activeSubscription) {
+    try {
+      await subscriptionStore.setActiveSubscription(String(route.params.id), 'merchant')
+    } catch {
+      console.log('No active subscription found for merchant')
+    }
+  }
+
   await reviewStore.loadReviewsForUser(route.params.id as string)
   loading.value = false
-  
+
   console.log('Pending reviews:', pendingReviews.value)
   console.log('Sent reviews:', sentReviews.value)
 })

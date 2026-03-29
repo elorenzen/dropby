@@ -21,6 +21,14 @@
     </template>
 
     <div class="space-y-6">
+      <Message
+        v-if="!canCreatePostEventReviews"
+        severity="warn"
+        :closable="false"
+        class="w-full"
+      >
+        Post-event reviews are available on Pro and Premium. Upgrade your plan to write reviews after completed events.
+      </Message>
       <!-- Event Information -->
       <div v-if="event" class="bg-surface-section rounded-lg p-4 border border-surface-border">
         <div class="flex items-center gap-3">
@@ -124,6 +132,9 @@ const merchantStore = useMerchantStore()
 const vendorStore = useVendorStore()
 const reviewStore = useReviewStore()
 const timelineStore = useTimelineStore()
+const subscriptionStore = useSubscriptionStore()
+
+const canCreatePostEventReviews = computed(() => subscriptionStore.canCreatePostEventReviews)
 
 // Reactive data
 const review = ref('')
@@ -133,7 +144,11 @@ const showValidation = ref(false)
 
 // Computed properties
 const canSubmit = computed(() => {
-  return review.value.trim().length > 0 && rating.value > 0
+  return (
+    canCreatePostEventReviews.value &&
+    review.value.trim().length > 0 &&
+    rating.value > 0
+  )
 })
 
 // Helper functions
@@ -170,7 +185,16 @@ const closeDialog = () => {
 
 const submitReview = async () => {
   showValidation.value = true
-  
+
+  if (!canCreatePostEventReviews.value) {
+    showToast(
+      'warn',
+      'Plan required',
+      'Post-event reviews are available on Pro and Premium.'
+    )
+    return
+  }
+
   if (!canSubmit.value) {
     showToast('error', 'Validation Error', 'Please provide both a rating and review text')
     return
@@ -193,9 +217,11 @@ const submitReview = async () => {
     emit('review-submitted')
     
     showToast('success', 'Review Submitted', 'Your review has been submitted successfully')
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error submitting review:', error)
-    showToast('error', 'Error', 'Failed to submit review. Please try again.')
+    const message =
+      error instanceof Error ? error.message : 'Failed to submit review. Please try again.'
+    showToast('error', 'Error', message)
   } finally {
     loading.value = false
   }

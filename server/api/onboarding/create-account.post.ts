@@ -1,5 +1,6 @@
 import { serverSupabaseClient, serverSupabaseServiceRole } from '#supabase/server'
 import Stripe from 'stripe'
+import { resolveStripePriceIdForPlan } from '~/server/utils/stripePlanPrices'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil'
@@ -62,6 +63,47 @@ const insertTimelineBestEffort = async (
   } catch (error) {
     console.warn('Best-effort timeline insert failed:', error)
   }
+}
+
+const isBetaTesterEmail = async (
+  client: Awaited<ReturnType<typeof serverSupabaseServiceRole>>,
+  email: string
+) => {
+  const { data } = await client
+    .from('beta_testers')
+    .select('id')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle()
+  return !!data
+}
+
+const createBetaPremiumSubscription = async (
+  client: Awaited<ReturnType<typeof serverSupabaseServiceRole>>,
+  businessId: string,
+  businessType: BusinessType,
+  userId: string
+) => {
+  const { data, error } = await client
+    .from('subscriptions')
+    .insert({
+      business_id: businessId,
+      business_type: businessType,
+      user_id: userId,
+      plan_type: 'premium',
+      status: 'active',
+      current_period_start: new Date().toISOString(),
+      current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as any)
+    .select()
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return data
 }
 
 const createFreeSubscription = async (
@@ -190,12 +232,27 @@ const createPaidSubscription = async (
 export default defineEventHandler(async (event) => {
   const authClient = await serverSupabaseClient(event)
   const serviceClient = await serverSupabaseServiceRole(event)
+  const runtimeConfig = useRuntimeConfig(event)
   const body = await readBody<OnboardingBody>(event)
+
+  const siteUrl = String(runtimeConfig.public.siteUrl || 'https://dropby.dev').replace(/\/$/, '')
+  const emailRedirectTo = `${siteUrl}/`
 
   if (!body?.type || !body?.email || !body?.password || !body?.plan) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Missing required onboarding fields'
+    })
+  }
+
+  const isBetaTester = await isBetaTesterEmail(serviceClient, body.email)
+  const resolvedStripePriceId = resolveStripePriceIdForPlan(body.plan)
+
+  if (!isBetaTester && body.plan.price > 0 && !resolvedStripePriceId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage:
+        'Paid plan is missing a Stripe price ID. Set STRIPE_PRICE_* env vars for production or use a valid test plan.'
     })
   }
 
@@ -209,7 +266,10 @@ export default defineEventHandler(async (event) => {
   try {
     const { data: signUpData, error: signUpError } = await authClient.auth.signUp({
       email: body.email,
-      password: body.password
+      password: body.password,
+      options: {
+        emailRedirectTo
+      }
     })
 
     if (signUpError) {
@@ -242,7 +302,8 @@ export default defineEventHandler(async (event) => {
         associated_merchant_id: businessType === 'merchant' ? businessId : null,
         associated_vendor_id: businessType === 'vendor' ? businessId : null,
         available_to_contact: body.availableToContact,
-        registered: false
+        registered: false,
+        current_plan: 'free'
       } as any)
       .select()
       .single()
@@ -307,11 +368,32 @@ export default defineEventHandler(async (event) => {
     })
 
     let subscriptionData: any = null
-    let subscriptionError: any = null
+    let usedFallbackPlan = false
 
-    try {
-      const planType = normalizePlanType(body.plan.id)
-      if (body.plan.price > 0 && body.plan.stripePriceId) {
+    const planType = normalizePlanType(body.plan.id)
+
+    const syncUserCurrentPlan = async (plan: 'free' | 'pro' | 'premium') => {
+      await serviceClient
+        .from('users')
+        .update({ current_plan: plan } as any)
+        .eq('id', authUserId!)
+    }
+
+    if (isBetaTester) {
+      const premium = await createBetaPremiumSubscription(
+        serviceClient,
+        businessId,
+        businessType,
+        authUserId
+      )
+      subscriptionData = premium
+      await serviceClient
+        .from(`${businessType}s`)
+        .update({ subscription_id: premium.id } as any)
+        .eq('id', businessId)
+      await syncUserCurrentPlan('premium')
+    } else if (body.plan.price > 0 && resolvedStripePriceId) {
+      try {
         const paid = await createPaidSubscription(serviceClient, {
           businessId,
           businessType,
@@ -319,7 +401,7 @@ export default defineEventHandler(async (event) => {
           businessName: body.business.name,
           businessEmail: body.business.email || body.email,
           planType,
-          stripePriceId: body.plan.stripePriceId
+          stripePriceId: resolvedStripePriceId
         })
         subscriptionData = paid.record
 
@@ -330,17 +412,49 @@ export default defineEventHandler(async (event) => {
             subscription_id: paid.record.id
           } as any)
           .eq('id', businessId)
-      } else {
-        const free = await createFreeSubscription(serviceClient, businessId, businessType, authUserId)
-        subscriptionData = free
-        await serviceClient
-          .from(`${businessType}s`)
-          .update({ subscription_id: free.id } as any)
-          .eq('id', businessId)
+
+        const paidPlan = planType === 'pro' || planType === 'premium' ? planType : 'premium'
+        await syncUserCurrentPlan(paidPlan)
+      } catch (paidError) {
+        console.error('Paid subscription onboarding failed, falling back to free:', paidError)
+        try {
+          const free = await createFreeSubscription(
+            serviceClient,
+            businessId,
+            businessType,
+            authUserId
+          )
+          subscriptionData = free
+          usedFallbackPlan = true
+          await serviceClient
+            .from(`${businessType}s`)
+            .update({ subscription_id: free.id } as any)
+            .eq('id', businessId)
+          await syncUserCurrentPlan('free')
+        } catch (fallbackError) {
+          console.error('Free subscription fallback failed after paid error:', fallbackError)
+          throw createError({
+            statusCode: 502,
+            statusMessage:
+              'Could not complete subscription setup. No account charges were made; please try again or contact support.'
+          })
+        }
       }
-    } catch (subscriptionCreationError) {
-      subscriptionError = subscriptionCreationError
-      console.warn('Onboarding subscription creation failed (non-blocking):', subscriptionCreationError)
+    } else {
+      const free = await createFreeSubscription(serviceClient, businessId, businessType, authUserId)
+      subscriptionData = free
+      await serviceClient
+        .from(`${businessType}s`)
+        .update({ subscription_id: free.id } as any)
+        .eq('id', businessId)
+      await syncUserCurrentPlan('free')
+    }
+
+    if (!subscriptionData) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Subscription record was not created'
+      })
     }
 
     return {
@@ -350,7 +464,7 @@ export default defineEventHandler(async (event) => {
       businessType,
       requiresEmailConfirmation: true,
       subscription: subscriptionData,
-      subscriptionError: subscriptionError ? 'Subscription setup failed, can be completed in settings.' : null
+      usedFallbackPlan
     }
   } catch (error: any) {
     if (authUserId && !businessCreated) {

@@ -1,15 +1,31 @@
 <template>
     <div>
         <div class="space-y-6">
+            <Message
+                v-if="!canUseMenuRichContent"
+                severity="info"
+                :closable="false"
+                class="text-sm"
+            >
+                Free plan includes a simple menu (name, price & category). Upgrade to Pro or Premium for photos,
+                descriptions, and seasonal items.
+            </Message>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Image Section -->
-                <div class="space-y-4">
+                <!-- Image Section (Pro / Premium) -->
+                <div v-if="canUseMenuRichContent" class="space-y-4">
                     <div class="relative">
                         <NuxtImg
+                            v-if="imageUrl"
                             :src="imageUrl"
                             class="rounded-lg w-full aspect-square object-cover border border-surface-border"
                             sizes="sm:150px md:200px lg:250px"
                         />
+                        <div
+                            v-else
+                            class="rounded-lg w-full aspect-square border border-dashed border-surface-border bg-surface-ground flex items-center justify-center text-text-muted text-sm"
+                        >
+                            No image
+                        </div>
                     </div>
                     <div class="flex flex-col gap-2">
                         <FileUpload
@@ -26,7 +42,7 @@
                     </div>
                 </div>
                 <!-- Form Fields -->
-                <div class="md:col-span-2 space-y-4">
+                <div :class="canUseMenuRichContent ? 'md:col-span-2' : 'md:col-span-3'" class="space-y-4">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-text-main mb-2">Item Name *</label>
@@ -47,7 +63,7 @@
                                 class="w-full"
                             />
                         </div>
-                        <div>
+                        <div v-if="canUseMenuRichContent">
                             <label class="block text-sm font-medium text-text-main mb-2">Description</label>
                             <div class="space-y-3">
                                 <Textarea 
@@ -83,7 +99,7 @@
                                 :min="0"
                             />
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div v-if="canUseMenuRichContent" class="flex items-center gap-2">
                             <input 
                                 type="checkbox" 
                                 id="special" 
@@ -108,11 +124,13 @@
     const emit        = defineEmits(['created', 'errored'])
     const menuStore   = useMenuStore()
     const storageStore = useStorageStore()
+    const subscriptionStore = useSubscriptionStore()
+    const canUseMenuRichContent = computed(() => subscriptionStore.canUseMenuRichContent)
     const { generateDescription, generatingDescription } = useMenu()
     const name        = ref()
     const description = ref()
     const type        = ref()
-    const imageUrl    = ref('https://ionicframework.com/docs/img/demos/card-media.png')
+    const imageUrl    = ref('')
     const imageName   = ref()
     const price       = ref(0)
     const special     = ref(false)
@@ -154,10 +172,10 @@
             name: name.value,
             description: description.value,
             type: type.value,
-            image_url: imageUrl.value,
-            image_name: imageName.value,
-            created_at: new Date(),
-            updated_at: new Date(),
+            image_url: imageUrl.value || null,
+            image_name: imageName.value || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
             price: price.value,
             special: special.value
         }
@@ -170,6 +188,10 @@
         loading.value = false
     }
     const addImage = async (e: any) => {
+        if (!canUseMenuRichContent.value) {
+            throwErr('Menu', 'Photos are available on Pro and Premium plans.')
+            return
+        }
         const file = e?.files?.[0]
         
         if (file) {

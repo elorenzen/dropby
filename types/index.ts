@@ -285,6 +285,8 @@ export interface User {
   updated_at: string | null
   stripe_customer_id: string | null
   current_plan: 'free' | 'pro' | 'premium'
+  /** Set when admin user list enriches rows from `beta_testers` */
+  is_beta_tester?: boolean
   registered: boolean
   notification_preferences?: NotificationPreferences | null
 }
