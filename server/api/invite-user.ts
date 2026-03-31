@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
     // Create auth user via Supabase admin API with invite
     const siteUrl = (config.public.siteUrl || 'https://dropby.dev').replace(/\/+$/, '')
-    const redirectTo = `${siteUrl}/auth/callback`
+    const redirectTo = `${siteUrl}/auth/callback?flow=invite`
 
     const { data: authData, error: authError } = await client.auth.admin.inviteUserByEmail(email, {
       data: {

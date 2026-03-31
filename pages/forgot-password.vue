@@ -92,7 +92,7 @@ const requestPasswordReset = async () => {
     const configuredSiteUrl = String(config.public.siteUrl || '').trim()
     const clientOrigin = import.meta.client ? window.location.origin : ''
     const baseUrl = (configuredSiteUrl || clientOrigin).replace(/\/+$/, '')
-    const redirectTo = `${baseUrl}/auth/callback`
+    const redirectTo = `${baseUrl}/auth/callback?flow=recovery`
 
     console.log('Requesting password reset for:', email.value)
     console.log('Redirect URL:', redirectTo)

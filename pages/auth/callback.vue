@@ -44,11 +44,13 @@ onMounted(async () => {
   const hashRefreshToken = hashParams.get('refresh_token')
 
   const queryType = typeof route.query.type === 'string' ? route.query.type : null
+  const flow = typeof route.query.flow === 'string' ? route.query.flow : null
   const queryCode = typeof route.query.code === 'string' ? route.query.code : null
   const queryError = typeof route.query.error === 'string' ? route.query.error : null
   const queryErrorDescription = route.query.error_description
 
   const authType = hashType || queryType || null
+  const flowWantsPasswordReset = flow === 'invite' || flow === 'recovery'
 
   if (queryError) {
     await routeToForgotPassword(toErrorDescription(queryErrorDescription || queryError))
@@ -76,7 +78,7 @@ onMounted(async () => {
   } = await supabase.auth.getSession()
 
   if (!session?.user) {
-    if (authType === 'invite' || authType === 'recovery') {
+    if (authType === 'invite' || authType === 'recovery' || flowWantsPasswordReset) {
       await routeToForgotPassword('This link is invalid or expired. Please request a new one.')
       return
     }
@@ -90,7 +92,10 @@ onMounted(async () => {
     await userStore.setUser(null)
   }
 
-  if (authType === 'invite' || authType === 'recovery') {
+  const appUser = userStore.getUser as any
+  const mustSetPassword = appUser?.registered === false
+
+  if (flowWantsPasswordReset || authType === 'invite' || authType === 'recovery' || mustSetPassword) {
     await router.replace('/reset-password')
     return
   }
