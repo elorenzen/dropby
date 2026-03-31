@@ -59,6 +59,7 @@ import Logo from '~/assets/logo-one.svg'
 
 const supabase = useSupabaseClient()
 const router = useRouter()
+const config = useRuntimeConfig()
 
 const loading = ref(false)
 const errDialog = ref(false)
@@ -87,8 +88,10 @@ const requestPasswordReset = async () => {
 
   loading.value = true
   try {
-    // Get the base URL for redirect
-    const baseUrl = process.client ? window.location.origin : ''
+    // Use configured site URL to avoid host drift between environments.
+    const configuredSiteUrl = String(config.public.siteUrl || '').trim()
+    const clientOrigin = import.meta.client ? window.location.origin : ''
+    const baseUrl = (configuredSiteUrl || clientOrigin).replace(/\/+$/, '')
     const redirectTo = `${baseUrl}/auth/callback`
 
     console.log('Requesting password reset for:', email.value)
