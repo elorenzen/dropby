@@ -169,6 +169,8 @@ const inviteUser = async () => {
 
     loading.value = true
     try {
+        const inviterName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || undefined
+
         await store.inviteUser({
             email: email.value,
             firstName: first.value || undefined,
@@ -179,7 +181,8 @@ const inviteUser = async () => {
             type: user.type,
             associatedMerchantId: user.type === 'merchant' ? assocId : null,
             associatedVendorId: user.type === 'vendor' ? assocId : null,
-            businessName: props.businessName
+            businessName: props.businessName,
+            inviterName
         })
 
         snackbar.value = true

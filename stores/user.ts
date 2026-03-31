@@ -100,6 +100,7 @@ export const useUserStore = defineStore('user', {
       associatedMerchantId?: string | null
       associatedVendorId?: string | null
       businessName?: string
+      inviterName?: string
     }) {
       this.loading = true
       try {

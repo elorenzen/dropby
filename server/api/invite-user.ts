@@ -6,7 +6,19 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
     const body = await readBody(event)
 
-    const { email, firstName, lastName, phone, isAdmin, availableToContact, type, associatedMerchantId, associatedVendorId, businessName } = body
+    const {
+      email,
+      firstName,
+      lastName,
+      phone,
+      isAdmin,
+      availableToContact,
+      type,
+      associatedMerchantId,
+      associatedVendorId,
+      businessName,
+      inviterName
+    } = body
 
     if (!email) {
       throw createError({
@@ -28,8 +40,10 @@ export default defineEventHandler(async (event) => {
 
     const { data: authData, error: authError } = await client.auth.admin.inviteUserByEmail(email, {
       data: {
-        first_name: firstName,
-        last_name: lastName
+        first_name: firstName ?? null,
+        last_name: lastName ?? null,
+        business_name: typeof businessName === 'string' ? businessName.trim() : '',
+        inviter_name: typeof inviterName === 'string' ? inviterName.trim() : ''
       },
       redirectTo
     })
