@@ -227,6 +227,7 @@ const submitEdits = async () => {
         phone: phone.value
     }
 
+    loading.value = true
     try {
         await store.updateUser(editId.value, userObj)
         snackbar.value = true
@@ -239,6 +240,8 @@ const submitEdits = async () => {
         errType.value = 'User Update(s)'
         errMsg.value = error.message || 'Failed to update user'
         errDialog.value = true
+    } finally {
+        loading.value = false
     }
 }
 const resetFields = () => {

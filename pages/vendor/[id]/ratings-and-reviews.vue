@@ -157,6 +157,7 @@
     <DeleteDialog
       :visible="showDeleteDialog"
       item-type="Review"
+      :loading="deletingReview"
       @delete-cancel="closeDeleteDialog"
       @delete-confirm="confirmDeleteReview"
     />
@@ -274,6 +275,7 @@ const showPendingReviews = ref(false)
 
 // Delete review state
 const showDeleteDialog = ref(false)
+const deletingReview = ref(false)
 const selectedReviewForDelete = ref<DisplayReview | null>(null)
 
 const getEventTime = (eventId: string): string => {
@@ -306,6 +308,7 @@ const closeDeleteDialog = () => {
 const confirmDeleteReview = async () => {
     if (!selectedReviewForDelete.value) return
     
+    deletingReview.value = true
     try {
         await reviewStore.deleteReview(selectedReviewForDelete.value.id)
         
@@ -315,6 +318,8 @@ const confirmDeleteReview = async () => {
     } catch (error: any) {
         console.error('Error deleting review:', error)
         showToast('error', 'Error', 'Failed to delete review. Please try again.')
+    } finally {
+        deletingReview.value = false
     }
 }
 

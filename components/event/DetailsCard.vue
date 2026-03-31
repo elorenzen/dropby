@@ -209,6 +209,7 @@
           label="Request Event"
           severity="success"
           icon="pi pi-send"
+          :loading="requestLoading"
         />
         <Button 
           @click="$emit('update:visible', false)"
@@ -240,6 +241,7 @@ interface Props {
   getVendorProp: (vendorId: string | null, prop: string) => string
   getVendorCuisines: (vendorId: string | null) => string[]
   hasReview: (event: Event) => boolean
+  requestLoading?: boolean
 }
 
 const props = defineProps<Props>()
