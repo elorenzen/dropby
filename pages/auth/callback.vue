@@ -51,6 +51,8 @@ onMounted(async () => {
 
   const authType = hashType || queryType || null
   const flowWantsPasswordReset = flow === 'invite' || flow === 'recovery'
+  /** Onboarding signup uses emailRedirectTo …/auth/callback?flow=signup; Supabase may also send type=signup in the hash. */
+  const isSignupConfirmation = flow === 'signup' || authType === 'signup'
 
   if (queryError) {
     await routeToForgotPassword(toErrorDescription(queryErrorDescription || queryError))
@@ -95,9 +97,26 @@ onMounted(async () => {
   const appUser = userStore.getUser as any
   const mustSetPassword = appUser?.registered === false
 
-  if (flowWantsPasswordReset || authType === 'invite' || authType === 'recovery' || mustSetPassword) {
+  // Invite / recovery / forgot-password links: always land on password set/update.
+  if (flowWantsPasswordReset || authType === 'invite' || authType === 'recovery') {
     await router.replace('/reset-password')
     return
+  }
+
+  // Invited users (registered false) need to set a password — but not after self-serve onboarding
+  // (they already chose a password; "Confirm signup" should go to the dashboard).
+  if (mustSetPassword && !isSignupConfirmation) {
+    await router.replace('/reset-password')
+    return
+  }
+
+  if (mustSetPassword && isSignupConfirmation && session.user) {
+    try {
+      await userStore.updateUser(session.user.id, { registered: true })
+      await userStore.loadUser(session.user.id)
+    } catch {
+      /* still try dashboard */
+    }
   }
 
   await redirectToUserDashboard()

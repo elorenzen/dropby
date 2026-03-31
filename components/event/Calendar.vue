@@ -1089,18 +1089,18 @@ export default {
 
     const cancelRequest = async () => {
       if (!vendor.value?.id || !eventOnDay.value) return
-      
+
       loading.value = true
       try {
-        let reqArr = eventOnDay.value.pending_requests || []
-        reqArr = reqArr.filter((id: any) => id !== vendor.value.id)
-        
-        const updates = {
-          updated_at: new Date().toISOString(),
-          pending_requests: reqArr
+        const result = await eventStore.withdrawRequest(eventOnDay.value.id, vendor.value.id)
+
+        if (!result.success) {
+          errType.value = 'Event Request'
+          errMsg.value = result.message || 'Failed to cancel request'
+          errDialog.value = true
+          return
         }
-        
-        await eventStore.updateEvent(eventOnDay.value.id, updates)
+
         await resetFields('cancelled')
       } catch (error: any) {
         errType.value = 'Event Request'

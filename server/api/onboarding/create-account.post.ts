@@ -302,7 +302,8 @@ export default defineEventHandler(async (event) => {
         associated_merchant_id: businessType === 'merchant' ? businessId : null,
         associated_vendor_id: businessType === 'vendor' ? businessId : null,
         available_to_contact: body.availableToContact,
-        registered: false,
+        // Password and profile are complete; email confirmation only activates the session.
+        registered: true,
         current_plan: 'free'
       } as any)
       .select()
