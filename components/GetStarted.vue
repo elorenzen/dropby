@@ -815,35 +815,42 @@ const throwErr = (title: string, msg: string) => {
     width: 100%;
 }
 
-/* Fix InputSwitch/ToggleSwitch visibility - PrimeVue v4 uses p-toggleswitch */
-:deep(.p-toggleswitch) {
+/* Fix InputSwitch/ToggleSwitch visibility — specificity must beat the
+   :deep(.p-stepper .p-stepper-panels *) nuclear selectors above (0,2,0). */
+:deep(.p-stepper .p-toggleswitch) {
     display: inline-block !important;
     width: 3rem !important;
     height: 1.75rem !important;
     visibility: visible !important;
     opacity: 1 !important;
+    background: transparent !important;
+    background-color: transparent !important;
 }
 
-:deep(.p-toggleswitch-slider) {
+:deep(.p-stepper .p-toggleswitch .p-toggleswitch-slider) {
     background: var(--p-surface-400) !important;
+    background-color: var(--p-surface-400) !important;
     border: 1px solid var(--p-surface-400) !important;
     border-radius: 30px !important;
 }
 
-:deep(.p-toggleswitch-slider:before) {
+:deep(.p-stepper .p-toggleswitch .p-toggleswitch-handle) {
     background: var(--p-surface-card) !important;
+    background-color: var(--p-surface-card) !important;
     width: 1.25rem !important;
     height: 1.25rem !important;
+    border-radius: 50% !important;
 }
 
-:deep(.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider) {
+:deep(.p-stepper .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider) {
     background: var(--p-primary-color) !important;
+    background-color: var(--p-primary-color) !important;
     border-color: var(--p-primary-color) !important;
 }
 
-:deep(.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider:before) {
+:deep(.p-stepper .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-handle) {
     background: var(--p-primary-contrast-color, var(--p-surface-card)) !important;
-    transform: translateX(1.25rem) !important;
+    background-color: var(--p-primary-contrast-color, var(--p-surface-card)) !important;
 }
 
 </style>
