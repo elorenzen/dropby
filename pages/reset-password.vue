@@ -72,11 +72,7 @@ import Logo from '~/assets/logo-one.svg'
 
 const supabase = useSupabaseClient()
 const router = useRouter()
-const route = useRoute()
 const user = useSupabaseUser()
-const config = useRuntimeConfig()
-const baseSiteUrl = (config.public.siteUrl as string || 'https://dropby.dev').replace(/\/+$/, '')
-const expectedResetUrl = `${baseSiteUrl}/reset-password`
 
 const loading = ref(false)
 const errDialog = ref(false)
@@ -88,129 +84,25 @@ const confirmPasswordError = ref('')
 const isAuthenticated = ref(false)
 const checkingAuth = ref(true)
 
-// According to Supabase docs, when user clicks password reset link:
-// 1. Supabase automatically authenticates them
-// 2. We just need to check if they're authenticated
-// 3. Then allow them to update their password
-
-// Check authentication status and handle URL parameters
 onMounted(async () => {
-  if (import.meta.client) {
-    const hash = window.location.hash
-    const query = route.query
-    
-    console.log('=== PASSWORD RESET FLOW ===')
-    console.log('URL hash:', hash)
-    console.log('URL query:', query)
-    
-    // PRIORITY 1: Check for errors first (Supabase redirects with errors if token is invalid)
-    if (query.error) {
-      const errorCode = query.error_code as string || 'unknown'
-      const errorDesc = query.error_description as string || query.error as string
-      
-      console.error('❌ Error in URL:', { error: query.error, errorCode, errorDesc })
-      
-      if (errorCode === 'otp_expired' || errorDesc?.includes('expired')) {
-        errMsg.value = 'This password reset link has expired. Password reset links expire after 1 hour. Please request a new password reset link.'
-      } else if (errorCode === 'access_denied') {
-        errMsg.value = 'This password reset link is invalid or has already been used. Please request a new password reset link.'
-      } else {
-        errMsg.value = `Password reset error: ${errorDesc || query.error}. Please request a new password reset link.`
-      }
-      
-      errDialog.value = true
-      checkingAuth.value = false
-      setTimeout(() => {
-        router.push('/forgot-password')
-      }, 5000)
-      return
-    }
-    
-    // PRIORITY 2: Handle hash-based recovery token (preferred method)
-    if (hash && hash.includes('type=recovery')) {
-      console.log('Found recovery token in hash, setting session...')
-      
-      const hashParams = new URLSearchParams(hash.substring(1))
-      const accessToken = hashParams.get('access_token')
-      const type = hashParams.get('type')
-      const refreshToken = hashParams.get('refresh_token')
+  if (!import.meta.client) return
 
-      if (type === 'recovery' && accessToken) {
-        try {
-          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || ''
-          })
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
 
-          if (sessionError) {
-            throw sessionError
-          }
-          
-          console.log('✅ Session set from hash token')
-          // Clear hash from URL
-          router.replace({ hash: '' })
-          isAuthenticated.value = true
-          checkingAuth.value = false
-          return
-        } catch (err: any) {
-          console.error('Failed to set session from hash:', err)
-          errMsg.value = err.message?.includes('expired') || err.message?.includes('invalid')
-            ? 'This password reset link has expired or is invalid. Please request a new password reset link.'
-            : `Unable to validate reset link: ${err.message}. Please request a new password reset link.`
-          errDialog.value = true
-          checkingAuth.value = false
-          setTimeout(() => {
-            router.push('/forgot-password')
-          }, 5000)
-          return
-        }
-      }
-    }
-    
-    // PRIORITY 3: Check if user is already authenticated (Supabase may have auto-authenticated)
-    // This handles both code parameters and cases where Supabase already set the session
-    const checkAuth = async () => {
-      // Check current session
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session && session.user) {
-        console.log('✅ User is authenticated (Supabase auto-authenticated from reset link)')
-        isAuthenticated.value = true
-        // Clear any URL parameters
-        if (query.code || hash) {
-          router.replace({ query: {}, hash: '' })
-        }
-        checkingAuth.value = false
-        return
-      }
-      
-      // If we have a code parameter, wait a moment for Supabase to process it
-      if (query.code) {
-        console.log('Found code parameter, waiting for Supabase to process...')
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const { data: { session: retrySession } } = await supabase.auth.getSession()
-        if (retrySession && retrySession.user) {
-          console.log('✅ User authenticated after code processing')
-          isAuthenticated.value = true
-          router.replace({ query: {} })
-          checkingAuth.value = false
-          return
-        }
-      }
-      
-      // No authentication found
-      console.warn('❌ User is not authenticated')
-      errMsg.value = `Unable to verify password reset link. Please ensure your Supabase redirect URL (${expectedResetUrl}) is configured in Supabase Dashboard -> Authentication -> URL Configuration -> Redirect URLs, then request a new password reset link.`
-      errDialog.value = true
-      checkingAuth.value = false
-      setTimeout(() => {
-        router.push('/forgot-password')
-      }, 5000)
-    }
-    
-    await checkAuth()
+  if (session?.user) {
+    isAuthenticated.value = true
+    checkingAuth.value = false
+    return
   }
+
+  errMsg.value = 'Unable to verify password reset link. Please request a new password reset link.'
+  errDialog.value = true
+  checkingAuth.value = false
+  setTimeout(() => {
+    router.push('/forgot-password')
+  }, 5000)
 })
 
 // Watch for auth state changes (in case Supabase authenticates after page load)

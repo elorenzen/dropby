@@ -89,7 +89,7 @@ const requestPasswordReset = async () => {
   try {
     // Get the base URL for redirect
     const baseUrl = process.client ? window.location.origin : ''
-    const redirectTo = `${baseUrl}/reset-password`
+    const redirectTo = `${baseUrl}/auth/callback`
 
     console.log('Requesting password reset for:', email.value)
     console.log('Redirect URL:', redirectTo)

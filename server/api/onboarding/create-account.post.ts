@@ -236,7 +236,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<OnboardingBody>(event)
 
   const siteUrl = String(runtimeConfig.public.siteUrl || 'https://dropby.dev').replace(/\/$/, '')
-  const emailRedirectTo = `${siteUrl}/`
+  const emailRedirectTo = `${siteUrl}/auth/callback`
 
   if (!body?.type || !body?.email || !body?.password || !body?.plan) {
     throw createError({
