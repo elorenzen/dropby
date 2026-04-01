@@ -213,7 +213,7 @@
             <MenuEdit :item="itemToEdit" :vendor="user.associated_vendor_id" @edited="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
-        <DeleteDialog v-if="deleteDialog" :visible="deleteDialog" :itemType="'Inventory Item'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+        <DeleteDialog v-if="deleteDialog" :visible="deleteDialog" :itemType="'Inventory Item'" :loading="deleting" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
         <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
         <Toast group="main" position="bottom-center" @close="onClose" />
     </div>
@@ -238,6 +238,7 @@ const editDialog   = ref(false)
 const itemToEdit   = ref<any>(null)
 const itemToDelete = ref<any>(null)
 const deleteDialog = ref(false)
+const deleting     = ref(false)
 const errDialog    = ref(false)
 const errMsg       = ref()
 const errType      = ref()
@@ -323,11 +324,10 @@ const promptDeletion = (item:any) => {
 const confirmDelete = async () => {
     if (!itemToDelete.value) return
     
+    deleting.value = true
     try {
-        // Delete from database using store
         await store.deleteMenuItem(itemToDelete.value.id)
         
-        // Delete image from storage
         if (itemToDelete.value.image_name) {
             await storageStore.deleteImage('menu_images', itemToDelete.value.image_name)
         }
@@ -335,6 +335,8 @@ const confirmDelete = async () => {
         await resetFields('Deleted')
     } catch (error: any) {
         throwErr('Item Deletion', error.message || 'Failed to delete menu item')
+    } finally {
+        deleting.value = false
     }
 }
 const cancelDelete = () => {

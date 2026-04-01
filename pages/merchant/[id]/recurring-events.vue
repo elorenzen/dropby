@@ -166,7 +166,8 @@
     <DeleteDialog 
       v-if="deleteDialog" 
       :visible="deleteDialog"
-      :itemType="'recurring event'" 
+      :itemType="'recurring event'"
+      :loading="deleting"
       @deleteConfirm="confirmDelete" 
       @deleteCancel="cancelDelete" 
     />
@@ -206,6 +207,7 @@ const selectedRecurringEvent = ref<any | null>(null)
 
 // Delete dialog state
 const deleteDialog = ref(false)
+const deleting = ref(false)
 const recurringEventToDelete = ref<any | null>(null)
 
 // Filter state
@@ -355,12 +357,12 @@ const promptDeletion = (recurringEvent: any) => {
 const confirmDelete = async () => {
   if (!recurringEventToDelete.value) return
   
+  deleting.value = true
   try {
     await recurringEventStore.deleteRecurringEvent(recurringEventToDelete.value.id)
     
     showToast('success', 'Recurring Event Deleted', 'The recurring event has been deleted successfully')
     
-    // Refresh the list
     await recurringEventStore.loadRecurringEventsByMerchantId(merchantId)
     
     deleteDialog.value = false
@@ -370,6 +372,8 @@ const confirmDelete = async () => {
     showToast('error', 'Delete Error', error.message || 'Failed to delete recurring event. Please try again.')
     deleteDialog.value = false
     recurringEventToDelete.value = null
+  } finally {
+    deleting.value = false
   }
 }
 

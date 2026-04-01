@@ -346,11 +346,13 @@
             label="Cancel" 
             severity="secondary" 
             outlined
+            :disabled="deletingEvent"
             @click="showDeleteEventDialog = false" 
           />
           <Button 
             label="Delete Event" 
             severity="danger"
+            :loading="deletingEvent"
             @click="confirmDeleteEvent"
             class="min-w-[120px]"
           />
@@ -432,6 +434,7 @@ const selectedEventForDetails = ref<Event | null>(null)
 // Delete event dialog state
 const showDeleteEventDialog = ref(false)
 const selectedEventForDelete = ref<Event | null>(null)
+const deletingEvent = ref(false)
 
 // Menu state
 const selectedEventForMenu = ref<Event | null>(null)
@@ -700,6 +703,7 @@ const deleteEvent = (event: Event) => {
 const confirmDeleteEvent = async () => {
   if (!selectedEventForDelete.value) return
   
+  deletingEvent.value = true
   try {
     const eventStore = useEventStore()
     await eventStore.deleteEvent(selectedEventForDelete.value.id)
@@ -709,6 +713,7 @@ const confirmDeleteEvent = async () => {
     console.error('Error deleting event:', error)
     showToast('error', 'Error', 'Failed to delete event. Please try again.')
   } finally {
+    deletingEvent.value = false
     showDeleteEventDialog.value = false
     selectedEventForDelete.value = null
   }

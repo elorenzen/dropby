@@ -432,7 +432,7 @@
     />
 
     <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
-    <DeleteDialog v-if="deleteDialog" :visible="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+    <DeleteDialog v-if="deleteDialog" :visible="deleteDialog" :itemType="'event'" :loading="deleting" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
 
     <Toast group="main" position="bottom-center" @close="onClose" />
   </div>
@@ -527,6 +527,7 @@ export default {
     const errMsg        = ref()
     const errDialog     = ref(false)
     const deleteDialog  = ref(false)
+    const deleting      = ref(false)
     const loading       = ref(false)
     const loadingApproval = ref('')
     const loadingRejection = ref('')
@@ -871,6 +872,7 @@ export default {
     const promptDeletion = () => { deleteDialog.value = true }
     const confirmDelete = async () => {
         const eventStore = useEventStore()
+        deleting.value = true
         try {
             await eventStore.deleteEvent(eventOnDay.value.id)
             await resetFields('deleted')
@@ -878,6 +880,8 @@ export default {
             errType.value = 'Event Deletion'
             errMsg.value = error.message
             errDialog.value = true
+        } finally {
+            deleting.value = false
         }
         deleteDialog.value = false
     }
@@ -1217,6 +1221,7 @@ export default {
       errMsg,
       errDialog,
       deleteDialog,
+      deleting,
       loading,
       loadingRequest,
       loadingApproval,
