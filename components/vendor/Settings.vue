@@ -75,14 +75,17 @@
                 <!-- Cuisine -->
                 <div>
                   <label class="block text-sm font-medium text-text-muted mb-2">Cuisine</label>
-                  <MultiSelect
+                  <AutoComplete
                     v-model="vendor.cuisine"
-                    :options="cuisines"
-                    display="chip"
-                    filter
+                    multiple
+                    fluid
+                    dropdown
+                    dropdownMode="blank"
+                    completeOnFocus
+                    :suggestions="cuisineSuggestions"
                     placeholder="Select cuisine(s)"
-                    :maxSelectedLabels="3"
                     class="w-full"
+                    @complete="searchCuisines"
                   />
                 </div>
 
@@ -516,6 +519,16 @@ const cuisines = ref([
   'Tacos',
   'Vegan'
 ])
+
+const cuisineSuggestions = ref<string[]>([])
+
+const searchCuisines = (event: { query: string }) => {
+  const q = (event.query || '').trim().toLowerCase()
+  const list = cuisines.value
+  cuisineSuggestions.value = q
+    ? list.filter((c) => c.toLowerCase().includes(q))
+    : [...list]
+}
 
 // Tab configuration - User Management only visible to admins
 const isAdmin = computed(() => user?.is_admin === true)

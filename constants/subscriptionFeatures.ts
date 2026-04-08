@@ -2,6 +2,9 @@
 // SUBSCRIPTION FEATURE FLAGS
 // ============================================================================
 
+/** Merchant Pro cap for preferred vendors; Premium is unlimited (see setUnlimitedPreferredVendors). */
+export const MERCHANT_PRO_MAX_PREFERRED_VENDORS = 3
+
 export type MerchantFeature =
   | 'createEvents'
   | 'createUnlimitedEvents'

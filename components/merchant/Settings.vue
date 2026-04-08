@@ -168,19 +168,39 @@
                 />
               </div>
 
-              <!-- Preferred Vendors -->
               <div>
                 <label class="block text-sm font-medium mb-2" style="color: var(--text-md-gray);">Preferred Vendor(s)</label>
-                <MultiSelect
-                  v-model="merchant.preferred_vendors"
-                  :options="vendors"
+                <AutoComplete
+                  :model-value="selectedPreferredVendors"
+                  multiple
+                  fluid
+                  dropdown
+                  dropdownMode="blank"
+                  completeOnFocus
+                  :suggestions="preferredVendorSuggestions"
                   optionLabel="vendor_name"
-                  display="chip"
-                  filter
-                  :maxSelectedLabels="3"
+                  dataKey="id"
                   class="w-full"
                   placeholder="Select preferred vendors"
+                  :disabled="maxPreferredVendors === 0"
+                  :loading="vendorStore.loading"
+                  @complete="searchPreferredVendors"
+                  @update:model-value="onPreferredVendorsUpdate"
                 />
+                <p
+                  v-if="maxPreferredVendors === 0"
+                  class="text-xs mt-2"
+                  style="color: var(--text-md-gray);"
+                >
+                  Upgrade to Pro or Premium to save preferred vendors for quicker event invites.
+                </p>
+                <p
+                  v-else-if="Number.isFinite(maxPreferredVendors)"
+                  class="text-xs mt-2"
+                  style="color: var(--text-md-gray);"
+                >
+                  Your plan allows up to {{ maxPreferredVendors }} preferred vendor{{ maxPreferredVendors === 1 ? '' : 's' }}.
+                </p>
               </div>
 
               <!-- Save Button -->
@@ -417,6 +437,8 @@
 import { formatDate } from '~/utils/dates'
 import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
 import { useToast } from '~/composables/useToast'
+import { MERCHANT_PRO_MAX_PREFERRED_VENDORS } from '~/constants/subscriptionFeatures'
+import type { Vendor } from '~/types'
 
 const route = useRoute()
 const { showToast } = useToast()
@@ -427,13 +449,20 @@ const userStore = useUserStore()
 const businessHoursStore = useBusinessHoursStore()
 const { currentUser } = useAuth()
 
-// Store data
-const vendors = vendorStore.getAllVendors
+const preferredVendorSuggestions = ref<Vendor[]>([])
+const selectedPreferredVendors = ref<Vendor[]>([])
 const user = userStore.getUser
+
 const assocId = user?.[`associated_${user?.type}_id`]
 
 // Reactive data
 const merchant = ref(await merchantStore.getMerchantById(assocId || ''))
+if (merchant.value) {
+  const raw = merchant.value.preferred_vendors
+  merchant.value.preferred_vendors = Array.isArray(raw)
+    ? [...new Set(raw.map((x: unknown) => (typeof x === 'string' ? x : (x as { id?: string })?.id)).filter(Boolean) as string[])]
+    : []
+}
 const activeTab = ref(route.query.activeTab ? parseInt(route.query.activeTab as string) : 0)
 const loading = ref(false)
 const errDialog = ref(false)
@@ -499,6 +528,89 @@ const showUpgradeBanner = computed(
   () => subscriptionStore.currentPlanType === 'free' && !subscriptionStore.isBetaTester
 )
 
+const maxPreferredVendors = computed((): number => {
+  if (subscriptionStore.isBetaTester || subscriptionStore.canSetUnlimitedPreferredVendors) {
+    return Number.POSITIVE_INFINITY
+  }
+  if (subscriptionStore.canSetPreferredVendors) {
+    return MERCHANT_PRO_MAX_PREFERRED_VENDORS
+  }
+  return 0
+})
+
+function syncPreferredVendorsFromMerchant() {
+  const ids = (merchant.value?.preferred_vendors as string[] | undefined) ?? []
+  if (!Array.isArray(ids) || !ids.length) {
+    selectedPreferredVendors.value = []
+    return
+  }
+  const all = vendorStore.getAllVendors
+  selectedPreferredVendors.value = ids
+    .map((id) => all.find((v: Vendor) => v.id === id))
+    .filter((v): v is Vendor => !!v)
+}
+
+function onPreferredVendorsUpdate(vendors: Vendor[]) {
+  if (!merchant.value) return
+  const max = maxPreferredVendors.value
+  if (max === 0) {
+    selectedPreferredVendors.value = []
+    merchant.value.preferred_vendors = []
+    return
+  }
+  let next = vendors
+  if (Number.isFinite(max) && vendors.length > max) {
+    next = vendors.slice(0, max)
+    showToast('warn', 'Preferred vendors', `Your plan allows up to ${max} preferred vendors.`, 5000)
+  }
+  selectedPreferredVendors.value = next
+  merchant.value.preferred_vendors = next.map((v) => v.id)
+}
+
+const searchPreferredVendors = async (event: { query: string }) => {
+  try {
+    if (!vendorStore.getAllVendors.length) {
+      await vendorStore.loadVendors()
+    }
+    const q = (event.query || '').trim().toLowerCase()
+    const selected = new Set(selectedPreferredVendors.value.map((v: Vendor) => v.id))
+    preferredVendorSuggestions.value = vendorStore.getAllVendors.filter(
+      (v: Vendor) =>
+        !selected.has(v.id) && (!q || (v.vendor_name || '').toLowerCase().includes(q))
+    )
+  } catch {
+    preferredVendorSuggestions.value = []
+  }
+}
+
+function enforcePreferredVendorLimit(showToastOnTrim = false) {
+  if (!merchant.value) return
+  let ids = Array.isArray(merchant.value.preferred_vendors)
+    ? [...(merchant.value.preferred_vendors as string[])]
+    : []
+  const max = maxPreferredVendors.value
+  if (max === 0 && ids.length > 0) {
+    merchant.value.preferred_vendors = []
+    if (showToastOnTrim) {
+      showToast('warn', 'Preferred vendors', 'Your plan does not include preferred vendors. Clear them or upgrade to Pro.')
+    }
+    syncPreferredVendorsFromMerchant()
+    return
+  }
+  if (Number.isFinite(max) && ids.length > max) {
+    merchant.value.preferred_vendors = ids.slice(0, max)
+    if (showToastOnTrim) {
+      showToast(
+        'warn',
+        'Preferred vendors',
+        `Your plan allows up to ${max} preferred vendors. Extra entries were removed.`,
+        6000
+      )
+    }
+  }
+  syncPreferredVendorsFromMerchant()
+}
+
 // Trial state
 const trialAlertDismissed = ref(false)
 const downgradingToFree = ref(false)
@@ -521,8 +633,12 @@ const subscriptionLoading = ref(false)
 
 // Google Maps initialization
 onMounted(async () => {
+  if (!vendorStore.getAllVendors.length) {
+    await vendorStore.loadVendors()
+  }
   await sdkInit()
   await checkSubscriptionStatus()
+  syncPreferredVendorsFromMerchant()
   await loadBusinessHours()
 })
 
@@ -585,6 +701,8 @@ const setFormattedClose = (e: any, i: number) => {
 
 const saveEdits = async () => {
   if (!merchant.value) return
+
+  enforcePreferredVendorLimit(false)
   
   loading.value = true
   
@@ -600,7 +718,7 @@ const saveEdits = async () => {
     website: merchant.value.website,
     instagram: merchant.value.instagram,
     email: merchant.value.email,
-    preferred_vendors: merchant.value.preferred_vendors,
+    preferred_vendors: merchant.value.preferred_vendors ?? [],
   }
 
   try {
@@ -683,6 +801,7 @@ const checkSubscriptionStatus = async () => {
     await subscriptionStore.setActiveSubscription(merchantId, 'merchant')
     
     currentSubscription.value = subscriptionStore.getActiveSubscription
+    enforcePreferredVendorLimit(true)
   } catch (error) {
     console.error('Error checking subscription status:', error)
   }

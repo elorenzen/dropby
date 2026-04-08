@@ -153,17 +153,21 @@
           <template #filters>
             <div class="w-56">
               <FloatLabel>
-                <MultiSelect 
-                  id="status-filter"
-                  v-model="eventFilters.status" 
-                  :options="statusOptions" 
-                  optionLabel="label" 
-                  optionValue="value"
-                  filter
-                  placeholder="Select Statuses"
-                  :maxSelectedLabels="3"
+                <AutoComplete
+                  inputId="status-filter"
+                  v-model="eventFilters.status"
+                  multiple
+                  fluid
+                  dropdown
+                  dropdownMode="blank"
+                  completeOnFocus
+                  :suggestions="statusFilterSuggestions"
+                  optionLabel="label"
+                  dataKey="value"
+                  placeholder=" "
                   class="w-full"
                   size="small"
+                  @complete="searchStatusFilter"
                 />
                 <label for="status-filter">Status</label>
               </FloatLabel>
@@ -441,20 +445,32 @@ const selectedEventForMenu = ref<Event | null>(null)
 
 
 // Unified filter state for all events
+type StatusOption = { label: string; value: string }
+
 const eventFilters = ref({
   keyword: '',
-  status: [] as string[], // Empty array shows all statuses
+  status: [] as StatusOption[], // Empty array shows all statuses
   sortBy: 'date-desc' // Default to newest first
 })
 
 // Filter options for all event statuses (no "All Statuses" option - use clear filters to show all)
-const statusOptions = ref([
+const statusOptions = ref<StatusOption[]>([
   { label: 'Open', value: 'open' },
   { label: 'Booked', value: 'booked' },
   { label: 'Completed', value: 'completed' },
   { label: 'Cancelled', value: 'cancelled' },
   { label: 'Closed', value: 'closed' }
 ])
+
+const statusFilterSuggestions = ref<StatusOption[]>([])
+
+const searchStatusFilter = (event: { query: string }) => {
+  const q = (event.query || '').trim().toLowerCase()
+  const list = statusOptions.value
+  statusFilterSuggestions.value = q
+    ? list.filter((o) => o.label.toLowerCase().includes(q))
+    : [...list]
+}
 
 const sortOptions = ref([
   { label: 'Date (Newest First)', value: 'date-desc' },
@@ -510,13 +526,14 @@ const sortEvents = (events: Event[], sortBy: string): Event[] => {
 }
 
 // Helper function to filter and sort events
-const filterAndSortEvents = (events: Event[], filters: { keyword: string; status: string[]; sortBy: string }): Event[] => {
+const filterAndSortEvents = (events: Event[], filters: { keyword: string; status: StatusOption[]; sortBy: string }): Event[] => {
   if (!events || events.length === 0) return []
   
   let filtered = filterByKeyword(events, filters.keyword)
   // Only filter by status if statuses are selected (empty array shows all statuses)
   if (filters.status && filters.status.length > 0) {
-    filtered = filtered.filter((event: Event) => filters.status.includes(event.status))
+    const statusValues = filters.status.map((s) => s.value)
+    filtered = filtered.filter((event: Event) => statusValues.includes(event.status))
   }
   return sortEvents(filtered, filters.sortBy)
 }

@@ -1,4 +1,5 @@
 import { stripePlanPriceId } from './stripePlanPriceIds'
+import { MERCHANT_PRO_MAX_PREFERRED_VENDORS } from './subscriptionFeatures'
 
 /**
  * Stripe Price IDs come from `stripePlanPriceIds.ts` (test vs live from `import.meta.env`; see docs/ENVIRONMENTS.md).
@@ -38,7 +39,7 @@ export const merchantPlans: Plan[] = [
     description: 'For growing businesses',
     features: [
       '10 events per month',
-      '3 preferred vendors',
+      `${MERCHANT_PRO_MAX_PREFERRED_VENDORS} preferred vendors`,
       // 'Event value pricing', // deferred — not implemented
       'Date-range events',
       'Post-event reviews'

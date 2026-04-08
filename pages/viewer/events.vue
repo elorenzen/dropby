@@ -66,14 +66,18 @@
         <template #filters>
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Cuisine Type</label>
-            <MultiSelect 
-              v-model="filters.cuisines" 
-              :options="cuisineOptions" 
-              placeholder="All cuisines" 
+            <AutoComplete
+              v-model="filters.cuisines"
+              multiple
+              fluid
+              dropdown
+              dropdownMode="blank"
+              completeOnFocus
+              :suggestions="cuisineFilterSuggestions"
+              placeholder="All cuisines"
               class="w-full"
-              :showClear="true"
-              display="chip"
               size="small"
+              @complete="searchCuisineFilter"
             />
           </div>
           <div>
@@ -381,6 +385,16 @@ const cuisineOptions = ref([
   'Italian', 'Latin', 'Mediterranean', 'Mexican', 'Pizza', 
   'Sandwich', 'Seafood', 'Snacks', 'Tacos', 'Vegan'
 ])
+
+const cuisineFilterSuggestions = ref<string[]>([])
+
+const searchCuisineFilter = (event: { query: string }) => {
+  const q = (event.query || '').trim().toLowerCase()
+  const list = cuisineOptions.value
+  cuisineFilterSuggestions.value = q
+    ? list.filter((c) => c.toLowerCase().includes(q))
+    : [...list]
+}
 
 const sortOptions = ref([
   { label: 'Most Viewed', value: 'views' },

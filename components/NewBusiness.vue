@@ -41,7 +41,18 @@
                     </div>
                     <div v-if="bizType === 'vendor'" class="my-1">
                         <FloatLabel variant="on">
-                            <MultiSelect v-model="businessObj.cuisine" display="chip" :options="cuisines" filter />
+                            <AutoComplete
+                                v-model="businessObj.cuisine"
+                                inputId="cuisine"
+                                multiple
+                                fluid
+                                dropdown
+                                dropdownMode="blank"
+                                completeOnFocus
+                                :suggestions="cuisineSuggestions"
+                                placeholder=" "
+                                @complete="searchCuisines"
+                            />
                             <label for="cuisine">Select Cuisine(s)</label>
                         </FloatLabel>
                     </div>
@@ -114,8 +125,8 @@ const businessObj       = reactive({
     email: '',
     website: '',
     ig: '',
-    cuisine: [],
-    addressComponents: [],
+    cuisine: [] as string[],
+    addressComponents: [] as any[],
     coordinates: {},
     formattedAddress: '',
     addressUrl: '',
@@ -144,6 +155,16 @@ const cuisines = ref([
     'Tacos',
     'Vegan'
 ])
+
+const cuisineSuggestions = ref<string[]>([])
+
+const searchCuisines = (event: { query: string }) => {
+    const q = (event.query || '').trim().toLowerCase()
+    const list = cuisines.value
+    cuisineSuggestions.value = q
+        ? list.filter((c) => c.toLowerCase().includes(q))
+        : [...list]
+}
 const altLabels = ref({
     merchant: {
         name: "Merchant Name (e.g. 'McDonald's')",

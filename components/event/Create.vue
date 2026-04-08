@@ -103,15 +103,19 @@
           <!-- Invite from DropBy -->
           <div class="space-y-2">
             <label class="block text-sm font-medium text-text-main">Invite from DropBy</label>
-            <MultiSelect
+            <AutoComplete
               v-model="selectedVendors"
-              :options="contactableVendors"
+              multiple
+              fluid
+              dropdown
+              dropdownMode="blank"
+              completeOnFocus
+              :suggestions="vendorInviteSuggestions"
               optionLabel="vendor_name"
-              optionValue="id"
+              dataKey="id"
               placeholder="Select vendors to invite"
-              :maxSelectedLabels="3"
               class="w-full"
-              filter
+              @complete="searchVendorInvites"
             />
             <p class="text-xs text-text-muted">
               Only vendors whose users are available to contact will receive invites.
@@ -222,7 +226,8 @@ const errors = ref<Record<string, string>>({})
 
 // Vendor invite state
 const inviteVendors = ref(false)
-const selectedVendors = ref<string[]>([])
+const selectedVendors = ref<Vendor[]>([])
+const vendorInviteSuggestions = ref<Vendor[]>([])
 const externalEmailInput = ref('')
 const externalEmails = ref<string[]>([])
 
@@ -235,6 +240,14 @@ const contactableVendors = computed(() => {
     (v: Vendor) => v.vendor_name && contactableUserVendorIds.includes(v.id)
   )
 })
+
+const searchVendorInvites = (event: { query: string }) => {
+  const q = (event.query || '').trim().toLowerCase()
+  const list = contactableVendors.value
+  vendorInviteSuggestions.value = q
+    ? list.filter((v) => (v.vendor_name || '').toLowerCase().includes(q))
+    : [...list]
+}
 
 const addExternalEmail = () => {
   const email = externalEmailInput.value.trim().toLowerCase()
@@ -397,7 +410,7 @@ const createEvent = async () => {
           body: {
             eventId: evtObj.id,
             merchantId: props.merchant.id,
-            vendorInvites: selectedVendors.value,
+            vendorInvites: selectedVendors.value.map((v) => v.id),
             externalEmails: externalEmails.value
           }
         })
