@@ -145,32 +145,30 @@ export default defineEventHandler(async (event) => {
             const [merchantUsersResult, vendorUsersResult] = await Promise.all([
               client
                 .from('users')
-                .select('email')
+                .select('email, notification_preferences')
                 .eq('associated_merchant_id', eventData.merchant)
                 .eq('available_to_contact', true)
                 .not('email', 'is', null),
               client
                 .from('users')
-                .select('email')
+                .select('email, notification_preferences')
                 .eq('associated_vendor_id', eventData.vendor)
                 .eq('available_to_contact', true)
                 .not('email', 'is', null),
             ])
 
             if (!merchantUsersResult.error && merchantUsersResult.data) {
-              for (const user of merchantUsersResult.data) {
-                if ((user as any).email && !recipients.includes((user as any).email)) {
-                  recipients.push((user as any).email)
-                }
-              }
+              filterByNotificationPreference(merchantUsersResult.data as any[], 'email_event_reminders')
+                .forEach((email) => {
+                  if (!recipients.includes(email)) recipients.push(email)
+                })
             }
 
             if (!vendorUsersResult.error && vendorUsersResult.data) {
-              for (const user of vendorUsersResult.data) {
-                if ((user as any).email && !recipients.includes((user as any).email)) {
-                  recipients.push((user as any).email)
-                }
-              }
+              filterByNotificationPreference(vendorUsersResult.data as any[], 'email_event_reminders')
+                .forEach((email) => {
+                  if (!recipients.includes(email)) recipients.push(email)
+                })
             }
 
             if (recipients.length === 0) {

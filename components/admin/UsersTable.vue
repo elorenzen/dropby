@@ -39,7 +39,10 @@
     </Column>
     <Column field="current_plan" header="Plan" sortable>
       <template #body="{ data }">
-        <Tag :value="(data.current_plan || 'free').toUpperCase()" :severity="planSeverity(data.current_plan)" />
+        <div class="flex flex-wrap gap-1 items-center">
+          <Tag :value="(data.current_plan || 'free').toUpperCase()" :severity="planSeverity(data.current_plan)" />
+          <Tag v-if="data.is_beta_tester" severity="info" value="BETA" />
+        </div>
       </template>
     </Column>
     <Column field="is_admin" header="Admin" sortable>

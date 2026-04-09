@@ -52,6 +52,7 @@
       <DeleteDialog
         :visible="showDeleteDialog"
         :itemType="'Payment Method'"
+        :loading="deletingPaymentMethod"
         @deleteCancel="handleDeleteCancel"
         @deleteConfirm="handleDeleteConfirm"
       />
@@ -71,6 +72,7 @@ const { showToast } = useToast()
 const paymentMethods = ref<any[]>([])
 const showAddDialog = ref(false)
 const showDeleteDialog = ref(false)
+const deletingPaymentMethod = ref(false)
 const paymentMethodToDelete = ref<string | null>(null)
 
 onMounted(async () => {
@@ -112,6 +114,7 @@ const handleDeleteCancel = () => {
 const handleDeleteConfirm = async () => {
     if (!paymentMethodToDelete.value) return
     
+    deletingPaymentMethod.value = true
     try {
         const response = await paymentService.detachPaymentMethod({
             paymentMethodId: paymentMethodToDelete.value
@@ -127,6 +130,7 @@ const handleDeleteConfirm = async () => {
         console.error('Error deleting payment method:', error)
         showToast('error', 'Error', 'Failed to delete payment method. Please try again.')
     } finally {
+        deletingPaymentMethod.value = false
         showDeleteDialog.value = false
         paymentMethodToDelete.value = null
     }

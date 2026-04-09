@@ -89,6 +89,76 @@
           class="w-full resize-none"
         />
       </div>
+
+      <!-- Vendor Invite Section -->
+      <div class="space-y-3 border-t pt-4">
+        <div class="flex items-center gap-3">
+          <ToggleSwitch v-model="inviteVendors" />
+          <label class="text-sm font-medium text-text-main cursor-pointer" @click="inviteVendors = !inviteVendors">
+            Invite food truck(s)
+          </label>
+        </div>
+
+        <template v-if="inviteVendors">
+          <!-- Invite from DropBy -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-text-main">Invite from DropBy</label>
+            <AutoComplete
+              v-model="selectedVendors"
+              multiple
+              fluid
+              dropdown
+              dropdownMode="blank"
+              completeOnFocus
+              :suggestions="vendorInviteSuggestions"
+              optionLabel="vendor_name"
+              dataKey="id"
+              placeholder="Select vendors to invite"
+              class="w-full"
+              @complete="searchVendorInvites"
+            />
+            <p class="text-xs text-text-muted">
+              Only vendors whose users are available to contact will receive invites.
+            </p>
+          </div>
+
+          <!-- External Email Invites -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-text-main">Send external invite</label>
+            <div class="flex gap-2">
+              <InputText
+                v-model="externalEmailInput"
+                placeholder="Enter email address and press Enter"
+                class="flex-1"
+                @keydown.enter.prevent="addExternalEmail"
+              />
+              <Button
+                icon="pi pi-plus"
+                severity="secondary"
+                outlined
+                @click="addExternalEmail"
+                :disabled="!externalEmailInput"
+              />
+            </div>
+            <div v-if="externalEmails.length > 0" class="flex flex-wrap gap-2 mt-2">
+              <Tag
+                v-for="(email, index) in externalEmails"
+                :key="index"
+                :value="email"
+                severity="info"
+                class="cursor-pointer"
+                @click="removeExternalEmail(index)"
+              >
+                <span>{{ email }}</span>
+                <i class="pi pi-times ml-1 text-xs"></i>
+              </Tag>
+            </div>
+            <p class="text-xs text-text-muted">
+              External vendors will receive an email with a link to view event details and respond.
+            </p>
+          </div>
+        </template>
+      </div>
     </div>
 
     <template #footer>
@@ -116,7 +186,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { usageService } from '~/services/api/usageService'
 import { useToast } from '~/composables/useToast'
 
-import type { Merchant } from '~/types'
+import type { Merchant, Vendor } from '~/types'
 
 interface Props {
   visible: boolean
@@ -134,6 +204,8 @@ const emit = defineEmits<Emits>()
 
 const { showToast } = useToast()
 const eventStore = useEventStore()
+const vendorStore = useVendorStore()
+const userStore = useUserStore()
 const businessHoursStore = useBusinessHoursStore()
 
 // Reactive data
@@ -151,6 +223,49 @@ const eventEnd = ref<Date | null>(null)
 const eventNotes = ref(props.merchant?.notes || '')
 // const eventValue = ref(props.merchant?.default_event_value || 150) // COMMENTED OUT - Feature under consideration
 const errors = ref<Record<string, string>>({})
+
+// Vendor invite state
+const inviteVendors = ref(false)
+const selectedVendors = ref<Vendor[]>([])
+const vendorInviteSuggestions = ref<Vendor[]>([])
+const externalEmailInput = ref('')
+const externalEmails = ref<string[]>([])
+
+const contactableVendors = computed(() => {
+  const contactableUserVendorIds = userStore.getContactableUsers
+    .filter((u: any) => u.associated_vendor_id)
+    .map((u: any) => u.associated_vendor_id)
+  
+  return vendorStore.getAllVendors.filter(
+    (v: Vendor) => v.vendor_name && contactableUserVendorIds.includes(v.id)
+  )
+})
+
+const searchVendorInvites = (event: { query: string }) => {
+  const q = (event.query || '').trim().toLowerCase()
+  const list = contactableVendors.value
+  vendorInviteSuggestions.value = q
+    ? list.filter((v) => (v.vendor_name || '').toLowerCase().includes(q))
+    : [...list]
+}
+
+const addExternalEmail = () => {
+  const email = externalEmailInput.value.trim().toLowerCase()
+  if (!email) return
+
+  const emails = email.split(',').map(e => e.trim()).filter(e => e.includes('@'))
+  
+  for (const e of emails) {
+    if (e && !externalEmails.value.includes(e)) {
+      externalEmails.value.push(e)
+    }
+  }
+  externalEmailInput.value = ''
+}
+
+const removeExternalEmail = (index: number) => {
+  externalEmails.value.splice(index, 1)
+}
 
 // Computed properties
 const canCreateEvent = computed(() => {
@@ -175,6 +290,10 @@ const closeDialog = () => {
   eventEnd.value = null
   eventNotes.value = props.merchant?.notes || ''
   // eventValue.value = props.merchant?.default_event_value || 150 // COMMENTED OUT - Feature under consideration
+  inviteVendors.value = false
+  selectedVendors.value = []
+  externalEmailInput.value = ''
+  externalEmails.value = []
   errors.value = {}
   emit('update:visible', false)
 }
@@ -281,10 +400,33 @@ const createEvent = async () => {
       // Don't fail the event creation if usage tracking fails
     }
 
+    // Send vendor invites if enabled
+    const hadInvites = inviteVendors.value
+    const inviteCount = selectedVendors.value.length + externalEmails.value.length
+    if (hadInvites && inviteCount > 0) {
+      try {
+        await $fetch('/api/event-invites/send', {
+          method: 'POST',
+          body: {
+            eventId: evtObj.id,
+            merchantId: props.merchant.id,
+            vendorInvites: selectedVendors.value.map((v) => v.id),
+            externalEmails: externalEmails.value
+          }
+        })
+      } catch (inviteError) {
+        console.error('Failed to send vendor invites:', inviteError)
+        showToast('warn', 'Invites Partially Sent', 'Event created but some invites may not have been sent.', 5000)
+      }
+    }
+
     closeDialog()
     emit('event-created')
 
-    showToast('success', 'Event Created', 'Your event has been created successfully')
+    const message = hadInvites && inviteCount > 0
+      ? `Your event has been created and ${inviteCount} invite(s) sent.`
+      : 'Your event has been created successfully'
+    showToast('success', 'Event Created', message)
   } catch (error) {
     console.error('Error creating event:', error)
     showToast('error', 'Error', 'Failed to create event. Please try again.')

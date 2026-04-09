@@ -76,6 +76,7 @@
                         v-if="!isPendingRequest"
                         label="Request Event"
                         icon="pi pi-send"
+                        :loading="loading"
                         @click="$emit('requestEvent', event)"
                         class="w-full md:w-auto"
                     />
@@ -85,6 +86,7 @@
                         icon="pi pi-times"
                         severity="danger"
                         outlined
+                        :loading="loading"
                         @click="$emit('cancelRequest', event)"
                         class="w-full md:w-auto"
                     />
@@ -102,6 +104,7 @@ const props = defineProps<{
     event: Event
     merchant?: Merchant
     vendorId?: string
+    loading?: boolean
 }>()
 
 const emit = defineEmits<{

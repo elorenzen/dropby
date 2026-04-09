@@ -149,29 +149,9 @@ export const useSubscriptionStore = defineStore('subscription', {
       )
     },
     
-    canSetEventValuePricing: (state): boolean => {
-      if (state.isBetaTester) return true
-      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
-        return false
-      }
-      return hasFeatureAccess(
-        state.activeSubscription.plan_type,
-        'setEventValuePricing',
-        'merchant'
-      )
-    },
-    
-    canSetEventValuePromo: (state): boolean => {
-      if (state.isBetaTester) return true
-      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
-        return false
-      }
-      return hasFeatureAccess(
-        state.activeSubscription.plan_type,
-        'setEventValuePromo',
-        'merchant'
-      )
-    },
+    // deferred — not implemented (see subscriptionPlans / subscriptionFeatures)
+    // canSetEventValuePricing: (state): boolean => { ... },
+    // canSetEventValuePromo: (state): boolean => { ... },
     
     canCreateDateRangeEvents: (state): boolean => {
       if (state.isBetaTester) return true
@@ -214,9 +194,24 @@ export const useSubscriptionStore = defineStore('subscription', {
       if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
+      if (state.activeSubscription.business_type !== 'vendor') return false
       return hasFeatureAccess(
         state.activeSubscription.plan_type,
         'manageMenu',
+        'vendor'
+      )
+    },
+
+    /** Pro/Premium (or beta): descriptions, images, specials on menu items */
+    canUseMenuRichContent: (state): boolean => {
+      if (state.isBetaTester) return true
+      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
+        return false
+      }
+      if (state.activeSubscription.business_type !== 'vendor') return false
+      return hasFeatureAccess(
+        state.activeSubscription.plan_type,
+        'menuRichContent',
         'vendor'
       )
     },
@@ -257,32 +252,17 @@ export const useSubscriptionStore = defineStore('subscription', {
       )
     },
     
-    // ============================================================================
-    // SUPPORT FEATURE GETTERS
-    // ============================================================================
-    
-    hasPrioritySupport: (state): boolean => {
+    /** Pro/Premium (or beta): submit post-event reviews of the other party */
+    canCreatePostEventReviews: (state): boolean => {
       if (state.isBetaTester) return true
       if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
         return false
       }
       const businessType = state.activeSubscription.business_type as 'merchant' | 'vendor'
+      if (businessType !== 'merchant' && businessType !== 'vendor') return false
       return hasFeatureAccess(
         state.activeSubscription.plan_type,
-        'prioritySupport',
-        businessType
-      )
-    },
-    
-    hasDedicatedSupport: (state): boolean => {
-      if (state.isBetaTester) return true
-      if (!state.activeSubscription || (state.activeSubscription.status !== 'active' && state.activeSubscription.status !== 'trialing')) {
-        return false
-      }
-      const businessType = state.activeSubscription.business_type as 'merchant' | 'vendor'
-      return hasFeatureAccess(
-        state.activeSubscription.plan_type,
-        'dedicatedSupport',
+        'createPostEventReviews',
         businessType
       )
     },
@@ -293,43 +273,67 @@ export const useSubscriptionStore = defineStore('subscription', {
         this.loading = true
         this.error = null
         try {
-            // Query for active or trialing subscriptions
+            const businessTable = businessType === 'merchant' ? 'merchants' : 'vendors'
+            const { data: businessRow, error: businessError } = await supabase
+                .from(businessTable)
+                .select('subscription_id')
+                .eq('id', businessId)
+                .maybeSingle()
+
+            if (businessError) {
+                console.error('Error fetching business subscription pointer:', businessError)
+                this.error = businessError.message
+            }
+
+            if (businessRow?.subscription_id) {
+                const { data: byPointer, error: pointerError } = await supabase
+                    .from('subscriptions')
+                    .select('*')
+                    .eq('id', businessRow.subscription_id)
+                    .maybeSingle()
+
+                if (pointerError) {
+                    console.error('Error fetching subscription by business.subscription_id:', pointerError)
+                    this.error = pointerError.message
+                }
+
+                if (byPointer) {
+                    this.activeSubscription = byPointer as Subscription
+                    return
+                }
+            }
+
+            const statusFilter = ['active', 'trialing', 'unpaid', 'past_due'] as const
             const { data, error } = await supabase
                 .from('subscriptions')
                 .select('*')
                 .eq('business_id', businessId)
                 .eq('business_type', businessType)
-                .in('status', ['active', 'trialing'])
+                .in('status', [...statusFilter])
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle()
 
-            if (error && error.code !== 'PGRST116') {
+            if (error) {
                 console.error('Error fetching subscription:', error)
                 this.error = error.message
             }
 
             if (data) {
                 this.activeSubscription = data as Subscription
-            } else {
-                // Check for expired trial (unpaid/past_due with trial_end set)
-                const { data: expiredTrial } = await supabase
-                    .from('subscriptions')
-                    .select('*')
-                    .eq('business_id', businessId)
-                    .eq('business_type', businessType)
-                    .in('status', ['unpaid', 'past_due'])
-                    .not('trial_end', 'is', null)
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle()
-
-                if (expiredTrial) {
-                    this.activeSubscription = expiredTrial as Subscription
-                } else {
-                    this.activeSubscription = null
-                }
+                return
             }
+
+            const { data: latestAny } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('business_id', businessId)
+                .eq('business_type', businessType)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle()
+
+            this.activeSubscription = (latestAny as Subscription) || null
         } catch (error: any) {
             console.error('Error setting active subscription:', error)
             this.error = error.message || 'Failed to load subscription'

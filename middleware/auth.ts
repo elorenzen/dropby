@@ -4,15 +4,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     const store = useUserStore()
     const storeUser = store.getUser
 
-    // Define user interface for type safety
-    interface User {
-        id: string
-        type?: 'vendor' | 'merchant'
-        associated_vendor_id?: string
-        associated_merchant_id?: string
-        [key: string]: any
-    }
-
     // Allow public profile pages to be accessed without authentication
     const isPublicProfile = to.path.includes('/profile')
     
@@ -31,7 +22,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
             .from('users')
                 .select('*')
             .eq('id', user.value.id)
-                .single()
+                .maybeSingle()
             
             if (error) {
                 console.error('Error fetching user:', error)
@@ -39,7 +30,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
             }
             
             if (data) {
-                await store.setUser(data as User)
+                await store.setUser(data as any)
             } else {
                 return navigateTo('/get-started')
     }
@@ -60,8 +51,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     // Handle protected routes that require specific user access
     if (to.params.id && storeUser && !isPublicProfile) {
         const userType = storeUser.type as 'vendor' | 'merchant'
-        const associatedIdKey = `associated_${userType}_id` as keyof User
-        const userAssociatedId = storeUser[associatedIdKey]
+        const associatedIdKey = `associated_${userType}_id`
+        const userAssociatedId = (storeUser as any)[associatedIdKey]
         
         // Allow access if user is accessing their own profile
         if (to.params.id === userAssociatedId) {

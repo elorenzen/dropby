@@ -187,19 +187,39 @@
                 />
               </div>
 
-              <!-- Preferred Vendors -->
               <div>
                 <label class="block text-sm font-medium mb-2" style="color: var(--text-md-gray);">Preferred Vendor(s)</label>
-                <MultiSelect
-                  v-model="merchant.preferred_vendors"
-                  :options="vendors"
+                <AutoComplete
+                  :model-value="selectedPreferredVendors"
+                  multiple
+                  fluid
+                  dropdown
+                  dropdownMode="blank"
+                  completeOnFocus
+                  :suggestions="preferredVendorSuggestions"
                   optionLabel="vendor_name"
-                  display="chip"
-                  filter
-                  :maxSelectedLabels="3"
+                  dataKey="id"
                   class="w-full"
                   placeholder="Select preferred vendors"
+                  :disabled="maxPreferredVendors === 0"
+                  :loading="vendorStore.loading"
+                  @complete="searchPreferredVendors"
+                  @update:model-value="onPreferredVendorsUpdate"
                 />
+                <p
+                  v-if="maxPreferredVendors === 0"
+                  class="text-xs mt-2"
+                  style="color: var(--text-md-gray);"
+                >
+                  Upgrade to Pro or Premium to save preferred vendors for quicker event invites.
+                </p>
+                <p
+                  v-else-if="Number.isFinite(maxPreferredVendors)"
+                  class="text-xs mt-2"
+                  style="color: var(--text-md-gray);"
+                >
+                  Your plan allows up to {{ maxPreferredVendors }} preferred vendor{{ maxPreferredVendors === 1 ? '' : 's' }}.
+                </p>
               </div>
 
               <!-- Save Button -->
@@ -305,7 +325,7 @@
           </div>
 
           <!-- Current Subscription Plan Section -->
-          <div v-if="hasActiveSubscription" class="space-y-6">
+          <div v-if="hasSubscriptionRecord" class="space-y-6">
             <div class="bg-surface-card rounded-lg border border-surface-border p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-semibold text-text-main">Current Subscription Plan</h3>
@@ -322,8 +342,14 @@
                   <i class="pi pi-star text-primary text-xl"></i>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-text-main capitalize">
+                  <h4 class="text-lg font-semibold text-text-main capitalize flex flex-wrap items-center gap-2">
                     {{ getCurrentPlanName() }}
+                    <span
+                      v-if="subscriptionStore.isBetaTester"
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-info-medium text-info-dark"
+                    >
+                      Beta — Premium access
+                    </span>
                   </h4>
                   <p class="text-text-muted">
                     ${{ getCurrentPlanPrice() }}/month
@@ -347,13 +373,13 @@
           </div>
 
           <!-- Middle Row: Event Pricing Configuration and Pricing Guide -->
-          <div v-if="hasActiveSubscription" class="space-y-8">
+          <div v-if="subscriptionStore.getActiveSubscription" class="space-y-8">
               <!-- Payment History Section -->
               <PaymentHistory :merchantId="merchant.id" />
           </div>
 
           <!-- Bottom Row: Subscription Status -->
-          <div v-if="!hasActiveSubscription" class="mb-8">
+          <div v-if="showUpgradeBanner" class="mb-8">
             <div class="bg-accent rounded-lg p-6" style="color: var(--p-primary-color-text);">
               <div class="flex items-center gap-4 mb-4">
                 <div class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-light opacity-30">
@@ -365,7 +391,7 @@
                 </div>
               </div>
               <p class="mb-4" style="color: var(--p-primary-color-text); opacity: 0.9;">
-                You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and priority support.
+                You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and post-event reviews.
               </p>
               <Button
                 label="View Plans"
@@ -391,7 +417,7 @@
         >
           <SubscriptionPlans 
             :userTypeProp="'merchant'"
-            :currentPlanId="currentSubscription?.plan_type || 'free'"
+            :currentPlanId="subscriptionStore.currentPlanType"
             :loading="subscriptionLoading"
             @plan-selected="handlePlanSelection" 
           />
@@ -405,8 +431,16 @@
             />
         </div>
 
+        <!-- NOTIFICATIONS TAB -->
+        <div v-if="activeTab === 4" class="space-y-6">
+          <SettingsNotificationSettings
+            businessType="merchant"
+            @error="(type, msg) => { errType = type; errMsg = msg; errDialog = true }"
+          />
+        </div>
+
         <!-- USER MANAGEMENT TAB (admin only) -->
-        <div v-if="isAdmin && activeTab === 4" class="space-y-6">
+        <div v-if="isAdmin && activeTab === 5" class="space-y-6">
           <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">User Management</h2>
           <AssociatedUsers :businessName="merchant.merchant_name" />
         </div>
@@ -422,6 +456,8 @@
 import { formatDate } from '~/utils/dates'
 import { useGooglePlacesAutocomplete } from '~/composables/useGooglePlacesAutocomplete'
 import { useToast } from '~/composables/useToast'
+import { MERCHANT_PRO_MAX_PREFERRED_VENDORS } from '~/constants/subscriptionFeatures'
+import type { Vendor } from '~/types'
 
 const route = useRoute()
 const { showToast } = useToast()
@@ -432,13 +468,20 @@ const userStore = useUserStore()
 const businessHoursStore = useBusinessHoursStore()
 const { currentUser } = useAuth()
 
-// Store data
-const vendors = vendorStore.getAllVendors
+const preferredVendorSuggestions = ref<Vendor[]>([])
+const selectedPreferredVendors = ref<Vendor[]>([])
 const user = userStore.getUser
+
 const assocId = user?.[`associated_${user?.type}_id`]
 
 // Reactive data
 const merchant = ref(await merchantStore.getMerchantById(assocId || ''))
+if (merchant.value) {
+  const raw = merchant.value.preferred_vendors
+  merchant.value.preferred_vendors = Array.isArray(raw)
+    ? [...new Set(raw.map((x: unknown) => (typeof x === 'string' ? x : (x as { id?: string })?.id)).filter(Boolean) as string[])]
+    : []
+}
 const activeTab = ref(route.query.activeTab ? parseInt(route.query.activeTab as string) : 0)
 const loading = ref(false)
 const errDialog = ref(false)
@@ -486,6 +529,7 @@ const tabs = computed(() => {
     { label: 'Business Hours', icon: 'pi pi-clock' },
     { label: 'Payments & Financial', icon: 'pi pi-credit-card' },
     { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
+    { label: 'Notifications', icon: 'pi pi-bell' },
   ]
   if (isAdmin.value) {
     baseTabs.push({ label: 'User Management', icon: 'pi pi-users' })
@@ -493,9 +537,98 @@ const tabs = computed(() => {
   return baseTabs
 })
 // Subscription status
-const hasActiveSubscription = ref(false)
 const currentSubscription = ref<any>(null)
 const subscriptionStore = useSubscriptionStore()
+
+const hasSubscriptionRecord = computed(
+  () => !!subscriptionStore.getActiveSubscription || subscriptionStore.isBetaTester
+)
+const showUpgradeBanner = computed(
+  () => subscriptionStore.currentPlanType === 'free' && !subscriptionStore.isBetaTester
+)
+
+const maxPreferredVendors = computed((): number => {
+  if (subscriptionStore.isBetaTester || subscriptionStore.canSetUnlimitedPreferredVendors) {
+    return Number.POSITIVE_INFINITY
+  }
+  if (subscriptionStore.canSetPreferredVendors) {
+    return MERCHANT_PRO_MAX_PREFERRED_VENDORS
+  }
+  return 0
+})
+
+function syncPreferredVendorsFromMerchant() {
+  const ids = (merchant.value?.preferred_vendors as string[] | undefined) ?? []
+  if (!Array.isArray(ids) || !ids.length) {
+    selectedPreferredVendors.value = []
+    return
+  }
+  const all = vendorStore.getAllVendors
+  selectedPreferredVendors.value = ids
+    .map((id) => all.find((v: Vendor) => v.id === id))
+    .filter((v): v is Vendor => !!v)
+}
+
+function onPreferredVendorsUpdate(vendors: Vendor[]) {
+  if (!merchant.value) return
+  const max = maxPreferredVendors.value
+  if (max === 0) {
+    selectedPreferredVendors.value = []
+    merchant.value.preferred_vendors = []
+    return
+  }
+  let next = vendors
+  if (Number.isFinite(max) && vendors.length > max) {
+    next = vendors.slice(0, max)
+    showToast('warn', 'Preferred vendors', `Your plan allows up to ${max} preferred vendors.`, 5000)
+  }
+  selectedPreferredVendors.value = next
+  merchant.value.preferred_vendors = next.map((v) => v.id)
+}
+
+const searchPreferredVendors = async (event: { query: string }) => {
+  try {
+    if (!vendorStore.getAllVendors.length) {
+      await vendorStore.loadVendors()
+    }
+    const q = (event.query || '').trim().toLowerCase()
+    const selected = new Set(selectedPreferredVendors.value.map((v: Vendor) => v.id))
+    preferredVendorSuggestions.value = vendorStore.getAllVendors.filter(
+      (v: Vendor) =>
+        !selected.has(v.id) && (!q || (v.vendor_name || '').toLowerCase().includes(q))
+    )
+  } catch {
+    preferredVendorSuggestions.value = []
+  }
+}
+
+function enforcePreferredVendorLimit(showToastOnTrim = false) {
+  if (!merchant.value) return
+  let ids = Array.isArray(merchant.value.preferred_vendors)
+    ? [...(merchant.value.preferred_vendors as string[])]
+    : []
+  const max = maxPreferredVendors.value
+  if (max === 0 && ids.length > 0) {
+    merchant.value.preferred_vendors = []
+    if (showToastOnTrim) {
+      showToast('warn', 'Preferred vendors', 'Your plan does not include preferred vendors. Clear them or upgrade to Pro.')
+    }
+    syncPreferredVendorsFromMerchant()
+    return
+  }
+  if (Number.isFinite(max) && ids.length > max) {
+    merchant.value.preferred_vendors = ids.slice(0, max)
+    if (showToastOnTrim) {
+      showToast(
+        'warn',
+        'Preferred vendors',
+        `Your plan allows up to ${max} preferred vendors. Extra entries were removed.`,
+        6000
+      )
+    }
+  }
+  syncPreferredVendorsFromMerchant()
+}
 
 // Trial state
 const trialAlertDismissed = ref(false)
@@ -519,8 +652,12 @@ const subscriptionLoading = ref(false)
 
 // Google Maps initialization
 onMounted(async () => {
+  if (!vendorStore.getAllVendors.length) {
+    await vendorStore.loadVendors()
+  }
   await sdkInit()
   await checkSubscriptionStatus()
+  syncPreferredVendorsFromMerchant()
   await loadBusinessHours()
 })
 
@@ -583,6 +720,8 @@ const setFormattedClose = (e: any, i: number) => {
 
 const saveEdits = async () => {
   if (!merchant.value) return
+
+  enforcePreferredVendorLimit(false)
   
   loading.value = true
   
@@ -598,7 +737,7 @@ const saveEdits = async () => {
     website: merchant.value.website,
     instagram: merchant.value.instagram,
     email: merchant.value.email,
-    preferred_vendors: merchant.value.preferred_vendors,
+    preferred_vendors: merchant.value.preferred_vendors ?? [],
   }
 
   try {
@@ -681,10 +820,9 @@ const checkSubscriptionStatus = async () => {
     await subscriptionStore.setActiveSubscription(merchantId, 'merchant')
     
     currentSubscription.value = subscriptionStore.getActiveSubscription
-    hasActiveSubscription.value = subscriptionStore.isActive
+    enforcePreferredVendorLimit(true)
   } catch (error) {
     console.error('Error checking subscription status:', error)
-    hasActiveSubscription.value = false
   }
 }
 
@@ -725,9 +863,7 @@ const onClose = () => {
 
 // Helper functions for subscription plan display
 const getCurrentPlanName = () => {
-  if (!currentSubscription.value) return 'Free'
-  
-  const planType = currentSubscription.value.plan_type
+  const planType = subscriptionStore.currentPlanType
   switch (planType) {
     case 'pro':
       return 'Pro'
@@ -739,9 +875,7 @@ const getCurrentPlanName = () => {
 }
 
 const getCurrentPlanPrice = () => {
-  if (!currentSubscription.value) return 0
-  
-  const planType = currentSubscription.value.plan_type
+  const planType = subscriptionStore.currentPlanType
   switch (planType) {
     case 'pro':
       return 19
