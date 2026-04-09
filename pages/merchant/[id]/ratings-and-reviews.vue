@@ -1,24 +1,24 @@
 <template>
-  <div class="min-h-screen bg-background p-6">
+  <div class="min-h-screen bg-background p-4 md:p-6">
     <!-- Loading State -->
     <PageSkeleton v-if="loading" :show-stats="false" :show-list="true" :list-rows="4" />
 
     <div v-else>
     <!-- Header Section -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
+    <div class="mb-6 md:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 class="text-3xl font-bold text-text-main mb-2">
+          <h1 class="text-2xl md:text-3xl font-bold text-text-main mb-2">
             Ratings & Reviews
           </h1>
-          <p class="text-text-muted text-lg">
+          <p class="text-text-muted text-base md:text-lg">
             Manage and view all ratings for {{ merchant?.name || 'your business' }}
           </p>
         </div>
-        <div class="flex flex-col items-end gap-2">
-          <p class="text-2xl font-bold text-text-main">Your Rating:</p>
+        <div class="flex flex-col items-start sm:items-end gap-2">
+          <p class="text-xl md:text-2xl font-bold text-text-main">Your Rating:</p>
           <Tag severity="info" rounded>
-            <p class="text-3xl font-bold text-text-main">{{ analytics.foodTruckRating }} / 5</p>
+            <p class="text-2xl md:text-3xl font-bold text-text-main">{{ analytics.foodTruckRating }} / 5</p>
           </Tag>
         </div>
       </div>
@@ -27,9 +27,9 @@
     <!-- Pending Reviews Notification -->
     <Card v-if="pendingReviews.length > 0" class="mb-6 border-accent-light bg-accent-light">
       <template #content>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-accent-light flex items-center justify-center">
+            <div class="w-10 h-10 rounded-full bg-accent-light flex-shrink-0 flex items-center justify-center">
               <i class="pi pi-exclamation-triangle icon-accent"></i>
             </div>
             <div>
@@ -51,6 +51,7 @@
             :label="showPendingReviews ? 'Hide' : 'View Events'"
             severity="warning"
             outlined
+            class="self-start sm:self-auto"
           />
         </div>
         

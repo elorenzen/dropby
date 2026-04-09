@@ -670,7 +670,7 @@ useSeoMeta({
   }
   
   .section-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   .steps-container {
@@ -680,6 +680,34 @@ useSeoMeta({
   .cta-buttons {
     flex-direction: column;
     align-items: center;
+  }
+
+  .plans-title {
+    font-size: 2rem;
+  }
+
+  .plans-grid {
+    gap: 1rem;
+  }
+
+  .plan-card {
+    padding: 1.5rem;
+  }
+
+  .plan-price .price {
+    font-size: 2rem;
+  }
+
+  .cta-content h2 {
+    font-size: 1.75rem;
+  }
+
+  .cta-section {
+    padding: 2rem 1.5rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
   }
 }
 

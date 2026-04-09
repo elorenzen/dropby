@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-background p-6">
+    <div class="min-h-screen bg-background p-4 md:p-6">
       <!-- Loading State -->
       <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
 
@@ -31,13 +31,13 @@
       </div>
 
       <!-- Header Section -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between">
+      <div class="mb-6 md:mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 class="text-3xl font-bold text-text-main mb-2">
+            <h1 class="text-2xl md:text-3xl font-bold text-text-main mb-2">
               Welcome back, {{ user?.first_name || 'Merchant' }}!
             </h1>
-            <p class="text-text-muted text-lg">
+            <p class="text-text-muted text-base md:text-lg">
               Here's what's happening with {{ merchant?.merchant_name || 'your business' }} today
             </p>
           </div>
@@ -62,7 +62,7 @@
       />
   
       <!-- Analytics Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         <Card class="analytics-card clickable-card" @click="navigateToEvents">
           <template #content>
             <div class="flex items-center justify-between">
@@ -137,7 +137,7 @@
       </div>
   
       <!-- Main Content Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         <!-- Left Column - Calendar & Events -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Calendar Section -->
@@ -445,10 +445,26 @@
   border-color: rgba(var(--primary-color-rgb), 0.5);
 }
 
-/* Hide redundant buttons on mobile since we have bottom nav */
 @media (max-width: 768px) {
   .desktop-only {
     display: none;
+  }
+
+  .analytics-card :deep(.p-card-content) {
+    padding: 0.75rem !important;
+  }
+
+  .analytics-card .text-3xl {
+    font-size: 1.5rem;
+  }
+
+  .analytics-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .clickable-card:hover {
+    transform: none;
   }
 }
 </style>

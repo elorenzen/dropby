@@ -1,41 +1,42 @@
 <template>
-  <div class="min-h-screen bg-background p-6">
+  <div class="min-h-screen bg-background p-4 md:p-6">
     <!-- Loading State -->
     <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
 
     <div v-else>
     <!-- Header Section -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
+    <div class="mb-6 md:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 class="text-3xl font-bold text-text-main mb-2">
+          <h1 class="text-2xl md:text-3xl font-bold text-text-main mb-2">
             Analytics
           </h1>
-          <p class="text-text-muted text-lg">
+          <p class="text-text-muted text-base md:text-lg">
             View analytics for {{ vendor?.vendor_name || 'your business' }}
           </p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap items-center gap-3">
           <Select 
             v-model="selectedPeriod" 
             :options="periodOptions" 
             optionLabel="label"
             optionValue="value"
             placeholder="Select Period"
-            class="w-56"
+            class="w-44 md:w-56"
           />
           <Button 
             icon="pi pi-arrow-left" 
             @click="navigateToDashboard"
             outlined 
-            label="Back to Dashboard"
+            label="Back"
+            class="hidden md:inline-flex"
           />
         </div>
       </div>
     </div>
 
     <!-- Key Metrics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
       <Card class="analytics-card">
         <template #content>
           <div class="flex items-center justify-between">
@@ -92,7 +93,7 @@
     </div>
 
     <!-- Charts Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-6 md:mb-8">
       <!-- Bookings Over Time Chart -->
       <Card>
         <template #title>
@@ -465,6 +466,25 @@ useSeoMeta({ title: () => `Analytics | ${vendor.value?.vendor_name || 'Vendor'}`
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .analytics-card :deep(.p-card-content) {
+    padding: 0.75rem !important;
+  }
+
+  .analytics-card .text-3xl {
+    font-size: 1.5rem;
+  }
+
+  .analytics-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .analytics-card:hover {
+    transform: none;
+  }
 }
 </style>
 

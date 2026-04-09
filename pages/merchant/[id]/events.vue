@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-background p-6">
+  <div class="min-h-screen bg-background p-4 md:p-6">
     <!-- Header Section -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
+    <div class="mb-6 md:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 class="text-3xl font-bold text-text-main mb-2">
+          <h1 class="text-2xl md:text-3xl font-bold text-text-main mb-2">
             Events
           </h1>
-          <p class="text-text-muted text-lg">
+          <p class="text-text-muted text-base md:text-lg">
             Manage and view all events for {{ merchant?.name || 'your business' }}
           </p>
         </div>
@@ -821,5 +821,15 @@ useSeoMeta({ title: () => `Events | ${merchant.value?.merchant_name || 'Merchant
 :deep(.p-button.p-button-sm) {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  :deep(.p-card .p-card-title) {
+    padding: 1rem 1rem 0.5rem 1rem;
+  }
+
+  :deep(.p-card .p-card-content) {
+    padding: 0.5rem 1rem 1rem 1rem;
+  }
 }
 </style>
