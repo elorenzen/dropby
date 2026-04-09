@@ -25,7 +25,12 @@ const user = useSupabaseUser()
 // Other data (merchants, vendors, events, etc.) is loaded lazily by pages that need it
 const userStore = useUserStore()
 if (user.value) {
-  await userStore.loadUser(user.value.id)
+  try {
+    await userStore.loadUser(user.value.id)
+  } catch (error) {
+    console.warn('Unable to load user profile during app bootstrap:', error)
+    await userStore.setUser(null)
+  }
 } else {
   await userStore.setUser(null)
 }

@@ -93,14 +93,17 @@
                 <!-- Cuisine -->
                 <div>
                   <label class="block text-sm font-medium text-text-muted mb-2">Cuisine</label>
-                  <MultiSelect
+                  <AutoComplete
                     v-model="vendor.cuisine"
-                    :options="cuisines"
-                    display="chip"
-                    filter
+                    multiple
+                    fluid
+                    dropdown
+                    dropdownMode="blank"
+                    completeOnFocus
+                    :suggestions="cuisineSuggestions"
                     placeholder="Select cuisine(s)"
-                    :maxSelectedLabels="3"
                     class="w-full"
+                    @complete="searchCuisines"
                   />
                 </div>
 
@@ -304,7 +307,7 @@
           </div>
           
           <!-- Current Subscription Plan Section -->
-          <div v-if="hasActiveSubscription" class="space-y-6">
+          <div v-if="hasSubscriptionRecord" class="space-y-6">
             <div class="bg-surface-card rounded-lg border border-surface-border p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-semibold text-text-main">Current Subscription Plan</h3>
@@ -321,8 +324,14 @@
                   <i class="pi pi-star text-primary text-xl"></i>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-text-main capitalize">
+                  <h4 class="text-lg font-semibold text-text-main capitalize flex flex-wrap items-center gap-2">
                     {{ getCurrentPlanName() }}
+                    <span
+                      v-if="subscriptionStore.isBetaTester"
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-info-medium text-info-dark"
+                    >
+                      Beta — Premium access
+                    </span>
                   </h4>
                   <p class="text-text-muted">
                     ${{ getCurrentPlanPrice() }}/month
@@ -345,12 +354,12 @@
             </div>
           </div>
 
-          <div v-if="hasActiveSubscription" class="space-y-8">
+          <div v-if="subscriptionStore.getActiveSubscription" class="space-y-8">
             <VendorPaymentHistory :vendorId="vendor.id" />
           </div>
 
           <!-- Bottom Row: Subscription Status -->
-          <div v-if="!hasActiveSubscription" class="mb-8">
+          <div v-if="showUpgradeBanner" class="mb-8">
             <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
               <div class="flex items-center gap-4 mb-4">
                 <div class="w-12 h-12 bg-surface-card/20 rounded-full flex items-center justify-center">
@@ -362,7 +371,7 @@
                 </div>
               </div>
               <p class="text-accent-dark mb-4">
-                You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and priority support.
+                You're currently on the free plan. Upgrade to unlock unlimited events, advanced analytics, and post-event reviews.
               </p>
               <Button
                 label="View Plans"
@@ -375,10 +384,10 @@
         </div>
 
         <!-- Subscription Plans Section (shown when no active subscription) -->
-        <div v-if="!hasActiveSubscription" class="mt-8">
+        <div v-if="showUpgradeBanner" class="mt-8">
           <SubscriptionPlans 
             :userTypeProp="'vendor'"
-            :currentPlanId="currentSubscription?.plan_type || 'free'"
+            :currentPlanId="subscriptionStore.currentPlanType"
             :loading="subscriptionLoading"
             @plan-selected="handlePlanSelection" 
           />
@@ -396,14 +405,22 @@
         >
           <SubscriptionPlans 
             :userTypeProp="'vendor'"
-            :currentPlanId="currentSubscription?.plan_type || 'free'"
+            :currentPlanId="subscriptionStore.currentPlanType"
             :loading="subscriptionLoading"
             @plan-selected="handlePlanSelection" 
           />
         </Dialog>
 
+        <!-- NOTIFICATIONS TAB -->
+        <div v-if="activeTab === 5" class="space-y-6">
+          <SettingsNotificationSettings
+            businessType="vendor"
+            @error="(type, msg) => { errType = type; errMsg = msg; errDialog = true }"
+          />
+        </div>
+
         <!-- USER MANAGEMENT TAB (admin only) -->
-        <div v-if="isAdmin && activeTab === 5" class="space-y-6">
+        <div v-if="isAdmin && activeTab === 6" class="space-y-6">
           <h2 class="text-2xl font-bold mb-6" style="color: var(--p-text-color);">User Management</h2>
           <AssociatedUsers :businessName="vendor.vendor_name" />
         </div>
@@ -436,7 +453,6 @@ const loading = ref(false)
 const activeTab = ref(route.query.activeTab ? parseInt(route.query.activeTab as string) : 0)
 
 // Subscription status
-const hasActiveSubscription = ref(false)
 const currentSubscription = ref<any>(null)
 
 const errType = ref()
@@ -454,6 +470,13 @@ const showSubscriptionPlans = ref(false)
 const trialAlertDismissed = ref(false)
 const downgradingToFree = ref(false)
 const subscriptionStore = useSubscriptionStore()
+
+const hasSubscriptionRecord = computed(
+  () => !!subscriptionStore.getActiveSubscription || subscriptionStore.isBetaTester
+)
+const showUpgradeBanner = computed(
+  () => subscriptionStore.currentPlanType === 'free' && !subscriptionStore.isBetaTester
+)
 
 const isTrialing = computed(() => subscriptionStore.isTrialing)
 const trialExpired = computed(() => subscriptionStore.trialExpired)
@@ -515,6 +538,16 @@ const cuisines = ref([
   'Vegan'
 ])
 
+const cuisineSuggestions = ref<string[]>([])
+
+const searchCuisines = (event: { query: string }) => {
+  const q = (event.query || '').trim().toLowerCase()
+  const list = cuisines.value
+  cuisineSuggestions.value = q
+    ? list.filter((c) => c.toLowerCase().includes(q))
+    : [...list]
+}
+
 // Tab configuration - User Management only visible to admins
 const isAdmin = computed(() => user?.is_admin === true)
 
@@ -525,6 +558,7 @@ const tabs = computed(() => {
     { label: 'Menu', icon: 'pi pi-list' },
     { label: 'Compliance & Documents', icon: 'pi pi-file-pdf' },
     { label: 'Financials & Payment Settings', icon: 'pi pi-credit-card' },
+    { label: 'Notifications', icon: 'pi pi-bell' },
   ]
   if (isAdmin.value) {
     baseTabs.push({ label: 'User Management', icon: 'pi pi-users' })
@@ -594,10 +628,8 @@ const checkSubscriptionStatus = async () => {
     await subscriptionStore.setActiveSubscription(vendorId, 'vendor')
     
     currentSubscription.value = subscriptionStore.getActiveSubscription
-    hasActiveSubscription.value = subscriptionStore.isActive
   } catch (error) {
     console.error('Error checking subscription status:', error)
-    hasActiveSubscription.value = false
   }
 }
 
@@ -733,9 +765,7 @@ const onClose = () => {
 
 // Helper functions for subscription plan display
 const getCurrentPlanName = () => {
-  if (!currentSubscription.value) return 'Free'
-  
-  const planType = currentSubscription.value.plan_type
+  const planType = subscriptionStore.currentPlanType
   switch (planType) {
     case 'pro':
       return 'Pro'
@@ -747,9 +777,7 @@ const getCurrentPlanName = () => {
 }
 
 const getCurrentPlanPrice = () => {
-  if (!currentSubscription.value) return 0
-  
-  const planType = currentSubscription.value.plan_type
+  const planType = subscriptionStore.currentPlanType
   switch (planType) {
     case 'pro':
       return 29

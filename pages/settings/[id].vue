@@ -28,6 +28,10 @@ if (type === 'merchant') {
         merchantData = await merchantStore.getMerchantById(route.params.id as string)
     }
     business.value = merchantData
+    // Preferred vendors UI needs the vendor directory; hard refresh skips app.vue timing
+    if (vendorStore.allVendors.length === 0) {
+        await vendorStore.loadVendors()
+    }
 } else if (type === 'vendor') {
     let vendorData = await vendorStore.getVendorById(route.params.id as string)
     if (!vendorData) {

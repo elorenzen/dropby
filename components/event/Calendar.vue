@@ -421,9 +421,9 @@
       @payment-dialog-closed="handlePaymentDialogClosed"
     />
 
-    <!-- Event Create Dialog - Only show for merchants if there's NO event and day is not in the past -->
+    <!-- Event Create Dialog - Only show for merchants if there's NO event, day is not in the past, and no booked event on that day -->
     <EventCreate 
-      v-if="userType === 'merchant' && merchant && !eventOnDay && dayDate && new Date(dayDate) >= new Date(new Date().setHours(0,0,0,0))"
+      v-if="userType === 'merchant' && merchant && !eventOnDay && dayDate && new Date(dayDate) >= new Date(new Date().setHours(0,0,0,0)) && !dayHasBookedEvent"
       :visible="dayViewDialog"
       @update:visible="dayViewDialog = $event"
       :merchant="merchant"
@@ -432,7 +432,7 @@
     />
 
     <ErrorDialog v-if="errDialog" :errType="errType" :errMsg="errMsg" @errorClose="errDialog = false" />
-    <DeleteDialog v-if="deleteDialog" :visible="deleteDialog" :itemType="'event'" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
+    <DeleteDialog v-if="deleteDialog" :visible="deleteDialog" :itemType="'event'" :loading="deleting" @deleteConfirm="confirmDelete" @deleteCancel="cancelDelete" />
 
     <Toast group="main" position="bottom-center" @close="onClose" />
   </div>
@@ -518,10 +518,16 @@ export default {
     const eventOnDay    = ref()
     const loadingRequest = ref<string | null>(null)
 
+    const dayHasBookedEvent = computed(() => {
+      if (!dayDate.value) return false
+      return hasScheduledEvent(new Date(dayDate.value))
+    })
+
     const errType       = ref()
     const errMsg        = ref()
     const errDialog     = ref(false)
     const deleteDialog  = ref(false)
+    const deleting      = ref(false)
     const loading       = ref(false)
     const loadingApproval = ref('')
     const loadingRejection = ref('')
@@ -682,6 +688,45 @@ export default {
       const dayEvents = events.value.filter((e: any) => 
         new Date(e.start).toDateString() === new Date(arg.date).toDateString()
       )
+
+      const bookedOnDay = dayEvents.some((e: any) => e.status === 'booked' || e.status === 'completed')
+
+      if (bookedOnDay && props.userType === 'merchant' && dayEvents.length > 0) {
+        // Merchant can still view existing events, but not create new ones
+        if (dayEvents.length >= 3) {
+          eventsOnDay.value = dayEvents.sort((a: any, b: any) => 
+            new Date(a.start).getTime() - new Date(b.start).getTime()
+          )
+          multipleEventsDialog.value = true
+          dayViewDialog.value = false
+          return
+        }
+        eventOnDay.value = dayEvents[0]
+        eventsOnDay.value = []
+        multipleEventsDialog.value = false
+        dayViewDialog.value = true
+        return
+      }
+
+      if (bookedOnDay && props.userType === 'vendor') {
+        showToast('info', 'Day Unavailable', 'This day already has a scheduled event.')
+        if (dayEvents.length >= 3) {
+          eventsOnDay.value = dayEvents.sort((a: any, b: any) => 
+            new Date(a.start).getTime() - new Date(b.start).getTime()
+          )
+          multipleEventsDialog.value = true
+          dayViewDialog.value = false
+          return
+        }
+        if (dayEvents.length > 0) {
+          eventOnDay.value = dayEvents[0]
+          eventsOnDay.value = []
+          multipleEventsDialog.value = false
+          dayViewDialog.value = true
+          return
+        }
+        return
+      }
       
       if (dayEvents.length >= 3) {
         // Show multiple events dialog
@@ -745,6 +790,16 @@ export default {
       refresh.value++
     }
 
+    const hasScheduledEvent = (date: Date): boolean => {
+      const dateStr = date.toDateString()
+      return events.value.some((e: any) => {
+        if (e.status === 'booked' || e.status === 'completed') {
+          return new Date(e.start).toDateString() === dateStr
+        }
+        return false
+      })
+    }
+
     // Calendar options
     const calendarOptions = computed(() => {
       console.log('Calendar options computed, events:', fullCalendarEvents.value.length)
@@ -760,18 +815,22 @@ export default {
         dateClick: handleDateClick,
         eventClick: handleEventClick,
         height: 'auto',
-        dayMaxEvents: 2, // Show max 2 events, then show summary for 3+
+        dayMaxEvents: 2,
         moreLinkClick: 'popover',
         eventDisplay: 'block',
         displayEventTime: false,
         displayEventEnd: false,
         dayCellClassNames: (arg: any) => {
+          const classes: string[] = []
           const today = new Date()
           const cellDate = new Date(arg.date)
           if (cellDate.toDateString() === today.toDateString()) {
-            return ['today-highlight']
+            classes.push('today-highlight')
           }
-          return []
+          if (hasScheduledEvent(cellDate)) {
+            classes.push('day-has-event')
+          }
+          return classes
         }
       }
     })
@@ -813,6 +872,7 @@ export default {
     const promptDeletion = () => { deleteDialog.value = true }
     const confirmDelete = async () => {
         const eventStore = useEventStore()
+        deleting.value = true
         try {
             await eventStore.deleteEvent(eventOnDay.value.id)
             await resetFields('deleted')
@@ -820,6 +880,8 @@ export default {
             errType.value = 'Event Deletion'
             errMsg.value = error.message
             errDialog.value = true
+        } finally {
+            deleting.value = false
         }
         deleteDialog.value = false
     }
@@ -1004,7 +1066,7 @@ export default {
           throw new Error('Vendor or event information is missing')
         }
         
-        const result = await eventStore.requestEvent(eventOnDay.value.id, vendor.value.id, { sendEmail: true })
+        const result = await eventStore.requestEvent(eventOnDay.value.id, vendor.value.id)
         
         if (!result.success) {
           if (result.error === 'usage_limit') {
@@ -1031,18 +1093,18 @@ export default {
 
     const cancelRequest = async () => {
       if (!vendor.value?.id || !eventOnDay.value) return
-      
+
       loading.value = true
       try {
-        let reqArr = eventOnDay.value.pending_requests || []
-        reqArr = reqArr.filter((id: any) => id !== vendor.value.id)
-        
-        const updates = {
-          updated_at: new Date().toISOString(),
-          pending_requests: reqArr
+        const result = await eventStore.withdrawRequest(eventOnDay.value.id, vendor.value.id)
+
+        if (!result.success) {
+          errType.value = 'Event Request'
+          errMsg.value = result.message || 'Failed to cancel request'
+          errDialog.value = true
+          return
         }
-        
-        await eventStore.updateEvent(eventOnDay.value.id, updates)
+
         await resetFields('cancelled')
       } catch (error: any) {
         errType.value = 'Event Request'
@@ -1059,7 +1121,7 @@ export default {
       
       loadingRequest.value = event.id
       try {
-        const result = await eventStore.requestEvent(event.id, vendor.value.id, { sendEmail: true })
+        const result = await eventStore.requestEvent(event.id, vendor.value.id)
         
         if (!result.success) {
           if (result.error === 'usage_limit') {
@@ -1153,11 +1215,13 @@ export default {
       dayId,
       getMerchantProp,
       dayDate,
+      dayHasBookedEvent,
       eventOnDay,
       errType,
       errMsg,
       errDialog,
       deleteDialog,
+      deleting,
       loading,
       loadingRequest,
       loadingApproval,
@@ -1274,6 +1338,29 @@ export default {
   background-color: #9ca3af;
   border-color: #9ca3af;
   opacity: 0.8;
+}
+
+:deep(.day-has-event) {
+  background-color: rgba(from var(--p-primary-color) r g b / 0.06) !important;
+  position: relative;
+}
+
+:deep(.day-has-event .fc-daygrid-day-number) {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+:deep(.day-has-event::after) {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--p-primary-color);
+  opacity: 0.6;
 }
 
 .event-list-item {

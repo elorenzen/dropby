@@ -34,7 +34,8 @@ export const useVendorStore = defineStore('vendor', {
       if (!vendorId) return ''
       const vendor = state.allVendors.find((v: Vendor) => v.id === vendorId)
       return (vendor?.[prop as keyof typeof vendor] as string) || ''
-    }
+    },
+    vendorById: (state) => (id: string) => state.allVendors.find((v: Vendor) => v.id === id)
   },
   
   actions: {
@@ -43,7 +44,7 @@ export const useVendorStore = defineStore('vendor', {
     },
     
     async getVendorById(id: string) {
-      return this.allVendors.find(vendor => vendor.id === id)
+      return this.vendorById(id)
     },
 
     async createVendor(vendorData: Partial<Vendor>) {

@@ -37,7 +37,12 @@
                 {{ pendingReviews.length }} Event{{ pendingReviews.length > 1 ? 's' : '' }} Need{{ pendingReviews.length > 1 ? '' : 's' }} Review
               </h4>
               <p class="text-sm text-accent-dark">
-                Write reviews for completed events to help other vendors
+                <template v-if="canCreatePostEventReviews">
+                  Write reviews for completed events to help other vendors
+                </template>
+                <template v-else>
+                  Post-event reviews are a Pro and Premium feature. You can still read reviews you receive.
+                </template>
               </p>
             </div>
           </div>
@@ -67,7 +72,8 @@
             </template>
             <template #actions>
               <Button 
-                @click="openWriteReviewDialog = true; selectedEvent = event"
+                :disabled="!canCreatePostEventReviews"
+                @click="openWriteReviewForEvent(event)"
                 label="Write Review"
                 severity="warning"
                 size="small"
@@ -141,7 +147,7 @@
       :visible="openWriteReviewDialog"
       :event="selectedEvent"
       :is-vendor="true"
-      :sender-id="route.params.id as string"
+      :sender-id="vendorId"
       :recipient-id="selectedEvent?.merchant || ''"
       @update:visible="openWriteReviewDialog = $event"
       @review-submitted="onReviewSubmitted"
@@ -152,6 +158,7 @@
     <DeleteDialog
       :visible="showDeleteDialog"
       item-type="Review"
+      :loading="deletingReview"
       @delete-cancel="closeDeleteDialog"
       @delete-confirm="confirmDeleteReview"
     />
@@ -169,6 +176,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const vendorId = computed(() => String(route.params.id))
 const vendorStore = useVendorStore()
 const merchantStore = useMerchantStore()
 
@@ -184,6 +192,22 @@ if (eventStore.allEvents.length === 0) {
 }
 
 const reviewStore = useReviewStore()
+const subscriptionStore = useSubscriptionStore()
+
+const canCreatePostEventReviews = computed(() => subscriptionStore.canCreatePostEventReviews)
+
+const openWriteReviewForEvent = (event: Event) => {
+  if (!canCreatePostEventReviews.value) {
+    showToast(
+      'warn',
+      'Plan required',
+      'Post-event reviews are available on Pro and Premium.'
+    )
+    return
+  }
+  selectedEvent.value = event
+  openWriteReviewDialog.value = true
+}
 
 const getMerchantProp = (merchantId: string, prop: string): string => {
   return merchantStore.getMerchantProp(merchantId, prop)
@@ -252,6 +276,7 @@ const showPendingReviews = ref(false)
 
 // Delete review state
 const showDeleteDialog = ref(false)
+const deletingReview = ref(false)
 const selectedReviewForDelete = ref<DisplayReview | null>(null)
 
 const getEventTime = (eventId: string): string => {
@@ -284,6 +309,7 @@ const closeDeleteDialog = () => {
 const confirmDeleteReview = async () => {
     if (!selectedReviewForDelete.value) return
     
+    deletingReview.value = true
     try {
         await reviewStore.deleteReview(selectedReviewForDelete.value.id)
         
@@ -293,14 +319,23 @@ const confirmDeleteReview = async () => {
     } catch (error: any) {
         console.error('Error deleting review:', error)
         showToast('error', 'Error', 'Failed to delete review. Please try again.')
+    } finally {
+        deletingReview.value = false
     }
 }
 
 onMounted(async () => {
-  // Load reviews for this user
+  if (!subscriptionStore.activeSubscription) {
+    try {
+      await subscriptionStore.setActiveSubscription(String(route.params.id), 'vendor')
+    } catch {
+      console.log('No active subscription found for vendor')
+    }
+  }
+
   await reviewStore.loadReviewsForUser(route.params.id as string)
   loading.value = false
-  
+
   console.log('Pending reviews:', pendingReviews.value)
   console.log('Sent reviews:', sentReviews.value)
 })

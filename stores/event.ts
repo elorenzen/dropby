@@ -2,6 +2,12 @@ import { defineStore } from 'pinia'
 import type { Event, TimelineItem } from '~/types'
 import { usageService } from '~/services/api/usageService'
 
+/** Nitro/ofetch errors expose `data.statusMessage` from createError */
+function pendingRequestApiErrorMessage(err: unknown, fallback: string): string {
+  const e = err as { data?: { statusMessage?: string; message?: string }; message?: string }
+  return e?.data?.statusMessage || e?.data?.message || e?.message || fallback
+}
+
 export const useEventStore = defineStore('event', {
   state: () => ({
     eventsById: [] as Event[],
@@ -294,7 +300,7 @@ export const useEventStore = defineStore('event', {
       }
     },
 
-    async requestEvent(eventId: string, vendorId: string, options?: { sendEmail?: boolean }) {
+    async requestEvent(eventId: string, vendorId: string) {
       try {
         // Check usage limit before allowing request
         const usageCheck = await usageService.check({
@@ -327,13 +333,37 @@ export const useEventStore = defineStore('event', {
           }
         }
 
-        const updatedRequests = [...currentRequests, vendorId]
-        
-        // Update event
-        await this.updateEvent(eventId, {
-          updated_at: new Date().toISOString(),
-          pending_requests: updatedRequests
-        })
+        // Server-side update (RLS blocks vendor client UPDATE on merchant-owned events).
+        let res: { success: boolean; alreadyRequested?: boolean; event?: Event }
+        try {
+          res = await $fetch('/api/events/pending-request', {
+            method: 'POST',
+            body: { eventId, vendorId, action: 'add' as const }
+          })
+        } catch (err) {
+          return {
+            success: false,
+            error: 'unknown',
+            message: pendingRequestApiErrorMessage(err, 'Failed to request event')
+          }
+        }
+
+        if (res.alreadyRequested) {
+          return { success: false, error: 'already_requested' }
+        }
+        if (!res.success || !res.event) {
+          return {
+            success: false,
+            error: 'unknown',
+            message: 'Invalid response from server'
+          }
+        }
+        const updatedEvent = res.event
+
+        const index = this.allEvents.findIndex((e) => e.id === eventId)
+        if (index !== -1) {
+          this.allEvents[index] = { ...this.allEvents[index], ...updatedEvent }
+        }
 
         // Increment usage after successful request
         await usageService.increment({
@@ -376,8 +406,8 @@ export const useEventStore = defineStore('event', {
           }
         }
 
-        // Send email notification if requested
-        if (options?.sendEmail && event.merchant) {
+        // Send email notification to contactable merchant users
+        if (event.merchant) {
           try {
             await $fetch(`/api/sendEventRequestNotification?eventId=${eventId}&vendorId=${vendorId}&merchantId=${event.merchant}`)
           } catch (emailErr) {
@@ -387,7 +417,7 @@ export const useEventStore = defineStore('event', {
 
         return {
           success: true,
-          event: this.allEvents.find(e => e.id === eventId)
+          event: this.allEvents.find((e) => e.id === eventId)
         }
       } catch (error: any) {
         console.error('Error requesting event:', error)
@@ -401,25 +431,42 @@ export const useEventStore = defineStore('event', {
 
     async withdrawRequest(eventId: string, vendorId: string) {
       try {
-        // Get the event
-        const event = this.allEvents.find(e => e.id === eventId)
+        const event = this.allEvents.find((e) => e.id === eventId)
         if (!event) {
           throw new Error('Event not found')
         }
 
-        // Remove vendor from pending_requests
-        const currentRequests = event.pending_requests || []
-        const updatedRequests = currentRequests.filter((id: string) => id !== vendorId)
-        
-        // Update event
-        await this.updateEvent(eventId, {
-          updated_at: new Date().toISOString(),
-          pending_requests: updatedRequests
-        })
+        let res: { success: boolean; event?: Event }
+        try {
+          res = await $fetch('/api/events/pending-request', {
+            method: 'POST',
+            body: { eventId, vendorId, action: 'remove' as const }
+          })
+        } catch (err) {
+          return {
+            success: false,
+            error: 'unknown',
+            message: pendingRequestApiErrorMessage(err, 'Failed to withdraw request')
+          }
+        }
+
+        if (!res.success || !res.event) {
+          return {
+            success: false,
+            error: 'unknown',
+            message: 'Invalid response from server'
+          }
+        }
+        const updatedEvent = res.event
+
+        const index = this.allEvents.findIndex((e) => e.id === eventId)
+        if (index !== -1) {
+          this.allEvents[index] = { ...this.allEvents[index], ...updatedEvent }
+        }
 
         return {
           success: true,
-          event: this.allEvents.find(e => e.id === eventId)
+          event: this.allEvents.find((e) => e.id === eventId)
         }
       } catch (error: any) {
         console.error('Error withdrawing request:', error)

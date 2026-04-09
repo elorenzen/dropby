@@ -363,6 +363,7 @@ const merchantStore = useMerchantStore()
 const eventStore = useEventStore()
 const reviewStore = useReviewStore()
 const userStore = useUserStore()
+const subscriptionStore = useSubscriptionStore()
 
 const vendor = ref<any>(await vendorStore.getVendorById(route.params.id))
 const loadingRequest = ref<string | null>(null)
@@ -373,9 +374,17 @@ onMounted(async () => {
   if (eventStore.allEvents.length === 0) {
     await eventStore.loadEvents()
   }
-  
+
   if (merchantStore.allMerchants.length === 0) {
     await merchantStore.loadMerchants()
+  }
+
+  if (!subscriptionStore.activeSubscription) {
+    try {
+      await subscriptionStore.setActiveSubscription(String(route.params.id), 'vendor')
+    } catch {
+      console.log('No active subscription found for vendor')
+    }
   }
 })
 

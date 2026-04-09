@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { MenuItem } from '~/types'
+import { sanitizeMenuItemWrite } from '~/utils/menuItemPlan'
 
 export const useMenuStore = defineStore('menu', {
   state: () => ({
@@ -51,10 +52,13 @@ export const useMenuStore = defineStore('menu', {
       this.creating = true
       try {
         const supabase = useSupabaseClient()
-        
+        const subscriptionStore = useSubscriptionStore()
+        const allowRich = subscriptionStore.canUseMenuRichContent
+        const payload = sanitizeMenuItemWrite(menuData as Record<string, unknown>, allowRich)
+
         const { data, error } = await supabase
           .from('menu_items')
-          .insert(menuData as any)
+          .insert(payload as any)
           .select()
           .single()
 
@@ -86,10 +90,13 @@ export const useMenuStore = defineStore('menu', {
       this.updating = true
       try {
         const supabase = useSupabaseClient()
-        
+        const subscriptionStore = useSubscriptionStore()
+        const allowRich = subscriptionStore.canUseMenuRichContent
+        const payload = sanitizeMenuItemWrite(updates as Record<string, unknown>, allowRich)
+
         const { data, error } = await supabase
           .from('menu_items')
-          .update(updates as any)
+          .update(payload as any)
           .eq('id', itemId)
           .select()
           .single()
@@ -171,6 +178,11 @@ export const useMenuStore = defineStore('menu', {
 
     async toggleMenuItemSpecial(itemId: string) {
       try {
+        const subscriptionStore = useSubscriptionStore()
+        if (!subscriptionStore.canUseMenuRichContent) {
+          throw new Error('Seasonal/special items are available on Pro and Premium plans.')
+        }
+
         const item = this.menuItems.find(item => item.id === itemId)
         if (!item) throw new Error('Menu item not found')
 

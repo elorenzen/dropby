@@ -1,3 +1,11 @@
+import { stripePlanPriceId } from './stripePlanPriceIds'
+import { MERCHANT_PRO_MAX_PREFERRED_VENDORS } from './subscriptionFeatures'
+
+/**
+ * Stripe Price IDs come from `stripePlanPriceIds.ts` (test vs live from `import.meta.env`; see docs/ENVIRONMENTS.md).
+ * Server onboarding can still override with STRIPE_PRICE_* env vars.
+ */
+
 // Plan interface for subscription plans display
 export interface Plan {
   id: string
@@ -18,8 +26,7 @@ export const merchantPlans: Plan[] = [
     description: 'Perfect for getting started',
     features: [
       '3 events per month',
-      'Basic dashboard',
-      'Email support'
+      'Basic dashboard'
     ],
     buttonText: 'Get Started',
     featured: false,
@@ -32,14 +39,14 @@ export const merchantPlans: Plan[] = [
     description: 'For growing businesses',
     features: [
       '10 events per month',
-      '3 preferred vendors',
-      'Event value pricing',
-      'Date range creation',
-      'Priority support'
+      `${MERCHANT_PRO_MAX_PREFERRED_VENDORS} preferred vendors`,
+      // 'Event value pricing', // deferred — not implemented
+      'Date-range events',
+      'Post-event reviews'
     ],
     buttonText: 'Start Pro',
     featured: true,
-    stripePriceId: 'price_1RpHqpE5B6laqC9SWeiNDf2U'
+    stripePriceId: stripePlanPriceId('merchantPro')
   },
   {
     id: 'merchant-premium',
@@ -47,16 +54,15 @@ export const merchantPlans: Plan[] = [
     price: 49,
     description: 'For premium merchants',
     features: [
+      'Everything in Pro',
       'Unlimited events',
       'Recurring events',
-      'Unlimited preferred vendors',
-      'Event value promo',
-      'Date range creation',
-      'Dedicated support'
+      'Unlimited preferred vendors'
+      // 'Event value promo', // deferred — not implemented
     ],
     buttonText: 'Start Premium',
     featured: false,
-    stripePriceId: 'price_1RpHrHE5B6laqC9SCChY5dJB'
+    stripePriceId: stripePlanPriceId('merchantPremium')
   }
 ]
 
@@ -68,8 +74,8 @@ export const vendorPlans: Plan[] = [
     description: 'Perfect for getting started',
     features: [
       '5 event requests per month',
-      'Basic profile',
-      'Email support'
+      'Menu: name, price, category',
+      'Basic profile'
     ],
     buttonText: 'Get Started',
     featured: false,
@@ -82,13 +88,12 @@ export const vendorPlans: Plan[] = [
     description: 'For active food trucks',
     features: [
       '15 event requests per month',
-      'Menu management',
-      'Preferred vendor status',
-      'Priority support'
+      'Rich menu (photos, descriptions, specials)',
+      'Post-event reviews'
     ],
     buttonText: 'Start Pro',
     featured: true,
-    stripePriceId: 'price_1RpHsOE5B6laqC9S2hYZtXdt'
+    stripePriceId: stripePlanPriceId('vendorPro')
   },
   {
     id: 'vendor-premium',
@@ -96,16 +101,14 @@ export const vendorPlans: Plan[] = [
     price: 79,
     description: 'For premium vendors',
     features: [
+      'Everything in Pro',
       'Unlimited event requests',
-      'Menu management',
-      'Preferred vendor status',
       'Availability calendar',
-      'Auto-booking',
-      'Dedicated support'
+      'Auto-booking'
     ],
     buttonText: 'Start Premium',
     featured: false,
-    stripePriceId: 'price_1RpHsnE5B6laqC9S9FvB3k3E'
+    stripePriceId: stripePlanPriceId('vendorPremium')
   }
 ]
 
