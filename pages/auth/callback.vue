@@ -129,7 +129,13 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .auth-callback-container {
+    padding: 2rem;
+  }
 }
 
 .auth-callback-card {

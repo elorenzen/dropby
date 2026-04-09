@@ -8,9 +8,9 @@
     </div>
 
     <!-- Email Notifications -->
-    <div class="rounded-lg border p-6" style="background: var(--p-surface-card); border-color: var(--p-surface-border);">
+    <div class="rounded-lg border p-4 sm:p-6" style="background: var(--p-surface-card); border-color: var(--p-surface-border);">
       <div class="flex items-center gap-3 mb-6">
-        <i class="pi pi-envelope text-xl" style="color: var(--p-primary-color);"></i>
+        <i class="pi pi-envelope text-xl shrink-0" style="color: var(--p-primary-color);"></i>
         <div>
           <h3 class="text-lg font-semibold" style="color: var(--p-text-color);">Email Notifications</h3>
           <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">Receive email alerts for the following activities</p>
@@ -20,12 +20,13 @@
       <div class="space-y-5">
         <template v-for="(type, index) in notificationTypes" :key="type.key">
           <Divider v-if="index > 0" />
-          <div class="flex items-center justify-between">
-            <div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0 flex-1">
               <p class="font-medium" style="color: var(--p-text-color);">{{ type.label }}</p>
               <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">{{ type.emailDescription }}</p>
             </div>
             <ToggleSwitch
+              class="shrink-0 self-start sm:self-center"
               :modelValue="preferences[`email_${type.key}` as keyof NotificationPreferences]"
               @update:modelValue="handleToggle(`email_${type.key}` as keyof NotificationPreferences, $event)"
             />
@@ -35,9 +36,9 @@
     </div>
 
     <!-- SMS Notifications -->
-    <div class="rounded-lg border p-6" style="background: var(--p-surface-card); border-color: var(--p-surface-border);">
+    <div class="rounded-lg border p-4 sm:p-6" style="background: var(--p-surface-card); border-color: var(--p-surface-border);">
       <div class="flex items-center gap-3 mb-6">
-        <i class="pi pi-mobile text-xl" style="color: var(--p-primary-color);"></i>
+        <i class="pi pi-mobile text-xl shrink-0" style="color: var(--p-primary-color);"></i>
         <div>
           <h3 class="text-lg font-semibold" style="color: var(--p-text-color);">SMS Notifications</h3>
           <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">Receive text message alerts for the following activities</p>
@@ -47,12 +48,13 @@
       <div class="space-y-5">
         <template v-for="(type, index) in notificationTypes" :key="type.key">
           <Divider v-if="index > 0" />
-          <div class="flex items-center justify-between">
-            <div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0 flex-1">
               <p class="font-medium" style="color: var(--p-text-color);">{{ type.label }}</p>
               <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">{{ type.smsDescription }}</p>
             </div>
             <ToggleSwitch
+              class="shrink-0 self-start sm:self-center"
               :modelValue="preferences[`sms_${type.key}` as keyof NotificationPreferences]"
               @update:modelValue="handleToggle(`sms_${type.key}` as keyof NotificationPreferences, $event)"
             />
