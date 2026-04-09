@@ -82,19 +82,20 @@
     </div>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button 
+          class="w-full sm:w-auto"
           label="Cancel" 
           severity="secondary" 
           outlined
           @click="closeDialog" 
         />
         <Button 
+          class="w-full sm:w-auto min-w-0 sm:min-w-[120px]"
           label="Submit Review" 
           :loading="loading" 
           :disabled="!canSubmit"
           @click="submitReview"
-          class="min-w-[120px]"
         />
       </div>
     </template>

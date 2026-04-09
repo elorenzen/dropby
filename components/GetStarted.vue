@@ -1,6 +1,6 @@
 <template>
-    <div class="card flex justify-center" style="background-color: var(--p-surface-ground) !important;">
-        <Stepper :value="currentStep" class="basis-[60rem]" style="background-color: var(--p-surface-ground) !important;">
+    <div class="card flex justify-center w-full max-w-full box-border px-2 sm:px-4" style="background-color: var(--p-surface-ground) !important;">
+        <Stepper :value="currentStep" class="w-full max-w-5xl min-w-0 flex-1" style="background-color: var(--p-surface-ground) !important;">
             <StepList>
                 <Step value="1">Business Type</Step>
                 <Step value="2" :disabled="!step1Valid">Primary User Information</Step>
@@ -56,8 +56,9 @@
                             </Card>
                         </div>
                     </div>
-                    <div class="flex justify-end" style="margin-top: 3rem; padding-top: 2rem;">
+                    <div class="flex w-full justify-end mt-8 pt-6 sm:mt-12 sm:pt-8">
                         <Button
+                            class="w-full sm:w-auto"
                             :label="!type ? 'Continue' : `Continue as ${type.charAt(0).toUpperCase() + type.slice(1)}`"
                             :disabled="!type"
                             severity="secondary"
@@ -116,9 +117,10 @@
                             </div>
                         </Fluid>
                     </div>
-                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between sm:items-center mt-8 pt-6 sm:mt-12 sm:pt-8">
+                        <Button class="w-full sm:w-auto" label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('1')" />
                         <Button
+                            class="w-full sm:w-auto"
                             label="Next"
                             severity="secondary"
                             icon="pi pi-arrow-right"
@@ -136,9 +138,10 @@
                     <div v-if="type" class="flex flex-col">
                         <NewBusiness @objUpdated="objUpdated" :bizType="type" />
                     </div>
-                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between sm:items-center mt-8 pt-6 sm:mt-12 sm:pt-8">
+                        <Button class="w-full sm:w-auto" label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
                         <Button
+                            class="w-full sm:w-auto"
                             label="Next"
                             icon="pi pi-arrow-right"
                             iconPos="right"
@@ -150,7 +153,7 @@
                 <StepPanel v-slot="{ activateCallback }" value="4" class="p-4 sm:p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div v-if="type" class="plan-selection-container">
                         <div class="text-center mb-6">
-                            <h2 class="text-3xl font-bold text-color mb-2">Choose Your Plan</h2>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-color mb-2">Choose Your Plan</h2>
                             <p class="text-md-gray">Select the perfect plan for your business needs</p>
                         </div>
 
@@ -203,9 +206,10 @@
                             {{ step4Errors.selectedPlan }}
                         </p>
                     </div>
-                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('3')" />
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between sm:items-center mt-8 pt-6 sm:mt-12 sm:pt-8">
+                        <Button class="w-full sm:w-auto" label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('3')" />
                         <Button
+                            class="w-full sm:w-auto"
                             label="Continue to Review"
                             icon="pi pi-arrow-right"
                             iconPos="right"
@@ -220,7 +224,7 @@
                         <p class="text-color-secondary">Please review before submitting</p>
                     </div>
                     
-                    <div class="bg-surface-section p-6 rounded-lg mb-6">
+                    <div class="bg-surface-section p-4 sm:p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">Primary User</h4>
                         <p class="m-2"><span class="font-bold">Name: </span>{{ first }} {{ last }}</p>
                         <p class="m-2"><span class="font-bold">Email: </span>{{ email }}</p>
@@ -230,7 +234,7 @@
                         </p>
                     </div>
 
-                    <div class="bg-surface-section p-6 rounded-lg mb-6">
+                    <div class="bg-surface-section p-4 sm:p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">{{ type }} Information</h4>
                         <p class="m-2"><span class="font-bold">Name: </span>{{ bizName }}</p>
                         <p class="m-2"><span class="font-bold">Description: </span>{{ bizDesc ? bizDesc : '-' }}</p>
@@ -240,7 +244,7 @@
                         <p class="m-2"><span class="font-bold">Email: </span>{{ bizPhone }}</p>
                     </div>
 
-                    <div v-if="selectedPlan" class="bg-surface-section p-6 rounded-lg mb-6">
+                    <div v-if="selectedPlan" class="bg-surface-section p-4 sm:p-6 rounded-lg mb-6">
                         <h4 class="text-xl font-bold mb-4">Selected Plan</h4>
                         <p class="m-2"><span class="font-bold">Plan: </span>{{ selectedPlan.name }}</p>
                         <p class="m-2"><span class="font-bold">Price: </span>${{ selectedPlan.price }}/month</p>
@@ -289,9 +293,10 @@
                         </Fluid>
                     </div>
 
-                    <div class="flex justify-between" style="margin-top: 3rem; padding-top: 2rem;">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('4')" />
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between sm:items-center mt-8 pt-6 sm:mt-12 sm:pt-8">
+                        <Button class="w-full sm:w-auto" label="Back" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('4')" />
                         <Button 
+                            class="w-full sm:w-auto"
                             label="Complete Setup" 
                             icon="pi pi-check"
                             iconPos="right"
@@ -851,6 +856,29 @@ const throwErr = (title: string, msg: string) => {
 :deep(.p-stepper .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-handle) {
     background: var(--p-primary-contrast-color, var(--p-surface-card)) !important;
     background-color: var(--p-primary-contrast-color, var(--p-surface-card)) !important;
+}
+
+/* Step labels: horizontal scroll on narrow viewports */
+@media (max-width: 640px) {
+    :deep(.p-stepper-list),
+    :deep(.p-steplist),
+    :deep([data-pc-name="steplist"]) {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        justify-content: flex-start;
+        gap: 0.25rem;
+        padding-bottom: 0.5rem;
+        margin-left: -0.25rem;
+        margin-right: -0.25rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    :deep(.p-stepper-list > *),
+    :deep(.p-steplist > *),
+    :deep([data-pc-name="steplist"] > *) {
+        flex-shrink: 0;
+    }
 }
 
 </style>

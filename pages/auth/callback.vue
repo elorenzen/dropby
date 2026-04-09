@@ -125,11 +125,19 @@ onMounted(async () => {
 
 <style scoped>
 .auth-callback-container {
-  min-height: calc(100vh - 200px);
+  min-height: calc(100vh - 120px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .auth-callback-container {
+    min-height: calc(100vh - 200px);
+    padding: 2rem;
+  }
 }
 
 .auth-callback-card {
