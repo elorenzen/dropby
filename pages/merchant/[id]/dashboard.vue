@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-background p-4 md:p-6">
+    <div class="min-h-screen bg-background p-4 sm:p-6">
       <!-- Loading State -->
       <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
 
@@ -34,10 +34,10 @@
       <div class="mb-6 md:mb-8">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-text-main mb-2">
+            <h1 class="text-2xl sm:text-3xl font-bold text-text-main mb-2">
               Welcome back, {{ user?.first_name || 'Merchant' }}!
             </h1>
-            <p class="text-text-muted text-base md:text-lg">
+            <p class="text-text-muted text-base sm:text-lg">
               Here's what's happening with {{ merchant?.merchant_name || 'your business' }} today
             </p>
           </div>

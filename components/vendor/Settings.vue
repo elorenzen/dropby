@@ -1,31 +1,32 @@
 <template>
   <div class="min-h-screen" style="background: var(--p-surface-ground); color: var(--p-text-color);">
     <!-- Header -->
-    <div class="border-b px-4 py-4 md:px-8 md:py-6" style="border-color: var(--p-surface-border);">
-      <h1 class="text-2xl md:text-3xl font-bold mb-1" style="color: var(--p-text-color);">Vendor Settings</h1>
+    <div class="border-b px-4 sm:px-8 py-4 sm:py-6" style="border-color: var(--p-surface-border);">
+      <h1 class="text-2xl sm:text-3xl font-bold mb-1" style="color: var(--p-text-color);">Vendor Settings</h1>
       <p class="text-sm" style="color: var(--p-text-muted-color, var(--p-text-color-secondary));">Manage your business profile, hours, menu, and associated users</p>
     </div>
 
-    <div class="flex flex-col md:flex-row">
-      <!-- Mobile Tab Navigation -->
-      <div class="md:hidden border-b overflow-x-auto" style="border-color: var(--p-surface-border);">
-        <nav class="flex px-4 py-2 gap-1 min-w-max">
-          <button
-            v-for="(tab, index) in tabs"
-            :key="'mobile-' + index"
-            @click="activeTab = index"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors duration-200"
-            :style="activeTab === index 
-              ? 'background: var(--primary-color); color: var(--primary-color-text);' 
-              : 'color: var(--text-md-gray); background: transparent;'"
-          >
-            <i :class="tab.icon"></i>
-            <span class="font-medium">{{ tab.label }}</span>
-          </button>
-        </nav>
+    <!-- Mobile Tab Navigation -->
+    <div class="md:hidden overflow-x-auto border-b" style="border-color: var(--p-surface-border);">
+      <div class="flex min-w-max">
+        <button
+          v-for="(tab, index) in tabs"
+          :key="index"
+          @click="activeTab = index"
+          class="flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+          :class="activeTab === index ? 'border-primary' : 'border-transparent'"
+          :style="activeTab === index 
+            ? 'color: var(--primary-color); border-color: var(--primary-color);' 
+            : 'color: var(--text-md-gray);'"
+        >
+          <i :class="tab.icon"></i>
+          <span>{{ tab.label }}</span>
+        </button>
       </div>
+    </div>
 
-      <!-- Desktop Sidebar Navigation -->
+    <div class="flex">
+      <!-- Sidebar Navigation (desktop only) -->
       <div class="hidden md:block w-64 border-r min-h-screen" style="border-color: var(--p-surface-border);">
         <nav class="p-6">
           <ul class="space-y-2">
@@ -49,7 +50,7 @@
       </div>
 
       <!-- Main Content -->
-      <div class="flex-1 p-4 md:p-8">
+      <div class="flex-1 p-4 sm:p-8">
         <!-- GENERAL INFORMATION TAB -->
         <div v-if="activeTab === 0" class="space-y-6">
           <h2 class="text-2xl font-bold text-text-main mb-6">General Information</h2>
@@ -79,7 +80,7 @@
 
             <!-- Form Fields -->
             <div class="w-full md:w-2/3 space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <!-- Name -->
                 <div>
                   <label class="block text-sm font-medium text-text-muted mb-2">Name</label>
@@ -221,7 +222,7 @@
           
           <div class="space-y-4">
             <div v-for="(day, index) in businessHours" :key="index" class="border-b border-surface-light pb-4 last:border-b-0">
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 items-center">
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6 items-center">
                 <div class="text-lg font-semibold text-text-main">{{ day.name }}</div>
                 <div>
                   <label class="block text-sm font-medium text-text-muted mb-2">{{ day.name }} Open</label>

@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-background p-4 md:p-6">
+  <div class="min-h-screen bg-background p-4 sm:p-6">
     <!-- Header Section -->
-    <div class="mb-6 md:mb-8">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-text-main mb-2">
+          <h1 class="text-2xl sm:text-3xl font-bold text-text-main mb-2">
             Events
           </h1>
-          <p class="text-text-muted text-base md:text-lg">
+          <p class="text-text-muted text-base sm:text-lg">
             Find work opportunities and manage your events for {{ vendor?.vendor_name || 'your food truck' }}
           </p>
         </div>

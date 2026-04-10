@@ -1,35 +1,35 @@
 <template>
-  <div class="min-h-screen bg-background p-4 md:p-6">
+  <div class="min-h-screen bg-background p-4 sm:p-6">
     <!-- Loading State -->
     <PageSkeleton v-if="loading" :show-stats="true" :show-list="false" />
 
     <div v-else>
     <!-- Header Section -->
-    <div class="mb-6 md:mb-8">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-text-main mb-2">
+          <h1 class="text-2xl sm:text-3xl font-bold text-text-main mb-2">
             Analytics
           </h1>
-          <p class="text-text-muted text-base md:text-lg">
+          <p class="text-text-muted text-base sm:text-lg">
             View analytics for {{ vendor?.vendor_name || 'your business' }}
           </p>
         </div>
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <Select 
             v-model="selectedPeriod" 
             :options="periodOptions" 
             optionLabel="label"
             optionValue="value"
             placeholder="Select Period"
-            class="w-44 md:w-56"
+            class="w-full sm:w-56"
           />
           <Button 
             icon="pi pi-arrow-left" 
             @click="navigateToDashboard"
             outlined 
-            label="Back"
-            class="hidden md:inline-flex"
+            label="Back to Dashboard"
+            class="w-full sm:w-auto"
           />
         </div>
       </div>

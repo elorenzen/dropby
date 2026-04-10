@@ -35,8 +35,8 @@
         </DataTable>
 
         <div v-if="selectedMerchant" class="card flex justify-center">
-            <Dialog v-model:visible="openViewDialog" modal :header="selectedMerchant.merchant_name" :style="{ width: '35rem' }">
-                <Card style="width: 30rem; overflow: hidden">
+            <Dialog v-model:visible="openViewDialog" modal :header="selectedMerchant.merchant_name" :style="{ width: '90vw', maxWidth: '35rem' }">
+                <Card style="overflow: hidden">
                     <template #title>
                         {{ new Date(selectedEvt.start).toLocaleTimeString('en-US') }} - {{ new Date(selectedEvt.end).toLocaleTimeString('en-US') }}
                         <span>
@@ -155,5 +155,13 @@
 </script>
 
 <style scoped>
-
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
 </style>

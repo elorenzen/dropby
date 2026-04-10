@@ -2,7 +2,7 @@
     <div>
         <Fluid>
             <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-12 md:col-span-4">
+                <div class="col-span-12 sm:col-span-4">
                     <NuxtImg :src="businessObj.imageUrl" alt="Image" class="w-full rounded" />
                     
                     <div class="flex flex-wrap justify-center p-2 m-2">
@@ -21,7 +21,7 @@
                     </div>
                 </div>
 
-                <div class="col-span-12 md:col-span-8">
+                <div class="col-span-12 sm:col-span-8">
                     <FloatLabel variant="on">
                         <InputText id="name" v-model="businessObj.name" :fluid="true" />
                         <label for="name">{{ altLabels[bizType].name }}</label>
@@ -65,7 +65,7 @@
                     </div>
                 </div>
 
-                <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+                <div class="col-span-6 sm:col-span-3">
                 <FloatLabel variant="on">
                     <IconField>
                         <InputIcon class="pi pi-phone" />
@@ -74,7 +74,7 @@
                     <label for="business_phone">Phone</label>
                 </FloatLabel>
                 </div>
-                <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+                <div class="col-span-6 sm:col-span-3">
                 <FloatLabel variant="on">
                     <IconField>
                         <InputIcon class="pi pi-envelope" />
@@ -83,7 +83,7 @@
                     <label for="business_email">Email</label>
                 </FloatLabel>
                 </div>
-                <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+                <div class="col-span-6 sm:col-span-3">
                     <FloatLabel variant="on">
                         <IconField>
                             <InputIcon class="pi pi-link" />
@@ -92,7 +92,7 @@
                         <label for="website">Website</label>
                     </FloatLabel>
                 </div>
-                <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+                <div class="col-span-6 sm:col-span-3">
                 <FloatLabel variant="on">
                     <IconField>
                         <InputIcon class="pi pi-instagram" />

@@ -2,13 +2,13 @@
   <div>
     <Card style="overflow: hidden">
         <template #content>
-          <v-row>
-              <v-col cols="3">
+          <div class="flex flex-col sm:flex-row gap-4">
+              <div class="sm:w-1/4 w-full">
                 <NuxtImg :src="imageUrl" alt="Image" class="w-full rounded" />
-              </v-col>
-                <v-col cols="9">
+              </div>
+                <div class="sm:w-3/4 w-full">
                   <Fluid>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- NAME -->
                         <div class="font-bold mt-4 block">
                           {{ vendor.vendor_name }}
@@ -34,8 +34,8 @@
                         </div>
                     </div>
                   </Fluid>
-                </v-col>
-            </v-row> 
+                </div>
+            </div> 
 
             <Divider />
 
@@ -46,14 +46,14 @@
                   </TabList>
                   <TabPanels>
                       <TabPanel v-for="tab in categorizedMenu" :key="tab.content" :value="tab.value">
-                        <DataTable resizableColumns columnResizeMode="expand" :value="tab.items">
+                        <DataTable resizableColumns columnResizeMode="expand" :value="tab.items" scrollable>
                             <Column header="">
                               <template #body="slotProps">
                                 <NuxtImg :src="slotProps.data.image_url" alt="No image" class="w-24 rounded" />
                               </template>
                             </Column>
                             <Column field="name" header="Name"></Column>
-                            <Column field="description" header="Description"></Column>
+                            <Column field="description" header="Description" class="hidden sm:table-cell"></Column>
                             <Column field="price" header="Price ($)"></Column>
                         </DataTable>
                       </TabPanel>
@@ -94,4 +94,14 @@ const categorizedMenu = computed(() => {
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
+}
+</style>

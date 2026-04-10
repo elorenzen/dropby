@@ -18,8 +18,8 @@
             <template #content>
               <div class="space-y-3">
                 <!-- Event Time and Status -->
-                <div class="flex items-center justify-between">
-                  <div>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="min-w-0">
                     <p class="font-semibold text-text-main">
                       {{ new Date(event.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) }} - 
                       {{ new Date(event.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) }}
@@ -28,7 +28,7 @@
                       {{ userType === 'merchant' ? getVendorProp(event.vendor, 'vendor_name') || 'Open Event' : getMerchantProp(event.merchant, 'merchant_name') || 'Establishment' }}
                     </p>
                   </div>
-                  <Tag :value="userType === 'vendor' ? getVendorStatusLabel(event) : event.status.toUpperCase()" :severity="userType === 'vendor' ? getVendorStatusSeverity(event) : getStatusLabel(event)" />
+                  <Tag class="shrink-0 self-start sm:self-auto" :value="userType === 'vendor' ? getVendorStatusLabel(event) : event.status.toUpperCase()" :severity="userType === 'vendor' ? getVendorStatusSeverity(event) : getStatusLabel(event)" />
                 </div>
                 
                 <!-- Location -->
@@ -104,21 +104,21 @@
     </Dialog>
 
     <!-- Event Details Dialog - Only show if there's a single event -->
-    <Dialog v-if="eventOnDay && (!eventsOnDay || eventsOnDay.length < 3)" :visible="dayViewDialog && !multipleEventsDialog" @update:visible="(val) => { dayViewDialog = val; if (!val) multipleEventsDialog = false; }" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '42rem' }">
+    <Dialog v-if="eventOnDay && (!eventsOnDay || eventsOnDay.length < 3)" :visible="dayViewDialog && !multipleEventsDialog" @update:visible="(val) => { dayViewDialog = val; if (!val) multipleEventsDialog = false; }" modal :header="new Date(dayDate).toLocaleDateString()" :style="{ width: '90vw', maxWidth: '42rem' }">
       <!-- MERCHANT VIEW - BOOKED EVENT -->
       <div v-if="userType === 'merchant' && (eventOnDay.status === 'booked' || eventOnDay.status === 'completed' || eventOnDay.status === 'closed')" class="space-y-4">
         <!-- Event Time and Status -->
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-color">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold text-color min-w-0 break-words">
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
           </h3>
-          <Tag :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
+          <Tag class="shrink-0 self-start sm:self-auto" :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
         </div>
         
         <!-- Vendor Info -->
         <div class="space-y-1">
           <label class="text-sm font-medium text-md-gray">Vendor</label>
-          <div class="flex items-center gap-3 p-3 bg-success-light rounded-lg border border-success-light">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-success-light rounded-lg border border-success-light">
             <NuxtImg 
               :src="getVendorProp(eventOnDay.vendor, 'avatar_url')" 
               :alt="getVendorProp(eventOnDay.vendor, 'vendor_name')" 
@@ -159,11 +159,11 @@
       <div v-else-if="userType === 'merchant' && eventOnDay.status === 'open' && eventOnDay.pending_requests && eventOnDay.pending_requests.length > 0" class="space-y-4">
         <!-- Event Details -->
         <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-color">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-lg font-semibold text-color min-w-0 break-words">
               {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
             </h3>
-            <Tag :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
+            <Tag class="shrink-0 self-start sm:self-auto" :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
           </div>
           
           <!-- Location -->
@@ -186,7 +186,7 @@
           <p class="text-sm font-medium text-primary-dark">
             {{ eventOnDay.pending_requests?.length || 0 }} vendor{{ (eventOnDay.pending_requests?.length || 0) !== 1 ? 's' : '' }} requesting this event:
           </p>
-          <div v-for="vendorId in eventOnDay.pending_requests" :key="vendorId" class="flex items-center justify-between p-3 bg-primary-light rounded-lg border border-primary-light">
+          <div v-for="vendorId in eventOnDay.pending_requests" :key="vendorId" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-primary-light rounded-lg border border-primary-light">
             <div class="flex items-center gap-3">
               <NuxtImg 
                 :src="getVendorProp(vendorId, 'avatar_url')" 
@@ -235,11 +235,11 @@
       <!-- MERCHANT VIEW - OPEN EVENT (NO PENDING REQUESTS) -->
       <div v-else-if="userType === 'merchant' && eventOnDay.status === 'open'" class="space-y-4">
         <!-- Event Time and Status -->
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-color">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold text-color min-w-0 break-words">
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
           </h3>
-          <Tag :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
+          <Tag class="shrink-0 self-start sm:self-auto" :value="eventOnDay.status" :severity="getStatusLabel(eventOnDay.status)" />
         </div>
         
         <!-- Location -->
@@ -265,11 +265,11 @@
       <!-- VENDOR VIEW - EVENT DETAILS -->
       <div v-else-if="userType === 'vendor'" class="space-y-4">
         <!-- Event Time and Status -->
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-color">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold text-color min-w-0 break-words">
             {{ new Date(eventOnDay.start).toLocaleTimeString('en-US') }} - {{ new Date(eventOnDay.end).toLocaleTimeString('en-US') }}
           </h3>
-          <Tag :value="getVendorStatusLabel(eventOnDay)" :severity="getVendorStatusSeverity(eventOnDay)" />
+          <Tag class="shrink-0 self-start sm:self-auto" :value="getVendorStatusLabel(eventOnDay)" :severity="getVendorStatusSeverity(eventOnDay)" />
         </div>
         
         <!-- Merchant Info -->
@@ -352,7 +352,7 @@
       </div>
     </Dialog>
 
-    <Dialog v-if="usageLimitReached" :visible="usageLimitReached" @update:visible="usageLimitReached = $event" modal :style="{ width: '32rem' }">
+    <Dialog v-if="usageLimitReached" :visible="usageLimitReached" @update:visible="usageLimitReached = $event" modal :style="{ width: '90vw', maxWidth: '32rem' }">
       <template #header>
         <div class="flex items-center gap-3">
           <span class="text-xl font-semibold">Monthly Limit Exceeded</span>

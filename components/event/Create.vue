@@ -35,7 +35,7 @@
       </div>
 
               <!-- Event Time Range -->
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-3">
             <label class="block text-sm font-medium text-text-main">Start Time *</label>
             <DatePicker 
@@ -162,19 +162,20 @@
     </div>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button 
+          class="w-full sm:w-auto"
           label="Cancel" 
           severity="secondary" 
           outlined
           @click="closeDialog" 
         />
         <Button 
+          class="w-full sm:w-auto min-w-0 sm:min-w-[120px]"
           label="Create Event" 
           :loading="loading" 
           :disabled="!canCreateEvent"
           @click="createEvent"
-          class="min-w-[120px]"
         />
       </div>
     </template>

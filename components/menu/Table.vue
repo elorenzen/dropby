@@ -147,7 +147,7 @@
         <!-- List View -->
         <div v-else>
             <!-- Menu Items Table -->
-            <DataTable :value="filteredMenuItems" tableStyle="width: 100%" class="p-datatable-sm menu-data-table">
+            <DataTable :value="filteredMenuItems" tableStyle="width: 100%" class="p-datatable-sm menu-data-table" scrollable>
                 <Column field="name" header="Name" sortable>
                     <template #body="{ data }">
                         <div class="flex items-center gap-3">
@@ -204,12 +204,12 @@
         </div>
 
         <!-- ADD ITEM -->
-        <Dialog :visible="addDialog" @update:visible="addDialog = $event" modal header="Add Menu Item" :style="{ width: '50rem' }" class="menu-dialog">
+        <Dialog :visible="addDialog" @update:visible="addDialog = $event" modal header="Add Menu Item" :style="{ width: '90vw', maxWidth: '50rem' }" class="menu-dialog">
             <MenuAdd :id="user.id" :vendor="user.associated_vendor_id" @created="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
         <!-- EDIT ITEM -->
-        <Dialog :visible="editDialog" @update:visible="editDialog = $event" modal header="Edit Menu Item" :style="{ width: '50rem' }" class="menu-dialog">
+        <Dialog :visible="editDialog" @update:visible="editDialog = $event" modal header="Edit Menu Item" :style="{ width: '90vw', maxWidth: '50rem' }" class="menu-dialog">
             <MenuEdit :item="itemToEdit" :vendor="user.associated_vendor_id" @edited="itemSuccess" @errored="itemErrored" />
         </Dialog>
 
@@ -437,5 +437,15 @@ onMounted(async () => {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
+}
+
+@media (max-width: 768px) {
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+  }
 }
 </style>

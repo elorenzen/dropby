@@ -56,7 +56,7 @@
         </DataTable>
 
         <!-- ADD/EDIT USER DIALOG -->
-        <Dialog v-model:visible="openDialog" modal :header="`${headerTitle} User`" :style="{ width: '35rem' }">
+        <Dialog v-model:visible="openDialog" modal :header="`${headerTitle} User`" :style="{ width: '90vw', maxWidth: '35rem' }">
             <div class="flex flex-wrap gap-4 m-2">
                 <div class="w-full md:w-1/2 p-2">
                     <FloatLabel variant="on">

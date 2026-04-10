@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <Logo class="w-12 h-12" :fontControlled="false" style="color: var(--primary-color);" />
-          <h1 class="text-2xl font-bold text-primary">Event Invitation</h1>
+          <h1 class="text-xl sm:text-2xl font-bold text-primary text-center px-1">Event Invitation</h1>
         </div>
       </template>
 
@@ -41,15 +41,15 @@
         <div v-else class="space-y-6">
           <!-- Merchant Info -->
           <div class="bg-surface-ground rounded-lg p-4 space-y-2">
-            <div class="flex items-center gap-3">
-              <div v-if="inviteData.merchant.avatar_url" class="w-12 h-12 rounded-full overflow-hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div v-if="inviteData.merchant.avatar_url" class="w-12 h-12 rounded-full overflow-hidden shrink-0">
                 <img :src="inviteData.merchant.avatar_url" :alt="inviteData.merchant.merchant_name" class="w-full h-full object-cover" />
               </div>
-              <div v-else class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div v-else class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <i class="pi pi-building text-xl text-primary"></i>
               </div>
-              <div>
-                <h3 class="text-lg font-semibold text-text-main">{{ inviteData.merchant.merchant_name }}</h3>
+              <div class="min-w-0">
+                <h3 class="text-lg font-semibold text-text-main break-words">{{ inviteData.merchant.merchant_name }}</h3>
                 <p v-if="inviteData.merchant.formatted_address" class="text-sm text-text-muted">
                   {{ inviteData.merchant.formatted_address }}
                 </p>

@@ -234,7 +234,7 @@
 
           <!-- List View -->
           <div v-else>
-            <DataTable :value="menuItems" tableStyle="width: 100%" class="p-datatable-sm">
+            <DataTable :value="menuItems" tableStyle="width: 100%" class="p-datatable-sm" scrollable>
               <Column header="Item">
                 <template #body="{ data }">
                   <div class="flex items-center gap-3">
@@ -543,6 +543,14 @@ onMounted(() => {
   .w-48 {
     width: 8rem;
     height: 8rem;
+  }
+
+  :deep(.p-datatable) {
+    font-size: 0.875rem;
+  }
+  :deep(.p-datatable .p-datatable-thead > tr > th),
+  :deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
   }
 }
 </style>

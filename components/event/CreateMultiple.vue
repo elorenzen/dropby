@@ -49,7 +49,7 @@
         </div>
   
         <!-- Event Time Range (shown when applyToAll is true) -->
-        <div v-if="applyToAll" class="grid grid-cols-2 gap-4">
+        <div v-if="applyToAll" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-3">
             <label class="block text-sm font-medium text-text-main">Start Time *</label>
             <DatePicker 
@@ -175,7 +175,7 @@
                 </div>
 
                 <!-- Time Range -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label class="block text-xs font-medium text-text-muted mb-1">Start Time</label>
                     <DatePicker 
