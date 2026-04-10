@@ -8,7 +8,6 @@
                 <Step value="4" :disabled="!step1Valid || !step2Valid || !step3Valid">Choose Plan</Step>
                 <Step value="5" :disabled="!step1Valid || !step2Valid || !step3Valid || !step4Valid">Review</Step>
             </StepList>
-            </div>
             <StepPanels>
                 <StepPanel v-slot="{ activateCallback }" value="1" class="p-4 sm:p-8 bg-surface-ground" style="background-color: var(--p-surface-ground) !important; background: var(--p-surface-ground) !important;">
                     <div class="text-center mb-6">
