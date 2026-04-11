@@ -48,16 +48,6 @@ Use our map to follow your favorite food trucks to new locations, or see what fo
 - **Maps:** [Google Maps](https://developers.google.com/maps) (Places Autocomplete, map views)
 - **Charts:** [Chart.js](https://www.chartjs.org/) via [vue-chartjs](https://vue-chartjs.org/)
 
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18+)
-- npm (comes with Node.js)
-- A [Supabase](https://supabase.com/) project
-- A [Stripe](https://stripe.com/) account (for payments)
-- A [Resend](https://resend.com/) account (for transactional email)
-- A [Google Cloud](https://console.cloud.google.com/) project with Maps JavaScript API and Places API enabled
-- An [OpenAI](https://platform.openai.com/) API key (for AI features)
-
 ## Environment Variables
 
 Create a `.env` file in the project root. The following variables are required:
@@ -162,7 +152,7 @@ dropby/
 ├── layouts/             # Nuxt layouts (default layout with header/nav)
 ├── middleware/           # Nuxt route middleware (auth guards)
 ├── pages/               # File-based routing (Nuxt pages)
-├── scripts/             # SQL migration scripts
+├── scripts/             # Project scripts
 ├── server/              # Nitro server (API routes and utilities)
 │   ├── api/             # API endpoints organized by resource
 │   └── utils/           # Server-side utility functions
@@ -344,16 +334,6 @@ Shared TypeScript types in `types/`:
 |---|---|
 | `index.ts` | Domain types (User, Merchant, Vendor, Event, MenuItem, etc.) |
 | `api.ts` | API error types and response transformers |
-
-### SQL Migrations
-
-Database migration scripts in `scripts/`:
-
-| Script | Purpose |
-|---|---|
-| `add-notification-preferences-column.sql` | Add notification preferences to users |
-| `create-event-invites-table.sql` | Event invites table schema |
-| `create-event-reminders-table.sql` | Event reminders table schema |
 
 ---
 
