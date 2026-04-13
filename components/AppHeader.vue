@@ -201,11 +201,23 @@ const menuItemsStart = computed(() => {
   const path = route.path
   
   return [
-    { 
-      label: 'How It Works', 
+    {
+      label: 'About',
+      icon: 'pi pi-heart',
+      route: '/about',
+      isActive: path === '/about' || path.startsWith('/viewer/about')
+    },
+    {
+      label: 'How It Works',
       icon: 'pi pi-info-circle',
-      route: '/viewer/about',
-      isActive: path.includes('/about')
+      route: '/how-it-works',
+      isActive: path.includes('/how-it-works')
+    },
+    {
+      label: 'Pricing',
+      icon: 'pi pi-dollar',
+      route: '/pricing',
+      isActive: path.includes('/pricing')
     },
     { 
       label: 'Events', 

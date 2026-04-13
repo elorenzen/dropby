@@ -70,7 +70,7 @@
                     </div>
                     <h3>I'm Looking for Food & Events</h3>
                     <p class="mission-statement">
-                        Discover amazing food trucks at your favorite breweries, wine bars, and wherever else yo can expect to find food trucks. 
+                        Discover amazing food trucks at your favorite breweries, wine bars, and wherever else you can expect to find food trucks. 
                         Find events near you, explore menus, read reviews, and never miss out on great food experiences. 
                         Perfect for food lovers who want to know where the best food trucks will be.
                     </p>
@@ -138,14 +138,24 @@
             </div>
             
             <div class="learn-more-section">
-                <NuxtLink to="/about">
-                    <Button 
-                        label="Learn More" 
-                        outlined
-                        class="learn-more-cta"
-                    >
+                <NuxtLink to="/about" class="learn-more-link">
+                    <Button label="About" outlined class="learn-more-cta">
                         <template #icon>
-                            <BaseIcon name="info-circle" color="var(--primary-color)" size="20" />
+                            <i class="pi pi-heart" style="font-size: 1rem; color: var(--primary-color)" />
+                        </template>
+                    </Button>
+                </NuxtLink>
+                <NuxtLink to="/how-it-works" class="learn-more-link">
+                    <Button label="How it works" outlined class="learn-more-cta">
+                        <template #icon>
+                            <BaseIcon name="info-circle" color="var(--primary-color)" size="18" />
+                        </template>
+                    </Button>
+                </NuxtLink>
+                <NuxtLink to="/pricing" class="learn-more-link">
+                    <Button label="Pricing" outlined class="learn-more-cta">
+                        <template #icon>
+                            <i class="pi pi-dollar" style="font-size: 1rem; color: var(--primary-color)" />
                         </template>
                     </Button>
                 </NuxtLink>
@@ -370,7 +380,13 @@ html.p-dark .hero-gradient-overlay {
 .learn-more-section {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     margin-top: 3rem;
+}
+
+.learn-more-link {
+    display: inline-flex;
 }
 
 .learn-more-cta {
