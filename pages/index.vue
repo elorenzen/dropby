@@ -138,13 +138,14 @@
             </div>
             
             <div class="learn-more-section">
-                <NuxtLink to="/about" class="learn-more-link">
+                <!-- TODO: Add about page back in when 'story' is complete -->
+                <!-- <NuxtLink to="/about" class="learn-more-link">
                     <Button label="About" outlined class="learn-more-cta">
                         <template #icon>
                             <i class="pi pi-heart" style="font-size: 1rem; color: var(--primary-color)" />
                         </template>
                     </Button>
-                </NuxtLink>
+                </NuxtLink> -->
                 <NuxtLink to="/how-it-works" class="learn-more-link">
                     <Button label="How it works" outlined class="learn-more-cta">
                         <template #icon>

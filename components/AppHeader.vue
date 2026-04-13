@@ -201,12 +201,13 @@ const menuItemsStart = computed(() => {
   const path = route.path
   
   return [
-    {
-      label: 'About',
-      icon: 'pi pi-heart',
-      route: '/about',
-      isActive: path === '/about' || path.startsWith('/viewer/about')
-    },
+    // TODO: Add about page back in when 'story' is complete
+    // {
+    //   label: 'About',
+    //   icon: 'pi pi-heart',
+    //   route: '/about',
+    //   isActive: path === '/about' || path.startsWith('/viewer/about')
+    // },
     {
       label: 'How It Works',
       icon: 'pi pi-info-circle',
