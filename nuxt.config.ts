@@ -28,7 +28,6 @@ export default defineNuxtConfig({
     // "vuetify-nuxt-module",
     "@nuxt/ui",
     "@nuxtjs/google-fonts",
-    "nuxt-graphql-client",
     "nuxt-svgo",
     "@nuxt/scripts",
     '@samk-dev/nuxt-vcalendar',
@@ -40,9 +39,7 @@ export default defineNuxtConfig({
     public: {
       appEnv,
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://dropby.dev',
-      autocomplete: process.env.GEO_KEY,
       gMapKey: process.env.GMAPS_API_KEY,
-      GQL_HOST: 'https://spacex-api-2gl6xp7kua-ue.a.run.app/query',
       openaiApiKey: process.env.OPENAI_API_KEY,
       stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
     }
@@ -51,7 +48,7 @@ export default defineNuxtConfig({
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_KEY,
     serviceKey: process.env.SUPABASE_SERVICE,
-    redirect: false // set to 'true', EVENTUALLY
+    redirect: false
   },
   css: [
     'primeicons/primeicons.css',

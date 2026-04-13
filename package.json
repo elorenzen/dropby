@@ -41,7 +41,6 @@
     "haversine": "^1.1.1",
     "jspdf": "^3.0.1",
     "nuxt": "^3.12.4",
-    "nuxt-graphql-client": "^0.2.43",
     "nuxt-svgo": "^4.0.9",
     "openai": "^4.85.4",
     "pinia": "^2.2.4",
