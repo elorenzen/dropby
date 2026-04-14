@@ -267,9 +267,14 @@ export const useMerchantStore = defineStore('merchant', {
     async getAnalyticsMetrics(merchantId: string, period: string) {
       try {
         const eventStore = useEventStore()
+
+        // Analytics can be loaded directly via hard refresh before events are in store
+        if (eventStore.allEvents.length === 0) {
+          await eventStore.loadEvents()
+        }
         
         // Get all events for this merchant from store
-        const allEvents = await eventStore.getEventsByMerchantId(merchantId)
+        const allEvents = eventStore.getEventsByMerchantId(merchantId)
         
         if (!allEvents || allEvents.length === 0) {
           return {
@@ -302,7 +307,7 @@ export const useMerchantStore = defineStore('merchant', {
         )
         
         // Count total requests (sum of all pending_requests arrays)
-        const totalRequests = eventsWithRequests.reduce((sum: number, event: any) => 
+        const rawTotalRequests = eventsWithRequests.reduce((sum: number, event: any) => 
           sum + (event.pending_requests?.length || 0), 0
         )
         
@@ -311,6 +316,9 @@ export const useMerchantStore = defineStore('merchant', {
           event.status === 'booked' || event.status === 'completed'
         )
         const totalBookings = bookedEvents.length
+        
+        // Keep existing request counting behavior, but guarantee <= 100%.
+        const totalRequests = Math.max(rawTotalRequests, totalBookings)
         
         // Calculate conversion rate using utility
         const conversionRate = calculateRateMetrics(totalBookings, totalRequests)

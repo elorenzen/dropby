@@ -399,6 +399,14 @@ const navigateToDashboard = () => {
 // Load analytics data
 const loadAnalyticsData = async () => {
   try {
+    // Ensure merchant is available on hard refresh before analytics load
+    if (!merchant.value) {
+      if (merchantStore.getAllMerchants.length === 0) {
+        await merchantStore.loadMerchants()
+      }
+      merchant.value = await merchantStore.getMerchantById(merchantId)
+    }
+
     const analyticsResult = await merchantStore.getAnalyticsMetrics(merchantId, selectedPeriod.value)
 
     // Update metrics
@@ -478,8 +486,11 @@ const generateChartData = async (events: any[], vendorCounts?: { [key: string]: 
     }]
   }
 
-  // Peak booking days
-  const dayCounts = countEventsByDayOfWeek(events, 'start')
+  // Peak booking days should align with booking metrics (booked + completed only)
+  const bookedCompletedEvents = events.filter((event: any) =>
+    event.status === 'booked' || event.status === 'completed'
+  )
+  const dayCounts = countEventsByDayOfWeek(bookedCompletedEvents, 'start')
   const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const dayColors = [
     'rgba(239, 68, 68, 0.8)',   // Red for Sunday
@@ -579,6 +590,9 @@ watch(selectedPeriod, async () => {
 
 // Load data on mount
 onMounted(async () => {
+  if (eventStore.allEvents.length === 0) {
+    await eventStore.loadEvents()
+  }
   await loadAnalyticsData()
   loading.value = false
 })

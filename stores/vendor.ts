@@ -363,7 +363,9 @@ export const useVendorStore = defineStore('vendor', {
         // Process metrics using utilities
         const totalBookings = acceptedEvents.length
         const pendingRequestsCount = pendingRequests.length
-        const acceptanceRate = calculateRateMetrics(totalBookings, pendingRequestsCount)
+        // Keep existing request counting behavior, but guarantee <= 100%.
+        const totalRequestsCount = Math.max(pendingRequestsCount, totalBookings)
+        const acceptanceRate = calculateRateMetrics(totalBookings, totalRequestsCount)
 
         // Calculate merchant relationship metrics using utility
         const relationshipMetrics = calculateRelationshipMetrics(acceptedEvents, 'merchant')
@@ -372,7 +374,7 @@ export const useVendorStore = defineStore('vendor', {
           metrics: {
             acceptanceRate,
             totalBookings,
-            pendingRequests: pendingRequestsCount,
+            pendingRequests: totalRequestsCount,
             uniqueMerchants: relationshipMetrics.uniquePartners,
             repeatMerchants: relationshipMetrics.repeatPartners,
             avgBookingsPerMerchant: relationshipMetrics.avgPerPartner

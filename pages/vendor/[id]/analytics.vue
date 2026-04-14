@@ -202,6 +202,7 @@ const vendorStore = useVendorStore()
 const eventStore = useEventStore()
 const vendor = ref<any>(null)
 const supabase = useSupabaseClient()
+const vendorId = computed(() => Array.isArray(route.params.id) ? route.params.id[0] : route.params.id)
 
 const loading = ref(true)
 
@@ -304,16 +305,18 @@ const navigateToDashboard = () => {
 // Load analytics data
 const loadAnalyticsData = async () => {
   try {
-    // Load vendor
+    // Ensure vendor is available on hard refresh before analytics load
     if (!vendor.value) {
-      const vendors = await vendorStore.loadVendors()
-      vendor.value = vendors?.find((v: any) => v.id === route.params.id)
+      if (vendorStore.getAllVendors.length === 0) {
+        await vendorStore.loadVendors()
+      }
+      vendor.value = vendorStore.getAllVendors.find((v: any) => v.id === vendorId.value)
     }
 
     if (!vendor.value?.id) return
 
-    const vendorId = vendor.value.id
-    const analyticsResult = await vendorStore.getAnalyticsMetrics(vendorId, selectedPeriod.value)
+    const resolvedVendorId = vendor.value.id
+    const analyticsResult = await vendorStore.getAnalyticsMetrics(resolvedVendorId, selectedPeriod.value)
 
     // Update metrics
     metrics.value.totalBookings = analyticsResult.metrics.totalBookings
@@ -324,7 +327,7 @@ const loadAnalyticsData = async () => {
     metrics.value.avgBookingsPerMerchant = analyticsResult.metrics.avgBookingsPerMerchant
 
     // Generate chart data
-    await generateChartData(analyticsResult.acceptedEvents, analyticsResult.merchantCounts, analyticsResult.periodEvents, vendorId)
+    await generateChartData(analyticsResult.acceptedEvents, analyticsResult.merchantCounts, analyticsResult.periodEvents, resolvedVendorId)
   } catch (error) {
     console.error('Error loading analytics:', error)
   }
@@ -436,6 +439,9 @@ watch(selectedPeriod, async () => {
 
 // Load data on mount
 onMounted(async () => {
+  if (eventStore.allEvents.length === 0) {
+    await eventStore.loadEvents()
+  }
   await loadAnalyticsData()
   loading.value = false
 })
