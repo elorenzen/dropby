@@ -1,38 +1,66 @@
 # DropBy
 
-Welcome to the ultimate event platform for food trucks and drinking establishments! Good drinks belong with good eats, and every food truck should have a spot to serve a hungry crowd. With DropBy, businesses can find each other and book events, increasing sales for both, and improving the overall experience for a shared customer base.
+Welcome to the ultimate event platform for food trucks and drinking establishments. Good drinks belong with good eats, and every food truck should have a spot to serve a hungry crowd. With DropBy, establishments and food trucks find each other, book events, and grow together—while patrons discover where to go.
 
-![Landing](assets/readme/homepage.png)
+**Establishments** schedule slots and approve food trucks. **Food trucks** discover events and request bookings. **Everyone else** browses events, maps, and details. The gallery below is ordered by the core product journey so visitors quickly see what DropBy does best.
 
+---
 
-## For Businesses
-Worry no more about finding a food truck to feed your patrons. Easily schedule events and approve food trucks in the area to work during business.
+## Screenshots
 
-![Merchant Dashboard](assets/readme/merchant_dashboard.png)
+### 1. Landing
 
-![Merchant Analytics](assets/readme/merchant_analytics.png)
+![DropBy landing / homepage](assets/readme/homepage.png)
 
-![Merchant Settings](assets/readme/new_merchant_setting.png)
+### 2. Establishment dashboard
 
-![Event Scheduling](assets/readme/event_creation.png)
+![Establishment dashboard at a glance](assets/readme/merchant_dashboard.png)
 
-![Subscriptions](assets/readme/vendor_financial.png)
+### 3. Food truck dashboard
 
+![Food truck dashboard: find events, requests, and upcoming bookings](assets/readme/vendor_dashboard.png)
 
-## For Food Trucks
-Need a place to park your vehicle? With our app, you can find available events in your area and work with breweries and other establishments to increase your sales for the evening.
+### 4. Event discovery and filters
 
-![Vendor Profile](assets/readme/vendor_setting.png)
+![Find events with location, date, and other filters](assets/readme/view_events.png)
 
-![Menu](assets/readme/menu.png)
+### 5. Event details
 
-![Event Request](assets/readme/request_event.png)
+![Event detail: booked event card and map context](assets/readme/booked_event_details.png)
 
+### 6. Request an event (food truck)
 
-## For Everyone Else
-Use our map to follow your favorite food trucks to new locations, or see what food is being served at your local brewery.
+![Food truck requesting an event slot](assets/readme/request_event.png)
 
-![Everyone Else](assets/readme/view_events.png)
+### 7. Approve or reject requests (establishment)
+
+![Establishment pending requests: approve or reject](assets/readme/approve_request.png)
+
+### 8. Create an event (establishment)
+
+![Creating an event: date, time, location, and notes](assets/readme/event_creation.png)
+
+### 9. Recurring events
+
+![Recurring event schedules and recurrence settings](assets/readme/recurring_events.png)
+
+### 10. Settings and profile
+
+![Settings: profile, business hours, and establishment info](assets/readme/merchant_settings.png)
+
+### Optional extras
+
+![Stripe Connect, subscription, or billing](assets/readme/vendor_financial.png)
+
+![Establishment analytics](assets/readme/merchant_analytics.png)
+
+![Establishment ratings and reviews](assets/readme/merchant_ratings.png)
+
+![Food truck menu](assets/readme/menu.png)
+
+![Add menu item](assets/readme/add_menu_item.png)
+
+---
 
 ## Setup
 
