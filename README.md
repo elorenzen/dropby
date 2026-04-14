@@ -48,17 +48,25 @@ Welcome to the ultimate event platform for food trucks and drinking establishmen
 
 ![Settings: profile, business hours, and establishment info](assets/readme/merchant_settings.png)
 
-### Optional extras
+### 11. Billing and subscription management
 
-![Stripe Connect, subscription, or billing](assets/readme/vendor_financial.png)
+![Billing and subscription management](assets/readme/vendor_financial.png)
 
-![Establishment analytics](assets/readme/merchant_analytics.png)
+### 12. Establishment analytics
+
+![Establishment analytics and performance metrics](assets/readme/merchant_analytics.png)
+
+### 13. Ratings and reviews
 
 ![Establishment ratings and reviews](assets/readme/merchant_ratings.png)
 
-![Food truck menu](assets/readme/menu.png)
+### 14. Food truck menu management
 
-![Add menu item](assets/readme/add_menu_item.png)
+![Food truck menu overview](assets/readme/menu.png)
+
+### 15. Add menu item workflow
+
+![Create and add a new menu item](assets/readme/add_menu_item.png)
 
 ---
 
