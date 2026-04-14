@@ -6,67 +6,69 @@ Welcome to the ultimate event platform for food trucks and drinking establishmen
 
 ---
 
-## Screenshots
+## Product Views
 
-### 1. Landing
+![DropBy homepage](assets/readme/homepage.png)
 
-![DropBy landing / homepage](assets/readme/homepage.png)
+![Event discovery with location, date, and advanced filters](assets/readme/view_events.png)
 
-### 2. Establishment dashboard
+### For All Businesses
 
-![Establishment dashboard at a glance](assets/readme/merchant_dashboard.png)
+#### Settings and Profile
 
-### 3. Food truck dashboard
+![Business settings for profile and account details](assets/readme/merchant_settings.png)
 
-![Food truck dashboard: find events, requests, and upcoming bookings](assets/readme/vendor_dashboard.png)
+#### Analytics
 
-### 4. Event discovery and filters
+![Business analytics and performance metrics overview](assets/readme/merchant_analytics.png)
 
-![Find events with location, date, and other filters](assets/readme/view_events.png)
+#### Ratings and Reviews
 
-### 5. Event details
+![Business ratings and review management](assets/readme/merchant_ratings.png)
 
-![Event detail: booked event card and map context](assets/readme/booked_event_details.png)
+### For Food Trucks
 
-### 6. Request an event (food truck)
+#### Dashboard
 
-![Food truck requesting an event slot](assets/readme/request_event.png)
+![Food truck dashboard with events, requests, and upcoming bookings](assets/readme/vendor_dashboard.png)
 
-### 7. Approve or reject requests (establishment)
+#### Request an Event
 
-![Establishment pending requests: approve or reject](assets/readme/approve_request.png)
+![Food truck event request flow](assets/readme/request_event.png)
 
-### 8. Create an event (establishment)
+#### Billing and Subscription Management
 
-![Creating an event: date, time, location, and notes](assets/readme/event_creation.png)
+![Food truck billing and subscription management](assets/readme/vendor_financial.png)
 
-### 9. Recurring events
+#### Menu Management
 
-![Recurring event schedules and recurrence settings](assets/readme/recurring_events.png)
+![Food truck menu management overview](assets/readme/menu.png)
 
-### 10. Settings and profile
+#### Add Menu Item
 
-![Settings: profile, business hours, and establishment info](assets/readme/merchant_settings.png)
+![Add menu item](assets/readme/add_menu_item.png)
 
-### 11. Billing and subscription management
+### For Establishments
 
-![Billing and subscription management](assets/readme/vendor_financial.png)
+#### Dashboard
 
-### 12. Establishment analytics
+![Establishment dashboard overview](assets/readme/merchant_dashboard.png)
 
-![Establishment analytics and performance metrics](assets/readme/merchant_analytics.png)
+#### Approve or Reject Requests
 
-### 13. Ratings and reviews
+![Establishment request approvals and rejections](assets/readme/approve_request.png)
 
-![Establishment ratings and reviews](assets/readme/merchant_ratings.png)
+#### Create an Event
 
-### 14. Food truck menu management
+![Establishment event creation with date, time, location, and notes](assets/readme/event_creation.png)
 
-![Food truck menu overview](assets/readme/menu.png)
+#### Event Details
 
-### 15. Add menu item workflow
+![Event details with booking card and map context](assets/readme/booked_event_details.png)
 
-![Create and add a new menu item](assets/readme/add_menu_item.png)
+#### Recurring Events
+
+![Establishment recurring event scheduling and recurrence settings](assets/readme/recurring_events.png)
 
 ---
 
