@@ -114,16 +114,12 @@
       </template>
 
       <template #subtitle>
-        <div class="flex items-center gap-2 text-sm">
-          <span class="text-text-muted">Total events: {{ filteredEvents.length }} |</span>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <span class="text-text-muted">Total events: {{ filteredEvents.length }}</span>
           <span v-if="openEventsCount > 0" class="text-error font-medium">open: {{ openEventsCount }}</span>
-          <span v-if="openEventsCount > 0 && bookedEventsCount > 0" class="text-text-muted">|</span>
           <span v-if="bookedEventsCount > 0" class="text-success font-medium">booked: {{ bookedEventsCount }}</span>
-          <span v-if="(openEventsCount > 0 || bookedEventsCount > 0) && completedEventsCount > 0" class="text-text-muted">|</span>
           <span v-if="completedEventsCount > 0" class="text-success font-medium">completed: {{ completedEventsCount }}</span>
-          <span v-if="(openEventsCount > 0 || bookedEventsCount > 0 || completedEventsCount > 0) && (cancelledEventsCount > 0 || closedEventsCount > 0)" class="text-text-muted">|</span>
           <span v-if="cancelledEventsCount > 0" class="text-warning font-medium">cancelled: {{ cancelledEventsCount }}</span>
-          <span v-if="cancelledEventsCount > 0 && closedEventsCount > 0" class="text-text-muted">|</span>
           <span v-if="closedEventsCount > 0" class="text-md-gray font-medium">closed: {{ closedEventsCount }}</span>
         </div>
       </template>
@@ -135,6 +131,7 @@
           label="Create Multiple"
           icon="pi pi-calendar-plus"
           size="small"
+          class="w-full sm:w-auto whitespace-nowrap"
         />
       </template>
           <template #search-bar>
@@ -145,14 +142,14 @@
               <InputText 
                 v-model="eventFilters.keyword" 
                 placeholder="Search by food truck name..."
-                class="w-full pl-10 pr-4"
+                class="w-full pl-11 pr-3"
                 size="small"
               />
             </div>
           </template>
 
           <template #filters>
-            <div class="w-56">
+            <div class="w-full sm:w-56">
               <FloatLabel>
                 <AutoComplete
                   inputId="status-filter"
@@ -176,7 +173,7 @@
           </template>
 
           <template #sort-by>
-            <div class="w-48">
+            <div class="w-full sm:w-48">
               <FloatLabel>
                 <Select 
                   id="sort-filter"

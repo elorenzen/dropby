@@ -516,8 +516,8 @@ onUnmounted(() => {
     height: 2.25rem;
   }
   
-  /* Hide nav items on mobile - use bottom nav instead */
-  :deep(.p-menubar-root-list) {
+  /* Authenticated users use bottom nav on mobile */
+  .app-header-authenticated :deep(.p-menubar-root-list) {
     display: none !important;
   }
   

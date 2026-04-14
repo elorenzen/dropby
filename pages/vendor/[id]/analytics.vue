@@ -36,10 +36,10 @@
     </div>
 
     <!-- Key Metrics Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
       <Card class="analytics-card">
         <template #content>
-          <div class="flex items-center justify-between">
+          <div class="flex items-start justify-between gap-3">
             <div>
               <p class="text-text-muted text-sm font-medium">Acceptance Rate</p>
               <p class="text-3xl font-bold text-text-main">{{ metrics.acceptanceRate }}%</p>
@@ -57,7 +57,7 @@
 
       <Card class="analytics-card">
         <template #content>
-          <div class="flex items-center justify-between">
+          <div class="flex items-start justify-between gap-3">
             <div>
               <p class="text-text-muted text-sm font-medium">Total Bookings</p>
               <p class="text-3xl font-bold text-text-main">{{ metrics.totalBookings }}</p>
@@ -75,7 +75,7 @@
 
       <Card class="analytics-card">
         <template #content>
-          <div class="flex items-center justify-between">
+          <div class="flex items-start justify-between gap-3">
             <div>
               <p class="text-text-muted text-sm font-medium">Merchant Partners</p>
               <p class="text-3xl font-bold text-text-main">{{ metrics.uniqueMerchants }}</p>
@@ -468,10 +468,13 @@ useSeoMeta({ title: () => `Analytics | ${vendor.value?.vendor_name || 'Vendor'}`
 .analytics-icon {
   width: 3.5rem;
   height: 3.5rem;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -484,8 +487,10 @@ useSeoMeta({ title: () => `Analytics | ${vendor.value?.vendor_name || 'Vendor'}`
   }
 
   .analytics-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
   }
 
   .analytics-card:hover {

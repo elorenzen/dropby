@@ -62,10 +62,10 @@
       />
   
       <!-- Analytics Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
         <Card class="analytics-card clickable-card" @click="navigateToEvents">
           <template #content>
-            <div class="flex items-center justify-between">
+            <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-text-muted text-sm font-medium">Open Events</p>
                 <p class="text-3xl font-bold text-text-main">{{ analytics.openEvents }}</p>
@@ -83,7 +83,7 @@
   
         <Card class="analytics-card clickable-card" @click="navigateToEvents">
           <template #content>
-            <div class="flex items-center justify-between">
+            <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-text-muted text-sm font-medium">Booked Events</p>
                 <p class="text-3xl font-bold text-text-main">{{ analytics.bookedEvents }}</p>
@@ -101,7 +101,7 @@
   
         <Card class="analytics-card clickable-card" @click="navigateToEvents">
           <template #content>
-            <div class="flex items-center justify-between">
+            <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-text-muted text-sm font-medium">Completed Events</p>
                 <p class="text-3xl font-bold text-text-main">{{ analytics.totalEvents }}</p>
@@ -119,7 +119,7 @@
   
         <Card class="analytics-card clickable-card" @click="navigateToRatings">
           <template #content>
-            <div class="flex items-center justify-between">
+            <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-text-muted text-sm font-medium">Average Rating</p>
                 <p class="text-3xl font-bold text-text-main">{{ analytics.averageRating }}</p>
@@ -418,10 +418,13 @@
 .analytics-icon {
   width: 3rem;
   height: 3rem;
+  min-width: 3rem;
+  min-height: 3rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .activity-icon {
@@ -459,8 +462,10 @@
   }
 
   .analytics-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
   }
 
   .clickable-card:hover {

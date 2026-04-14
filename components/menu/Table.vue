@@ -19,7 +19,8 @@
                 label="Add Menu Item"
                 icon="pi pi-plus"
                 iconPos="left"
-                class="px-6 py-3 font-semibold rounded-lg"
+                size="small"
+                class="w-full sm:w-auto"
                 @click="addDialog = true"
             />
         </div>
@@ -38,14 +39,14 @@
                     <InputText 
                         v-model="searchQuery" 
                         placeholder="Search menu items..."
-                        class="w-full pl-10 pr-4"
+                        class="w-full pl-11 pr-3"
                         size="small"
                     />
                 </div>
             </template>
 
             <template #sort-by>
-                <div class="w-48">
+                <div class="w-full sm:w-48">
                     <Button
                         :icon="layout === 'grid' ? 'pi pi-list' : 'pi pi-th-large'"
                         :label="layout === 'grid' ? 'List View' : 'Grid View'"

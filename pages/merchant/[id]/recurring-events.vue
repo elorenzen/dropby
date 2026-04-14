@@ -49,14 +49,14 @@
               <InputText 
                 v-model="filters.keyword" 
                 placeholder="Search recurring events..."
-                class="w-full pl-10 pr-4"
+                class="w-full pl-11 pr-3"
                 size="small"
               />
             </div>
           </template>
 
           <template #sort-by>
-            <div class="w-48">
+            <div class="w-full sm:w-48">
               <FloatLabel>
                 <Select 
                   id="sort-filter"

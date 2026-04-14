@@ -57,7 +57,7 @@
             <InputText 
               v-model="filters.keyword" 
               placeholder="Search events, food trucks, cuisines, or locations..."
-              class="w-full pl-10 pr-4"
+              class="w-full pl-11 pr-3"
               size="small"
             />
           </div>

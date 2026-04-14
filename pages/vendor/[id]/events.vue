@@ -110,14 +110,14 @@
               <InputText 
                 v-model="openEventsFilters.keyword" 
                 placeholder="Search by merchant name, location, or cuisine..."
-                class="w-full pl-10 pr-4"
+                class="w-full pl-11 pr-3"
                 size="small"
               />
             </div>
           </template>
 
           <template #filters>
-            <div class="w-48">
+            <div class="w-full sm:w-48">
               <FloatLabel>
                 <Select 
                   id="open-events-date-filter"
@@ -134,7 +134,7 @@
           </template>
 
           <template #sort-by>
-            <div class="w-48">
+            <div class="w-full sm:w-48">
               <FloatLabel>
                 <Select 
                   id="open-events-sort-filter"
@@ -228,7 +228,7 @@
           <InputText 
             v-model="pastEventsFilters.keyword" 
             placeholder="Search by merchant name..."
-            class="w-full pl-10 pr-4"
+            class="w-full pl-11 pr-3"
             size="small"
           />
         </div>

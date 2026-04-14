@@ -27,7 +27,7 @@
             <InputText 
               v-model="searchQuery" 
               placeholder="Search by merchant name..."
-              class="w-full pl-10 pr-4"
+              class="w-full pl-11 pr-3"
               size="small"
               @input="onSearchInput"
             />

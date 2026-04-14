@@ -1,8 +1,8 @@
 <template>
   <Card :class="cardClass">
     <template v-if="hasTitleSlot || hasSubtitleSlot || hasResultsCountText || hasActionsSlot" #title>
-      <div class="flex items-center justify-between">
-        <div v-if="hasTitleSlot || hasSubtitleSlot || hasResultsCountText">
+      <div class="search-filter-title flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div v-if="hasTitleSlot || hasSubtitleSlot || hasResultsCountText" class="min-w-0 flex-1">
           <slot name="title">
             <h3 v-if="title" class="text-xl font-semibold text-text-main">{{ title }}</h3>
           </slot>
@@ -11,7 +11,7 @@
             <p v-else-if="resultsCountText" class="text-sm text-text-muted mt-1">{{ resultsCountText }}</p>
           </slot>
         </div>
-        <div v-if="hasActionsSlot" class="flex items-center gap-2">
+        <div v-if="hasActionsSlot" class="search-filter-actions flex w-full items-center gap-2 sm:w-auto sm:justify-end">
           <slot name="actions"></slot>
         </div>
       </div>
@@ -20,9 +20,9 @@
     <template #content>
       <div class="space-y-6">
         <!-- Search Bar and Sort By Section -->
-        <div v-if="hasSearchBarSlot || hasSortBySlot" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+        <div v-if="hasSearchBarSlot || hasSortBySlot" class="flex flex-col items-stretch gap-4 sm:flex-row sm:items-end">
           <!-- Search Bar Slot - takes remaining space -->
-          <div v-if="hasSearchBarSlot" class="flex-1">
+          <div v-if="hasSearchBarSlot" class="search-slot flex-1">
             <slot name="search-bar"></slot>
           </div>
           
@@ -103,5 +103,20 @@ const handleClearFilters = () => {
 :deep(.p-card) {
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+:deep(.search-slot .p-inputtext) {
+  padding-left: 2.5rem;
+}
+
+:deep(.search-slot .pi-search) {
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .search-filter-actions :deep(.p-button) {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
