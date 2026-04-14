@@ -167,7 +167,7 @@
             <!-- Event Info Panel -->
             <div 
               v-if="selectedMapEvent"
-              class="absolute bottom-4 left-4 right-4 z-10 bg-surface-card rounded-lg shadow-lg p-4"
+              class="absolute bottom-4 left-4 right-4 z-10 map-event-panel rounded-lg shadow-lg p-4"
             >
               <div class="flex justify-between items-start mb-3">
                 <div>
@@ -874,5 +874,26 @@ onMounted(async () => {
   .stat-card:hover {
     transform: none !important;
   }
+}
+
+.map-event-panel {
+  /* Keep map details legible over map tiles in all themes */
+  background: var(--p-surface-card, #ffffff) !important;
+  opacity: 1 !important;
+  border: 1px solid var(--p-surface-border, #e5e7eb);
+}
+
+.map-event-panel .text-text-main {
+  color: #111827 !important;
+}
+
+.map-event-panel .text-text-muted,
+.map-event-panel span,
+.map-event-panel p {
+  color: #4b5563 !important;
+}
+
+.map-event-panel .pi {
+  color: #6b7280 !important;
 }
 </style> 
