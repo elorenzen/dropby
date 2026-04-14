@@ -1,5 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -15,25 +16,7 @@ interface BusinessData {
 export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
-    const body = await readBody(event)
-    
-    const { businessId, businessType } = body
-
-    // Validate required parameters
-    if (!businessId || !businessType) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Missing required parameters: businessId, businessType'
-      })
-    }
-
-    // Validate business type
-    if (!['merchant', 'vendor'].includes(businessType)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid business type'
-      })
-    }
+    const { businessId, businessType } = await requireBusinessContext(event)
 
     // Get business details
     const { data: businessData, error: businessError } = await client

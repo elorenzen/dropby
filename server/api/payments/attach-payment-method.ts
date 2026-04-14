@@ -1,4 +1,6 @@
+import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -6,16 +8,33 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { customerId, paymentMethodId, title, defaultPaymentMethod } = body
+  const { paymentMethodId, title, defaultPaymentMethod } = body
 
-  if (!customerId || !paymentMethodId || !title) {
+  if (!paymentMethodId || !title) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Missing required parameters: customerId, paymentMethodId, title'
+      statusMessage: 'Missing required parameters: paymentMethodId, title'
     })
   }
   
   try {
+    const client = await serverSupabaseClient(event)
+    const { businessId, businessType } = await requireBusinessContext(event)
+    const { data: businessData, error: businessError } = await client
+      .from(`${businessType}s`)
+      .select('stripe_customer_id')
+      .eq('id', businessId)
+      .single()
+
+    if (businessError || !businessData?.stripe_customer_id) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Stripe customer is not configured for this account'
+      })
+    }
+
+    const customerId = businessData.stripe_customer_id
+
     // Attach the payment method to the customer
     await stripe.paymentMethods.attach(paymentMethodId, { 
       customer: customerId 

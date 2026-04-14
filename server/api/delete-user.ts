@@ -1,7 +1,9 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { requireSuperadminContext } from '~/server/utils/authz'
 
 export default defineEventHandler(async (event) => {
   try {
+    await requireSuperadminContext(event)
     const client = await serverSupabaseServiceRole(event)
     const body = await readBody(event)
 

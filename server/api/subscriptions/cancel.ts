@@ -1,5 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil'
@@ -9,6 +10,7 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
+    const { businessId, businessType } = await requireBusinessContext(event)
     
     const { subscriptionId } = body
 
@@ -20,12 +22,23 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Get current user
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) {
+    const { data: subscriptionRow, error: subscriptionFetchError } = await client
+      .from('subscriptions')
+      .select('id, business_id, business_type, stripe_subscription_id')
+      .eq('stripe_subscription_id', subscriptionId)
+      .single()
+
+    if (subscriptionFetchError || !subscriptionRow) {
       throw createError({
-        statusCode: 401,
-        statusMessage: 'User not authenticated'
+        statusCode: 404,
+        statusMessage: 'Subscription not found'
+      })
+    }
+
+    if (subscriptionRow.business_id !== businessId || subscriptionRow.business_type !== businessType) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Not authorized to cancel this subscription'
       })
     }
 
@@ -39,7 +52,7 @@ export default defineEventHandler(async (event) => {
         status: 'canceled',
         updated_at: new Date().toISOString()
       } as any)
-      .eq('stripe_subscription_id', subscriptionId)
+      .eq('id', subscriptionRow.id)
 
     return {
       success: true,

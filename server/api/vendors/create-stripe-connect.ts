@@ -1,5 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil'
@@ -9,21 +10,23 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
+    const config = useRuntimeConfig(event)
+    const { businessId: vendorId } = await requireBusinessContext(event, 'vendor')
     
-    const { vendorId, email, businessName, businessType = 'individual' } = body
+    const { businessType = 'individual' } = body
 
-    // Validate required parameters
-    if (!vendorId || !email) {
+    const siteUrl = (config.public.siteUrl || process.env.NUXT_PUBLIC_SITE_URL || '').replace(/\/+$/, '')
+    if (!siteUrl) {
       throw createError({
-        statusCode: 400,
-        statusMessage: 'Missing required parameters: vendorId, email'
+        statusCode: 500,
+        statusMessage: 'Missing site URL configuration for Stripe onboarding links'
       })
     }
 
     // Check if vendor already has a Stripe Connect account
     const { data: existingVendor, error: vendorError } = await client
       .from('vendors')
-      .select('stripe_connect_account_id')
+      .select('stripe_connect_account_id, email, vendor_name')
       .eq('id', vendorId)
       .single()
 
@@ -42,11 +45,18 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    if (!existingVendor.email) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Vendor email is required before creating a Stripe Connect account'
+      })
+    }
+
     // Create Stripe Connect account
     const account = await stripe.accounts.create({
       type: 'express', // Simplest onboarding for vendors
       country: 'US',
-      email: email,
+      email: existingVendor.email,
       capabilities: {
         transfers: { requested: true },
         card_payments: { requested: true }
@@ -59,7 +69,7 @@ export default defineEventHandler(async (event) => {
       },
       metadata: {
         vendor_id: vendorId,
-        business_name: businessName
+        business_name: existingVendor.vendor_name
       }
     })
 
@@ -82,8 +92,8 @@ export default defineEventHandler(async (event) => {
     // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${process.env.NUXT_PUBLIC_SITE_URL}/vendor/${vendorId}/dashboard`,
-      return_url: `${process.env.NUXT_PUBLIC_SITE_URL}/vendor/${vendorId}/dashboard`,
+      refresh_url: `${siteUrl}/vendor/${vendorId}/dashboard`,
+      return_url: `${siteUrl}/vendor/${vendorId}/dashboard`,
       type: 'account_onboarding',
     })
 

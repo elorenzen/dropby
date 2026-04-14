@@ -1,5 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil'
@@ -10,13 +11,14 @@ export default defineEventHandler(async (event) => {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
     
-    const { eventId, amount, merchantId, vendorId, paymentMethodId } = body
+    const { eventId, amount, paymentMethodId } = body
+    const { businessId: merchantId } = await requireBusinessContext(event, 'merchant')
 
     // Validate required parameters
-    if (!eventId || !amount || !merchantId || !vendorId) {
+    if (!eventId || !amount || !paymentMethodId) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Missing required parameters: eventId, amount, merchantId, vendorId'
+        statusMessage: 'Missing required parameters: eventId, amount, paymentMethodId'
       })
     }
 
@@ -33,6 +35,22 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Event not found'
       })
     }
+
+    if (eventData.merchant !== merchantId) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'You are not authorized to pay for this event'
+      })
+    }
+
+    if (!eventData.vendor) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Event must have a booked vendor before payment'
+      })
+    }
+
+    const vendorId = eventData.vendor as string
 
     // Calculate fees - MERCHANT PAYS ALL FEES
     const platformFee = amount * 0.08 // 8% platform fee (your revenue)

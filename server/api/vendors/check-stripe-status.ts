@@ -1,5 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil'
@@ -9,18 +10,33 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
+    const { businessId: vendorId } = await requireBusinessContext(event, 'vendor')
     
     const { accountId } = body
 
-    if (!accountId) {
+    const { data: vendorData, error: vendorError } = await client
+      .from('vendors')
+      .select('stripe_connect_account_id')
+      .eq('id', vendorId)
+      .single()
+
+    if (vendorError || !vendorData?.stripe_connect_account_id) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Missing accountId parameter'
+        statusMessage: 'Stripe Connect account is not configured for this vendor'
+      })
+    }
+
+    const resolvedAccountId = vendorData.stripe_connect_account_id
+    if (accountId && accountId !== resolvedAccountId) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Not authorized to inspect this Stripe account'
       })
     }
 
     // Retrieve the Stripe Connect account
-    const account = await stripe.accounts.retrieve(accountId)
+    const account = await stripe.accounts.retrieve(resolvedAccountId)
 
     // Determine account status
     let accountStatus: 'complete' | 'pending' | null = null

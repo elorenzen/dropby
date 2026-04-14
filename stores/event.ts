@@ -88,6 +88,47 @@ export const useEventStore = defineStore('event', {
   },
   
   actions: {
+    async closeExpiredUnbookedEvents() {
+      try {
+        const nowIso = new Date().toISOString()
+        const staleEventIds = this.allEvents
+          .filter((e) => e.status === 'open' && !e.vendor && new Date(e.end) < new Date())
+          .map((e) => e.id)
+
+        if (staleEventIds.length === 0) return 0
+
+        const supabase = useSupabaseClient()
+        const { data, error } = await supabase
+          .from('events')
+          .update({
+            status: 'closed',
+            updated_at: nowIso
+          } as any)
+          .in('id', staleEventIds)
+          .eq('status', 'open')
+          .is('vendor', null)
+          .lt('end', nowIso)
+          .select('id')
+
+        if (error) throw error
+
+        const closedIds = new Set((data || []).map((event: { id: string }) => event.id))
+        this.allEvents = this.allEvents.map((event) => {
+          if (!closedIds.has(event.id)) return event
+          return {
+            ...event,
+            status: 'closed',
+            updated_at: nowIso
+          }
+        })
+
+        return closedIds.size
+      } catch (error) {
+        console.error('Error closing expired unbooked events:', error)
+        return 0
+      }
+    },
+
     async setAllEvents(events: Event[]) {
       this.allEvents = events
     },
@@ -291,6 +332,7 @@ export const useEventStore = defineStore('event', {
         if (error) throw error
         
         this.allEvents = data || []
+        await this.closeExpiredUnbookedEvents()
         return data
       } catch (error) {
         console.error('Error loading events:', error)

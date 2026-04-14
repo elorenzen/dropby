@@ -472,7 +472,7 @@ export interface EventInvite {
 // ============================================================================
 
 export type BusinessType = 'vendor' | 'merchant'
-export type EventStatus = 'open' | 'booked' | 'completed' | 'cancelled'
+export type EventStatus = 'open' | 'booked' | 'completed' | 'cancelled' | 'closed'
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export type ComplianceStatus = 'pending' | 'verified' | 'rejected' | 'expired'
 export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid'

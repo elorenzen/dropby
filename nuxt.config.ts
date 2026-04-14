@@ -36,11 +36,11 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     superadminEmail: process.env.SUPERADMIN_EMAIL || '',
+    openaiApiKey: process.env.OPENAI_API_KEY || '',
     public: {
       appEnv,
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://dropby.dev',
       gMapKey: process.env.GMAPS_API_KEY,
-      openaiApiKey: process.env.OPENAI_API_KEY,
       stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
     }
   },

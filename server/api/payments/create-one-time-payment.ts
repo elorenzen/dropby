@@ -1,5 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -16,22 +17,15 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
+    const { businessId, businessType } = await requireBusinessContext(event)
     
-    const { businessId, businessType, actionType, amount, paymentMethodId } = body
+    const { actionType, paymentMethodId } = body
 
     // Validate required parameters
-    if (!businessId || !businessType || !actionType || !amount || !paymentMethodId) {
+    if (!actionType || !paymentMethodId) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Missing required parameters'
-      })
-    }
-
-    // Validate business type
-    if (!['merchant', 'vendor'].includes(businessType)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid business type'
+        statusMessage: 'Missing required parameters: actionType, paymentMethodId'
       })
     }
 
@@ -87,23 +81,27 @@ export default defineEventHandler(async (event) => {
     let stripeCustomerId: string = business.stripe_customer_id || ''
     
     if (!stripeCustomerId) {
-      // Call the customer creation endpoint
-      const customerResponse = await $fetch('/api/stripe/customer/create', {
-        method: 'POST',
-        body: {
-          businessId,
-          businessType
+      const customer = await stripe.customers.create({
+        email: business.email,
+        name: business[`${businessType}_name`],
+        metadata: {
+          business_id: businessId,
+          business_type: businessType
         }
-      }) as any
-      
-      if (!customerResponse.success) {
+      })
+
+      stripeCustomerId = customer.id
+      const { error: updateBusinessError } = await client
+        .from(`${businessType}s`)
+        .update({ stripe_customer_id: stripeCustomerId } as any)
+        .eq('id', businessId)
+
+      if (updateBusinessError) {
         throw createError({
           statusCode: 500,
-          statusMessage: 'Failed to create Stripe customer'
+          statusMessage: 'Failed to persist Stripe customer for business'
         })
       }
-      
-      stripeCustomerId = customerResponse.customerId
     }
 
     // Create payment record

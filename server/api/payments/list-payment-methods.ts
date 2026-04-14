@@ -1,30 +1,30 @@
+import { serverSupabaseClient } from '#supabase/server'
 import Stripe from 'stripe'
+import { requireBusinessContext } from '~/server/utils/authz'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil'
 })
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const { customerId } = body
+  const client = await serverSupabaseClient(event)
+  const { businessId, businessType } = await requireBusinessContext(event)
+  const { data: businessData, error: businessError } = await client
+    .from(`${businessType}s`)
+    .select('stripe_customer_id')
+    .eq('id', businessId)
+    .single()
 
-  if (!customerId) {
+  if (businessError || !businessData?.stripe_customer_id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Missing required parameters: customerId'
+      statusMessage: 'Stripe customer is not configured for this account'
     })
   }
 
-  const paymentMethods = await stripe.customers.listPaymentMethods(customerId, {
+  const paymentMethods = await stripe.customers.listPaymentMethods(businessData.stripe_customer_id, {
     limit: 5
   })
   
-  if (paymentMethods.data && paymentMethods.data.length > 0) {
-    return paymentMethods.data
-  }
-
-  throw createError({
-    statusCode: 500,
-    statusMessage: 'Failed to list payment methods'
-  })
+  return paymentMethods.data || []
 })

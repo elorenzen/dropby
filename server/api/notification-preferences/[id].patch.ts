@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { assertSelfOrSuperadmin, requireUserContext } from '~/server/utils/authz'
 
 const VALID_KEYS = [
   'email_event_requests',
@@ -19,6 +20,9 @@ export default defineEventHandler(async (event) => {
   if (!userId) {
     throw createError({ statusCode: 400, statusMessage: 'User ID is required' })
   }
+
+  const actor = await requireUserContext(event)
+  assertSelfOrSuperadmin(actor, userId)
 
   const body = await readBody(event)
 
