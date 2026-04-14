@@ -41,51 +41,15 @@
         <template #content>
           <div class="flex items-start justify-between gap-3">
             <div>
-              <p class="text-text-muted text-sm font-medium">Booking Conversion Rate</p>
+              <p class="text-text-muted text-sm font-medium">Conversion Rate</p>
               <p class="text-3xl font-bold text-text-main">{{ metrics.conversionRate }}%</p>
               <p class="text-success text-sm mt-1">
                 <i class="pi pi-check-circle mr-1"></i>
-                {{ metrics.totalBookings }} of {{ metrics.totalRequests }} requests booked
+                {{ metrics.totalBookings }} of {{ metrics.totalRequests }} booked & completed events
               </p>
             </div>
             <div class="analytics-icon bg-success-light">
               <i class="pi pi-check text-success text-2xl"></i>
-            </div>
-          </div>
-        </template>
-      </Card>
-
-      <Card class="analytics-card">
-        <template #content>
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-text-muted text-sm font-medium">Completion Rate</p>
-              <p class="text-3xl font-bold text-text-main">{{ metrics.completionRate }}%</p>
-              <p class="text-success text-sm mt-1">
-                <i class="pi pi-check-circle mr-1"></i>
-                {{ metrics.completedEvents }} of {{ metrics.totalBookings }} bookings completed
-              </p>
-            </div>
-            <div class="analytics-icon bg-success-light">
-              <i class="pi pi-check-circle text-success text-2xl"></i>
-            </div>
-          </div>
-        </template>
-      </Card>
-
-      <Card class="analytics-card">
-        <template #content>
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-text-muted text-sm font-medium">Total Bookings</p>
-              <p class="text-3xl font-bold text-text-main">{{ metrics.totalBookings }}</p>
-              <p class="text-primary text-sm mt-1">
-                <i class="pi pi-calendar mr-1"></i>
-                Booked & completed events
-              </p>
-            </div>
-            <div class="analytics-icon bg-primary-light">
-              <i class="pi pi-calendar text-primary text-2xl"></i>
             </div>
           </div>
         </template>
@@ -104,6 +68,42 @@
             </div>
             <div class="analytics-icon bg-accent-light">
               <i class="pi pi-truck text-accent text-2xl"></i>
+            </div>
+          </div>
+        </template>
+      </Card>
+
+      <Card class="analytics-card">
+        <template #content>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-text-muted text-sm font-medium">Average Vendor Rating</p>
+              <p class="text-3xl font-bold text-text-main">{{ metrics.avgVendorRating.toFixed(1) }}</p>
+              <p class="text-warning text-sm mt-1">
+                <i class="pi pi-star-fill mr-1"></i>
+                {{ metrics.totalReviews }} rated events
+              </p>
+            </div>
+            <div class="analytics-icon bg-warning-light">
+              <i class="pi pi-star text-warning text-2xl"></i>
+            </div>
+          </div>
+        </template>
+      </Card>
+
+      <Card class="analytics-card">
+        <template #content>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-text-muted text-sm font-medium">Open Demand</p>
+              <p class="text-3xl font-bold text-text-main">{{ metrics.openEvents }}</p>
+              <p class="text-primary text-sm mt-1">
+                <i class="pi pi-chart-line mr-1"></i>
+                Slots still open in selected period
+              </p>
+            </div>
+            <div class="analytics-icon bg-primary-light">
+              <i class="pi pi-clock text-primary text-2xl"></i>
             </div>
           </div>
         </template>
@@ -128,8 +128,7 @@
         </template>
       </Card>
 
-      <!-- Revenue Chart -->
-      <!-- COMMENTED OUT - Feature under consideration (relies on event_value)
+      <!-- COMMENTED OUT - Revenue trend under reconsideration
       <Card>
         <template #title>
           <h3 class="text-xl font-semibold">Revenue Trends</h3>
@@ -162,22 +161,6 @@
         </template>
       </Card>
 
-      <!-- Event Status Distribution -->
-      <Card>
-        <template #title>
-          <h3 class="text-xl font-semibold">Event Status Distribution</h3>
-        </template>
-        <template #content>
-          <div class="h-80">
-            <Doughnut 
-              :data="statusChartData" 
-              :options="doughnutOptions"
-              v-if="statusChartData"
-            />
-          </div>
-        </template>
-      </Card>
-
       <!-- Favorite Food Trucks -->
       <Card>
         <template #title>
@@ -193,13 +176,29 @@
           </div>
         </template>
       </Card>
+
+      <!-- New vs Repeat Vendor Trend -->
+      <Card>
+        <template #title>
+          <h3 class="text-xl font-semibold">New vs Repeat Vendor Trend</h3>
+        </template>
+        <template #content>
+          <div class="h-80">
+            <Bar
+              :data="newVsRepeatVendorsChartData"
+              :options="stackedChartOptions"
+              v-if="newVsRepeatVendorsChartData"
+            />
+          </div>
+        </template>
+      </Card>
     </div>
       </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Line, Bar, Doughnut } from 'vue-chartjs'
+import { Line, Bar } from 'vue-chartjs'
 import PageSkeleton from '~/components/skeleton/PageSkeleton.vue'
 import {
   Chart as ChartJS,
@@ -208,14 +207,14 @@ import {
   PointElement,
   LineElement,
   BarElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
   Filler
 } from 'chart.js'
 import { generateTimeSeries } from '~/utils/timeSeries'
-import { countEventsByDayOfWeek, countEventsByStatus } from '~/utils/analytics'
+import { countEventsByDayOfWeek } from '~/utils/analytics'
+import { getDateFormatter, getPeriodInterval, getPeriodStart, getStartOfMonth, getStartOfWeek, getStartOfYear } from '~/utils/dates'
 
 // Register Chart.js components
 ChartJS.register(
@@ -224,7 +223,6 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -295,8 +293,6 @@ const metrics = ref({
   totalRequests: 0,
   uniqueVendors: 0,
   repeatVendors: 0,
-  completionRate: 0,
-  completedEvents: 0,
   avgVendorRating: 0,
   totalReviews: 0,
   openEvents: 0
@@ -305,9 +301,9 @@ const metrics = ref({
 // Chart data
 const eventsChartData = ref<any>(null)
 const revenueChartData = ref<any>(null)
-const statusChartData = ref<any>(null)
 const vendorsChartData = ref<any>(null)
 const peakDaysChartData = ref<any>(null)
+const newVsRepeatVendorsChartData = ref<any>(null)
 
 // Chart options
 const chartOptions = {
@@ -362,33 +358,23 @@ const chartOptions = {
   }
 }
 
-const doughnutOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false
-    },
-    tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.9)',
-      titleColor: '#fff',
-      bodyColor: '#fff',
-      borderColor: '#0891B2',
-      borderWidth: 2,
-      padding: 12,
-      titleFont: {
-        size: 14
-      },
-      bodyFont: {
-        size: 13
-      }
-    }
-  }
-}
-
 const horizontalChartOptions = {
   ...chartOptions,
   indexAxis: 'y' as const
+}
+
+const stackedChartOptions = {
+  ...chartOptions,
+  scales: {
+    x: {
+      ...(chartOptions.scales?.x || {}),
+      stacked: true
+    },
+    y: {
+      ...(chartOptions.scales?.y || {}),
+      stacked: true
+    }
+  }
 }
 
 // Navigation
@@ -415,8 +401,6 @@ const loadAnalyticsData = async () => {
     metrics.value.totalRequests = analyticsResult.metrics.totalRequests
     metrics.value.uniqueVendors = analyticsResult.metrics.uniqueVendors
     metrics.value.repeatVendors = analyticsResult.metrics.repeatVendors
-    metrics.value.completionRate = analyticsResult.metrics.completionRate
-    metrics.value.completedEvents = analyticsResult.metrics.completedEvents
     metrics.value.avgVendorRating = analyticsResult.metrics.avgVendorRating
     metrics.value.totalReviews = analyticsResult.metrics.totalReviews
     metrics.value.openEvents = analyticsResult.metrics.openEvents
@@ -448,43 +432,23 @@ const generateChartData = async (events: any[], vendorCounts?: { [key: string]: 
     }]
   }
 
-  // Revenue chart - COMMENTED OUT - Feature under consideration (relies on event_value)
-  // const revenueByDate = groupRevenueByDate(events)
+  // Revenue trend - COMMENTED OUT - under reconsideration
+  // const revenueSeries = buildSummedSeriesByPeriod(events, selectedPeriod.value, (event: any) => event.event_value || 0)
   // revenueChartData.value = {
-  //   labels: Object.keys(revenueByDate),
+  //   labels: revenueSeries.labels,
   //   datasets: [{
   //     label: 'Revenue',
-  //     data: Object.values(revenueByDate),
-  //     backgroundColor: 'rgba(16, 185, 129, 0.7)', // Success green
+  //     data: revenueSeries.data,
   //     borderColor: '#10b981',
-  //     borderWidth: 2
+  //     backgroundColor: 'rgba(16, 185, 129, 0.2)',
+  //     fill: true,
+  //     tension: 0.4,
+  //     pointBackgroundColor: '#10b981',
+  //     pointBorderColor: '#fff',
+  //     pointBorderWidth: 2,
+  //     pointRadius: 4
   //   }]
   // }
-
-  // Status distribution
-  const statusCounts = countEventsByStatus(events)
-  statusChartData.value = {
-    labels: Object.keys(statusCounts),
-    datasets: [{
-      label: '',
-      data: Object.values(statusCounts),
-      backgroundColor: [
-        'rgba(8, 145, 178, 0.8)',   // Primary cyan
-        'rgba(16, 185, 129, 0.8)',  // Success green
-        'rgba(245, 158, 11, 0.8)',  // Warning yellow
-        'rgba(239, 68, 68, 0.8)',   // Error red
-        'rgba(156, 163, 175, 0.8)'  // Gray
-      ],
-      borderColor: [
-        '#0891B2',
-        '#10b981',
-        '#f59e0b',
-        '#ef4444',
-        '#9ca3af'
-      ],
-      borderWidth: 2
-    }]
-  }
 
   // Peak booking days should align with booking metrics (booked + completed only)
   const bookedCompletedEvents = events.filter((event: any) =>
@@ -567,18 +531,117 @@ const generateChartData = async (events: any[], vendorCounts?: { [key: string]: 
       borderWidth: 2
     }]
   }
+
+  // New vs repeat vendor trend (booked/completed events only)
+  const vendorTrend = buildNewVsRepeatPartnerTrend(bookedCompletedEvents, selectedPeriod.value, 'vendor')
+  newVsRepeatVendorsChartData.value = {
+    labels: vendorTrend.labels,
+    datasets: [
+      {
+        label: 'New Vendors',
+        data: vendorTrend.newCounts,
+        backgroundColor: 'rgba(8, 145, 178, 0.75)',
+        borderColor: '#0891B2',
+        borderWidth: 1
+      },
+      {
+        label: 'Repeat Vendors',
+        data: vendorTrend.repeatCounts,
+        backgroundColor: 'rgba(16, 185, 129, 0.75)',
+        borderColor: '#10b981',
+        borderWidth: 1
+      }
+    ]
+  }
 }
 
+const getBucketKey = (date: Date, period: string): string => {
+  const interval = getPeriodInterval(period)
+  const formatter = getDateFormatter(interval)
+  if (interval === 'weekly' || interval === 'biweekly') {
+    return formatter(getStartOfWeek(date))
+  }
+  if (interval === 'monthly') {
+    return formatter(getStartOfMonth(date))
+  }
+  if (interval === 'yearly') {
+    return formatter(getStartOfYear(date))
+  }
+  return formatter(date)
+}
 
-// COMMENTED OUT - Feature under consideration (relies on event_value)
-// const groupRevenueByDate = (events: any[]) => {
-//   const grouped: { [key: string]: number } = {}
-//   events.forEach(event => {
-//     const date = new Date(event.created_at).toLocaleDateString()
-//     grouped[date] = (grouped[date] || 0) + (event.event_value || 0)
-//   })
-//   return grouped
-// }
+const buildSummedSeriesByPeriod = (
+  events: any[],
+  period: string,
+  valueGetter: (event: any) => number
+) => {
+  const baseline = generateTimeSeries(events, period, 'start')
+  const sumsByLabel = baseline.labels.reduce((acc: Record<string, number>, label: string) => {
+    acc[label] = 0
+    return acc
+  }, {})
+
+  const periodStart = getPeriodStart(period)
+  events.forEach((event: any) => {
+    const startDate = new Date(event.start)
+    if (startDate < periodStart) return
+    const label = getBucketKey(startDate, period)
+    if (sumsByLabel[label] !== undefined) {
+      sumsByLabel[label] += valueGetter(event)
+    }
+  })
+
+  return {
+    labels: baseline.labels,
+    data: baseline.labels.map((label: string) => Math.round((sumsByLabel[label] || 0) * 100) / 100)
+  }
+}
+
+const buildNewVsRepeatPartnerTrend = (
+  events: any[],
+  period: string,
+  partnerField: 'vendor' | 'merchant'
+) => {
+  const baseline = generateTimeSeries(events, period, 'start')
+  const newByLabel = baseline.labels.reduce((acc: Record<string, number>, label: string) => {
+    acc[label] = 0
+    return acc
+  }, {})
+  const repeatByLabel = baseline.labels.reduce((acc: Record<string, number>, label: string) => {
+    acc[label] = 0
+    return acc
+  }, {})
+
+  const periodStart = getPeriodStart(period)
+  const seenPartners = new Set<string>()
+  const ordered = [...events]
+    .filter((event: any) => {
+      const date = new Date(event.start)
+      return date >= periodStart
+    })
+    .sort((a: any, b: any) => Date.parse(a.start) - Date.parse(b.start))
+
+  ordered.forEach((event: any) => {
+    const partnerId = event[partnerField]
+    if (!partnerId) return
+    const label = getBucketKey(new Date(event.start), period)
+    if (newByLabel[label] === undefined) return
+
+    if (seenPartners.has(partnerId)) {
+      repeatByLabel[label] += 1
+      return
+    }
+
+    seenPartners.add(partnerId)
+    newByLabel[label] += 1
+  })
+
+  return {
+    labels: baseline.labels,
+    newCounts: baseline.labels.map((label: string) => newByLabel[label] || 0),
+    repeatCounts: baseline.labels.map((label: string) => repeatByLabel[label] || 0)
+  }
+}
 
 
 // Watch for period changes

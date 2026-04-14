@@ -319,6 +319,7 @@ export const useVendorStore = defineStore('vendor', {
     async getAnalyticsMetrics(vendorId: string, period: string) {
       try {
         const eventStore = useEventStore()
+        const supabase = useSupabaseClient()
         
         // Ensure events are loaded
         if (eventStore.allEvents.length === 0) {
@@ -333,13 +334,14 @@ export const useVendorStore = defineStore('vendor', {
             metrics: {
               acceptanceRate: 0,
               totalBookings: 0,
-              pendingRequests: 0,
+              uniqueRequestedEvents: 0,
               uniqueMerchants: 0,
               repeatMerchants: 0,
-              avgBookingsPerMerchant: 0
+              activePendingRequests: 0,
+              avgMerchantRating: 0,
+              totalReviews: 0
             },
             acceptedEvents: [],
-            pendingRequests: [],
             periodEvents: [],
             merchantCounts: {}
           }
@@ -348,13 +350,28 @@ export const useVendorStore = defineStore('vendor', {
         // Filter events by period using utility
         const periodEvents = filterEventsByPeriod(allEvents, period, 'start')
 
-        // Get all events for this vendor (matches past events page logic - all events where vendor is assigned)
-        const acceptedEvents = periodEvents.filter((event: any) => 
-          event.vendor === vendorId
+        // Accepted bookings for this vendor in period (booked + completed only)
+        const acceptedEvents = periodEvents.filter((event: any) =>
+          event.vendor === vendorId &&
+          (event.status === 'booked' || event.status === 'completed')
         )
 
-        // Get requests that vendor made (vendor_id in pending_requests array)
-        const pendingRequests = periodEvents.filter((event: any) => 
+        // Requests sent by this vendor in period (unique event requests)
+        const requestedEvents = periodEvents.filter((event: any) =>
+          event.vendor === vendorId || (
+            event.pending_requests &&
+            Array.isArray(event.pending_requests) &&
+            event.pending_requests.includes(vendorId)
+          )
+        )
+
+        const uniqueRequestedEventsCount = new Set(
+          requestedEvents.map((event: any) => event.id).filter(Boolean)
+        ).size
+
+        // Open demand = requests sent that are not yet booked
+        const openEventsWithVendorRequest = requestedEvents.filter((event: any) =>
+          event.status === 'open' &&
           event.pending_requests && 
           Array.isArray(event.pending_requests) && 
           event.pending_requests.includes(vendorId)
@@ -362,10 +379,33 @@ export const useVendorStore = defineStore('vendor', {
 
         // Process metrics using utilities
         const totalBookings = acceptedEvents.length
-        const pendingRequestsCount = pendingRequests.length
-        // Keep existing request counting behavior, but guarantee <= 100%.
-        const totalRequestsCount = Math.max(pendingRequestsCount, totalBookings)
-        const acceptanceRate = calculateRateMetrics(totalBookings, totalRequestsCount)
+        const uniqueRequestedEvents = uniqueRequestedEventsCount
+        const acceptanceRate = calculateRateMetrics(totalBookings, uniqueRequestedEvents)
+
+        // Average merchant rating over selected period:
+        // use review rows tied to selected period event IDs (vendor -> merchant reviews)
+        let avgMerchantRating = 0
+        let totalReviews = 0
+        const periodEventIds = periodEvents.map((event: any) => event.id).filter(Boolean)
+        if (periodEventIds.length > 0) {
+          const { data: periodReviews, error: reviewsError } = await supabase
+            .from('reviews')
+            .select('rating,event_id,sender_id')
+            .eq('sender_id', vendorId)
+            .in('event_id', periodEventIds)
+
+          if (reviewsError) throw reviewsError
+
+          const ratings = (periodReviews || [])
+            .map((review: any) => review.rating)
+            .filter((rating: any) => rating !== null && rating !== undefined)
+
+          totalReviews = ratings.length
+          if (totalReviews > 0) {
+            const totalRating = ratings.reduce((sum: number, rating: number) => sum + rating, 0)
+            avgMerchantRating = Math.round((totalRating / totalReviews) * 10) / 10
+          }
+        }
 
         // Calculate merchant relationship metrics using utility
         const relationshipMetrics = calculateRelationshipMetrics(acceptedEvents, 'merchant')
@@ -374,13 +414,14 @@ export const useVendorStore = defineStore('vendor', {
           metrics: {
             acceptanceRate,
             totalBookings,
-            pendingRequests: totalRequestsCount,
+            uniqueRequestedEvents,
             uniqueMerchants: relationshipMetrics.uniquePartners,
             repeatMerchants: relationshipMetrics.repeatPartners,
-            avgBookingsPerMerchant: relationshipMetrics.avgPerPartner
+            activePendingRequests: openEventsWithVendorRequest.length,
+            avgMerchantRating,
+            totalReviews
           },
           acceptedEvents,
-          pendingRequests,
           periodEvents,
           merchantCounts: relationshipMetrics.partnerCounts
         }

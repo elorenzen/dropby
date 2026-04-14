@@ -36,7 +36,7 @@
     </div>
 
     <!-- Key Metrics Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
       <Card class="analytics-card">
         <template #content>
           <div class="flex items-start justify-between gap-3">
@@ -45,29 +45,11 @@
               <p class="text-3xl font-bold text-text-main">{{ metrics.acceptanceRate }}%</p>
               <p class="text-success text-sm mt-1">
                 <i class="pi pi-check-circle mr-1"></i>
-                {{ metrics.totalBookings }} of {{ metrics.pendingRequests }} requests accepted
+                {{ metrics.totalBookings }} of {{ metrics.uniqueRequestedEvents }} requested events booked
               </p>
             </div>
             <div class="analytics-icon bg-success/20">
               <i class="pi pi-check text-success text-2xl"></i>
-            </div>
-          </div>
-        </template>
-      </Card>
-
-      <Card class="analytics-card">
-        <template #content>
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-text-muted text-sm font-medium">Total Bookings</p>
-              <p class="text-3xl font-bold text-text-main">{{ metrics.totalBookings }}</p>
-              <p class="text-primary text-sm mt-1">
-                <i class="pi pi-calendar mr-1"></i>
-                Accepted & completed events
-              </p>
-            </div>
-            <div class="analytics-icon bg-primary/20">
-              <i class="pi pi-calendar text-primary text-2xl"></i>
             </div>
           </div>
         </template>
@@ -90,6 +72,42 @@
           </div>
         </template>
       </Card>
+
+      <Card class="analytics-card">
+        <template #content>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-text-muted text-sm font-medium">Average Merchant Rating</p>
+              <p class="text-3xl font-bold text-text-main">{{ metrics.avgMerchantRating.toFixed(1) }}</p>
+              <p class="text-warning text-sm mt-1">
+                <i class="pi pi-star-fill mr-1"></i>
+                {{ metrics.totalReviews }} rated events
+              </p>
+            </div>
+            <div class="analytics-icon bg-warning/20">
+              <i class="pi pi-star text-warning text-2xl"></i>
+            </div>
+          </div>
+        </template>
+      </Card>
+
+      <Card class="analytics-card">
+        <template #content>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-text-muted text-sm font-medium">Active Pending Requests</p>
+              <p class="text-3xl font-bold text-text-main">{{ metrics.activePendingRequests }}</p>
+              <p class="text-primary text-sm mt-1">
+                <i class="pi pi-chart-line mr-1"></i>
+                Active pending vendor requests in selected period
+              </p>
+            </div>
+            <div class="analytics-icon bg-primary/20">
+              <i class="pi pi-clock text-primary text-2xl"></i>
+            </div>
+          </div>
+        </template>
+      </Card>
     </div>
 
     <!-- Charts Grid -->
@@ -105,6 +123,22 @@
               :data="bookingsChartData" 
               :options="chartOptions"
               v-if="bookingsChartData"
+            />
+          </div>
+        </template>
+      </Card>
+
+      <!-- Acceptance Rate Trend -->
+      <Card>
+        <template #title>
+          <h3 class="text-xl font-semibold text-text-main">Acceptance Rate {{ selectedPeriodLabel }}</h3>
+        </template>
+        <template #content>
+          <div class="h-80">
+            <Line
+              :data="acceptanceTrendChartData"
+              :options="chartOptions"
+              v-if="acceptanceTrendChartData"
             />
           </div>
         </template>
@@ -158,6 +192,21 @@
         </div>
       </template>
     </Card>
+    
+    <Card class="mb-8">
+      <template #title>
+        <h3 class="text-xl font-semibold text-text-main">New vs Repeat Merchant Trend</h3>
+      </template>
+      <template #content>
+        <div class="h-80">
+          <Bar
+            :data="newVsRepeatMerchantsChartData"
+            :options="stackedChartOptions"
+            v-if="newVsRepeatMerchantsChartData"
+          />
+        </div>
+      </template>
+    </Card>
   </div>
   </div>
 </template>
@@ -179,6 +228,7 @@ import {
 } from 'chart.js'
 import { generateTimeSeries } from '~/utils/timeSeries'
 import { countEventsByDayOfWeek, countEventsByHour } from '~/utils/analytics'
+import { getDateFormatter, getPeriodInterval, getPeriodStart, getStartOfMonth, getStartOfWeek, getStartOfYear } from '~/utils/dates'
 
 // Register Chart.js components
 ChartJS.register(
@@ -227,17 +277,21 @@ const selectedPeriodLabel = computed(() => {
 const metrics = ref({
   acceptanceRate: 0,
   totalBookings: 0,
-  pendingRequests: 0,
+  uniqueRequestedEvents: 0,
   uniqueMerchants: 0,
   repeatMerchants: 0,
-  avgBookingsPerMerchant: 0
+  activePendingRequests: 0,
+  avgMerchantRating: 0,
+  totalReviews: 0
 })
 
 // Chart data
 const bookingsChartData = ref<any>(null)
+const acceptanceTrendChartData = ref<any>(null)
 const peakDaysChartData = ref<any>(null)
 const peakHoursChartData = ref<any>(null)
 const merchantsChartData = ref<any>(null)
+const newVsRepeatMerchantsChartData = ref<any>(null)
 
 // Chart options
 const chartOptions = {
@@ -297,6 +351,20 @@ const horizontalChartOptions = {
   indexAxis: 'y' as const
 }
 
+const stackedChartOptions = {
+  ...chartOptions,
+  scales: {
+    x: {
+      ...(chartOptions.scales?.x || {}),
+      stacked: true
+    },
+    y: {
+      ...(chartOptions.scales?.y || {}),
+      stacked: true
+    }
+  }
+}
+
 // Navigation
 const navigateToDashboard = () => {
   navigateTo(`/vendor/${route.params.id}/dashboard`)
@@ -320,11 +388,13 @@ const loadAnalyticsData = async () => {
 
     // Update metrics
     metrics.value.totalBookings = analyticsResult.metrics.totalBookings
-    metrics.value.pendingRequests = analyticsResult.metrics.pendingRequests
+    metrics.value.uniqueRequestedEvents = analyticsResult.metrics.uniqueRequestedEvents
     metrics.value.acceptanceRate = analyticsResult.metrics.acceptanceRate
     metrics.value.uniqueMerchants = analyticsResult.metrics.uniqueMerchants
     metrics.value.repeatMerchants = analyticsResult.metrics.repeatMerchants
-    metrics.value.avgBookingsPerMerchant = analyticsResult.metrics.avgBookingsPerMerchant
+    metrics.value.activePendingRequests = analyticsResult.metrics.activePendingRequests
+    metrics.value.avgMerchantRating = analyticsResult.metrics.avgMerchantRating
+    metrics.value.totalReviews = analyticsResult.metrics.totalReviews
 
     // Generate chart data
     await generateChartData(analyticsResult.acceptedEvents, analyticsResult.merchantCounts, analyticsResult.periodEvents, resolvedVendorId)
@@ -352,6 +422,29 @@ const generateChartData = async (
       fill: true,
       tension: 0.4,
       pointBackgroundColor: '#0891B2',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 4
+    }]
+  }
+
+  // Acceptance rate trend over selected period
+  const acceptedSeries = generateTimeSeries(acceptedEvents, selectedPeriod.value, 'start')
+  const requestsSeries = generateTimeSeries(allPeriodEvents, selectedPeriod.value, 'start')
+  acceptanceTrendChartData.value = {
+    labels: acceptedSeries.labels,
+    datasets: [{
+      label: 'Acceptance Rate',
+      data: acceptedSeries.labels.map((_, index) => {
+        const accepted = acceptedSeries.data[index] || 0
+        const requests = Math.max(requestsSeries.data[index] || 0, accepted)
+        return requests === 0 ? 0 : Math.round((accepted / requests) * 100)
+      }),
+      borderColor: '#10b981',
+      backgroundColor: 'rgba(16, 185, 129, 0.2)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#10b981',
       pointBorderColor: '#fff',
       pointBorderWidth: 2,
       pointRadius: 4
@@ -427,6 +520,88 @@ const generateChartData = async (
       borderColor: merchantColors.slice(0, sortedMerchants.length).map(c => c.replace('0.8', '1')),
       borderWidth: 2
     }]
+  }
+
+  const merchantTrend = buildNewVsRepeatPartnerTrend(acceptedEvents, selectedPeriod.value, 'merchant')
+  newVsRepeatMerchantsChartData.value = {
+    labels: merchantTrend.labels,
+    datasets: [
+      {
+        label: 'New Merchants',
+        data: merchantTrend.newCounts,
+        backgroundColor: 'rgba(8, 145, 178, 0.75)',
+        borderColor: '#0891B2',
+        borderWidth: 1
+      },
+      {
+        label: 'Repeat Merchants',
+        data: merchantTrend.repeatCounts,
+        backgroundColor: 'rgba(16, 185, 129, 0.75)',
+        borderColor: '#10b981',
+        borderWidth: 1
+      }
+    ]
+  }
+}
+
+const getBucketKey = (date: Date, period: string): string => {
+  const interval = getPeriodInterval(period)
+  const formatter = getDateFormatter(interval)
+  if (interval === 'weekly' || interval === 'biweekly') {
+    return formatter(getStartOfWeek(date))
+  }
+  if (interval === 'monthly') {
+    return formatter(getStartOfMonth(date))
+  }
+  if (interval === 'yearly') {
+    return formatter(getStartOfYear(date))
+  }
+  return formatter(date)
+}
+
+const buildNewVsRepeatPartnerTrend = (
+  events: any[],
+  period: string,
+  partnerField: 'vendor' | 'merchant'
+) => {
+  const baseline = generateTimeSeries(events, period, 'start')
+  const newByLabel = baseline.labels.reduce((acc: Record<string, number>, label: string) => {
+    acc[label] = 0
+    return acc
+  }, {})
+  const repeatByLabel = baseline.labels.reduce((acc: Record<string, number>, label: string) => {
+    acc[label] = 0
+    return acc
+  }, {})
+
+  const periodStart = getPeriodStart(period)
+  const seenPartners = new Set<string>()
+  const ordered = [...events]
+    .filter((event: any) => {
+      const date = new Date(event.start)
+      return date >= periodStart
+    })
+    .sort((a: any, b: any) => Date.parse(a.start) - Date.parse(b.start))
+
+  ordered.forEach((event: any) => {
+    const partnerId = event[partnerField]
+    if (!partnerId) return
+    const label = getBucketKey(new Date(event.start), period)
+    if (newByLabel[label] === undefined) return
+
+    if (seenPartners.has(partnerId)) {
+      repeatByLabel[label] += 1
+      return
+    }
+
+    seenPartners.add(partnerId)
+    newByLabel[label] += 1
+  })
+
+  return {
+    labels: baseline.labels,
+    newCounts: baseline.labels.map((label: string) => newByLabel[label] || 0),
+    repeatCounts: baseline.labels.map((label: string) => repeatByLabel[label] || 0)
   }
 }
 
