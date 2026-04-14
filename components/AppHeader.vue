@@ -130,6 +130,19 @@
             class="auth-button"
             size="small"
           >Sign Up</Button>
+
+          <ToggleSwitch
+            v-model="isDarkMode"
+            inputId="public-theme-toggle"
+            aria-label="Toggle theme"
+            size="small"
+            class="theme-toggle"
+            v-tooltip.bottom="'Toggle theme'"
+          >
+            <template #handle="{ checked }">
+              <i :class="['!text-xs pi', checked ? 'pi pi-moon' : 'pi pi-sun']" />
+            </template>
+          </ToggleSwitch>
         </div>
       </template>
     </Menubar>
@@ -147,6 +160,12 @@ const route = useRoute()
 const { isAuthenticated, currentUser, isSuperadmin, signOut } = useAuth()
 const { isDark, toggleTheme } = useTheme()
 const renderKey = ref(0)
+const isDarkMode = computed({
+  get: () => isDark.value,
+  set: () => {
+    toggleTheme()
+  }
+})
 
 const profileMenu = ref()
 const notificationPanel = ref()
@@ -475,11 +494,15 @@ onUnmounted(() => {
 .auth-buttons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
 .auth-button {
   white-space: nowrap;
+}
+
+.theme-toggle {
+  margin-left: 0.5rem;
 }
 
 .header-icon-button {
