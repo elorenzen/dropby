@@ -31,7 +31,6 @@ export default defineNuxtConfig({
     "nuxt-svgo",
     "@nuxt/scripts",
     '@samk-dev/nuxt-vcalendar',
-    "haversine",
     "@nuxt/image"
   ],
   runtimeConfig: {
